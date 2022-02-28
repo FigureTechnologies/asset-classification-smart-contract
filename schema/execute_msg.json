@@ -5,11 +5,19 @@
     {
       "type": "object",
       "required": [
-        "no_op"
+        "onboard_asset"
       ],
       "properties": {
-        "no_op": {
-          "type": "object"
+        "onboard_asset": {
+          "type": "object",
+          "required": [
+            "scope_address"
+          ],
+          "properties": {
+            "scope_address": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false

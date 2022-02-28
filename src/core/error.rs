@@ -1,10 +1,25 @@
 use cosmwasm_std::StdError;
 use thiserror::Error;
+use crate::util::traits::ResultExtensions;
 
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
+
+    #[error("{0}")]
+    InvalidFunds(String),
+
+    #[error("Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}")]
+    InvalidMessageFields {
+        message_type: String,
+        invalid_fields: Vec<String>,
+    },
+
+    #[error("Invalid message type provided. Expected message type {expected_message_type}")]
+    InvalidMessageType {
+        expected_message_type: String,
+    },
 
     #[error("Unauthorized")]
     Unauthorized,
@@ -12,13 +27,4 @@ pub enum ContractError {
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,
 }
-impl ContractError {
-    /// Allows ContractError instances to be generically returned as a Response in a fluent manner
-    /// instead of wrapping in an Err() call, improving readability.
-    /// Ex: return ContractError::NameNotFound.to_result();
-    /// vs
-    ///     return Err(ContractError::NameNotFound);
-    pub fn to_result<T>(self) -> Result<T, ContractError> {
-        Err(self)
-    }
-}
+impl ResultExtensions for ContractError {}

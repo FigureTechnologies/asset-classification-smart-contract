@@ -13,7 +13,11 @@ pub struct InitMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    OnboardAsset { scope_address: String },
+    OnboardAsset {
+        asset_uuid: String,
+        scope_address: String,
+        oracle_addresses: Vec<String>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

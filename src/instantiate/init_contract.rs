@@ -2,15 +2,16 @@ use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
 use crate::core::state::{config, State};
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
-use provwasm_std::{bind_name, NameBinding, ProvenanceMsg, ProvenanceQuery};
+use provwasm_std::{bind_name, NameBinding, ProvenanceMsg, ProvenanceQuery, write_scope};
+use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::util::traits::ResultExtensions;
 
 pub fn init_contract(
-    deps: DepsMut<ProvenanceQuery>,
+    deps: DepsMutC,
     env: Env,
     info: MessageInfo,
-    msg: InitMsg,
-) -> Result<Response<ProvenanceMsg>, ContractError> {
+    msg: InitMsg
+) -> ContractResponse {
     // Ensure that funds were not improperly provided
     if !info.funds.is_empty() {
         return ContractError::InvalidFunds(
@@ -18,6 +19,7 @@ pub fn init_contract(
         )
         .to_err();
     }
+    write_scope()
     // Convert the init message into a state value that will drive the contract's future executions
     let state = State::for_init_msg(msg);
     // Store the state by grabbing a mutable instance of the contract configuration

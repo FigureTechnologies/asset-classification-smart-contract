@@ -5,10 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InitMsg {
-    pub contract_name: String,
-    pub onboarding_cost: Uint128,
-    pub fee_collection_address: String,
-    pub fee_percent: Decimal,
+    pub base_contract_name: String,
     pub asset_definitions: Vec<AssetDefinition>,
 }
 
@@ -20,6 +17,10 @@ pub enum ExecuteMsg {
         asset_type: String,
         scope_address: String,
         validator_address: String,
+    },
+    ValidateAsset {
+        asset_uuid: String,
+        approved: bool,
     },
 }
 

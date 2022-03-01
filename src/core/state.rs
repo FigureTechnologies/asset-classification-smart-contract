@@ -8,20 +8,22 @@ pub static STATE_KEY: &[u8] = b"state";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
-    pub contract_name: String,
-    pub onboarding_cost: Uint128,
-    pub fee_collection_address: Addr,
-    pub fee_percent: Decimal,
+    pub base_contract_name: String,
 }
 impl State {
     pub fn for_init_msg(msg: InitMsg) -> State {
         State {
-            contract_name: msg.contract_name,
-            onboarding_cost: msg.onboarding_cost,
-            fee_collection_address: Addr::unchecked(msg.fee_collection_address.as_str()),
-            fee_percent: msg.fee_percent,
+            base_contract_name: msg.base_contract_name,
         }
     }
+}
+
+pub fn config(storage: &mut dyn Storage) -> Singleton<State> {
+    singleton(storage, STATE_KEY)
+}
+
+pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
+    singleton_read(storage, STATE_KEY)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -33,15 +35,15 @@ pub struct AssetDefinition {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ValidatorDetail {
     pub address: String,
-    pub fee_charge: Uint128,
+    pub onboarding_cost: Uint128,
+    pub fee_percent: Decimal,
+    pub fee_destinations: Vec<FeeDestination>,
 }
 
-pub fn config(storage: &mut dyn Storage) -> Singleton<State> {
-    singleton(storage, STATE_KEY)
-}
-
-pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
-    singleton_read(storage, STATE_KEY)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct FeeDestination {
+    pub address: String,
+    pub fee_percent: Decimal,
 }
 
 pub fn asset_state<S: Into<String>>(

@@ -1,13 +1,12 @@
 use crate::core::error::ContractError;
 use crate::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
-use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response};
-use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::instantiate::init_contract::init_contract;
-use crate::util::traits::ResultExtensions;
 use crate::util::aliases::{ContractResponse, DepsC, DepsMutC};
+use crate::util::traits::ResultExtensions;
 use crate::validation::execute_msg::validate_execute_msg;
 use crate::validation::init_msg::validate_init_msg;
+use cosmwasm_std::{entry_point, Env, MessageInfo};
 
 #[entry_point]
 pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) -> ContractResponse {
@@ -27,12 +26,9 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
     // Ensure the execute message is properly formatted before doing anything
     validate_execute_msg(&msg)?;
     match msg {
-        ExecuteMsg::OnboardAsset { .. } => onboard_asset(
-            deps,
-            env,
-            info,
-            OnboardAssetV1::from_execute_msg(msg)?,
-        )
+        ExecuteMsg::OnboardAsset { .. } => {
+            onboard_asset(deps, env, info, OnboardAssetV1::from_execute_msg(msg)?)
+        }
     }
 }
 

@@ -1,3 +1,4 @@
+use crate::core::state::AssetDefinition;
 use cosmwasm_std::{Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,7 @@ pub struct InitMsg {
     pub onboarding_cost: Uint128,
     pub fee_collection_address: String,
     pub fee_percent: Decimal,
+    pub asset_definitions: Vec<AssetDefinition>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -15,8 +17,9 @@ pub struct InitMsg {
 pub enum ExecuteMsg {
     OnboardAsset {
         asset_uuid: String,
+        asset_type: String,
         scope_address: String,
-        oracle_addresses: Vec<String>,
+        validator_address: String,
     },
 }
 

@@ -19,6 +19,15 @@ pub enum ContractError {
     #[error("Invalid message type provided. Expected message type {expected_message_type}")]
     InvalidMessageType { expected_message_type: String },
 
+    #[error("Unsupported asset type [{asset_type}]")]
+    UnsupportedAssetType { asset_type: String },
+
+    #[error("Unsupported validator [{validator_address}] for asset type [{asset_type}]")]
+    UnsupportedValidator {
+        validator_address: String,
+        asset_type: String,
+    },
+
     #[error("Unauthorized")]
     Unauthorized,
 

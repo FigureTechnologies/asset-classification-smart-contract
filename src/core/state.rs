@@ -1,10 +1,14 @@
 use crate::core::msg::InitMsg;
 use cosmwasm_std::{Addr, Decimal, Storage, Uint128};
-use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
+use cosmwasm_storage::{
+    bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
+    Singleton,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub static STATE_KEY: &[u8] = b"state";
+pub static ASSET_META_KEY: &[u8] = b"asset_meta";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
@@ -97,4 +101,35 @@ fn get_asset_state_key<S: Into<String>>(asset_type: S) -> Vec<u8> {
     format!("{}_{}", asset_type.into(), "asset")
         .as_bytes()
         .to_vec()
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct AssetMeta {
+    pub asset_uuid: String,
+    pub asset_type: String,
+    pub scope_address: String,
+    pub validator_address: String,
+}
+impl AssetMeta {
+    pub fn new(
+        asset_uuid: String,
+        asset_type: String,
+        scope_address: String,
+        validator_address: String,
+    ) -> Self {
+        AssetMeta {
+            asset_uuid,
+            asset_type,
+            scope_address,
+            validator_address,
+        }
+    }
+}
+
+pub fn asset_meta(storage: &mut dyn Storage) -> Bucket<AssetMeta> {
+    bucket(storage, ASSET_META_KEY)
+}
+
+pub fn asset_meta_read(storage: &mut dyn Storage) -> ReadonlyBucket<AssetMeta> {
+    bucket_read(storage, ASSET_META_KEY)
 }

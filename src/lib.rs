@@ -5,3 +5,7 @@ pub mod execute;
 pub mod instantiate;
 pub mod util;
 pub mod validation;
+
+// Conditional modules
+#[cfg(feature = "enable-test-utils")]
+pub mod testutil;

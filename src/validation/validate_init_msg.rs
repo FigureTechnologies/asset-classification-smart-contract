@@ -75,24 +75,14 @@ fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> 
             )
         );
     }
-    if validator.fee_percent != Decimal::percent(100) && fee_total >= validator.onboarding_cost {
-        invalid_fields.push(
-            format!(
-                "validator:fee_percent: fee percent was set to {}, but after multiplying it by the onboarding cost of {}nhash, it resulted in a greater number: {}",
-                decimal_display_string(&validator.fee_percent),
-                validator.onboarding_cost,
-                fee_total,
-            )
-        );
-    }
     if validator.fee_destinations.is_empty() && validator.fee_percent != Decimal::zero() {
         invalid_fields.push(
-            "validator:fee_percent: Cannot specify a non-zero fee percent if no fee destinations are supplied"
+            "validator:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied"
                 .to_string(),
         );
     }
     if !validator.fee_destinations.is_empty() && validator.fee_percent == Decimal::zero() {
-        invalid_fields.push("validator:fee_destinations: fee definitions cannot be provided when the fee percent is zero".to_string());
+        invalid_fields.push("validator:fee_destinations: fee destinations cannot be provided when the fee percent is zero".to_string());
     }
     if !validator.fee_destinations.is_empty()
         && validator
@@ -102,7 +92,7 @@ fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> 
             .sum::<Decimal>()
             != Decimal::percent(100)
     {
-        invalid_fields.push("validator:fee_destinations: Fee destinations' fee_percents must always sum to a 100% distribution".to_string());
+        invalid_fields.push("validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution".to_string());
     }
     if !validator.fee_destinations.is_empty() {
         let destination_sum = validator
@@ -110,10 +100,11 @@ fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> 
             .iter()
             .map(|d| fee_total.mul(d.fee_percent))
             .sum::<Uint128>();
+        //panic!("Sum: {}", destination_sum);
         if fee_total != Uint128::zero() && destination_sum != fee_total {
             invalid_fields.push(
                 format!(
-                    "validator:fee_destinations: Fee destinations' fee percents must cleanly sum to the fee_total. Fee total: {}, Destination sum: {}",
+                    "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: {}nhash, Destination sum: {}nhash",
                     fee_total,
                     destination_sum,
                 )
@@ -146,10 +137,210 @@ fn validate_destination(destination: &FeeDestination, deps: &DepsC) -> Vec<Strin
 
 #[cfg(test)]
 pub mod tests {
-    use crate::core::state::{FeeDestination, ValidatorDetail};
-    use crate::validation::validate_init_msg::{validate_destination, validate_validator};
+    use crate::core::error::ContractError;
+    use crate::core::msg::InitMsg;
+    use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::validation::validate_init_msg::{
+        validate_asset_definition, validate_destination, validate_init_msg, validate_validator,
+    };
     use cosmwasm_std::{Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
+
+    #[test]
+    fn test_valid_init_msg_no_definitions() {
+        test_valid_init_msg(&InitMsg {
+            base_contract_name: "asset".to_string(),
+            asset_definitions: vec![],
+        });
+    }
+
+    #[test]
+    fn test_valid_init_msg_single_definition() {
+        test_valid_init_msg(&InitMsg {
+            base_contract_name: "asset".to_string(),
+            asset_definitions: vec![AssetDefinition::new(
+                "heloc".to_string(),
+                vec![ValidatorDetail::new(
+                    "address".to_string(),
+                    Uint128::new(100),
+                    Decimal::percent(100),
+                    vec![FeeDestination::new(
+                        "fee".to_string(),
+                        Decimal::percent(100),
+                    )],
+                )],
+            )],
+        });
+    }
+
+    #[test]
+    fn test_valid_init_msg_multiple_definitions() {
+        test_valid_init_msg(&InitMsg {
+            base_contract_name: "asset".to_string(),
+            asset_definitions: vec![
+                AssetDefinition::new(
+                    "heloc".to_string(),
+                    vec![ValidatorDetail::new(
+                        "address".to_string(),
+                        Uint128::new(100),
+                        Decimal::percent(100),
+                        vec![FeeDestination::new(
+                            "fee".to_string(),
+                            Decimal::percent(100),
+                        )],
+                    )],
+                ),
+                AssetDefinition::new(
+                    "mortgage".to_string(),
+                    vec![ValidatorDetail::new(
+                        "address".to_string(),
+                        Uint128::new(500),
+                        Decimal::percent(50),
+                        vec![
+                            FeeDestination::new("mort-fees".to_string(), Decimal::percent(50)),
+                            FeeDestination::new("other-fee".to_string(), Decimal::percent(50)),
+                        ],
+                    )],
+                ),
+                AssetDefinition::new(
+                    "pl".to_string(),
+                    vec![
+                        ValidatorDetail::new(
+                            "address".to_string(),
+                            Uint128::new(0),
+                            Decimal::percent(0),
+                            vec![],
+                        ),
+                        ValidatorDetail::new(
+                            "other-validator".to_string(),
+                            Uint128::new(1000000),
+                            Decimal::percent(100),
+                            vec![
+                                FeeDestination::new("community".to_string(), Decimal::percent(25)),
+                                FeeDestination::new("figure".to_string(), Decimal::percent(75)),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        });
+    }
+
+    #[test]
+    fn test_invalid_init_msg_base_contract_name() {
+        test_invalid_init_msg(
+            &InitMsg {
+                base_contract_name: String::new(),
+                asset_definitions: vec![AssetDefinition::new(
+                    "heloc".to_string(),
+                    vec![ValidatorDetail::new(
+                        "address".to_string(),
+                        Uint128::new(100),
+                        Decimal::percent(100),
+                        vec![FeeDestination::new(
+                            "fee".to_string(),
+                            Decimal::percent(100),
+                        )],
+                    )],
+                )],
+            },
+            "base_contract_name: must not be blank",
+        );
+    }
+
+    #[test]
+    fn test_invalid_init_msg_duplicate_asset_types() {
+        test_invalid_init_msg(
+            &InitMsg {
+                base_contract_name: String::new(),
+                asset_definitions: vec![
+                    AssetDefinition::new("heloc".to_string(), vec![]),
+                    AssetDefinition::new("heloc".to_string(), vec![]),
+                ],
+            },
+            "asset_definitions: each definition must specify a unique asset type",
+        );
+    }
+
+    #[test]
+    fn test_invalid_init_msg_picks_up_invalid_asset_definition_scenarios() {
+        test_invalid_init_msg(
+            &InitMsg {
+                base_contract_name: "asset".to_string(),
+                asset_definitions: vec![AssetDefinition::new(String::new(), vec![])],
+            },
+            "asset_definition:asset_type: must not be blank",
+        );
+    }
+
+    #[test]
+    fn test_valid_asset_definition() {
+        let deps = mock_dependencies(&[]);
+        let definition = AssetDefinition::new(
+            "heloc".to_string(),
+            vec![ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(100),
+                Decimal::percent(100),
+                vec![FeeDestination::new(
+                    "fee".to_string(),
+                    Decimal::percent(100),
+                )],
+            )],
+        );
+        let response = validate_asset_definition(&definition, &deps.as_ref());
+        assert!(
+            response.is_empty(),
+            "a valid asset definition should pass validation and return no error messages, but got messages: {:?}",
+            response,
+        );
+    }
+
+    #[test]
+    fn test_invalid_asset_definition_asset_type() {
+        test_invalid_asset_definition(
+            &AssetDefinition::new(
+                String::new(),
+                vec![ValidatorDetail::new(
+                    "address".to_string(),
+                    Uint128::new(100),
+                    Decimal::percent(100),
+                    vec![FeeDestination::new(
+                        "fee".to_string(),
+                        Decimal::percent(100),
+                    )],
+                )],
+            ),
+            "asset_definition:asset_type: must not be blank",
+        );
+    }
+
+    #[test]
+    fn test_invalid_asset_definition_empty_validators() {
+        test_invalid_asset_definition(
+            &AssetDefinition::new("mortgage".to_string(), vec![]),
+            "asset_definition:validators: at least one validator must be supplied per asset type",
+        );
+    }
+
+    #[test]
+    fn test_invalid_asset_definition_picks_up_invalid_validator_scenarios() {
+        test_invalid_asset_definition(
+            &AssetDefinition::new(
+                String::new(),
+                vec![ValidatorDetail::new(
+                    String::new(),
+                    Uint128::new(100),
+                    Decimal::percent(100),
+                    vec![FeeDestination::new(
+                        "fee".to_string(),
+                        Decimal::percent(100),
+                    )],
+                )],
+            ),
+            "validator:address: must be a valid address",
+        );
+    }
 
     #[test]
     fn test_valid_validator_with_no_fee_destinations() {
@@ -237,7 +428,7 @@ pub mod tests {
 
     #[test]
     fn test_invalid_validator_fee_percent_results_in_zero_funds_allocated() {
-        // Try to take 1% of 1 nhash, which should end up as zero after decimals are dropped
+        // Try to take 1% of 1 nhash, which should end up as zero after decimals are rounded
         test_invalid_validator(
             &ValidatorDetail::new(
                 "address".to_string(),
@@ -249,6 +440,96 @@ pub mod tests {
                 )],
             ),
             "validator:fee_percent: non-zero fee percent of 1% must cleanly multiply against onboarding cost of 1nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_no_fee_destinations_but_fee_percent_provided() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(150),
+                Decimal::percent(100),
+                vec![],
+            ),
+            "validator:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_provided_fee_destinations_but_fee_percent_zero() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(150),
+                Decimal::percent(0),
+                vec![FeeDestination::new(
+                    "fee".to_string(),
+                    Decimal::percent(100),
+                )],
+            ),
+            "validator:fee_destinations: fee destinations cannot be provided when the fee percent is zero",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_fee_destinations_do_not_sum_correctly_single_destination() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(420),
+                Decimal::percent(50),
+                vec![FeeDestination::new("first".to_string(), Decimal::percent(99))],
+            ),
+            "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_fee_destinations_do_not_sum_correctly_multiple_destinations() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(55),
+                Decimal::percent(100),
+                vec![
+                    FeeDestination::new("first".to_string(), Decimal::percent(33)),
+                    FeeDestination::new("second".to_string(), Decimal::percent(33)),
+                    FeeDestination::new("third".to_string(), Decimal::percent(33)),
+                ],
+            ),
+            "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_destination_fee_percents_do_not_sum_to_correct_number() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(100),
+                Decimal::percent(20),
+                vec![
+                    // Trying to split 20 by 99% and by 1% will drop some of the numbers because the decimal places get removed after doing division.
+                    // The 99% fee sound end up with 19nhash and the 1% fee should result in 0nhash, resulting in 19nhash as the total
+                    FeeDestination::new("first".to_string(), Decimal::percent(99)),
+                    FeeDestination::new("second".to_string(), Decimal::percent(1)),
+                ],
+            ),
+            "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_picks_up_invalid_fee_destination_scenarios() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(100),
+                Decimal::percent(100),
+                vec![FeeDestination::new(String::new(), Decimal::percent(100))],
+            ),
+            "fee_destination:address: must be a valid address",
         );
     }
 
@@ -283,6 +564,58 @@ pub mod tests {
         test_invalid_destination(
             &FeeDestination::new("good-address".to_string(), Decimal::percent(0)),
             "fee_destination:fee_percent: must not be zero",
+        );
+    }
+
+    fn test_valid_init_msg(msg: &InitMsg) {
+        let deps = mock_dependencies(&[]);
+        match validate_init_msg(&msg, &deps.as_ref()) {
+            Ok(_) => (),
+            Err(e) => match e {
+                ContractError::InvalidMessageFields { invalid_fields, .. } => panic!(
+                    "expected message to be valid, but failed with field messages: {:?}",
+                    invalid_fields
+                ),
+
+                _ => panic!("unexpected contract error on failure"),
+            },
+        }
+    }
+
+    fn test_invalid_init_msg(msg: &InitMsg, expected_message: &str) {
+        let deps = mock_dependencies(&[]);
+        match validate_init_msg(&msg, &deps.as_ref()) {
+            Ok(_) => panic!("expected init msg to be invalid, but passed validation"),
+            Err(e) => match e {
+                ContractError::InvalidMessageFields {
+                    message_type,
+                    invalid_fields,
+                } => {
+                    assert_eq!(
+                        "Instantiate",
+                        message_type.as_str(),
+                        "expected the invalid message type to be returned correctly"
+                    );
+                    assert!(
+                        invalid_fields.contains(&expected_message.to_string()),
+                        "expected error message `{}` was not contained in the response. Contained messages: {:?}",
+                        expected_message,
+                        invalid_fields,
+                    );
+                }
+                _ => panic!("unexpected error type on init msg validation failure"),
+            },
+        }
+    }
+
+    fn test_invalid_asset_definition(definition: &AssetDefinition, expected_message: &str) {
+        let deps = mock_dependencies(&[]);
+        let results = validate_asset_definition(&definition, &deps.as_ref());
+        assert!(
+            results.contains(&expected_message.to_string()),
+            "expected error message `{}` was not contained in the response. Contained messages: {:?}",
+            expected_message,
+            results,
         );
     }
 

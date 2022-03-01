@@ -27,6 +27,8 @@ overflow-checks = true
 [features]
 backtraces = ["cosmwasm-std/backtraces"]
 library = []
+# enable-test-utils allows the test classes to expose shared code amongst each other
+enable-test-utils = []
 
 [package.metadata.scripts]
 optimize = """docker run --rm -v "$(pwd)":/code \

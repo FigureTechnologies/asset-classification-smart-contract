@@ -33,6 +33,14 @@ pub struct AssetDefinition {
     pub asset_type: String,
     pub validators: Vec<ValidatorDetail>,
 }
+impl AssetDefinition {
+    pub fn new(asset_type: String, validators: Vec<ValidatorDetail>) -> Self {
+        AssetDefinition {
+            asset_type,
+            validators,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ValidatorDetail {
@@ -41,11 +49,34 @@ pub struct ValidatorDetail {
     pub fee_percent: Decimal,
     pub fee_destinations: Vec<FeeDestination>,
 }
+impl ValidatorDetail {
+    pub fn new(
+        address: String,
+        onboarding_cost: Uint128,
+        fee_percent: Decimal,
+        fee_destinations: Vec<FeeDestination>,
+    ) -> Self {
+        ValidatorDetail {
+            address,
+            onboarding_cost,
+            fee_percent,
+            fee_destinations,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct FeeDestination {
     pub address: String,
     pub fee_percent: Decimal,
+}
+impl FeeDestination {
+    pub fn new(address: String, fee_percent: Decimal) -> Self {
+        FeeDestination {
+            address,
+            fee_percent,
+        }
+    }
 }
 
 pub fn asset_state<S: Into<String>>(

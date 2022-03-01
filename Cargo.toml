@@ -1,5 +1,5 @@
 [package]
-name = "mortgage-asset-smart-contract"
+name = "asset-classification-smart-contract"
 version = "0.0.1"
 authors = ["Jake Schwartz <jschwartz@figure.com>", "Pierce Trey <ptrey@figure.com>"]
 edition = "2018"

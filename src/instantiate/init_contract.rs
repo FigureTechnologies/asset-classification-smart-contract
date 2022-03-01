@@ -1,10 +1,11 @@
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
-use crate::core::state::{config, State};
+use crate::core::state::{asset_state, config, State};
 use crate::util::aliases::{ContractResponse, DepsMutC};
+use crate::util::functions::generate_asset_attribute_name;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
-use provwasm_std::{bind_name, NameBinding};
+use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
+use provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
 
 pub fn init_contract(
     deps: DepsMutC,
@@ -19,18 +20,25 @@ pub fn init_contract(
         )
         .to_err();
     }
+    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
+    // Note: This vector can remain empty on instantiation, and future executions by the admin can
+    // append new definitions. When no definitions are supplied, this contract will not be able to
+    // take execution input until they are
+    for asset_definition in msg.asset_definitions.iter() {
+        // Create a new state storage for the provided asset definition
+        asset_state(deps.storage, &asset_definition.asset_type).save(asset_definition)?;
+        messages.push(bind_name(
+            generate_asset_attribute_name(&asset_definition.asset_type, &msg.base_contract_name),
+            env.contract.address.clone(),
+            NameBinding::Restricted,
+        )?);
+    }
     // Convert the init message into a state value that will drive the contract's future executions
-    let state = State::for_init_msg(msg);
+    let state = State::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
     config(deps.storage).save(&state)?;
-    // Bind the request contract name to the contract's address, ensuring it has access to modify
-    // its own attributes, and no other entities do
-    let bind_name_msg = bind_name(
-        &state.contract_name,
-        env.contract.address,
-        NameBinding::Restricted,
-    )?;
     Ok(Response::new()
-        .add_message(bind_name_msg)
+        .add_messages(messages)
+        //.add_message(bind_name_msg)
         .add_attribute("action", "init"))
 }

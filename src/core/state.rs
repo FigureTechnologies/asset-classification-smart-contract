@@ -9,11 +9,13 @@ pub static STATE_KEY: &[u8] = b"state";
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
     pub base_contract_name: String,
+    pub admin: Addr,
 }
 impl State {
-    pub fn for_init_msg(msg: InitMsg) -> State {
+    pub fn new(msg: InitMsg, admin: Addr) -> State {
         State {
             base_contract_name: msg.base_contract_name,
+            admin,
         }
     }
 }

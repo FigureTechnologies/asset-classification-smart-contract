@@ -3,7 +3,7 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use mortgage_asset_smart_contract::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
+use asset_classification_smart_contract::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 
 fn main() {
     let mut out_dir = current_dir().unwrap();

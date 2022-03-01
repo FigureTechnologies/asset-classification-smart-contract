@@ -1,6 +1,6 @@
+use crate::util::traits::ResultExtensions;
 use cosmwasm_std::StdError;
 use thiserror::Error;
-use crate::util::traits::ResultExtensions;
 
 #[derive(Error, Debug)]
 pub enum ContractError {
@@ -17,9 +17,7 @@ pub enum ContractError {
     },
 
     #[error("Invalid message type provided. Expected message type {expected_message_type}")]
-    InvalidMessageType {
-        expected_message_type: String,
-    },
+    InvalidMessageType { expected_message_type: String },
 
     #[error("Unauthorized")]
     Unauthorized,

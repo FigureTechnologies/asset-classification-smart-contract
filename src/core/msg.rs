@@ -1,5 +1,4 @@
 use crate::core::state::AssetDefinition;
-use cosmwasm_std::{Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -20,7 +19,7 @@ pub enum ExecuteMsg {
     },
     ValidateAsset {
         asset_uuid: String,
-        approved: bool,
+        approve: bool,
     },
 }
 

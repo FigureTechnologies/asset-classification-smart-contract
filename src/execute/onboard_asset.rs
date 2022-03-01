@@ -1,13 +1,10 @@
+use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::config_read;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
-use provwasm_std::ProvenanceMsg;
+use crate::util::traits::ResultExtensions;
+use cosmwasm_std::{Env, MessageInfo};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-// Type alias to make this less cumbersome
-type ProvMsg = CosmosMsg<ProvenanceMsg>;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OnboardAssetV1 {
@@ -19,39 +16,32 @@ pub struct OnboardAssetV1 {
 impl OnboardAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<OnboardAssetV1> {
         match msg {
-            // TODO:
-            // This looks dumb right now because there's only one execution type but there will definitely be others.
-            // The default implementation branch here should use the ContractError::InvalidMessageType error
             ExecuteMsg::OnboardAsset {
                 asset_uuid,
                 asset_type,
                 scope_address,
                 validator_address,
-            } => Ok(OnboardAssetV1 {
+            } => OnboardAssetV1 {
                 asset_uuid,
                 asset_type,
                 scope_address,
                 validator_address,
-            }),
+            }
+            .to_ok(),
+            _ => ContractError::InvalidMessageType {
+                expected_message_type: "ExecuteMsg::OnboardAsset".to_string(),
+            }
+            .to_err(),
         }
     }
 }
+impl ResultExtensions for OnboardAssetV1 {}
 
 pub fn onboard_asset(
-    deps: DepsMutC,
-    env: Env,
-    info: MessageInfo,
-    msg: OnboardAssetV1,
+    _deps: DepsMutC,
+    _env: Env,
+    _info: MessageInfo,
+    _msg: OnboardAssetV1,
 ) -> ContractResponse {
-    let mut messages: Vec<ProvMsg> = vec![];
-    let mut attributes: Vec<ProvMsg> = vec![];
-    let state = config_read(deps.storage).load()?;
-    Ok(Response::new())
+    ContractError::Unimplemented.to_err()
 }
-
-struct FeeChargeDetail {
-    fee_charge_message: Option<ProvMsg>,
-    fee_refund_message: Option<ProvMsg>,
-}
-
-// fn validate_and_get_fee_messages(info: &MessageInfo, state: &State) ->

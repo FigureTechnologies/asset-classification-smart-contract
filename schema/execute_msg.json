@@ -11,10 +11,46 @@
         "onboard_asset": {
           "type": "object",
           "required": [
-            "scope_address"
+            "asset_type",
+            "asset_uuid",
+            "scope_address",
+            "validator_address"
           ],
           "properties": {
+            "asset_type": {
+              "type": "string"
+            },
+            "asset_uuid": {
+              "type": "string"
+            },
             "scope_address": {
+              "type": "string"
+            },
+            "validator_address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "validate_asset"
+      ],
+      "properties": {
+        "validate_asset": {
+          "type": "object",
+          "required": [
+            "approve",
+            "asset_uuid"
+          ],
+          "properties": {
+            "approve": {
+              "type": "boolean"
+            },
+            "asset_uuid": {
               "type": "string"
             }
           }

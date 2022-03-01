@@ -1,6 +1,6 @@
+use crate::core::error::ContractError;
 use cosmwasm_std::{Deps, DepsMut, Response};
 use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
-use crate::core::error::ContractError;
 
 /// Shortens the lengthy response type for contract entrypoints
 pub type ContractResponse = Result<Response<ProvenanceMsg>, ContractError>;

@@ -8,6 +8,9 @@ pub enum ContractError {
     Std(#[from] StdError),
 
     #[error("{0}")]
+    Bech32Error(#[from] bech32::Error),
+
+    #[error("{0}")]
     InvalidFunds(String),
 
     #[error("Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}")]
@@ -33,5 +36,8 @@ pub enum ContractError {
 
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,
+
+    #[error("{0}")]
+    UuidError(#[from] uuid::Error),
 }
 impl ResultExtensions for ContractError {}

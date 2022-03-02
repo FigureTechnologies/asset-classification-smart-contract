@@ -18,7 +18,11 @@ pub struct EventAttributes {
     attributes: Vec<(String, String)>,
 }
 impl EventAttributes {
-    pub fn new<T: Into<String>>(event_type: EventType, asset_type: T, asset_uuid: T) -> Self {
+    pub fn new<T1: Into<String>, T2: Into<String>>(
+        event_type: EventType,
+        asset_type: T1,
+        asset_uuid: T2,
+    ) -> Self {
         EventAttributes {
             attributes: vec![
                 (ASSET_EVENT_TYPE_KEY.into(), event_type.into()),
@@ -28,9 +32,9 @@ impl EventAttributes {
         }
     }
 
-    pub fn set_validator(mut self, validator_address: String) -> Self {
+    pub fn set_validator<T: Into<String>>(mut self, validator_address: T) -> Self {
         self.attributes
-            .push((VALIDATOR_ADDRESS_KEY.into(), validator_address));
+            .push((VALIDATOR_ADDRESS_KEY.into(), validator_address.into()));
         self
     }
 }

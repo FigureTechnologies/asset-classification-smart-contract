@@ -4,6 +4,7 @@ use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinit
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::validate_asset::{validate_asset, ValidateAssetV1};
 use crate::instantiate::init_contract::init_contract;
+use crate::query::query_asset_definition::query_asset_definition;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsC, DepsMutC};
 use crate::util::traits::ResultExtensions;
 use crate::validation::validate_execute_msg::validate_execute_msg;
@@ -19,8 +20,10 @@ pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) ->
 }
 
 #[entry_point]
-pub fn query(_deps: DepsC, _env: Env, _msg: QueryMsg) -> ContractResult<Binary> {
-    ContractError::Unimplemented.to_err()
+pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+    match msg {
+        QueryMsg::QueryAssetDefinition { asset_type } => query_asset_definition(&deps, asset_type),
+    }
 }
 
 #[entry_point]

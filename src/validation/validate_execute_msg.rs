@@ -14,7 +14,7 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
         ExecuteMsg::ValidateAsset { asset_uuid, .. } => validate_validate_asset(asset_uuid),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition, &deps)
+            validate_asset_definition(asset_definition, deps)
         }
     }
 }

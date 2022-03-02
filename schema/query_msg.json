@@ -5,11 +5,19 @@
     {
       "type": "object",
       "required": [
-        "no_op"
+        "query_asset_definition"
       ],
       "properties": {
-        "no_op": {
-          "type": "object"
+        "query_asset_definition": {
+          "type": "object",
+          "required": [
+            "asset_type"
+          ],
+          "properties": {
+            "asset_type": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false

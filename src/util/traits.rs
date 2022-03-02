@@ -1,4 +1,4 @@
-use cosmwasm_std::Response;
+use cosmwasm_std::{Binary, Response};
 
 /// Allows any implementing type to functionally move itself into a Result<T, U>
 pub trait ResultExtensions
@@ -15,5 +15,6 @@ where
         Err(self)
     }
 }
-// Implement for commonly-used Response that is out of scope of this project
+// Implement for commonly-used structs that are out of scope of this project
 impl<T> ResultExtensions for Response<T> {}
+impl ResultExtensions for Binary {}

@@ -19,18 +19,20 @@ pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
-pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
-    [AssetDefinition {
+pub fn get_default_asset_definition() -> AssetDefinition {
+    AssetDefinition {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        validators: [ValidatorDetail {
+        validators: vec![ValidatorDetail {
             address: DEFAULT_VALIDATOR_ADDRESS.into(),
             onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
             fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
-            fee_destinations: [].to_vec(),
-        }]
-        .to_vec(),
-    }]
-    .to_vec()
+            fee_destinations: vec![],
+        }],
+    }
+}
+
+pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
+    vec![get_default_asset_definition()]
 }
 
 pub struct InstArgs {

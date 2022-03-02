@@ -1,5 +1,5 @@
 use super::constants::{
-    ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, ASSET_UUID_KEY, VALIDATOR_ADDRESS_KEY,
+    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY,
 };
 
 pub enum EventType {
@@ -21,13 +21,13 @@ impl EventAttributes {
     pub fn new<T1: Into<String>, T2: Into<String>>(
         event_type: EventType,
         asset_type: T1,
-        asset_uuid: T2,
+        scope_address: T2,
     ) -> Self {
         EventAttributes {
             attributes: vec![
                 (ASSET_EVENT_TYPE_KEY.into(), event_type.into()),
                 (ASSET_TYPE_KEY.into(), asset_type.into()),
-                (ASSET_UUID_KEY.into(), asset_uuid.into()),
+                (ASSET_SCOPE_ADDRESS_KEY.into(), scope_address.into()),
             ],
         }
     }

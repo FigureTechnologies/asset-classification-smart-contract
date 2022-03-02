@@ -3,6 +3,7 @@ use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_meta, asset_state_read, AssetMeta};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::event_attributes::{EventAttributes, EventType};
+use crate::util::scope_address_utils::get_validate_scope_address;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
@@ -11,9 +12,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OnboardAssetV1 {
-    pub asset_uuid: String,
-    pub asset_type: String,
     pub scope_address: String,
+    pub asset_type: String,
     pub validator_address: String,
 }
 impl OnboardAssetV1 {
@@ -24,13 +24,19 @@ impl OnboardAssetV1 {
                 asset_type,
                 scope_address,
                 validator_address,
-            } => OnboardAssetV1 {
-                asset_uuid,
-                asset_type,
-                scope_address,
-                validator_address,
+            } => {
+                let parsed_address = match get_validate_scope_address(asset_uuid, scope_address) {
+                    Ok(addr) => addr,
+                    Err(err) => return err.to_err(),
+                };
+
+                OnboardAssetV1 {
+                    scope_address: parsed_address,
+                    asset_type,
+                    validator_address,
+                }
+                .to_ok()
             }
-            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::OnboardAsset".to_string(),
             }
@@ -99,10 +105,10 @@ pub fn onboard_asset(
     };
 
     // verify asset (scope) exists
-    let scope = match ProvenanceQuerier::new(&deps.querier).get_scope(&msg.asset_uuid) {
+    let scope = match ProvenanceQuerier::new(&deps.querier).get_scope(&msg.scope_address) {
         Err(..) => {
             return ContractError::AssetNotFound {
-                asset_uuid: msg.asset_uuid,
+                scope_address: msg.scope_address,
             }
             .to_err()
         }
@@ -121,34 +127,36 @@ pub fn onboard_asset(
 
     // verify asset metadata storage doesn't already contain this asset (i.e. it hasn't already been onboarded)
     let mut asset_storage = asset_meta(deps.storage);
-    if let Some(..) = asset_storage.may_load(&msg.asset_uuid.as_bytes()).unwrap() {
+    if let Some(..) = asset_storage
+        .may_load(&msg.scope_address.as_bytes())
+        .unwrap()
+    {
         return ContractError::AssetAlreadyOnboarded {
-            asset_uuid: msg.asset_uuid,
+            scope_address: msg.scope_address,
         }
         .to_err();
     }
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
     if let Err(err) = asset_storage.save(
-        &msg.asset_uuid.as_bytes(),
+        &msg.scope_address.as_bytes(),
         &AssetMeta::new(
-            &msg.asset_uuid,
-            &msg.asset_type,
             &msg.scope_address,
+            &msg.asset_type,
             &msg.validator_address,
             sent_fee.amount,
         ),
     ) {
         return ContractError::AssetOnboardingError {
             asset_type: msg.asset_type,
-            asset_uuid: msg.asset_uuid,
+            scope_address: msg.scope_address,
             message: err.to_string(),
         }
         .to_err();
     }
 
     Ok(Response::new().add_attributes(
-        EventAttributes::new(EventType::OnboardAsset, &msg.asset_type, &msg.asset_uuid)
+        EventAttributes::new(EventType::OnboardAsset, &msg.asset_type, &msg.scope_address)
             .set_validator(msg.validator_address),
     ))
 }
@@ -170,7 +178,7 @@ mod tests {
             DEFAULT_VALIDATOR_ADDRESS,
         },
         util::constants::{
-            ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, ASSET_UUID_KEY, VALIDATOR_ADDRESS_KEY,
+            ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY,
         },
     };
 
@@ -186,9 +194,8 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(1000),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: "bogus".into(),
                 scope_address: "scope1234".into(),
+                asset_type: "bogus".into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
             },
         )
@@ -215,9 +222,8 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(1000),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(),
             },
         )
@@ -248,9 +254,8 @@ mod tests {
             mock_env(),
             mock_info_with_funds(&[]),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
@@ -286,9 +291,8 @@ mod tests {
                 },
             ]),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
@@ -318,9 +322,8 @@ mod tests {
                 amount: Uint128::from(2432u128),
             }]),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
@@ -347,9 +350,8 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST + 1),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
@@ -381,18 +383,17 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
         .unwrap_err();
 
         match err {
-            ContractError::AssetNotFound { asset_uuid } => {
+            ContractError::AssetNotFound { scope_address } => {
                 assert_eq!(
-                    "1234", asset_uuid,
+                    "scope1234", scope_address,
                     "the asset not found message should reflect that the asset uuid was not found"
                 );
             }
@@ -406,7 +407,7 @@ mod tests {
         test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
 
         deps.querier.with_scope(Scope {
-            scope_id: "1234".to_string(),
+            scope_id: "scope1234".to_string(),
             specification_id: "".to_string(),
             owners: [Party {
                 address: Addr::unchecked(DEFAULT_INFO_NAME),
@@ -420,10 +421,9 @@ mod tests {
         let mut asset_storage = asset_meta(&mut deps.storage);
         asset_storage
             .save(
-                b"1234",
+                b"scope1234",
                 &AssetMeta::new(
-                    "1234".to_string(),
-                    "".to_string(),
+                    "scope1234".to_string(),
                     "".to_string(),
                     "".to_string(),
                     Uint128::from(123u128),
@@ -436,19 +436,18 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
         .unwrap_err();
 
         match err {
-            ContractError::AssetAlreadyOnboarded { asset_uuid } => {
+            ContractError::AssetAlreadyOnboarded { scope_address } => {
                 assert_eq!(
-                    "1234",
-                    asset_uuid,
+                    "scope1234",
+                    scope_address,
                     "the asset already onboarded message should reflect that the asset uuid was already onboarded"
                 );
             }
@@ -462,7 +461,7 @@ mod tests {
         test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
 
         deps.querier.with_scope(Scope {
-            scope_id: "1234".to_string(),
+            scope_id: "scope1234".to_string(),
             specification_id: "".to_string(),
             owners: [Party {
                 address: Addr::unchecked(DEFAULT_INFO_NAME),
@@ -478,9 +477,8 @@ mod tests {
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
-                asset_uuid: "1234".into(),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
                 scope_address: "scope1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
@@ -488,10 +486,10 @@ mod tests {
 
         let asset_storage = asset_meta_read(&deps.storage);
 
-        let asset_entry = asset_storage.load(b"1234").unwrap();
+        let asset_entry = asset_storage.load(b"scope1234").unwrap();
 
         assert_eq!(
-            "1234", asset_entry.asset_uuid,
+            "scope1234", asset_entry.scope_address,
             "Asset uuid in storage should match what was provided at onboarding"
         );
 
@@ -505,7 +503,7 @@ mod tests {
             vec![
                 (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
                 (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
-                (ASSET_UUID_KEY, "1234"),
+                (ASSET_SCOPE_ADDRESS_KEY, "scope1234"),
                 (VALIDATOR_ADDRESS_KEY, DEFAULT_VALIDATOR_ADDRESS)
             ],
             result.attributes

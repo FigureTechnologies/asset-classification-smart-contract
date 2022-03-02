@@ -105,24 +105,21 @@ fn get_asset_state_key<S: Into<String>>(asset_type: S) -> Vec<u8> {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetMeta {
-    pub asset_uuid: String,
-    pub asset_type: String,
     pub scope_address: String,
+    pub asset_type: String,
     pub validator_address: String,
     pub onboarding_fee: Uint128,
 }
 impl AssetMeta {
-    pub fn new<T1: Into<String>, T2: Into<String>, T3: Into<String>, T4: Into<String>>(
-        asset_uuid: T1,
+    pub fn new<T1: Into<String>, T2: Into<String>, T3: Into<String>>(
+        scope_address: T1,
         asset_type: T2,
-        scope_address: T3,
-        validator_address: T4,
+        validator_address: T3,
         onboarding_fee: Uint128,
     ) -> Self {
         AssetMeta {
-            asset_uuid: asset_uuid.into(),
-            asset_type: asset_type.into(),
             scope_address: scope_address.into(),
+            asset_type: asset_type.into(),
             validator_address: validator_address.into(),
             onboarding_fee,
         }

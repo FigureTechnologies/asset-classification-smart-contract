@@ -16,7 +16,7 @@ pub const SCOPE_ID_KEY: &str = "asset_related_scope_id";
 
 pub const ASSET_EVENT_TYPE_KEY: &str = "asset_event_type";
 /// Value = Asset UUID (String)
-pub const ASSET_UUID_KEY: &str = "asset_uuid";
+pub const ASSET_SCOPE_ADDRESS_KEY: &str = "asset_scope_address";
 /// Value = Asset Type (String)
 pub const ASSET_TYPE_KEY: &str = "asset_type";
 /// Value = The address of the validator associated with the asset (String)

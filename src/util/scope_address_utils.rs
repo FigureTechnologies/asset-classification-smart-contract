@@ -1,7 +1,9 @@
-use crate::util::aliases::ContractResult;
+use crate::{core::error::ContractError, util::aliases::ContractResult};
 use bech32::{ToBase32, Variant};
 use bytes::{BufMut, BytesMut};
 use uuid::Uuid;
+
+use super::traits::ResultExtensions;
 
 /// Standard scope key prefix from the Provenance libs
 const KEY_SCOPE: u8 = 0x00;
@@ -36,9 +38,42 @@ fn get_uuid_bits<S: Into<String>>(uuid_source: S) -> ContractResult<(i64, i64)> 
     Ok((most_significant_bits, least_significant_bits))
 }
 
+pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + Clone>(
+    asset_uuid: Option<S1>,
+    scope_address: Option<S2>,
+) -> ContractResult<String> {
+    if let (Some(uuid), Some(address)) = (asset_uuid.clone(), scope_address.clone()) {
+        return asset_uuid_to_scope_address(uuid.clone()).and_then(|parsed_address| {
+            let provided_address = address.into();
+            if parsed_address != provided_address {
+                ContractError::AssetIdentifierMismatch {
+                    asset_uuid: uuid.into(),
+                    scope_address: provided_address,
+                }
+                .to_err()
+            } else {
+                Ok(parsed_address)
+            }
+        });
+    }
+
+    if let Some(addr) = scope_address {
+        Ok(addr.into())
+    } else if let Some(uuid) = asset_uuid {
+        asset_uuid_to_scope_address(uuid)
+    } else {
+        return ContractError::AssetIdentifierNotSupplied.to_err();
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::util::scope_address_utils::{asset_uuid_to_scope_address, get_uuid_bits};
+    use crate::{
+        core::error::ContractError,
+        util::scope_address_utils::{asset_uuid_to_scope_address, get_uuid_bits},
+    };
+
+    use super::get_validate_scope_address;
 
     #[test]
     fn test_conversion_result() {
@@ -74,5 +109,70 @@ mod tests {
             expected_least_sig, least_sig,
             "the least significant bits value should match expected output"
         );
+    }
+
+    #[test]
+    fn test_get_validate_scope_address_mismatch_error() {
+        let asset_uuid_mismatched = "cde62981-526e-4fde-9cb4-312f040dc283";
+        let scope_address_mismatched = "scope1qzj7t2pgnfyprmypjvtnrltr66nqd4c3cq"; // doesn't correspond to asset_uuid
+
+        let err =
+            get_validate_scope_address(Some(asset_uuid_mismatched), Some(scope_address_mismatched))
+                .unwrap_err();
+
+        match err {
+            ContractError::AssetIdentifierMismatch {
+                asset_uuid,
+                scope_address,
+            } => {
+                assert_eq!(
+                    asset_uuid_mismatched, asset_uuid,
+                    "Asset identifier mismatch error should contain the provided asset_uuid"
+                );
+                assert_eq!(
+                    scope_address_mismatched, scope_address,
+                    "Asset identifier mismatch error should contain the provided scope_address"
+                );
+            }
+            _ => panic!("Unexpected error for asset identifier mismatch"),
+        }
+    }
+
+    #[test]
+    fn test_get_validate_scope_address_none_provided_error() {
+        let err = get_validate_scope_address::<&str, &str>(None, None).unwrap_err();
+
+        match err {
+            ContractError::AssetIdentifierNotSupplied => {}
+            _ => panic!("Unexpected error for asset identifier mismatch"),
+        }
+    }
+
+    #[test]
+    fn test_get_validate_scope_address_asset_uuid_returns_address() {
+        // Source uuid randomly generated via CLI tool
+        let source_uuid = "a5e5a828-9a48-11ec-8193-1731fd63d6a6";
+        // Expected result taken from MetadataAddress Provenance tool for verification that this
+        // functionality set produces the same result
+        let expected_bech32 = "scope1qzj7t2pgnfyprmypjvtnrltr66nqd4c3cq";
+
+        let result = get_validate_scope_address::<&str, &str>(Some(source_uuid), None).unwrap();
+
+        assert_eq!(
+            expected_bech32, result,
+            "The resulting scope address should match when only a uuid was provided"
+        )
+    }
+
+    #[test]
+    fn test_get_validate_scope_address_scope_address_returns_provided_address() {
+        let expected_bech32 = "scope1qzj7t2pgnfyprmypjvtnrltr66nqd4c3cq";
+
+        let result = get_validate_scope_address::<&str, &str>(None, Some(expected_bech32)).unwrap();
+
+        assert_eq!(
+            expected_bech32, result,
+            "The resulting scope address should match when only a uuid was provided"
+        )
     }
 }

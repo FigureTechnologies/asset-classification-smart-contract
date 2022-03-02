@@ -1,13 +1,13 @@
 use cosmwasm_std::{
     testing::{mock_env, mock_info},
-    Coin, Decimal, DepsMut, Env, MessageInfo, Response, Uint128,
+    Coin, Decimal, Env, MessageInfo, Response, Uint128,
 };
-use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
+use provwasm_std::ProvenanceMsg;
 
+use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
     core::{
-        error::ContractError,
         msg::InitMsg,
         state::{AssetDefinition, ValidatorDetail},
     },
@@ -50,10 +50,7 @@ impl Default for InstArgs {
     }
 }
 
-pub fn test_instantiate(
-    deps: DepsMut<ProvenanceQuery>,
-    args: InstArgs,
-) -> Result<Response<ProvenanceMsg>, ContractError> {
+pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
     instantiate(
         deps,
         args.env,
@@ -63,6 +60,10 @@ pub fn test_instantiate(
             asset_definitions: args.asset_definitions,
         },
     )
+}
+
+pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
+    test_instantiate(deps, args).expect("expected instantiation to succeed")
 }
 
 pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {

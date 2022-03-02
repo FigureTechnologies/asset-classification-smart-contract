@@ -37,10 +37,11 @@ pub fn init_contract(
     let state = State::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
     config(deps.storage).save(&state)?;
-    Ok(Response::new()
+    Response::new()
         .add_messages(messages)
         //.add_message(bind_name_msg)
-        .add_attribute("action", "init"))
+        .add_attribute("action", "init")
+        .to_ok()
 }
 
 #[cfg(test)]

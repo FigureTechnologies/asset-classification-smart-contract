@@ -10,6 +10,9 @@ pub enum ContractError {
     #[error("{0}")]
     Bech32Error(#[from] bech32::Error),
 
+    #[error("duplicate/existing asset definition provided as input")]
+    DuplicateAssetDefinitionProvided,
+
     #[error("{0}")]
     InvalidFunds(String),
 
@@ -31,8 +34,8 @@ pub enum ContractError {
         asset_type: String,
     },
 
-    #[error("Unauthorized")]
-    Unauthorized,
+    #[error("Unauthorized: {explanation}")]
+    Unauthorized { explanation: String },
 
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,

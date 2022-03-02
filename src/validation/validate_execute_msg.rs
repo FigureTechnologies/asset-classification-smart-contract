@@ -1,9 +1,10 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::util::aliases::ContractResult;
+use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
+use crate::validation::validate_init_msg::validate_asset_definition;
 
-pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
+pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), ContractError> {
     match msg {
         ExecuteMsg::OnboardAsset {
             asset_uuid,
@@ -12,6 +13,9 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
             validator_address,
         } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
         ExecuteMsg::ValidateAsset { asset_uuid, .. } => validate_validate_asset(asset_uuid),
+        ExecuteMsg::AddAssetDefinition { asset_definition } => {
+            validate_asset_definition(&asset_definition, &deps)
+        }
     }
 }
 

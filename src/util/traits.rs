@@ -1,3 +1,5 @@
+use cosmwasm_std::Response;
+
 /// Allows any implementing type to functionally move itself into a Result<T, U>
 pub trait ResultExtensions
 where
@@ -13,3 +15,5 @@ where
         Err(self)
     }
 }
+// Implement for commonly-used Response that is out of scope of this project
+impl<T> ResultExtensions for Response<T> {}

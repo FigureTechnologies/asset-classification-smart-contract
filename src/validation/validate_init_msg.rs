@@ -1,13 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
 use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
-use crate::util::aliases::DepsC;
+use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use std::ops::Mul;
 
-pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> Result<(), ContractError> {
+pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if msg.base_contract_name.is_empty() {
         invalid_fields.push("base_contract_name: must not be blank".to_string());
@@ -22,7 +22,7 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> Result<(), ContractErro
     let mut asset_messages = msg
         .asset_definitions
         .iter()
-        .flat_map(|asset| validate_asset_definition(asset, deps))
+        .flat_map(|asset| validate_asset_definition_internal(asset, deps))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut asset_messages);
     if !invalid_fields.is_empty() {
@@ -36,7 +36,26 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> Result<(), ContractErro
     }
 }
 
-fn validate_asset_definition(asset_definition: &AssetDefinition, deps: &DepsC) -> Vec<String> {
+pub fn validate_asset_definition(
+    asset_definition: &AssetDefinition,
+    deps: &DepsC,
+) -> ContractResult<()> {
+    let invalid_fields = validate_asset_definition_internal(asset_definition, deps);
+    if !invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: "AssetDefinition".to_string(),
+            invalid_fields,
+        }
+        .to_err()
+    } else {
+        Ok(())
+    }
+}
+
+fn validate_asset_definition_internal(
+    asset_definition: &AssetDefinition,
+    deps: &DepsC,
+) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_definition.asset_type.is_empty() {
         invalid_fields.push("asset_definition:asset_type: must not be blank".to_string());
@@ -50,13 +69,13 @@ fn validate_asset_definition(asset_definition: &AssetDefinition, deps: &DepsC) -
     let mut validator_messages = asset_definition
         .validators
         .iter()
-        .flat_map(|valid| validate_validator(valid, deps))
+        .flat_map(|valid| validate_validator_internal(valid, deps))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut validator_messages);
     invalid_fields
 }
 
-fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> {
+fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if deps.api.addr_validate(&validator.address).is_err() {
         invalid_fields.push("validator:address: must be a valid address".to_string());
@@ -119,13 +138,13 @@ fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> 
     let mut fee_destination_messages = validator
         .fee_destinations
         .iter()
-        .flat_map(|destination| validate_destination(destination, deps))
+        .flat_map(|destination| validate_destination_internal(destination, deps))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut fee_destination_messages);
     invalid_fields
 }
 
-fn validate_destination(destination: &FeeDestination, deps: &DepsC) -> Vec<String> {
+fn validate_destination_internal(destination: &FeeDestination, deps: &DepsC) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if deps.api.addr_validate(&destination.address).is_err() {
         invalid_fields.push("fee_destination:address: must be a valid address".to_string());
@@ -146,7 +165,8 @@ pub mod tests {
     use crate::core::msg::InitMsg;
     use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::validation::validate_init_msg::{
-        validate_asset_definition, validate_destination, validate_init_msg, validate_validator,
+        validate_asset_definition_internal, validate_destination_internal, validate_init_msg,
+        validate_validator_internal,
     };
     use cosmwasm_std::{Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
@@ -293,7 +313,7 @@ pub mod tests {
                 )],
             )],
         );
-        let response = validate_asset_definition(&definition, &deps.as_ref());
+        let response = validate_asset_definition_internal(&definition, &deps.as_ref());
         assert!(
             response.is_empty(),
             "a valid asset definition should pass validation and return no error messages, but got messages: {:?}",
@@ -356,7 +376,7 @@ pub mod tests {
             Decimal::percent(0),
             vec![],
         );
-        let response = validate_validator(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator, &deps.as_ref());
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -376,7 +396,7 @@ pub mod tests {
                 Decimal::percent(100),
             )],
         );
-        let response = validate_validator(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator, &deps.as_ref());
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -399,7 +419,7 @@ pub mod tests {
                 FeeDestination::new("fifth".to_string(), Decimal::percent(5)),
             ],
         );
-        let response = validate_validator(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator, &deps.as_ref());
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -559,7 +579,7 @@ pub mod tests {
         let deps = mock_dependencies(&[]);
         let destination = FeeDestination::new("good-address".to_string(), Decimal::percent(100));
         assert!(
-            validate_destination(&destination, &deps.as_ref()).is_empty(),
+            validate_destination_internal(&destination, &deps.as_ref()).is_empty(),
             "a valid fee destination should pass validation and return no error messages",
         );
     }
@@ -631,7 +651,7 @@ pub mod tests {
 
     fn test_invalid_asset_definition(definition: &AssetDefinition, expected_message: &str) {
         let deps = mock_dependencies(&[]);
-        let results = validate_asset_definition(&definition, &deps.as_ref());
+        let results = validate_asset_definition_internal(&definition, &deps.as_ref());
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -642,7 +662,7 @@ pub mod tests {
 
     fn test_invalid_validator(validator: &ValidatorDetail, expected_message: &str) {
         let deps = mock_dependencies(&[]);
-        let results = validate_validator(&validator, &deps.as_ref());
+        let results = validate_validator_internal(&validator, &deps.as_ref());
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -653,7 +673,7 @@ pub mod tests {
 
     fn test_invalid_destination(destination: &FeeDestination, expected_message: &str) {
         let deps = mock_dependencies(&[]);
-        let results = validate_destination(&destination, &deps.as_ref());
+        let results = validate_destination_internal(&destination, &deps.as_ref());
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",

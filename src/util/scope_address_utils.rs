@@ -43,18 +43,14 @@ pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + C
     scope_address: Option<S2>,
 ) -> ContractResult<String> {
     if let (Some(uuid), Some(address)) = (asset_uuid.clone(), scope_address.clone()) {
-        return asset_uuid_to_scope_address(uuid.clone()).and_then(|parsed_address| {
-            let provided_address = address.into();
-            if parsed_address != provided_address {
-                ContractError::AssetIdentifierMismatch {
-                    asset_uuid: uuid.into(),
-                    scope_address: provided_address,
-                }
-                .to_err()
-            } else {
-                Ok(parsed_address)
+        let parsed_address = asset_uuid_to_scope_address(uuid.clone())?;
+        if parsed_address != address.clone().into() {
+            return ContractError::AssetIdentifierMismatch {
+                asset_uuid: uuid.into(),
+                scope_address: address.into(),
             }
-        });
+            .to_err();
+        }
     }
 
     if let Some(addr) = scope_address {

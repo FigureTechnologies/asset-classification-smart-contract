@@ -25,10 +25,7 @@ impl OnboardAssetV1 {
                 scope_address,
                 validator_address,
             } => {
-                let parsed_address = match get_validate_scope_address(asset_uuid, scope_address) {
-                    Ok(addr) => addr,
-                    Err(err) => return err.to_err(),
-                };
+                let parsed_address = get_validate_scope_address(asset_uuid, scope_address)?;
 
                 OnboardAssetV1 {
                     scope_address: parsed_address,

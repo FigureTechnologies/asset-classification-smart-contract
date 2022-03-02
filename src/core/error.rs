@@ -13,6 +13,9 @@ pub enum ContractError {
     #[error("duplicate/existing asset definition provided as input")]
     DuplicateAssetDefinitionProvided,
 
+    #[error("duplicate/existing validator address provided as input")]
+    DuplicateValidatorProvided,
+
     #[error("{0}")]
     InvalidFunds(String),
 

@@ -1,4 +1,4 @@
-use crate::core::state::AssetDefinition;
+use crate::core::state::{AssetDefinition, ValidatorDetail};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +26,10 @@ pub enum ExecuteMsg {
     },
     UpdateAssetDefinition {
         asset_definition: AssetDefinition,
+    },
+    AddAssetValidator {
+        asset_type: String,
+        validator: ValidatorDetail,
     },
 }
 

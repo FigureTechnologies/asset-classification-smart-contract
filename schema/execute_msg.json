@@ -77,6 +77,50 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_asset_definition"
+      ],
+      "properties": {
+        "update_asset_definition": {
+          "type": "object",
+          "required": [
+            "asset_definition"
+          ],
+          "properties": {
+            "asset_definition": {
+              "$ref": "#/definitions/AssetDefinition"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "add_asset_validator"
+      ],
+      "properties": {
+        "add_asset_validator": {
+          "type": "object",
+          "required": [
+            "asset_type",
+            "validator"
+          ],
+          "properties": {
+            "asset_type": {
+              "type": "string"
+            },
+            "validator": {
+              "$ref": "#/definitions/ValidatorDetail"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

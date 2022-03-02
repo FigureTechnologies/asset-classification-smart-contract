@@ -1,8 +1,11 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
+use crate::core::state::ValidatorDetail;
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
-use crate::validation::validate_init_msg::validate_asset_definition;
+use crate::validation::validate_init_msg::{
+    validate_asset_definition, validate_validator_with_provided_errors,
+};
 
 pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), ContractError> {
     match msg {
@@ -19,6 +22,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
             validate_asset_definition(asset_definition, deps)
         }
+        ExecuteMsg::AddAssetValidator {
+            asset_type,
+            validator,
+        } => validate_add_asset_validator(asset_type, validator, deps),
     }
 }
 
@@ -66,4 +73,17 @@ fn validate_validate_asset(asset_uuid: &str) -> ContractResult<()> {
     } else {
         Ok(())
     }
+}
+
+fn validate_add_asset_validator(
+    asset_type: &str,
+    validator: &ValidatorDetail,
+    deps: &DepsC,
+) -> ContractResult<()> {
+    let errors = if asset_type.is_empty() {
+        Some(vec!["asset_type must not be empty".to_string()])
+    } else {
+        None
+    };
+    validate_validator_with_provided_errors(validator, deps, errors)
 }

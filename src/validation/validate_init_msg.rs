@@ -52,6 +52,32 @@ pub fn validate_asset_definition(
     }
 }
 
+pub fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> ContractResult<()> {
+    validate_validator_with_provided_errors(validator, deps, None)
+}
+
+pub fn validate_validator_with_provided_errors(
+    validator: &ValidatorDetail,
+    deps: &DepsC,
+    provided_errors: Option<Vec<String>>,
+) -> ContractResult<()> {
+    let mut invalid_fields = validate_validator_internal(validator, deps);
+    if let Some(errors) = provided_errors {
+        for error in errors {
+            invalid_fields.push(error);
+        }
+    }
+    if !invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: "ValidatorDetail".to_string(),
+            invalid_fields,
+        }
+        .to_err()
+    } else {
+        Ok(())
+    }
+}
+
 fn validate_asset_definition_internal(
     asset_definition: &AssetDefinition,
     deps: &DepsC,

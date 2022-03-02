@@ -1,8 +1,9 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_state, asset_state_read, config_read, AssetDefinition};
+use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::attribute_keys::UPDATE_ASSET_DEFINITION_KEY;
+use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 use schemars::JsonSchema;
@@ -20,7 +21,7 @@ impl UpdateAssetDefinitionV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<UpdateAssetDefinitionV1> {
         match msg {
             ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-                UpdateAssetDefinitionV1 { asset_definition }.to_ok()
+                UpdateAssetDefinitionV1::new(asset_definition).to_ok()
             }
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::UpdateAssetDefinition".to_string(),
@@ -36,21 +37,8 @@ pub fn update_asset_definition(
     info: MessageInfo,
     msg: UpdateAssetDefinitionV1,
 ) -> ContractResponse {
-    // Ensure only the admin is attempting to call this route
-    let state = config_read(deps.storage).load()?;
-    if info.sender != state.admin {
-        return ContractError::Unauthorized {
-            explanation: "admin required".to_string(),
-        }
-        .to_err();
-    }
-    // This function requires no funds to process - we don't want excess amounts left in the contract
-    if !info.funds.is_empty() {
-        return ContractError::InvalidFunds(
-            "update an asset definition does not require funds".to_string(),
-        )
-        .to_err();
-    }
+    check_admin_only(&deps.as_ref(), &info)?;
+    check_funds_are_empty(&info)?;
     // If the asset definition does not exist within the state, there is nothing to update
     if asset_state_read(deps.storage, &msg.asset_definition.asset_type)
         .may_load()?

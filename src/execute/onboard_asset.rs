@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::asset_state_read;
+use crate::core::state::{asset_meta, asset_state_read, AssetMeta};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
@@ -81,8 +81,11 @@ pub fn onboard_asset(
     let sent_fee = match info.funds.into_iter().find(|funds| funds.denom == "nhash") {
         Some(funds) => funds,
         None => {
-            return ContractError::InvalidFunds("Funds not supplied for onboarding".to_string())
-                .to_err()
+            return ContractError::InvalidFunds(format!(
+                "Improper funds supplied for onboarding (expected {}nhash)",
+                validator_config.onboarding_cost
+            ))
+            .to_err()
         }
     };
     if sent_fee.amount != validator_config.onboarding_cost {
@@ -93,20 +96,53 @@ pub fn onboard_asset(
         .to_err();
     };
 
+    // verify asset metadata storage doesn't already contain this asset (i.e. it hasn't already been onboarded)
+    let mut asset_storage = asset_meta(deps.storage);
+    if let Some(..) = asset_storage
+        .may_load(msg.clone().asset_uuid.as_bytes())
+        .unwrap()
+    {
+        return ContractError::AssetAlreadyOnboarded {
+            asset_uuid: msg.asset_uuid,
+        }
+        .to_err();
+    }
+
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
+    if let Err(err) = asset_storage.save(
+        msg.clone().asset_uuid.as_bytes(),
+        &AssetMeta::new(
+            msg.clone().asset_uuid,
+            msg.clone().asset_type,
+            msg.clone().scope_address,
+            msg.clone().validator_address,
+            sent_fee.amount,
+        ),
+    ) {
+        return ContractError::AssetOnboardingError {
+            asset_type: msg.asset_type,
+            asset_uuid: msg.asset_uuid,
+            message: err.to_string(),
+        }
+        .to_err();
+    }
 
     Ok(Response::new())
 }
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
+    use cosmwasm_std::{testing::mock_env, Coin, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::error::ContractError,
+        core::{
+            error::ContractError,
+            state::{asset_meta, asset_meta_read, AssetMeta},
+        },
         testutil::test_utilities::{
-            mock_info_with_nhash, test_instantiate, InstArgs, DEFAULT_VALIDATOR_ADDRESS,
+            mock_info_with_funds, mock_info_with_nhash, test_instantiate, InstArgs,
+            DEFAULT_ASSET_TYPE, DEFAULT_ONBOARDING_COST, DEFAULT_VALIDATOR_ADDRESS,
         },
     };
 
@@ -139,5 +175,249 @@ mod tests {
             }
             _ => panic!("unexpected error when unsupported asset type provided"),
         }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_unsupported_validator() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(1000),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::UnsupportedValidator {
+                asset_type,
+                validator_address,
+            } => {
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE, asset_type,
+                    "the unsupported validator message should reflect the asset type provided"
+                );
+                assert_eq!(DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(), validator_address, "the unsupported validator message should reflect the validator address provided");
+            }
+            _ => panic!("unexpected error when unsupported validator provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_no_funds() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_funds(&[]),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::InvalidFunds(message) => {
+                assert_eq!(
+                    "Exactly one fund type (of nhash) should be sent", message,
+                    "the invalid funds message should reflect invalid amount of funds list"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_extra_funds() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_funds(&[
+                Coin {
+                    denom: "nhash".into(),
+                    amount: Uint128::from(123u128),
+                },
+                Coin {
+                    denom: "otherdenom".into(),
+                    amount: Uint128::from(2432u128),
+                },
+            ]),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::InvalidFunds(message) => {
+                assert_eq!(
+                    "Exactly one fund type (of nhash) should be sent", message,
+                    "the invalid funds message should reflect invalid amount of funds list"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_wrong_fund_denom() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_funds(&[Coin {
+                denom: "otherdenom".into(),
+                amount: Uint128::from(2432u128),
+            }]),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::InvalidFunds(message) => {
+                assert_eq!(
+                    "Improper funds supplied for onboarding (expected 1000nhash)", message,
+                    "the invalid funds message should reflect that improper funds were sent"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_wrong_fund_amount() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(DEFAULT_ONBOARDING_COST + 1),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::InvalidFunds(message) => {
+                assert_eq!(
+                    format!(
+                        "Improper fee of {}nhash provided (expected {}nhash)",
+                        DEFAULT_ONBOARDING_COST + 1,
+                        DEFAULT_ONBOARDING_COST
+                    ),
+                    message,
+                    "the invalid funds message should reflect that improper funds were sent"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_existing_asset() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let mut asset_storage = asset_meta(&mut deps.storage);
+        asset_storage
+            .save(
+                b"1234",
+                &AssetMeta::new(
+                    "1234".to_string(),
+                    "".to_string(),
+                    "".to_string(),
+                    "".to_string(),
+                    Uint128::from(123u128),
+                ),
+            )
+            .unwrap();
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::AssetAlreadyOnboarded { asset_uuid } => {
+                assert_eq!(
+                    "1234",
+                    asset_uuid,
+                    "the asset already onboarded message should reflect that the asset uuid was already onboarded"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_succeeds() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let result = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap();
+
+        let asset_storage = asset_meta_read(&deps.storage);
+
+        let asset_entry = asset_storage.load(b"1234").unwrap();
+
+        assert_eq!(
+            "1234", asset_entry.asset_uuid,
+            "Asset uuid in storage should match what was provided at onboarding"
+        );
+
+        assert_eq!(
+            0,
+            result.messages.len(),
+            "Onboarding should not produce any additional messages"
+        );
     }
 }

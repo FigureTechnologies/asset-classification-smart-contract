@@ -28,6 +28,16 @@ pub enum ContractError {
         asset_type: String,
     },
 
+    #[error("Asset {asset_uuid} already onboarded")]
+    AssetAlreadyOnboarded { asset_uuid: String },
+
+    #[error("Error onboarding asset (type: {asset_type}, uuid: {asset_uuid}): {message}")]
+    AssetOnboardingError {
+        asset_type: String,
+        asset_uuid: String,
+        message: String,
+    },
+
     #[error("Unauthorized")]
     Unauthorized,
 

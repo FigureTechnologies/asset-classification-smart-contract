@@ -112,18 +112,18 @@ pub struct AssetMeta {
     pub onboarding_fee: Uint128,
 }
 impl AssetMeta {
-    pub fn new(
-        asset_uuid: String,
-        asset_type: String,
-        scope_address: String,
-        validator_address: String,
+    pub fn new<T: Into<String>>(
+        asset_uuid: T,
+        asset_type: T,
+        scope_address: T,
+        validator_address: T,
         onboarding_fee: Uint128,
     ) -> Self {
         AssetMeta {
-            asset_uuid,
-            asset_type,
-            scope_address,
-            validator_address,
+            asset_uuid: asset_uuid.into(),
+            asset_type: asset_type.into(),
+            scope_address: scope_address.into(),
+            validator_address: validator_address.into(),
             onboarding_fee,
         }
     }

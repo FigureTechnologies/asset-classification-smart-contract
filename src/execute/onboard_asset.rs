@@ -2,6 +2,7 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_meta, asset_state_read, AssetMeta};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
@@ -98,19 +99,29 @@ pub fn onboard_asset(
     };
 
     // verify asset (scope) exists
-    if let Err(..) = ProvenanceQuerier::new(&deps.querier).get_scope(msg.clone().asset_uuid) {
-        return ContractError::AssetNotFound {
-            asset_uuid: msg.asset_uuid,
+    let scope = match ProvenanceQuerier::new(&deps.querier).get_scope(&msg.asset_uuid) {
+        Err(..) => {
+            return ContractError::AssetNotFound {
+                asset_uuid: msg.asset_uuid,
+            }
+            .to_err()
         }
-        .to_err();
+        Ok(scope) => scope,
+    };
+
+    // verify that the sender of this message is a scope owner
+    let sender = info.sender;
+    if !scope
+        .owners
+        .into_iter()
+        .any(|owner| owner.address == sender)
+    {
+        return ContractError::Unauthorized.to_err();
     }
 
     // verify asset metadata storage doesn't already contain this asset (i.e. it hasn't already been onboarded)
     let mut asset_storage = asset_meta(deps.storage);
-    if let Some(..) = asset_storage
-        .may_load(msg.clone().asset_uuid.as_bytes())
-        .unwrap()
-    {
+    if let Some(..) = asset_storage.may_load(&msg.asset_uuid.as_bytes()).unwrap() {
         return ContractError::AssetAlreadyOnboarded {
             asset_uuid: msg.asset_uuid,
         }
@@ -119,12 +130,12 @@ pub fn onboard_asset(
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
     if let Err(err) = asset_storage.save(
-        msg.clone().asset_uuid.as_bytes(),
+        &msg.asset_uuid.as_bytes(),
         &AssetMeta::new(
-            msg.clone().asset_uuid,
-            msg.clone().asset_type,
-            msg.clone().scope_address,
-            msg.clone().validator_address,
+            &msg.asset_uuid,
+            &msg.asset_type,
+            &msg.scope_address,
+            &msg.validator_address,
             sent_fee.amount,
         ),
     ) {
@@ -136,14 +147,17 @@ pub fn onboard_asset(
         .to_err();
     }
 
-    Ok(Response::new())
+    Ok(Response::new().add_attributes(
+        EventAttributes::new(EventType::OnboardAsset, &msg.asset_type, &msg.asset_uuid)
+            .set_validator(msg.validator_address),
+    ))
 }
 
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::{testing::mock_env, Addr, Coin, Uint128};
     use provwasm_mocks::mock_dependencies;
-    use provwasm_std::Scope;
+    use provwasm_std::{Party, PartyType, Scope};
 
     use crate::{
         core::{
@@ -152,7 +166,11 @@ mod tests {
         },
         testutil::test_utilities::{
             mock_info_with_funds, mock_info_with_nhash, test_instantiate, InstArgs,
-            DEFAULT_ASSET_TYPE, DEFAULT_ONBOARDING_COST, DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
+            DEFAULT_VALIDATOR_ADDRESS,
+        },
+        util::constants::{
+            ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, ASSET_UUID_KEY, VALIDATOR_ADDRESS_KEY,
         },
     };
 
@@ -390,7 +408,11 @@ mod tests {
         deps.querier.with_scope(Scope {
             scope_id: "1234".to_string(),
             specification_id: "".to_string(),
-            owners: [].to_vec(),
+            owners: [Party {
+                address: Addr::unchecked(DEFAULT_INFO_NAME),
+                role: PartyType::Owner,
+            }]
+            .to_vec(),
             data_access: [].to_vec(),
             value_owner_address: Addr::unchecked(""),
         });
@@ -442,7 +464,11 @@ mod tests {
         deps.querier.with_scope(Scope {
             scope_id: "1234".to_string(),
             specification_id: "".to_string(),
-            owners: [].to_vec(),
+            owners: [Party {
+                address: Addr::unchecked(DEFAULT_INFO_NAME),
+                role: PartyType::Owner,
+            }]
+            .to_vec(),
             data_access: [].to_vec(),
             value_owner_address: Addr::unchecked(""),
         });
@@ -473,6 +499,16 @@ mod tests {
             0,
             result.messages.len(),
             "Onboarding should not produce any additional messages"
+        );
+
+        assert_eq!(
+            vec![
+                (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
+                (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
+                (ASSET_UUID_KEY, "1234"),
+                (VALIDATOR_ADDRESS_KEY, DEFAULT_VALIDATOR_ADDRESS)
+            ],
+            result.attributes
         );
     }
 }

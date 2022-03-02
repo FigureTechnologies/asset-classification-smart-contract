@@ -7,8 +7,8 @@ use uuid::Uuid;
 const KEY_SCOPE: u8 = 0x00;
 /// Standard bech32 encoding for scope addresses simply begin with the string "scope"
 const SCOPE_HRP: &str = "scope";
-const MOST_SIGNIFICANT_BITMASK: u128 = 0xFFFFFFFFFFFFFFFF0000000000000000u128;
-const LEAST_SIGNIFICANT_BITMASK: u128 = 0x0000000000000000FFFFFFFFFFFFFFFFu128;
+const MOST_SIGNIFICANT_BITMASK: u128 = 0xFFFFFFFFFFFFFFFF0000000000000000;
+const LEAST_SIGNIFICANT_BITMASK: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// most and least significant bits a byte buffer that contains the scope key prefix.

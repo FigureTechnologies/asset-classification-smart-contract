@@ -91,7 +91,7 @@ pub fn asset_state<S: Into<String>>(
 }
 
 pub fn asset_state_read<S: Into<String>>(
-    storage: &mut dyn Storage,
+    storage: &dyn Storage,
     asset_type: S,
 ) -> ReadonlySingleton<AssetDefinition> {
     singleton_read(storage, &get_asset_state_key(asset_type))

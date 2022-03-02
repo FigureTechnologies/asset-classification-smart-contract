@@ -111,6 +111,11 @@ fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> 
             )
         }
     }
+    if distinct_count_by_property(&validator.fee_destinations, |dest| &dest.address)
+        != validator.fee_destinations.len()
+    {
+        invalid_fields.push("validator:fee_destinations: all fee destinations within a validator must have unique addresses".to_string());
+    }
     let mut fee_destination_messages = validator
         .fee_destinations
         .iter()
@@ -517,6 +522,22 @@ pub mod tests {
                 ],
             ),
             "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_destinations_contains_duplicate_address() {
+        test_invalid_validator(
+            &ValidatorDetail::new(
+                "address".to_string(),
+                Uint128::new(100),
+                Decimal::percent(50),
+                vec![
+                    FeeDestination::new("fee-guy".to_string(), Decimal::percent(50)),
+                    FeeDestination::new("fee-guy".to_string(), Decimal::percent(50)),
+                ]
+            ),
+            "validator:fee_destinations: all fee destinations within a validator must have unique addresses",
         );
     }
 

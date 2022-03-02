@@ -7,6 +7,8 @@ use uuid::Uuid;
 const KEY_SCOPE: u8 = 0x00;
 /// Standard bech32 encoding for scope addresses simply begin with the string "scope"
 const SCOPE_HRP: &str = "scope";
+const MOST_SIGNIFICANT_BITMASK: u128 = 0xFFFFFFFFFFFFFFFF0000000000000000u128;
+const LEAST_SIGNIFICANT_BITMASK: u128 = 0x0000000000000000FFFFFFFFFFFFFFFFu128;
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// most and least significant bits a byte buffer that contains the scope key prefix.
@@ -30,18 +32,10 @@ pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractRe
 fn get_uuid_bits<S: Into<String>>(uuid_source: S) -> ContractResult<(i64, i64)> {
     let uuid = uuid_source.into();
     let uuid_bytes = *Uuid::parse_str(&uuid)?.as_bytes();
-    let mut most_significant_bits: i64 = 0;
-    let mut least_significant_bits: i64 = 0;
-    // The first 8 bits are most significant. Left shift on 8, then bitwise OR against i64-coerced byte
-    // Use the same strategy for the least significant bits.
-    for uuid_byte in uuid_bytes.iter().take(8) {
-        most_significant_bits = (most_significant_bits << 8) | (*uuid_byte as i64);
-    }
-    // Uuid parsed byte response is guaranteed to be a slice of 16 bytes, so we can safely run this
-    // logic on any output without fear of encountering index access panics
-    for uuid_byte in uuid_bytes.iter().skip(8) {
-        least_significant_bits = (least_significant_bits << 8) | (*uuid_byte as i64);
-    }
+    let uuid_value = u128::from_be_bytes(uuid_bytes);
+    let most_significant_bits: i64 = ((uuid_value & MOST_SIGNIFICANT_BITMASK) >> 64) as i64;
+    let least_significant_bits: i64 = (uuid_value & LEAST_SIGNIFICANT_BITMASK) as i64;
+
     Ok((most_significant_bits, least_significant_bits))
 }
 

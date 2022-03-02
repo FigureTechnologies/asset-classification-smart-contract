@@ -31,6 +31,9 @@ pub enum ContractError {
     #[error("Asset {asset_uuid} already onboarded")]
     AssetAlreadyOnboarded { asset_uuid: String },
 
+    #[error("Asset {asset_uuid} not found")]
+    AssetNotFound { asset_uuid: String },
+
     #[error("Error onboarding asset (type: {asset_type}, uuid: {asset_uuid}): {message}")]
     AssetOnboardingError {
         asset_type: String,

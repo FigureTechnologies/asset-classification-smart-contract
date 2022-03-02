@@ -4,6 +4,7 @@ use crate::core::state::{asset_meta, asset_state_read, AssetMeta};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
+use provwasm_std::ProvenanceQuerier;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -96,6 +97,14 @@ pub fn onboard_asset(
         .to_err();
     };
 
+    // verify asset (scope) exists
+    if let Err(..) = ProvenanceQuerier::new(&deps.querier).get_scope(msg.clone().asset_uuid) {
+        return ContractError::AssetNotFound {
+            asset_uuid: msg.asset_uuid,
+        }
+        .to_err();
+    }
+
     // verify asset metadata storage doesn't already contain this asset (i.e. it hasn't already been onboarded)
     let mut asset_storage = asset_meta(deps.storage);
     if let Some(..) = asset_storage
@@ -132,8 +141,9 @@ pub fn onboard_asset(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{testing::mock_env, Coin, Uint128};
+    use cosmwasm_std::{testing::mock_env, Addr, Coin, Uint128};
     use provwasm_mocks::mock_dependencies;
+    use provwasm_std::Scope;
 
     use crate::{
         core::{
@@ -344,9 +354,46 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_existing_asset() {
+    fn test_onboard_asset_errors_on_already_asset_not_found() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                asset_uuid: "1234".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                scope_address: "scope1234".into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::AssetNotFound { asset_uuid } => {
+                assert_eq!(
+                    "1234", asset_uuid,
+                    "the asset not found message should reflect that the asset uuid was not found"
+                );
+            }
+            _ => panic!("unexpected error when unsupported asset type provided"),
+        }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_already_onboarded_asset() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        deps.querier.with_scope(Scope {
+            scope_id: "1234".to_string(),
+            specification_id: "".to_string(),
+            owners: [].to_vec(),
+            data_access: [].to_vec(),
+            value_owner_address: Addr::unchecked(""),
+        });
 
         let mut asset_storage = asset_meta(&mut deps.storage);
         asset_storage
@@ -391,6 +438,14 @@ mod tests {
     fn test_onboard_asset_succeeds() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+
+        deps.querier.with_scope(Scope {
+            scope_id: "1234".to_string(),
+            specification_id: "".to_string(),
+            owners: [].to_vec(),
+            data_access: [].to_vec(),
+            value_owner_address: Addr::unchecked(""),
+        });
 
         let result = onboard_asset(
             deps.as_mut(),

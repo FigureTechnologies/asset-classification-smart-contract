@@ -30,12 +30,9 @@ pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractRe
 /// Standard uuid most/least significant bits source, logically abstracted from the java tools for
 /// locating these values.
 fn get_uuid_bits<S: Into<String>>(uuid_source: S) -> ContractResult<(i64, i64)> {
-    let uuid = uuid_source.into();
-    let uuid_bytes = *Uuid::parse_str(&uuid)?.as_bytes();
-    let uuid_value = u128::from_be_bytes(uuid_bytes);
+    let uuid_value = Uuid::parse_str(&uuid_source.into())?.as_u128();
     let most_significant_bits: i64 = ((uuid_value & MOST_SIGNIFICANT_BITMASK) >> 64) as i64;
     let least_significant_bits: i64 = (uuid_value & LEAST_SIGNIFICANT_BITMASK) as i64;
-
     Ok((most_significant_bits, least_significant_bits))
 }
 

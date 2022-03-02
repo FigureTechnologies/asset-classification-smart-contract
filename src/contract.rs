@@ -2,6 +2,7 @@ use crate::core::error::ContractError;
 use crate::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
+use crate::execute::update_asset_definition::{update_asset_definition, UpdateAssetDefinitionV1};
 use crate::execute::validate_asset::{validate_asset, ValidateAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::query::query_asset_definition::query_asset_definition;
@@ -39,6 +40,9 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         }
         ExecuteMsg::AddAssetDefinition { .. } => {
             add_asset_definition(deps, info, AddAssetDefinitionV1::from_execute_msg(msg)?)
+        }
+        ExecuteMsg::UpdateAssetDefinition { .. } => {
+            update_asset_definition(deps, info, UpdateAssetDefinitionV1::from_execute_msg(msg)?)
         }
     }
 }

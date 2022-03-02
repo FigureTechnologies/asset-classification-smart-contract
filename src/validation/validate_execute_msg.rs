@@ -16,6 +16,9 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
             validate_asset_definition(asset_definition, deps)
         }
+        ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
+            validate_asset_definition(asset_definition, deps)
+        }
     }
 }
 

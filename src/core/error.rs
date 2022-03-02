@@ -25,6 +25,9 @@ pub enum ContractError {
     #[error("Invalid message type provided. Expected message type {expected_message_type}")]
     InvalidMessageType { expected_message_type: String },
 
+    #[error("Resource not found: {explanation}")]
+    NotFound { explanation: String },
+
     #[error("Unsupported asset type [{asset_type}]")]
     UnsupportedAssetType { asset_type: String },
 

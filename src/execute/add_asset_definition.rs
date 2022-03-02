@@ -44,6 +44,7 @@ pub fn add_asset_definition(
         }
         .to_err();
     }
+    // This function requires no funds to process - we don't want excess amounts left in the contract
     if !info.funds.is_empty() {
         return ContractError::InvalidFunds(
             "adding an asset definition does not require funds".to_string(),

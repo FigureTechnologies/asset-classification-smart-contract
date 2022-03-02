@@ -24,6 +24,9 @@ pub enum ExecuteMsg {
     AddAssetDefinition {
         asset_definition: AssetDefinition,
     },
+    UpdateAssetDefinition {
+        asset_definition: AssetDefinition,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

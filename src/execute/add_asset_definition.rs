@@ -52,8 +52,8 @@ pub fn add_asset_definition(
     }
     // Ensure that this loan type has not ever yet been added
     if asset_state_read(deps.storage, &msg.asset_definition.asset_type)
-        .load()
-        .is_ok()
+        .may_load()?
+        .is_some()
     {
         return ContractError::DuplicateAssetDefinitionProvided.to_err();
     }

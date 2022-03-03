@@ -25,7 +25,11 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::AddAssetValidator {
             asset_type,
             validator,
-        } => validate_add_asset_validator(asset_type, validator, deps),
+        } => validate_asset_validator_msg(asset_type, validator, deps),
+        ExecuteMsg::UpdateAssetValidator {
+            asset_type,
+            validator,
+        } => validate_asset_validator_msg(asset_type, validator, deps),
     }
 }
 
@@ -75,7 +79,7 @@ fn validate_validate_asset(asset_uuid: &str) -> ContractResult<()> {
     }
 }
 
-fn validate_add_asset_validator(
+fn validate_asset_validator_msg(
     asset_type: &str,
     validator: &ValidatorDetail,
     deps: &DepsC,

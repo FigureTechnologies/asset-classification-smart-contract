@@ -31,6 +31,10 @@ pub enum ExecuteMsg {
         asset_type: String,
         validator: ValidatorDetail,
     },
+    UpdateAssetValidator {
+        asset_type: String,
+        validator: ValidatorDetail,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

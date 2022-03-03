@@ -102,7 +102,7 @@ mod tests {
         assert_eq!(
             1,
             response.attributes.len(),
-            "adding an asset definition should append a single attribute",
+            "updating an asset definition should append a single attribute",
         );
         let attribute = response.attributes.first().unwrap();
         assert_eq!(

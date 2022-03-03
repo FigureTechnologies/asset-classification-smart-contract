@@ -8,3 +8,7 @@ pub const UPDATE_ASSET_DEFINITION_KEY: &str = "asset_classification_update_defin
 
 pub const ADD_ASSET_VALIDATOR_KEY: &str = "asset_classification_add_validator"; // Value = Asset type STRING (heloc, mortgage, etc)
 pub const ADD_ASSET_VALIDATOR_ADDRESS_KEY: &str = "asset_classification_add_validator_address"; // Value = Address of the validator added STRING (bech32)
+
+pub const UPDATE_ASSET_VALIDATOR_KEY: &str = "asset_classification_update_validator"; // Value = Asset type STRING (heloc, mortgage, etc)
+pub const UPDATE_ASSET_VALIDATOR_ADDRESS_KEY: &str =
+    "asset_classification_update_validator_address"; // Value = Address of the validator updated STRING (bech32)

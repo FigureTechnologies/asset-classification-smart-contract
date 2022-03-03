@@ -50,3 +50,8 @@ pub enum ContractError {
     UuidError(#[from] uuid::Error),
 }
 impl ResultExtensions for ContractError {}
+impl ContractError {
+    pub fn std_err<S: Into<String>>(msg: S) -> ContractError {
+        ContractError::Std(StdError::generic_err(msg))
+    }
+}

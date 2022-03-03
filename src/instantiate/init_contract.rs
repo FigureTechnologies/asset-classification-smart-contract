@@ -1,5 +1,5 @@
 use crate::core::msg::InitMsg;
-use crate::core::state::{asset_state, config, State};
+use crate::core::state::{asset_state, config, AssetDefinition, State};
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::functions::generate_asset_attribute_name;
@@ -18,9 +18,10 @@ pub fn init_contract(
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
-    for asset_definition in msg.asset_definitions.iter() {
+    for input in msg.asset_definitions.iter() {
+        let asset_definition: AssetDefinition = input.into();
         // Create a new state storage for the provided asset definition
-        asset_state(deps.storage, &asset_definition.asset_type).save(asset_definition)?;
+        asset_state(deps.storage, &asset_definition.asset_type).save(&asset_definition)?;
         messages.push(bind_name(
             generate_asset_attribute_name(&asset_definition.asset_type, &msg.base_contract_name),
             env.contract.address.clone(),
@@ -42,10 +43,10 @@ pub fn init_contract(
 mod tests {
     use crate::contract::instantiate;
     use crate::core::error::ContractError;
-    use crate::core::msg::InitMsg;
-    use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::core::msg::{AssetDefinitionInput, InitMsg};
+    use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
     use crate::testutil::test_utilities::{
-        get_default_asset_definitions, test_instantiate, InstArgs, DEFAULT_ASSET_TYPE,
+        get_default_asset_definition_inputs, test_instantiate, InstArgs, DEFAULT_ASSET_TYPE,
         DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
         DEFAULT_VALIDATOR_ADDRESS,
     };
@@ -96,7 +97,11 @@ mod tests {
         );
         assert_eq!(
             asset_state,
-            get_default_asset_definitions().first().unwrap().to_owned(),
+            get_default_asset_definition_inputs()
+                .first()
+                .unwrap()
+                .to_owned()
+                .into(),
             "the returned value should directly match the default asset definition"
         );
     }
@@ -104,7 +109,7 @@ mod tests {
     #[test]
     fn test_valid_init_with_multiple_asset_definitions() {
         let mut deps = mock_dependencies(&[]);
-        let first_asset_def = AssetDefinition::new(
+        let first_asset_def = AssetDefinitionInput::new(
             "heloc".to_string(),
             vec![ValidatorDetail::new(
                 DEFAULT_VALIDATOR_ADDRESS.into(),
@@ -115,8 +120,9 @@ mod tests {
                     Decimal::percent(100),
                 )],
             )],
+            None,
         );
-        let second_asset_def = AssetDefinition::new(
+        let second_asset_def = AssetDefinitionInput::new(
             "mortgage".to_string(),
             vec![ValidatorDetail::new(
                 "other-address".to_string(),
@@ -127,6 +133,7 @@ mod tests {
                     FeeDestination::new("second".to_string(), Decimal::percent(50)),
                 ],
             )],
+            None,
         );
         let response = test_instantiate(
             deps.as_mut(),
@@ -152,14 +159,16 @@ mod tests {
             .load()
             .expect("the heloc asset definition should be added to the state");
         assert_eq!(
-            first_asset_def, heloc_asset_state,
+            heloc_asset_state,
+            first_asset_def.into(),
             "the heloc asset state should equate to the heloc input"
         );
         let mortgage_asset_state = asset_state_read(deps.as_ref().storage, "mortgage")
             .load()
             .expect("the mortgage asset definition should be added to the state");
         assert_eq!(
-            second_asset_def, mortgage_asset_state,
+            mortgage_asset_state,
+            second_asset_def.into(),
             "the mortgage asset state should equate to the mortgage input"
         );
     }
@@ -184,7 +193,7 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinition::new(String::new(), vec![])],
+            asset_definitions: vec![AssetDefinitionInput::new(String::new(), vec![], None)],
             ..Default::default()
         };
         let error = instantiate(

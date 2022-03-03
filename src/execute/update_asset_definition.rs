@@ -1,5 +1,5 @@
 use crate::core::error::ContractError;
-use crate::core::msg::ExecuteMsg;
+use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
 use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
@@ -20,9 +20,7 @@ impl UpdateAssetDefinitionV1 {
 
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<UpdateAssetDefinitionV1> {
         match msg {
-            ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-                UpdateAssetDefinitionV1::new(asset_definition).to_ok()
-            }
+            ExecuteMsg::UpdateAssetDefinition { asset_definition } => Ok(asset_definition.into()),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::UpdateAssetDefinition".to_string(),
             }
@@ -31,6 +29,18 @@ impl UpdateAssetDefinitionV1 {
     }
 }
 impl ResultExtensions for UpdateAssetDefinitionV1 {}
+impl From<AssetDefinitionInput> for UpdateAssetDefinitionV1 {
+    fn from(input: AssetDefinitionInput) -> Self {
+        UpdateAssetDefinitionV1 {
+            asset_definition: input.into(),
+        }
+    }
+}
+impl From<AssetDefinition> for UpdateAssetDefinitionV1 {
+    fn from(asset_definition: AssetDefinition) -> Self {
+        UpdateAssetDefinitionV1 { asset_definition }
+    }
+}
 
 pub fn update_asset_definition(
     deps: DepsMutC,
@@ -66,7 +76,7 @@ pub fn update_asset_definition(
 mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
-    use crate::core::msg::ExecuteMsg;
+    use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
     use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
@@ -78,7 +88,7 @@ mod tests {
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
     use crate::util::event_attributes::EventType;
-    use crate::validation::validate_init_msg::validate_asset_definition;
+    use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
@@ -116,7 +126,7 @@ mod tests {
             single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "the asset type attribute should be added correctly",
         );
-        test_asset_definition_was_updated(&asset_definition, &deps.as_ref());
+        test_asset_definition_was_updated_for_input(&asset_definition, &deps.as_ref());
     }
 
     #[test]
@@ -138,7 +148,11 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinition::new(DEFAULT_ASSET_TYPE.to_string(), vec![]),
+            asset_definition: AssetDefinitionInput::new(
+                DEFAULT_ASSET_TYPE.to_string(),
+                vec![],
+                None,
+            ),
         };
         let error = execute(
             deps.as_mut(),
@@ -213,6 +227,10 @@ mod tests {
         );
     }
 
+    fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInput, deps: &DepsC) {
+        test_asset_definition_was_updated(&AssetDefinition::from(input), deps)
+    }
+
     fn test_asset_definition_was_updated(asset_definition: &AssetDefinition, deps: &DepsC) {
         let state_def = asset_state_read(deps.storage, &asset_definition.asset_type)
             .load()
@@ -225,10 +243,10 @@ mod tests {
 
     // This builds off of the existing default asset definition in test_utilities and adds/tweaks
     // details
-    fn get_update_asset_definition() -> AssetDefinition {
-        let def = AssetDefinition {
-            asset_type: DEFAULT_ASSET_TYPE.into(),
-            validators: vec![ValidatorDetail {
+    fn get_update_asset_definition() -> AssetDefinitionInput {
+        let def = AssetDefinitionInput::new(
+            DEFAULT_ASSET_TYPE.into(),
+            vec![ValidatorDetail {
                 address: "different-validator-address".to_string(),
                 onboarding_cost: Uint128::new(1500000),
                 fee_percent: Decimal::percent(50),
@@ -237,13 +255,14 @@ mod tests {
                     FeeDestination::new("second".to_string(), Decimal::percent(30)),
                 ],
             }],
-        };
-        validate_asset_definition(&def, &mock_dependencies(&[]).as_ref())
+            None,
+        );
+        validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())
             .expect("expected the asset definition to be valid");
         def
     }
 
     fn get_valid_update_asset_definition() -> UpdateAssetDefinitionV1 {
-        UpdateAssetDefinitionV1::new(get_update_asset_definition())
+        get_update_asset_definition().into()
     }
 }

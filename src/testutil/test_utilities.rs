@@ -4,6 +4,7 @@ use cosmwasm_std::{
 };
 use provwasm_std::ProvenanceMsg;
 
+use crate::core::msg::AssetDefinitionInput;
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
@@ -19,8 +20,8 @@ pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
-pub fn get_default_asset_definition() -> AssetDefinition {
-    AssetDefinition {
+pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
+    AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
         validators: vec![ValidatorDetail {
             address: DEFAULT_VALIDATOR_ADDRESS.into(),
@@ -28,18 +29,30 @@ pub fn get_default_asset_definition() -> AssetDefinition {
             fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
             fee_destinations: vec![],
         }],
+        // Specifying None will cause the underlying code to always choose enabled: true
+        enabled: None,
     }
+}
+pub fn get_default_asset_definition() -> AssetDefinition {
+    get_default_asset_definition_input().into()
+}
+
+pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInput> {
+    vec![get_default_asset_definition_input()]
 }
 
 pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
-    vec![get_default_asset_definition()]
+    get_default_asset_definition_inputs()
+        .into_iter()
+        .map(|input| AssetDefinition::from(input))
+        .collect()
 }
 
 pub struct InstArgs {
     pub env: Env,
     pub info: MessageInfo,
     pub base_contract_name: String,
-    pub asset_definitions: Vec<AssetDefinition>,
+    pub asset_definitions: Vec<AssetDefinitionInput>,
 }
 impl Default for InstArgs {
     fn default() -> Self {
@@ -47,7 +60,7 @@ impl Default for InstArgs {
             env: mock_env(),
             info: mock_info(DEFAULT_INFO_NAME, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
-            asset_definitions: get_default_asset_definitions(),
+            asset_definitions: get_default_asset_definition_inputs(),
         }
     }
 }

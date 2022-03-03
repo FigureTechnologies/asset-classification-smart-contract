@@ -2,10 +2,10 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_state, ValidatorDetail};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::attribute_keys::{ADD_ASSET_VALIDATOR_ADDRESS_KEY, ADD_ASSET_VALIDATOR_KEY};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Attribute, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -56,10 +56,9 @@ pub fn add_asset_validator(
         return ContractError::DuplicateValidatorProvided.to_err();
     }
     // Declare all attributes before values are moved
-    let attributes: Vec<Attribute> = vec![
-        Attribute::new(ADD_ASSET_VALIDATOR_KEY, &asset_definition.asset_type),
-        Attribute::new(ADD_ASSET_VALIDATOR_ADDRESS_KEY, &msg.validator.address),
-    ];
+    let attributes = EventAttributes::new(EventType::AddAssetValidator)
+        .set_asset_type(&asset_definition.asset_type)
+        .set_validator(&msg.validator.address);
     // Store the new validator in the definition and save it to storage
     asset_definition.validators.push(msg.validator);
     asset_state.save(&asset_definition)?;
@@ -79,7 +78,8 @@ mod tests {
         DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::attribute_keys::{ADD_ASSET_VALIDATOR_ADDRESS_KEY, ADD_ASSET_VALIDATOR_KEY};
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
+    use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_validator;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -105,18 +105,23 @@ mod tests {
             "adding an asset validator should not require messages",
         );
         assert_eq!(
-            2,
+            3,
             response.attributes.len(),
-            "adding an asset validator should produce two attributes",
+            "adding an asset validator should produce the correct number of attributes",
+        );
+        assert_eq!(
+            EventType::AddAssetValidator.event_name().as_str(),
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "expected the correct event type to be emitted",
         );
         assert_eq!(
             DEFAULT_ASSET_TYPE,
-            single_attribute_for_key(&response, ADD_ASSET_VALIDATOR_KEY),
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "expected the default asset type to be used for the main add key",
         );
         assert_eq!(
             &validator.address,
-            single_attribute_for_key(&response, ADD_ASSET_VALIDATOR_ADDRESS_KEY),
+            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
             "expected the new validator's address to be emitted as an attribute",
         );
         test_default_validator_was_added(&validator, &deps.as_ref());

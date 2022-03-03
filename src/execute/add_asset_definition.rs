@@ -2,8 +2,8 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::attribute_keys::ADD_ASSET_DEFINITION_KEY;
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 use schemars::JsonSchema;
@@ -48,7 +48,10 @@ pub fn add_asset_definition(
     }
     asset_state(deps.storage, &msg.asset_definition.asset_type).save(&msg.asset_definition)?;
     Response::new()
-        .add_attribute(ADD_ASSET_DEFINITION_KEY, &msg.asset_definition.asset_type)
+        .add_attributes(
+            EventAttributes::new(EventType::AddAssetDefinition)
+                .set_asset_type(&msg.asset_definition.asset_type),
+        )
         .to_ok()
 }
 
@@ -59,9 +62,12 @@ mod tests {
     use crate::core::msg::ExecuteMsg;
     use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
-    use crate::testutil::test_utilities::{test_instantiate_success, InstArgs, DEFAULT_INFO_NAME};
+    use crate::testutil::test_utilities::{
+        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_INFO_NAME,
+    };
     use crate::util::aliases::DepsC;
-    use crate::util::attribute_keys::ADD_ASSET_DEFINITION_KEY;
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
+    use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_asset_definition;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -88,19 +94,18 @@ mod tests {
             "adding an asset definition should not require messages",
         );
         assert_eq!(
-            1,
+            2,
             response.attributes.len(),
-            "adding an asset definition should append a single attribute",
+            "adding an asset definition should produce the correct number of attributes",
         );
-        let attribute = response.attributes.first().unwrap();
         assert_eq!(
-            ADD_ASSET_DEFINITION_KEY,
-            attribute.key.as_str(),
+            EventType::AddAssetDefinition.event_name().as_str(),
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
             "the add asset definition key should be the key on the only attribute",
         );
         assert_eq!(
             TEST_MOCK_LOAN_TYPE,
-            attribute.value.as_str(),
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "the value on the attribute should be the loan type of the added definition",
         );
         test_asset_definition_was_added(&asset_definition, &deps.as_ref());

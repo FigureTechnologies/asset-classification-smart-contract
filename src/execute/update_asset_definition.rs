@@ -2,8 +2,8 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::attribute_keys::UPDATE_ASSET_DEFINITION_KEY;
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 use schemars::JsonSchema;
@@ -55,9 +55,9 @@ pub fn update_asset_definition(
     // Overwrite the existing asset definition with the new one
     asset_state(deps.storage, &msg.asset_definition.asset_type).save(&msg.asset_definition)?;
     Response::new()
-        .add_attribute(
-            UPDATE_ASSET_DEFINITION_KEY,
-            &msg.asset_definition.asset_type,
+        .add_attributes(
+            EventAttributes::new(EventType::UpdateAssetDefinition)
+                .set_asset_type(&msg.asset_definition.asset_type),
         )
         .to_ok()
 }
@@ -72,10 +72,12 @@ mod tests {
         update_asset_definition, UpdateAssetDefinitionV1,
     };
     use crate::testutil::test_utilities::{
-        test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME,
+        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
+        DEFAULT_INFO_NAME,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::attribute_keys::UPDATE_ASSET_DEFINITION_KEY;
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
+    use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_asset_definition;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -100,20 +102,19 @@ mod tests {
             "updating an asset definition should not require messages",
         );
         assert_eq!(
-            1,
+            2,
             response.attributes.len(),
-            "updating an asset definition should append a single attribute",
+            "updating an asset definition should produce the correct number of attributes",
         );
-        let attribute = response.attributes.first().unwrap();
         assert_eq!(
-            UPDATE_ASSET_DEFINITION_KEY,
-            attribute.key.as_str(),
-            "the updated asset definition key should be the key on the only attribute",
+            EventType::UpdateAssetDefinition.event_name().as_str(),
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "the correct event type should be emitted",
         );
         assert_eq!(
             DEFAULT_ASSET_TYPE,
-            attribute.value.as_str(),
-            "the value on the attribute should be the loan type of the updated definition",
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
+            "the asset type attribute should be added correctly",
         );
         test_asset_definition_was_updated(&asset_definition, &deps.as_ref());
     }

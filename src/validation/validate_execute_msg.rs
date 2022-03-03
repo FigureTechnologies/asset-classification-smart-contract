@@ -34,20 +34,20 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
 }
 
 fn validate_onboard_asset(
-    asset_uuid: &str,
+    asset_uuid: &Option<String>,
     asset_type: &str,
-    scope_address: &str,
+    scope_address: &Option<String>,
     validator_address: &str,
 ) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    if asset_uuid.is_empty() {
-        invalid_fields.push("asset_uuid: must not be blank".to_string());
+    if asset_uuid.is_none() && scope_address.is_none() {
+        invalid_fields
+            .push("asset_uuid: must not be blank if scope_address not provided".to_string());
+        invalid_fields
+            .push("scope_address: must not be blank if asset_uuid not provided".to_string());
     }
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
-    }
-    if scope_address.is_empty() {
-        invalid_fields.push("scope_address: must not be blank".to_string());
     }
     if validator_address.is_empty() {
         invalid_fields.push("validator_address: must not be blank".to_string());

@@ -68,14 +68,15 @@ pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<Prov
     test_instantiate(deps, args).expect("expected instantiation to succeed")
 }
 
+pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
+    mock_info(DEFAULT_INFO_NAME, funds)
+}
+
 pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
-    mock_info(
-        DEFAULT_INFO_NAME,
-        &[Coin {
-            denom: "nhash".into(),
-            amount: Uint128::from(amount),
-        }],
-    )
+    mock_info_with_funds(&[Coin {
+        denom: "nhash".into(),
+        amount: Uint128::from(amount),
+    }])
 }
 
 pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) -> &'a str {

@@ -12,9 +12,9 @@ pub struct InitMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     OnboardAsset {
-        asset_uuid: String,
+        asset_uuid: Option<String>,
         asset_type: String,
-        scope_address: String,
+        scope_address: Option<String>,
         validator_address: String,
     },
     ValidateAsset {

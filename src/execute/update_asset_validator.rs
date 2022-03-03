@@ -2,11 +2,11 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{asset_state, ValidatorDetail};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::attribute_keys::{UPDATE_ASSET_VALIDATOR_ADDRESS_KEY, UPDATE_ASSET_VALIDATOR_KEY};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::replace_single_matching_vec_element;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Attribute, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -52,11 +52,10 @@ pub fn update_asset_validator(
     // validator does not exist.  Given validation upfront prevents multiple validators with the
     // same address from existing on an asset definition, this generally will indicate that the
     // validator is outright missing
-    if asset_definition
+    if !asset_definition
         .validators
         .iter()
-        .find(|v| v.address == validator_address)
-        .is_none()
+        .any(|v| v.address == validator_address)
     {
         return ContractError::NotFound {
             explanation: format!(
@@ -66,10 +65,10 @@ pub fn update_asset_validator(
         }
         .to_err();
     }
-    let attributes: Vec<Attribute> = vec![
-        Attribute::new(UPDATE_ASSET_VALIDATOR_KEY, &asset_definition.asset_type),
-        Attribute::new(UPDATE_ASSET_VALIDATOR_ADDRESS_KEY, &msg.validator.address),
-    ];
+    // Declare the attributes up-front before values are moved
+    let attributes = EventAttributes::new(EventType::UpdateAssetValidator)
+        .set_asset_type(&asset_definition.asset_type)
+        .set_validator(&msg.validator.address);
     // Replace the existing validator and save the result to the state
     asset_definition.validators =
         replace_single_matching_vec_element(asset_definition.validators, msg.validator, |v| {
@@ -92,9 +91,8 @@ mod tests {
         DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::attribute_keys::{
-        UPDATE_ASSET_VALIDATOR_ADDRESS_KEY, UPDATE_ASSET_VALIDATOR_KEY,
-    };
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
+    use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_validator;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -120,18 +118,23 @@ mod tests {
             "updating an asset validator should not require messages",
         );
         assert_eq!(
-            2,
+            3,
             response.attributes.len(),
-            "updating an asset validator should append two attributes",
+            "the correct number of attributes should be produced",
+        );
+        assert_eq!(
+            EventType::UpdateAssetValidator.event_name().as_str(),
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "expected the proper event type to be emitted",
         );
         assert_eq!(
             DEFAULT_ASSET_TYPE,
-            single_attribute_for_key(&response, UPDATE_ASSET_VALIDATOR_KEY),
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "expected the update asset validator main key to include the asset type",
         );
         assert_eq!(
             &validator.address,
-            single_attribute_for_key(&response, UPDATE_ASSET_VALIDATOR_ADDRESS_KEY),
+            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
             "expected the validator's address to be the value for the address key",
         );
         test_default_validator_was_updated(&validator, &deps.as_ref());

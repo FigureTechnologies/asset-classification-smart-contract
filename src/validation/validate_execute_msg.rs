@@ -1,9 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::util::aliases::ContractResult;
+use crate::core::state::ValidatorDetail;
+use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
+use crate::validation::validate_init_msg::{
+    validate_asset_definition, validate_validator_with_provided_errors,
+};
 
-pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
+pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), ContractError> {
     match msg {
         ExecuteMsg::OnboardAsset {
             asset_uuid,
@@ -12,6 +16,20 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
             validator_address,
         } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
         ExecuteMsg::ValidateAsset { asset_uuid, .. } => validate_validate_asset(asset_uuid),
+        ExecuteMsg::AddAssetDefinition { asset_definition } => {
+            validate_asset_definition(asset_definition, deps)
+        }
+        ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
+            validate_asset_definition(asset_definition, deps)
+        }
+        ExecuteMsg::AddAssetValidator {
+            asset_type,
+            validator,
+        } => validate_asset_validator_msg(asset_type, validator, deps),
+        ExecuteMsg::UpdateAssetValidator {
+            asset_type,
+            validator,
+        } => validate_asset_validator_msg(asset_type, validator, deps),
     }
 }
 
@@ -59,4 +77,17 @@ fn validate_validate_asset(asset_uuid: &str) -> ContractResult<()> {
     } else {
         Ok(())
     }
+}
+
+fn validate_asset_validator_msg(
+    asset_type: &str,
+    validator: &ValidatorDetail,
+    deps: &DepsC,
+) -> ContractResult<()> {
+    let errors = if asset_type.is_empty() {
+        Some(vec!["asset_type must not be empty".to_string()])
+    } else {
+        None
+    };
+    validate_validator_with_provided_errors(validator, deps, errors)
 }

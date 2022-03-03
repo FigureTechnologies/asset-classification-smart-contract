@@ -10,6 +10,12 @@ pub enum ContractError {
     #[error("{0}")]
     Bech32Error(#[from] bech32::Error),
 
+    #[error("duplicate/existing asset definition provided as input")]
+    DuplicateAssetDefinitionProvided,
+
+    #[error("duplicate/existing validator address provided as input")]
+    DuplicateValidatorProvided,
+
     #[error("{0}")]
     InvalidFunds(String),
 
@@ -21,6 +27,9 @@ pub enum ContractError {
 
     #[error("Invalid message type provided. Expected message type {expected_message_type}")]
     InvalidMessageType { expected_message_type: String },
+
+    #[error("Resource not found: {explanation}")]
+    NotFound { explanation: String },
 
     #[error("Unsupported asset type [{asset_type}]")]
     UnsupportedAssetType { asset_type: String },
@@ -53,8 +62,8 @@ pub enum ContractError {
         scope_address: String,
     },
 
-    #[error("Unauthorized")]
-    Unauthorized,
+    #[error("Unauthorized: {explanation}")]
+    Unauthorized { explanation: String },
 
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,
@@ -63,3 +72,8 @@ pub enum ContractError {
     UuidError(#[from] uuid::Error),
 }
 impl ResultExtensions for ContractError {}
+impl ContractError {
+    pub fn std_err<S: Into<String>>(msg: S) -> ContractError {
+        ContractError::Std(StdError::generic_err(msg))
+    }
+}

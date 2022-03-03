@@ -58,7 +58,7 @@ pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + C
     } else if let Some(uuid) = asset_uuid {
         asset_uuid_to_scope_address(uuid)
     } else {
-        return ContractError::AssetIdentifierNotSupplied.to_err();
+        ContractError::AssetIdentifierNotSupplied.to_err()
     }
 }
 

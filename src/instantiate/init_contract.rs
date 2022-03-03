@@ -1,7 +1,7 @@
-use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
 use crate::core::state::{asset_state, config, State};
 use crate::util::aliases::{ContractResponse, DepsMutC};
+use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::functions::generate_asset_attribute_name;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
@@ -13,13 +13,7 @@ pub fn init_contract(
     info: MessageInfo,
     msg: InitMsg,
 ) -> ContractResponse {
-    // Ensure that funds were not improperly provided
-    if !info.funds.is_empty() {
-        return ContractError::InvalidFunds(
-            "Funds should not be provided for contract instantiation".to_string(),
-        )
-        .to_err();
-    }
+    check_funds_are_empty(&info)?;
     let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
@@ -37,10 +31,11 @@ pub fn init_contract(
     let state = State::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
     config(deps.storage).save(&state)?;
-    Ok(Response::new()
+    Response::new()
         .add_messages(messages)
         //.add_message(bind_name_msg)
-        .add_attribute("action", "init"))
+        .add_attribute("action", "init")
+        .to_ok()
 }
 
 #[cfg(test)]

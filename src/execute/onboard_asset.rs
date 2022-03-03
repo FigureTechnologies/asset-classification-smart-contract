@@ -119,13 +119,16 @@ pub fn onboard_asset(
         .into_iter()
         .any(|owner| owner.address == sender)
     {
-        return ContractError::Unauthorized.to_err();
+        return ContractError::Unauthorized {
+            explanation: "sender address does not own the scope".to_string(),
+        }
+        .to_err();
     }
 
     // verify asset metadata storage doesn't already contain this asset (i.e. it hasn't already been onboarded)
     let mut asset_storage = asset_meta(deps.storage);
     if let Some(..) = asset_storage
-        .may_load(&msg.scope_address.as_bytes())
+        .may_load(msg.scope_address.as_bytes())
         .unwrap()
     {
         return ContractError::AssetAlreadyOnboarded {
@@ -136,7 +139,7 @@ pub fn onboard_asset(
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
     if let Err(err) = asset_storage.save(
-        &msg.scope_address.as_bytes(),
+        msg.scope_address.as_bytes(),
         &AssetMeta::new(
             &msg.scope_address,
             &msg.asset_type,
@@ -153,8 +156,12 @@ pub fn onboard_asset(
     }
 
     Ok(Response::new().add_attributes(
-        EventAttributes::new(EventType::OnboardAsset, &msg.asset_type, &msg.scope_address)
-            .set_validator(msg.validator_address),
+        EventAttributes::for_asset_event(
+            EventType::OnboardAsset,
+            &msg.asset_type,
+            &msg.scope_address,
+        )
+        .set_validator(msg.validator_address),
     ))
 }
 

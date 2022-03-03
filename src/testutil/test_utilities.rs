@@ -1,13 +1,13 @@
 use cosmwasm_std::{
     testing::{mock_env, mock_info},
-    Coin, Decimal, DepsMut, Env, MessageInfo, Response, Uint128,
+    Coin, Decimal, Env, MessageInfo, Response, Uint128,
 };
-use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
+use provwasm_std::ProvenanceMsg;
 
+use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
     core::{
-        error::ContractError,
         msg::InitMsg,
         state::{AssetDefinition, ValidatorDetail},
     },
@@ -19,18 +19,20 @@ pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
-pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
-    [AssetDefinition {
+pub fn get_default_asset_definition() -> AssetDefinition {
+    AssetDefinition {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        validators: [ValidatorDetail {
+        validators: vec![ValidatorDetail {
             address: DEFAULT_VALIDATOR_ADDRESS.into(),
             onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
             fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
-            fee_destinations: [].to_vec(),
-        }]
-        .to_vec(),
-    }]
-    .to_vec()
+            fee_destinations: vec![],
+        }],
+    }
+}
+
+pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
+    vec![get_default_asset_definition()]
 }
 
 pub struct InstArgs {
@@ -50,10 +52,7 @@ impl Default for InstArgs {
     }
 }
 
-pub fn test_instantiate(
-    deps: DepsMut<ProvenanceQuery>,
-    args: InstArgs,
-) -> Result<Response<ProvenanceMsg>, ContractError> {
+pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
     instantiate(
         deps,
         args.env,
@@ -65,6 +64,10 @@ pub fn test_instantiate(
     )
 }
 
+pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
+    test_instantiate(deps, args).expect("expected instantiation to succeed")
+}
+
 pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
     mock_info(DEFAULT_INFO_NAME, funds)
 }
@@ -74,4 +77,14 @@ pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
         denom: "nhash".into(),
         amount: Uint128::from(amount),
     }])
+}
+
+pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) -> &'a str {
+    response
+        .attributes
+        .iter()
+        .find(|attr| attr.key.as_str() == key)
+        .unwrap()
+        .value
+        .as_str()
 }

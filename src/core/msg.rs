@@ -1,4 +1,4 @@
-use crate::core::state::AssetDefinition;
+use crate::core::state::{AssetDefinition, ValidatorDetail};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -21,12 +21,26 @@ pub enum ExecuteMsg {
         asset_uuid: String,
         approve: bool,
     },
+    AddAssetDefinition {
+        asset_definition: AssetDefinition,
+    },
+    UpdateAssetDefinition {
+        asset_definition: AssetDefinition,
+    },
+    AddAssetValidator {
+        asset_type: String,
+        validator: ValidatorDetail,
+    },
+    UpdateAssetValidator {
+        asset_type: String,
+        validator: ValidatorDetail,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    NoOp {},
+    QueryAssetDefinition { asset_type: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

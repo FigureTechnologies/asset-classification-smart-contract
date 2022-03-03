@@ -84,7 +84,7 @@ mod tests {
     };
     use crate::testutil::test_utilities::{
         single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
-        DEFAULT_INFO_NAME,
+        DEFAULT_INFO_NAME, empty_mock_info,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
@@ -102,7 +102,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            empty_mock_info(),
             ExecuteMsg::UpdateAssetDefinition {
                 asset_definition: asset_definition.clone(),
             },

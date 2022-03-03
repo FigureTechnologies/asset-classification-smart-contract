@@ -1,8 +1,8 @@
 use cosmwasm_std::{
-    testing::{mock_env, mock_info, MockApi, MockStorage},
-    Coin, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
+    testing::{mock_env, mock_info},
+    Coin, Decimal, Env, MessageInfo, Response, Uint128,
 };
-use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
+use provwasm_std::ProvenanceMsg;
 
 use crate::core::msg::AssetDefinitionInput;
 use crate::util::aliases::{ContractResponse, DepsMutC};

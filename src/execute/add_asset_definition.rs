@@ -70,7 +70,7 @@ mod tests {
     use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::test_utilities::{
-        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_INFO_NAME,
+        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_INFO_NAME, empty_mock_info,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
@@ -90,7 +90,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            empty_mock_info(),
             ExecuteMsg::AddAssetDefinition {
                 asset_definition: asset_definition.clone(),
             },
@@ -125,7 +125,7 @@ mod tests {
         let msg = get_valid_add_asset_definition();
         add_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            empty_mock_info(),
             msg.clone(),
         )
         .expect("expected the add asset definition function to return properly");
@@ -142,7 +142,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            empty_mock_info(),
             msg,
         )
         .unwrap_err();
@@ -192,7 +192,7 @@ mod tests {
         let mut add_asset = || {
             add_asset_definition(
                 deps.as_mut(),
-                mock_info(DEFAULT_INFO_NAME, &[]),
+                empty_mock_info(),
                 get_valid_add_asset_definition(),
             )
         };

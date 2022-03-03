@@ -87,3 +87,54 @@ impl IntoIterator for EventAttributes {
         self.attributes.into_iter()
     }
 }
+
+#[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
+mod tests {
+    use cosmwasm_std::Response;
+
+    use crate::{
+        testutil::test_utilities::single_attribute_for_key,
+        util::constants::{
+            ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
+            VALIDATOR_ADDRESS_KEY,
+        },
+    };
+
+    use super::{EventAttributes, EventType};
+
+    #[test]
+    fn test_response_consumption() {
+        let attributes = EventAttributes::new(EventType::OnboardAsset)
+            .set_asset_type("asset type")
+            .set_scope_address("scope address")
+            .set_validator("validator address")
+            .set_new_value("new value");
+        let response: Response<String> = Response::new().add_attributes(attributes);
+        assert_eq!(
+            "onboard_asset",
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "the event type attribute should be added correctly",
+        );
+        assert_eq!(
+            "asset type",
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
+            "the asset type attribute should be added correctly",
+        );
+        assert_eq!(
+            "scope address",
+            single_attribute_for_key(&response, ASSET_SCOPE_ADDRESS_KEY),
+            "the scope address attribute should be added correctly",
+        );
+        assert_eq!(
+            "validator address",
+            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
+            "the validator address attribute should be added correctly",
+        );
+        assert_eq!(
+            "new value",
+            single_attribute_for_key(&response, NEW_VALUE_KEY),
+            "the new value attribute should be added correctly",
+        );
+    }
+}

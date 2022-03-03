@@ -216,6 +216,10 @@ mod tests {
             asset_definition, &state_def,
             "the value in state should directly equate to the added value",
         );
+        assert_eq!(
+            true, state_def.enabled,
+            "the default value for added values should be enabled = true",
+        );
     }
 
     fn get_valid_asset_definition() -> AssetDefinitionInput {

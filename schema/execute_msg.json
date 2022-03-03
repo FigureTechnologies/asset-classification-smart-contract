@@ -105,6 +105,26 @@
     {
       "type": "object",
       "required": [
+        "toggle_asset_definition"
+      ],
+      "properties": {
+        "toggle_asset_definition": {
+          "type": "object",
+          "required": [
+            "asset_type"
+          ],
+          "properties": {
+            "asset_type": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "add_asset_validator"
       ],
       "properties": {

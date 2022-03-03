@@ -70,7 +70,8 @@ mod tests {
     use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::test_utilities::{
-        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_INFO_NAME, empty_mock_info,
+        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
+        DEFAULT_INFO_NAME,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
@@ -123,12 +124,8 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = get_valid_add_asset_definition();
-        add_asset_definition(
-            deps.as_mut(),
-            empty_mock_info(),
-            msg.clone(),
-        )
-        .expect("expected the add asset definition function to return properly");
+        add_asset_definition(deps.as_mut(), empty_mock_info(), msg.clone())
+            .expect("expected the add asset definition function to return properly");
         test_asset_definition_was_added(&msg.asset_definition, &deps.as_ref());
     }
 
@@ -139,13 +136,7 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinition::new(String::new(), vec![]).into(),
         };
-        let error = execute(
-            deps.as_mut(),
-            mock_env(),
-            empty_mock_info(),
-            msg,
-        )
-        .unwrap_err();
+        let error = execute(deps.as_mut(), mock_env(), empty_mock_info(), msg).unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
             "expected an invalid asset definition to cause an InvalidMessageFields error",

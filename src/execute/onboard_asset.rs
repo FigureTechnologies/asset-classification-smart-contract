@@ -51,7 +51,15 @@ pub fn onboard_asset(
 ) -> ContractResponse {
     // get asset state config for type, or error if not present
     let asset_state = match asset_state_read(deps.storage, &msg.asset_type).load() {
-        Ok(state) => state,
+        Ok(state) => {
+            if !state.enabled {
+                return ContractError::AssetTypeDisabled {
+                    asset_type: msg.asset_type.to_string(),
+                }
+                .to_err();
+            }
+            state
+        }
         Err(_) => {
             return ContractError::UnsupportedAssetType {
                 asset_type: msg.asset_type.to_string(),
@@ -177,9 +185,10 @@ mod tests {
             error::ContractError,
             state::{asset_meta, asset_meta_read, AssetMeta},
         },
+        execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         testutil::test_utilities::{
-            mock_info_with_funds, mock_info_with_nhash, test_instantiate, InstArgs,
-            DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
+            empty_mock_info, mock_info_with_funds, mock_info_with_nhash, test_instantiate_success,
+            InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
             DEFAULT_VALIDATOR_ADDRESS,
         },
         util::constants::{
@@ -192,8 +201,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_unsupported_asset_type() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
-
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
@@ -218,9 +226,36 @@ mod tests {
     }
 
     #[test]
+    fn test_onboard_asset_errors_on_disabled_asset_type() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        toggle_asset_definition(
+            deps.as_mut(),
+            empty_mock_info(),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
+        )
+        .expect("toggling the asset definition to be disabled should succeed");
+        let err = onboard_asset(
+            deps.as_mut(),
+            mock_env(),
+            mock_info_with_nhash(1000),
+            OnboardAssetV1 {
+                scope_address: "scope420".into(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
+            },
+        )
+        .unwrap_err();
+        assert!(
+            matches!(err, ContractError::AssetTypeDisabled { .. }),
+            "the request should be rejected for a disabled asset type",
+        );
+    }
+
+    #[test]
     fn test_onboard_asset_errors_on_unsupported_validator() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -252,7 +287,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_no_funds() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -280,7 +315,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_extra_funds() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -317,7 +352,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_denom() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -348,7 +383,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_amount() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -381,7 +416,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_already_asset_not_found() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -409,7 +444,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_already_onboarded_asset() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         deps.querier.with_scope(Scope {
             scope_id: "scope1234".to_string(),
@@ -463,7 +498,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_succeeds() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
 
         deps.querier.with_scope(Scope {
             scope_id: "scope1234".to_string(),

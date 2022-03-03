@@ -1,8 +1,8 @@
 use cosmwasm_std::{
-    testing::{mock_env, mock_info},
-    Coin, Decimal, Env, MessageInfo, Response, Uint128,
+    testing::{mock_env, mock_info, MockApi, MockStorage},
+    Coin, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
-use provwasm_std::ProvenanceMsg;
+use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
 
 use crate::core::msg::AssetDefinitionInput;
 use crate::util::aliases::{ContractResponse, DepsMutC};
@@ -79,6 +79,10 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
 
 pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
     test_instantiate(deps, args).expect("expected instantiation to succeed")
+}
+
+pub fn empty_mock_info() -> MessageInfo {
+    mock_info(DEFAULT_INFO_NAME, &[])
 }
 
 pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {

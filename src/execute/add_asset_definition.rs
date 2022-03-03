@@ -108,7 +108,7 @@ mod tests {
         assert_eq!(
             EventType::AddAssetDefinition.event_name().as_str(),
             single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
-            "the add asset definition key should be the key on the only attribute",
+            "the proper event type should be emitted",
         );
         assert_eq!(
             TEST_MOCK_LOAN_TYPE,

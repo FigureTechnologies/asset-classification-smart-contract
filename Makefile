@@ -9,9 +9,16 @@ fmt:
 build:
 	@cargo wasm
 
-.PHONY: test
-test:
+.PHONY: unit-test
+unit-test:
 	@RUST_BACKTRACE=1 cargo unit-test
+
+.PHONY: doc-test
+doc-test:
+	@RUST_BACKTRACE=1 cargo doc-test
+
+.PHONY: test
+test: unit-test doc-test
 
 .PHONY: lint
 lint:

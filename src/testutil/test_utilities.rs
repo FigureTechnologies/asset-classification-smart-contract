@@ -65,12 +65,13 @@ pub fn test_instantiate(
     )
 }
 
+pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
+    mock_info(DEFAULT_INFO_NAME, funds)
+}
+
 pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
-    mock_info(
-        DEFAULT_INFO_NAME,
-        &[Coin {
-            denom: "nhash".into(),
-            amount: Uint128::from(amount),
-        }],
-    )
+    mock_info_with_funds(&[Coin {
+        denom: "nhash".into(),
+        amount: Uint128::from(amount),
+    }])
 }

@@ -54,6 +54,9 @@ pub enum ExecuteMsg {
     UpdateAssetDefinition {
         asset_definition: AssetDefinitionInput,
     },
+    ToggleAssetDefinition {
+        asset_type: String,
+    },
     AddAssetValidator {
         asset_type: String,
         validator: ValidatorDetail,

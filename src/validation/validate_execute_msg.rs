@@ -22,6 +22,9 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.into(), deps)
         }
+        ExecuteMsg::ToggleAssetDefinition { asset_type } => {
+            validate_toggle_asset_definition(asset_type)
+        }
         ExecuteMsg::AddAssetValidator {
             asset_type,
             validator,
@@ -71,6 +74,22 @@ fn validate_validate_asset(asset_uuid: &str) -> ContractResult<()> {
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
             message_type: "ExecuteMsg::ValidateAsset".to_string(),
+            invalid_fields,
+        }
+        .to_err()
+    } else {
+        Ok(())
+    }
+}
+
+fn validate_toggle_asset_definition(asset_type: &str) -> ContractResult<()> {
+    let mut invalid_fields: Vec<String> = vec![];
+    if asset_type.is_empty() {
+        invalid_fields.push("asset_type: must not be blank".to_string());
+    }
+    if !invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: "ExecuteMsg::ToggleAssetDefinition".to_string(),
             invalid_fields,
         }
         .to_err()

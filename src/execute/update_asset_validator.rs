@@ -80,6 +80,7 @@ pub fn update_asset_validator(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;

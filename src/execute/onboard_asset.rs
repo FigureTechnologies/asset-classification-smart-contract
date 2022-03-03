@@ -166,6 +166,7 @@ pub fn onboard_asset(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{testing::mock_env, Addr, Coin, Uint128};
     use provwasm_mocks::mock_dependencies;

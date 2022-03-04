@@ -59,7 +59,7 @@ mod tests {
 
     use crate::{
         migrate::version_info::{set_version_info, VersionInfoV1},
-        testutil::test_utilities::{single_attribute_for_key, InstArgs},
+        testutil::test_utilities::single_attribute_for_key,
         util::constants::{ASSET_EVENT_TYPE_KEY, NEW_VALUE_KEY},
     };
 

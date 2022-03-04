@@ -10,11 +10,26 @@ pub enum ContractError {
     #[error("{0}")]
     Bech32Error(#[from] bech32::Error),
 
+    #[error("Semver parsing error: {0}")]
+    SemVer(#[from] semver::Error),
+
     #[error("duplicate/existing asset definition provided as input")]
     DuplicateAssetDefinitionProvided,
 
     #[error("duplicate/existing validator address provided as input")]
     DuplicateValidatorProvided,
+
+    #[error("Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]")]
+    InvalidContractName {
+        current_contract: String,
+        migration_contract: String,
+    },
+
+    #[error("Current contract version [{current_version}] is higher than provided migration version [{migration_version}]")]
+    InvalidContractVersion {
+        current_version: String,
+        migration_version: String,
+    },
 
     #[error("{0}")]
     InvalidFunds(String),

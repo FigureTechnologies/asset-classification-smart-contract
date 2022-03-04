@@ -4,6 +4,7 @@ use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo};
 
+#[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
     pub asset_uuid: String,
     pub approve: bool,

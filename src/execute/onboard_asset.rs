@@ -7,10 +7,8 @@ use crate::util::scope_address_utils::get_validate_scope_address;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct OnboardAssetV1 {
     pub scope_address: String,
     pub asset_type: String,

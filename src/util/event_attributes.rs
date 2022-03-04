@@ -1,5 +1,6 @@
 use super::constants::{
-    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY,
+    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
+    VALIDATOR_ADDRESS_KEY,
 };
 
 pub enum EventType {
@@ -7,6 +8,7 @@ pub enum EventType {
     ValidateAsset,
     AddAssetDefinition,
     UpdateAssetDefinition,
+    ToggleAssetDefinition,
     AddAssetValidator,
     UpdateAssetValidator,
 }
@@ -18,6 +20,7 @@ impl Into<String> for EventType {
             EventType::ValidateAsset => "validate_asset",
             EventType::AddAssetDefinition => "add_asset_definition",
             EventType::UpdateAssetDefinition => "update_asset_definition",
+            EventType::ToggleAssetDefinition => "toggle_asset_definition",
             EventType::AddAssetValidator => "add_asset_validator",
             EventType::UpdateAssetValidator => "update_asset_validator",
         }
@@ -67,6 +70,12 @@ impl EventAttributes {
             .push((VALIDATOR_ADDRESS_KEY.into(), validator_address.into()));
         self
     }
+
+    pub fn set_new_value<T: ToString>(mut self, new_value: T) -> Self {
+        self.attributes
+            .push((NEW_VALUE_KEY.into(), new_value.to_string()));
+        self
+    }
 }
 
 impl IntoIterator for EventAttributes {
@@ -76,5 +85,56 @@ impl IntoIterator for EventAttributes {
 
     fn into_iter(self) -> Self::IntoIter {
         self.attributes.into_iter()
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
+mod tests {
+    use cosmwasm_std::Response;
+
+    use crate::{
+        testutil::test_utilities::single_attribute_for_key,
+        util::constants::{
+            ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
+            VALIDATOR_ADDRESS_KEY,
+        },
+    };
+
+    use super::{EventAttributes, EventType};
+
+    #[test]
+    fn test_response_consumption() {
+        let attributes = EventAttributes::new(EventType::OnboardAsset)
+            .set_asset_type("asset type")
+            .set_scope_address("scope address")
+            .set_validator("validator address")
+            .set_new_value("new value");
+        let response: Response<String> = Response::new().add_attributes(attributes);
+        assert_eq!(
+            "onboard_asset",
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "the event type attribute should be added correctly",
+        );
+        assert_eq!(
+            "asset type",
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
+            "the asset type attribute should be added correctly",
+        );
+        assert_eq!(
+            "scope address",
+            single_attribute_for_key(&response, ASSET_SCOPE_ADDRESS_KEY),
+            "the scope address attribute should be added correctly",
+        );
+        assert_eq!(
+            "validator address",
+            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
+            "the validator address attribute should be added correctly",
+        );
+        assert_eq!(
+            "new value",
+            single_attribute_for_key(&response, NEW_VALUE_KEY),
+            "the new value attribute should be added correctly",
+        );
     }
 }

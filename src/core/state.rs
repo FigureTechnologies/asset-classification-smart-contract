@@ -1,4 +1,4 @@
-use crate::core::msg::InitMsg;
+use crate::core::msg::{AssetDefinitionInput, InitMsg};
 use cosmwasm_std::{Addr, Decimal, Storage, Uint128};
 use cosmwasm_storage::{
     bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
@@ -36,12 +36,32 @@ pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
 pub struct AssetDefinition {
     pub asset_type: String,
     pub validators: Vec<ValidatorDetail>,
+    pub enabled: bool,
 }
 impl AssetDefinition {
     pub fn new(asset_type: String, validators: Vec<ValidatorDetail>) -> Self {
         AssetDefinition {
             asset_type,
             validators,
+            enabled: true,
+        }
+    }
+}
+impl From<AssetDefinitionInput> for AssetDefinition {
+    fn from(input: AssetDefinitionInput) -> Self {
+        Self {
+            asset_type: input.asset_type,
+            validators: input.validators,
+            enabled: input.enabled.unwrap_or(true),
+        }
+    }
+}
+impl From<&AssetDefinitionInput> for AssetDefinition {
+    fn from(input: &AssetDefinitionInput) -> Self {
+        AssetDefinition {
+            asset_type: input.asset_type.clone(),
+            validators: input.validators.clone(),
+            enabled: input.enabled.unwrap_or(true),
         }
     }
 }

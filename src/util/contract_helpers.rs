@@ -8,21 +8,16 @@ use cosmwasm_std::MessageInfo;
 ///
 /// # Examples
 /// ```
-/// use asset_classification_smart_contract::util::aliases::{ContractResponse, DepsMutC};
-/// use cosmwasm_std::{MessageInfo, Response};
+/// use cosmwasm_std::MessageInfo;
 /// use asset_classification_smart_contract::util::contract_helpers::check_admin_only;
-/// use asset_classification_smart_contract::util::traits::ResultExtensions;
 /// use cosmwasm_std::testing::mock_info;
 /// use provwasm_mocks::mock_dependencies;
-/// use asset_classification_smart_contract::testutil::test_utilities::DEFAULT_INFO_NAME;
+/// use asset_classification_smart_contract::testutil::test_utilities::{test_instantiate_success, InstArgs, DEFAULT_INFO_NAME};
 ///
-/// fn route(deps: DepsMutC, info: MessageInfo, msg: String) -> ContractResponse {
-///     check_admin_only(&deps.as_ref(), &info)?;
-///     Response::new().to_ok()
-/// }
 /// let mut deps = mock_dependencies(&[]);
+/// test_instantiate_success(deps.as_mut(), InstArgs::default());
 /// let info = mock_info(DEFAULT_INFO_NAME, &[]);
-/// route(deps.as_mut(), info, "something".to_string()).expect("should be the admin because tests use DEFAULT_INFO_NAME");
+/// check_admin_only(&deps.as_ref(), &info).expect("DEFAULT_INFO_NAME was used as the admin and should return a success");
 /// ```
 pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> {
     let state = config_read(deps.storage).load()?;
@@ -40,21 +35,12 @@ pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> 
 ///
 /// # Examples
 /// ```
-/// use asset_classification_smart_contract::util::aliases::{ContractResponse, DepsMutC};
-/// use cosmwasm_std::{MessageInfo, Response};
 /// use asset_classification_smart_contract::util::contract_helpers::check_funds_are_empty;
-/// use asset_classification_smart_contract::util::traits::ResultExtensions;
 /// use cosmwasm_std::testing::mock_info;
-/// use provwasm_mocks::mock_dependencies;
 /// use asset_classification_smart_contract::testutil::test_utilities::DEFAULT_INFO_NAME;
 ///
-/// fn route(deps: DepsMutC, info: MessageInfo, msg: String) -> ContractResponse {
-///     check_funds_are_empty(&info)?;
-///     Response::new().to_ok()
-/// }
-/// let mut deps = mock_dependencies(&[]);
 /// let info = mock_info(DEFAULT_INFO_NAME, &[]);
-/// route(deps.as_mut(), info, "idk".to_string()).expect("no funds were provided so this should unwrap correctly");
+/// check_funds_are_empty(&info).expect("no coin provided in info - should be success");
 /// ```
 pub fn check_funds_are_empty(info: &MessageInfo) -> ContractResult<()> {
     if !info.funds.is_empty() {

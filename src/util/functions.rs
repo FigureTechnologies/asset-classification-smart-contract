@@ -34,7 +34,7 @@ where
 ///
 /// let asset_type = "mortgage";
 /// let contract_base_name = "asset";
-/// let attribute_name = generate_asset_attribute_name(&asset_type, &contract_base_name);
+/// let attribute_name = generate_asset_attribute_name(asset_type, contract_base_name);
 /// assert_eq!("mortgage.asset", attribute_name.as_str());
 /// ```
 pub fn generate_asset_attribute_name<T: Into<String>, U: Into<String>>(

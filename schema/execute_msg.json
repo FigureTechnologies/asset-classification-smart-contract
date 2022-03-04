@@ -75,7 +75,7 @@
           ],
           "properties": {
             "asset_definition": {
-              "$ref": "#/definitions/AssetDefinition"
+              "$ref": "#/definitions/AssetDefinitionInput"
             }
           }
         }
@@ -95,7 +95,27 @@
           ],
           "properties": {
             "asset_definition": {
-              "$ref": "#/definitions/AssetDefinition"
+              "$ref": "#/definitions/AssetDefinitionInput"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "toggle_asset_definition"
+      ],
+      "properties": {
+        "toggle_asset_definition": {
+          "type": "object",
+          "required": [
+            "asset_type"
+          ],
+          "properties": {
+            "asset_type": {
+              "type": "string"
             }
           }
         }
@@ -152,7 +172,8 @@
     }
   ],
   "definitions": {
-    "AssetDefinition": {
+    "AssetDefinitionInput": {
+      "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
       "type": "object",
       "required": [
         "asset_type",
@@ -161,6 +182,12 @@
       "properties": {
         "asset_type": {
           "type": "string"
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         },
         "validators": {
           "type": "array",

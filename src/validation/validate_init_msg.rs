@@ -1,5 +1,5 @@
 use crate::core::error::ContractError;
-use crate::core::msg::InitMsg;
+use crate::core::msg::{AssetDefinitionInput, InitMsg};
 use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
@@ -22,7 +22,7 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     let mut asset_messages = msg
         .asset_definitions
         .iter()
-        .flat_map(|asset| validate_asset_definition_internal(asset, deps))
+        .flat_map(|asset| validate_asset_definition_internal(&asset.into(), deps))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut asset_messages);
     if !invalid_fields.is_empty() {
@@ -34,6 +34,13 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     } else {
         Ok(())
     }
+}
+
+pub fn validate_asset_definition_input(
+    input: &AssetDefinitionInput,
+    deps: &DepsC,
+) -> ContractResult<()> {
+    validate_asset_definition(&input.clone().into(), deps)
 }
 
 pub fn validate_asset_definition(
@@ -188,7 +195,7 @@ fn validate_destination_internal(destination: &FeeDestination, deps: &DepsC) -> 
 #[cfg(test)]
 pub mod tests {
     use crate::core::error::ContractError;
-    use crate::core::msg::InitMsg;
+    use crate::core::msg::{AssetDefinitionInput, InitMsg};
     use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::validation::validate_init_msg::{
         validate_asset_definition_internal, validate_destination_internal, validate_init_msg,
@@ -209,7 +216,7 @@ pub mod tests {
     fn test_valid_init_msg_single_definition() {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
-            asset_definitions: vec![AssetDefinition::new(
+            asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc".to_string(),
                 vec![ValidatorDetail::new(
                     "address".to_string(),
@@ -220,6 +227,7 @@ pub mod tests {
                         Decimal::percent(100),
                     )],
                 )],
+                None,
             )],
         });
     }
@@ -229,7 +237,7 @@ pub mod tests {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![
-                AssetDefinition::new(
+                AssetDefinitionInput::new(
                     "heloc".to_string(),
                     vec![ValidatorDetail::new(
                         "address".to_string(),
@@ -240,8 +248,9 @@ pub mod tests {
                             Decimal::percent(100),
                         )],
                     )],
+                    None,
                 ),
-                AssetDefinition::new(
+                AssetDefinitionInput::new(
                     "mortgage".to_string(),
                     vec![ValidatorDetail::new(
                         "address".to_string(),
@@ -252,8 +261,9 @@ pub mod tests {
                             FeeDestination::new("other-fee".to_string(), Decimal::percent(50)),
                         ],
                     )],
+                    None,
                 ),
-                AssetDefinition::new(
+                AssetDefinitionInput::new(
                     "pl".to_string(),
                     vec![
                         ValidatorDetail::new(
@@ -272,6 +282,7 @@ pub mod tests {
                             ],
                         ),
                     ],
+                    None,
                 ),
             ],
         });
@@ -282,7 +293,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: String::new(),
-                asset_definitions: vec![AssetDefinition::new(
+                asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc".to_string(),
                     vec![ValidatorDetail::new(
                         "address".to_string(),
@@ -293,6 +304,7 @@ pub mod tests {
                             Decimal::percent(100),
                         )],
                     )],
+                    None,
                 )],
             },
             "base_contract_name: must not be blank",
@@ -305,8 +317,8 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 asset_definitions: vec![
-                    AssetDefinition::new("heloc".to_string(), vec![]),
-                    AssetDefinition::new("heloc".to_string(), vec![]),
+                    AssetDefinitionInput::new("heloc".to_string(), vec![], None),
+                    AssetDefinitionInput::new("heloc".to_string(), vec![], None),
                 ],
             },
             "asset_definitions: each definition must specify a unique asset type",
@@ -318,7 +330,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: "asset".to_string(),
-                asset_definitions: vec![AssetDefinition::new(String::new(), vec![])],
+                asset_definitions: vec![AssetDefinitionInput::new(String::new(), vec![], None)],
             },
             "asset_definition:asset_type: must not be blank",
         );

@@ -80,6 +80,7 @@ pub fn update_asset_validator(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
@@ -87,8 +88,8 @@ mod tests {
     use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
-        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
-        DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
+        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
+        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
@@ -106,7 +107,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            empty_mock_info(),
             ExecuteMsg::UpdateAssetValidator {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: validator.clone(),

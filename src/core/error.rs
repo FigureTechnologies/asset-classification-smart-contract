@@ -62,6 +62,9 @@ pub enum ContractError {
         scope_address: String,
     },
 
+    #[error("Asset type {asset_type} is currently disabled")]
+    AssetTypeDisabled { asset_type: String },
+
     #[error("Unauthorized: {explanation}")]
     Unauthorized { explanation: String },
 

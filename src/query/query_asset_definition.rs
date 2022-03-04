@@ -12,6 +12,7 @@ pub fn query_asset_definition<S: Into<String>>(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::error::ContractError::Std;
     use crate::core::state::{asset_state, AssetDefinition};

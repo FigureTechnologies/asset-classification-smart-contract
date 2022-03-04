@@ -15,6 +15,13 @@ pub fn init_contract(
 ) -> ContractResponse {
     check_funds_are_empty(&info)?;
     let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
+    // The contract needs to own its root name to be effective at preventing asset classification "neighbors"
+    // that were never intended to be created from being reserved by external callers
+    messages.push(bind_name(
+        &msg.base_contract_name,
+        env.contract.address.clone(),
+        NameBinding::Restricted,
+    )?);
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
@@ -79,10 +86,11 @@ mod tests {
             "the attribute value should be `init`"
         );
         assert_eq!(
-            1,
+            2,
             response.messages.len(),
-            "a single message should be emitted"
+            "the correct number of messages should be emitted"
         );
+        test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, DEFAULT_ASSET_TYPE);
         let asset_state = asset_state_read(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .load()
@@ -150,10 +158,11 @@ mod tests {
             "only one attribute should be emitted"
         );
         assert_eq!(
-            2,
+            3,
             response.messages.len(),
-            "two messages should be emitted. one per asset type"
+            "the correct number of messages should be emitted",
         );
+        test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, "heloc");
         test_message_is_name_bind(&response.messages, "mortgage");
         let heloc_asset_state = asset_state_read(deps.as_ref().storage, "heloc")
@@ -213,9 +222,22 @@ mod tests {
         );
     }
 
-    // Ensures that the slice of SubMsg contains the correct name binding by iterating over all
-    // contained values and extracting the values within
+    fn test_for_default_base_name(messages: &[SubMsg<ProvenanceMsg>]) {
+        test_message_is_name_bind_with_base_name(messages, DEFAULT_CONTRACT_BASE_NAME, true);
+    }
+
     fn test_message_is_name_bind(messages: &[SubMsg<ProvenanceMsg>], expected_asset_type: &str) {
+        test_message_is_name_bind_with_base_name(messages, expected_asset_type, false);
+    }
+
+    // Ensures that the slice of SubMsg contains the correct name binding by iterating over all
+    // contained values and extracting the values within. If the is_base_name param is supplied,
+    // the expected_asset_type value is assumed to be the base name value.
+    fn test_message_is_name_bind_with_base_name(
+        messages: &[SubMsg<ProvenanceMsg>],
+        expected_asset_type: &str,
+        is_base_name: bool,
+    ) {
         for message in messages {
             match &message.msg {
                 CosmosMsg::Custom(msg) => match &msg.params {
@@ -230,11 +252,15 @@ mod tests {
                                 continue;
                             }
                             assert_eq!(
-                                &generate_asset_attribute_name(
-                                    expected_asset_type,
-                                    DEFAULT_CONTRACT_BASE_NAME
-                                ),
-                                name,
+                                if is_base_name {
+                                    expected_asset_type.to_string()
+                                } else {
+                                    generate_asset_attribute_name(
+                                        expected_asset_type,
+                                        DEFAULT_CONTRACT_BASE_NAME,
+                                    )
+                                },
+                                name.to_string(),
                                 "the default values should be used to derive the attribute name",
                             );
                             assert_eq!(

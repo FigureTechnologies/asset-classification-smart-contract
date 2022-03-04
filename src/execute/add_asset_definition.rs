@@ -1,11 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
+use crate::core::state::{asset_state, asset_state_read, config_read, AssetDefinition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
+use crate::util::functions::generate_asset_attribute_name;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{Env, MessageInfo, Response};
+use provwasm_std::{bind_name, NameBinding};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -40,6 +42,7 @@ impl From<AssetDefinition> for AddAssetDefinitionV1 {
 
 pub fn add_asset_definition(
     deps: DepsMutC,
+    env: Env,
     info: MessageInfo,
     msg: AddAssetDefinitionV1,
 ) -> ContractResponse {
@@ -53,7 +56,17 @@ pub fn add_asset_definition(
         return ContractError::DuplicateAssetDefinitionProvided.to_err();
     }
     asset_state(deps.storage, &msg.asset_definition.asset_type).save(&msg.asset_definition)?;
+    // Bind the new asset type's name the contract in order to be able to write new attributes for onboarded scopes
+    let name_msg = bind_name(
+        generate_asset_attribute_name(
+            &msg.asset_definition.asset_type,
+            config_read(deps.storage).load()?.base_contract_name,
+        ),
+        env.contract.address,
+        NameBinding::Restricted,
+    )?;
     Response::new()
+        .add_message(name_msg)
         .add_attributes(
             EventAttributes::new(EventType::AddAssetDefinition)
                 .set_asset_type(&msg.asset_definition.asset_type),
@@ -69,6 +82,7 @@ mod tests {
     use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
     use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
+    use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
         DEFAULT_INFO_NAME,
@@ -97,10 +111,12 @@ mod tests {
             },
         )
         .expect("expected the add asset checks to work correctly");
-        assert!(
-            response.messages.is_empty(),
-            "adding an asset definition should not require messages",
+        assert_eq!(
+            1,
+            response.messages.len(),
+            "the proper number of messages should be added",
         );
+        test_message_is_name_bind(&response.messages, &asset_definition.asset_type);
         assert_eq!(
             2,
             response.attributes.len(),
@@ -124,8 +140,11 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = get_valid_add_asset_definition();
-        add_asset_definition(deps.as_mut(), empty_mock_info(), msg.clone())
-            .expect("expected the add asset definition function to return properly");
+        let messages =
+            add_asset_definition(deps.as_mut(), mock_env(), empty_mock_info(), msg.clone())
+                .expect("expected the add asset definition function to return properly")
+                .messages;
+        test_message_is_name_bind(&messages, &msg.asset_definition.asset_type);
         test_asset_definition_was_added(&msg.asset_definition, &deps.as_ref());
     }
 
@@ -149,6 +168,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = add_asset_definition(
             deps.as_mut(),
+            mock_env(),
             // Mock info defines the sender with this string - simply use something other than DEFAULT_INFO_NAME to cause the error
             mock_info("not-the-admin", &[]),
             get_valid_add_asset_definition(),
@@ -166,6 +186,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = add_asset_definition(
             deps.as_mut(),
+            mock_env(),
             mock_info(DEFAULT_INFO_NAME, &[coin(150, "nhash")]),
             get_valid_add_asset_definition(),
         )
@@ -183,6 +204,7 @@ mod tests {
         let mut add_asset = || {
             add_asset_definition(
                 deps.as_mut(),
+                mock_env(),
                 empty_mock_info(),
                 get_valid_add_asset_definition(),
             )

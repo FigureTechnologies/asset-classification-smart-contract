@@ -14,14 +14,13 @@ pub fn init_contract(
     msg: InitMsg,
 ) -> ContractResponse {
     check_funds_are_empty(&info)?;
-    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // The contract needs to own its root name to be effective at preventing asset classification "neighbors"
     // that were never intended to be created from being reserved by external callers
-    messages.push(bind_name(
+    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![bind_name(
         &msg.base_contract_name,
         env.contract.address.clone(),
         NameBinding::Restricted,
-    )?);
+    )?];
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
@@ -53,16 +52,15 @@ mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
     use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_utilities::{
         get_default_asset_definition_inputs, test_instantiate, InstArgs, DEFAULT_ASSET_TYPE,
         DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
         DEFAULT_VALIDATOR_ADDRESS,
     };
-    use crate::util::functions::generate_asset_attribute_name;
-    use cosmwasm_std::testing::{mock_info, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{coin, CosmosMsg, Decimal, SubMsg, Uint128};
+    use cosmwasm_std::testing::mock_info;
+    use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{NameMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
     #[test]
     fn test_valid_default_init() {
@@ -219,73 +217,6 @@ mod tests {
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
             "the responding error should indicate that the InitMsg was badly formatted",
-        );
-    }
-
-    fn test_for_default_base_name(messages: &[SubMsg<ProvenanceMsg>]) {
-        test_message_is_name_bind_with_base_name(messages, DEFAULT_CONTRACT_BASE_NAME, true);
-    }
-
-    fn test_message_is_name_bind(messages: &[SubMsg<ProvenanceMsg>], expected_asset_type: &str) {
-        test_message_is_name_bind_with_base_name(messages, expected_asset_type, false);
-    }
-
-    // Ensures that the slice of SubMsg contains the correct name binding by iterating over all
-    // contained values and extracting the values within. If the is_base_name param is supplied,
-    // the expected_asset_type value is assumed to be the base name value.
-    fn test_message_is_name_bind_with_base_name(
-        messages: &[SubMsg<ProvenanceMsg>],
-        expected_asset_type: &str,
-        is_base_name: bool,
-    ) {
-        for message in messages {
-            match &message.msg {
-                CosmosMsg::Custom(msg) => match &msg.params {
-                    ProvenanceMsgParams::Name(param) => match param {
-                        NameMsgParams::BindName {
-                            name,
-                            address,
-                            restrict,
-                        } => {
-                            // Wrong name? Go to the next iteration
-                            if !name.contains(expected_asset_type) {
-                                continue;
-                            }
-                            assert_eq!(
-                                if is_base_name {
-                                    expected_asset_type.to_string()
-                                } else {
-                                    generate_asset_attribute_name(
-                                        expected_asset_type,
-                                        DEFAULT_CONTRACT_BASE_NAME,
-                                    )
-                                },
-                                name.to_string(),
-                                "the default values should be used to derive the attribute name",
-                            );
-                            assert_eq!(
-                                MOCK_CONTRACT_ADDR,
-                                address.as_str(),
-                                "the default contract address should be bound to",
-                            );
-                            assert!(
-                                restrict,
-                                "the restrict value should be set to true for all bound attributes"
-                            );
-                            // Exit early after finding the appropriate value to ensure the trailing
-                            // panic doesn't fire
-                            return;
-                        }
-                        _ => panic!("unexpected name module message type was emitted"),
-                    },
-                    _ => panic!("unexpected provenance message type was emitted"),
-                },
-                _ => panic!("unexpected message type was emitted"),
-            }
-        }
-        panic!(
-            "failed to find message for expected asset type `{}`",
-            expected_asset_type
         );
     }
 }

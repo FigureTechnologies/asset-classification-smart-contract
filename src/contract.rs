@@ -41,9 +41,12 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ExecuteMsg::ValidateAsset { .. } => {
             validate_asset(deps, env, info, ValidateAssetV1::from_execute_msg(msg)?)
         }
-        ExecuteMsg::AddAssetDefinition { .. } => {
-            add_asset_definition(deps, info, AddAssetDefinitionV1::from_execute_msg(msg)?)
-        }
+        ExecuteMsg::AddAssetDefinition { .. } => add_asset_definition(
+            deps,
+            env,
+            info,
+            AddAssetDefinitionV1::from_execute_msg(msg)?,
+        ),
         ExecuteMsg::UpdateAssetDefinition { .. } => {
             update_asset_definition(deps, info, UpdateAssetDefinitionV1::from_execute_msg(msg)?)
         }

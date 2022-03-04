@@ -1,10 +1,12 @@
 use crate::core::error::ContractError;
 use crate::util::aliases::ContractResult;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{coin, BankMsg, CosmosMsg, Decimal, Uint128};
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::ops::Mul;
+
+use super::constants::NHASH;
 
 /// Determines how many elements within the provided reference slice are unique by the given
 /// property.
@@ -87,6 +89,21 @@ where
         ))
         .to_err()
     }
+}
+
+pub fn bank_send<S: Into<String>, D: Into<String>>(
+    sender: S,
+    amount: u128,
+    denom: D,
+) -> CosmosMsg<BankMsg> {
+    CosmosMsg::Bank(BankMsg::Send {
+        to_address: sender.into(),
+        amount: vec![coin(amount, denom)],
+    })
+}
+
+pub fn bank_send_nhash<S: Into<String>>(sender: S, amount: u128) -> CosmosMsg<BankMsg> {
+    bank_send(sender, amount, NHASH)
 }
 
 #[cfg(test)]

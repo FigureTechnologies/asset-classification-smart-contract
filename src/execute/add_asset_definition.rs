@@ -8,10 +8,8 @@ use crate::util::functions::generate_asset_attribute_name;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::{bind_name, NameBinding};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
+#[derive(Clone, PartialEq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
 }

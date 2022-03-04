@@ -1,7 +1,9 @@
 use crate::core::msg::InitMsg;
 use crate::core::state::{asset_state, config, AssetDefinition, State};
+use crate::migrate::version_info::migrate_version_info;
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::util::contract_helpers::check_funds_are_empty;
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::generate_asset_attribute_name;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
@@ -38,10 +40,11 @@ pub fn init_contract(
     let state = State::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
     config(deps.storage).save(&state)?;
+    // Set the version info to the default contract values on instantiation
+    migrate_version_info(deps.storage)?;
     Response::new()
         .add_messages(messages)
-        //.add_message(bind_name_msg)
-        .add_attribute("action", "init")
+        .add_attributes(EventAttributes::new(EventType::InstantiateContract))
         .to_ok()
 }
 
@@ -52,12 +55,15 @@ mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
     use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_utilities::{
-        get_default_asset_definition_inputs, test_instantiate, InstArgs, DEFAULT_ASSET_TYPE,
-        DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
+        get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
+        DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
         DEFAULT_VALIDATOR_ADDRESS,
     };
+    use crate::util::constants::ASSET_EVENT_TYPE_KEY;
+    use crate::util::event_attributes::EventType;
     use cosmwasm_std::testing::mock_info;
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
@@ -72,16 +78,10 @@ mod tests {
             response.attributes.len(),
             "a single attribute should be emitted"
         );
-        let attribute = response.attributes.first().unwrap();
         assert_eq!(
-            "action",
-            attribute.key.as_str(),
-            "the attribute key should be `action`"
-        );
-        assert_eq!(
-            "init",
-            attribute.value.as_str(),
-            "the attribute value should be `init`"
+            EventType::InstantiateContract.event_name().as_str(),
+            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+            "the proper event type should be emitted",
         );
         assert_eq!(
             2,
@@ -110,6 +110,16 @@ mod tests {
                 .to_owned()
                 .into(),
             "the returned value should directly match the default asset definition"
+        );
+        let version_info = get_version_info(deps.as_ref().storage)
+            .expect("version info should successfully load after instantiation");
+        assert_eq!(
+            CONTRACT_NAME, version_info.contract,
+            "the contract name should be properly stored after a successful instantiation",
+        );
+        assert_eq!(
+            CONTRACT_VERSION, version_info.version,
+            "the contract version should be properly stored after a successful instantiation",
         );
     }
 

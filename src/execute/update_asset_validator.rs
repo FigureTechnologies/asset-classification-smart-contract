@@ -7,10 +7,8 @@ use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::replace_single_matching_vec_element;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
+#[derive(Clone, PartialEq)]
 pub struct UpdateAssetValidatorV1 {
     pub asset_type: String,
     pub validator: ValidatorDetail,

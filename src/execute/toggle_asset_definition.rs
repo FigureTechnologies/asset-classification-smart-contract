@@ -1,6 +1,4 @@
 use cosmwasm_std::{MessageInfo, Response};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     core::{error::ContractError, msg::ExecuteMsg, state::asset_state},
@@ -12,7 +10,7 @@ use crate::{
     },
 };
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
+#[derive(Clone, PartialEq)]
 pub struct ToggleAssetDefinitionV1 {
     pub asset_type: String,
 }

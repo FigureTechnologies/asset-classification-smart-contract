@@ -4,6 +4,8 @@ use super::constants::{
 };
 
 pub enum EventType {
+    InstantiateContract,
+    MigrateContract,
     OnboardAsset,
     ValidateAsset,
     AddAssetDefinition,
@@ -16,6 +18,8 @@ pub enum EventType {
 impl Into<String> for EventType {
     fn into(self) -> String {
         match self {
+            EventType::InstantiateContract => "instantiate_contract",
+            EventType::MigrateContract => "migrate_contract",
             EventType::OnboardAsset => "onboard_asset",
             EventType::ValidateAsset => "validate_asset",
             EventType::AddAssetDefinition => "add_asset_definition",

@@ -6,10 +6,8 @@ use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
+#[derive(Clone, PartialEq)]
 pub struct UpdateAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
 }

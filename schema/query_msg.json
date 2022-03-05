@@ -21,6 +21,18 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "query_state"
+      ],
+      "properties": {
+        "query_state": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

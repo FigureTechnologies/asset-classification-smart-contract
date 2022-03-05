@@ -83,6 +83,9 @@ pub enum ContractError {
     #[error("Unauthorized: {explanation}")]
     Unauthorized { explanation: String },
 
+    #[error("Unexpected state: {explanation}")]
+    UnexpectedState { explanation: String },
+
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,
 

@@ -22,7 +22,7 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.into(), deps)
         }
-        ExecuteMsg::ToggleAssetDefinition { asset_type } => {
+        ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
         }
         ExecuteMsg::AddAssetValidator {

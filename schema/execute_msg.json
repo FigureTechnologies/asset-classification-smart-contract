@@ -111,11 +111,15 @@
         "toggle_asset_definition": {
           "type": "object",
           "required": [
-            "asset_type"
+            "asset_type",
+            "expected_result"
           ],
           "properties": {
             "asset_type": {
               "type": "string"
+            },
+            "expected_result": {
+              "type": "boolean"
             }
           }
         }

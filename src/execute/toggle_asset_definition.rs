@@ -13,19 +13,22 @@ use crate::{
 #[derive(Clone, PartialEq)]
 pub struct ToggleAssetDefinitionV1 {
     pub asset_type: String,
+    pub expected_result: bool,
 }
 impl ToggleAssetDefinitionV1 {
-    pub fn new<S: Into<String>>(asset_type: S) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, expected_result: bool) -> Self {
         ToggleAssetDefinitionV1 {
             asset_type: asset_type.into(),
+            expected_result,
         }
     }
 
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ToggleAssetDefinitionV1> {
         match msg {
-            ExecuteMsg::ToggleAssetDefinition { asset_type } => {
-                ToggleAssetDefinitionV1::new(asset_type).to_ok()
-            }
+            ExecuteMsg::ToggleAssetDefinition {
+                asset_type,
+                expected_result,
+            } => ToggleAssetDefinitionV1::new(asset_type, expected_result).to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::ToggleAssetDefinition".to_string(),
             }
@@ -44,6 +47,18 @@ pub fn toggle_asset_definition(
     check_funds_are_empty(&info)?;
     let mut asset_def_storage = asset_state(deps.storage, &msg.asset_type);
     let mut asset_definition = asset_def_storage.load()?;
+    // Never toggle the state if the caller didn't expect the target result
+    // If current state == expected result, then the requestor wants to change TO the current state. So this is a no-op.
+    if asset_definition.enabled == msg.expected_result {
+        return ContractError::UnexpectedState {
+            explanation: format!(
+                "expected to toggle to [enabled = {}], but toggle would set value to [enabled = {}]",
+                msg.expected_result, !asset_definition.enabled
+            ),
+        }
+        .to_err();
+    }
+    // Simply negate the current value in state to swap it
     asset_definition.enabled = !asset_definition.enabled;
     asset_def_storage.save(&asset_definition)?;
     Response::new()
@@ -90,6 +105,7 @@ mod tests {
             empty_mock_info(),
             ExecuteMsg::ToggleAssetDefinition {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                expected_result: false,
             },
         )
         .expect("the toggle should work correctly");
@@ -124,7 +140,7 @@ mod tests {
     fn test_valid_toggle_asset_definition_via_internal() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        toggle_default_asset_definition(deps.as_mut());
+        toggle_default_asset_definition(deps.as_mut(), false);
         test_toggle_has_succesfully_occurred(&deps.as_ref(), false);
     }
 
@@ -133,10 +149,10 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         // First toggle should disable the automagically enabled default asset type
-        toggle_default_asset_definition(deps.as_mut());
+        toggle_default_asset_definition(deps.as_mut(), false);
         test_toggle_has_succesfully_occurred(&deps.as_ref(), false);
         // Second toggle should re-enable it
-        toggle_default_asset_definition(deps.as_mut());
+        toggle_default_asset_definition(deps.as_mut(), true);
         test_toggle_has_succesfully_occurred(&deps.as_ref(), true);
     }
 
@@ -150,6 +166,7 @@ mod tests {
             empty_mock_info(),
             ExecuteMsg::ToggleAssetDefinition {
                 asset_type: String::new(),
+                expected_result: false,
             },
         )
         .unwrap_err();
@@ -166,7 +183,7 @@ mod tests {
         let error = toggle_asset_definition(
             deps.as_mut(),
             mock_info("not-the-admin", &[]),
-            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .unwrap_err();
         assert!(
@@ -182,7 +199,7 @@ mod tests {
         let error = toggle_asset_definition(
             deps.as_mut(),
             mock_info_with_nhash(150),
-            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .unwrap_err();
         assert!(
@@ -198,13 +215,54 @@ mod tests {
         let error = toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(),
-            ToggleAssetDefinitionV1::new("no-u"),
+            ToggleAssetDefinitionV1::new("no-u", false),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Std(StdError::NotFound { .. })),
             "expected the not found error to be returned",
         );
+    }
+
+    #[test]
+    fn test_toggle_to_incorrect_expected_state_fails() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        // The asset type should be enabled by default, so trying to toggle it to enabled again should fail
+        let enable_error = toggle_asset_definition(
+            deps.as_mut(),
+            empty_mock_info(),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, true),
+        )
+        .unwrap_err();
+        match enable_error {
+            ContractError::UnexpectedState { explanation } => {
+                assert_eq!(
+                    "expected to toggle to [enabled = true], but toggle would set value to [enabled = false]",
+                    explanation.as_str(),
+                    "incorrect error message encountered on invalid toggle false -> true",
+                );
+            }
+            _ => panic!("unexpected error encountered on invalid toggle false -> true"),
+        };
+        // Toggle off successfully to ensure the opposite attempt cannot be made either
+        toggle_default_asset_definition(deps.as_mut(), false);
+        let disable_error = toggle_asset_definition(
+            deps.as_mut(),
+            empty_mock_info(),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
+        )
+        .unwrap_err();
+        match disable_error {
+            ContractError::UnexpectedState { explanation } => {
+                assert_eq!(
+                    "expected to toggle to [enabled = false], but toggle would set value to [enabled = true]",
+                    explanation.as_str(),
+                    "incorrect error message encountered on invalid toggle true -> false",
+                );
+            }
+            _ => panic!("unexpected error encountered on invalid toggle true -> false"),
+        }
     }
 
     fn test_toggle_has_succesfully_occurred(deps: &DepsC, expected_enabled_value: bool) {
@@ -217,11 +275,11 @@ mod tests {
         );
     }
 
-    fn toggle_default_asset_definition(deps: DepsMutC) {
+    fn toggle_default_asset_definition(deps: DepsMutC, expected_result: bool) {
         toggle_asset_definition(
             deps,
             empty_mock_info(),
-            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, expected_result),
         )
         .expect("toggle should execute without fail");
     }

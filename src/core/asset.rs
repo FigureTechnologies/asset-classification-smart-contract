@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::util::{aliases::ContractResult, functions::validate_address, traits::ResultExtensions};
 
-use super::msg::AssetDefinitionInput;
+use super::{error::ContractError, msg::AssetDefinitionInput};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetDefinition {
@@ -87,53 +87,61 @@ enum AssetOnboardingStatus {
     Approved,
 }
 
-/// Defines the full process of onboarding through validation. Stores relevant details
-/// about how each onboarding run proceeded.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetOnboardingTransaction {
-    /// The index of the onboarding transaction. These values start at zero, and each subsequent transaction increases the value by 1.
-    pub index: u32,
-    /// This is a capture of the validator detail used when the loan onboarded, detailing how much coin was taken by the contract during onboarding
-    /// and how it will/did distribute that amount when the chosen validator responds.
-    pub validator_detail: ValidatorDetail,
-    /// This is a free-form field, specified by the validator on the results of validation. This field will not be populated until the validator
-    /// responds and collects its fees.
-    pub message: Option<String>,
-    /// This field denotes whether or not validation has passed. If this field is blank, that indicates that the chosen validator has not yet
-    /// responded.
-    pub success: Option<bool>,
+struct AssetValidationResult {
+    pub message: String,
+    pub success: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 struct AssetScopeAttribute {
     pub asset_type: String,
     pub requestor_address: Addr,
+    pub validator_address: Addr,
     pub onboarding_status: AssetOnboardingStatus,
-    pub onboarding_transactions: Vec<AssetOnboardingTransaction>,
+    pub latest_validator_detail: Option<ValidatorDetail>,
+    pub latest_validation_result: Option<AssetValidationResult>,
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
-    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>>(
+    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
+        validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
+        latest_validator_detail: ValidatorDetail,
     ) -> Self {
         AssetScopeAttribute {
             asset_type: asset_type.into(),
             requestor_address: requestor_address.into(),
+            validator_address: validator_address.into(),
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            onboarding_transactions: vec![],
+            latest_validator_detail: Some(latest_validator_detail),
+            latest_validation_result: None,
             access_routes: vec![],
         }
     }
 
-    pub fn new<S1: Into<String>, A1: Into<Addr>>(
+    pub fn new<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
+        validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
+        latest_validator_detail: ValidatorDetail,
     ) -> ContractResult<Self> {
         let req_addr = validate_address(requestor_address)?;
-        AssetScopeAttribute::new_unchecked(asset_type, req_addr, onboarding_status).to_ok()
+        let val_addr = validate_address(validator_address)?;
+        if val_addr.to_string() != latest_validator_detail.address {
+            return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
+        }
+        AssetScopeAttribute::new_unchecked(
+            asset_type,
+            req_addr,
+            val_addr,
+            onboarding_status,
+            latest_validator_detail,
+        )
+        .to_ok()
     }
 }
 impl ResultExtensions for AssetScopeAttribute {}

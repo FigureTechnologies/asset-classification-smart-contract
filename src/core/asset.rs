@@ -96,7 +96,6 @@ struct AssetValidationResult {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 struct AssetScopeAttribute {
-    pub asset_uuid: String,
     pub asset_type: String,
     pub requestor_address: Addr,
     pub validator_address: Addr,
@@ -105,15 +104,13 @@ struct AssetScopeAttribute {
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
-    pub fn new_unchecked<S1: Into<String>, S2: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
-        asset_uuid: S1,
-        asset_type: S2,
+    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+        asset_type: S1,
         requestor_address: A1,
         validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
     ) -> Self {
         AssetScopeAttribute {
-            asset_uuid: asset_uuid.into(),
             asset_type: asset_type.into(),
             requestor_address: requestor_address.into(),
             validator_address: validator_address.into(),
@@ -123,23 +120,16 @@ impl AssetScopeAttribute {
         }
     }
 
-    pub fn new<S1: Into<String>, S2: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
-        asset_uuid: S1,
-        asset_type: S2,
+    pub fn new<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+        asset_type: S1,
         requestor_address: A1,
         validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
     ) -> ContractResult<Self> {
         let req_addr = validate_address(requestor_address)?;
         let val_addr = validate_address(validator_address)?;
-        AssetScopeAttribute::new_unchecked(
-            asset_uuid,
-            asset_type,
-            req_addr,
-            val_addr,
-            onboarding_status,
-        )
-        .to_ok()
+        AssetScopeAttribute::new_unchecked(asset_type, req_addr, val_addr, onboarding_status)
+            .to_ok()
     }
 }
 impl ResultExtensions for AssetScopeAttribute {}

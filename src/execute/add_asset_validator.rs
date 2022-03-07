@@ -13,9 +13,9 @@ pub struct AddAssetValidatorV1 {
     pub validator: ValidatorDetail,
 }
 impl AddAssetValidatorV1 {
-    pub fn new(asset_type: String, validator: ValidatorDetail) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, validator: ValidatorDetail) -> Self {
         AddAssetValidatorV1 {
-            asset_type,
+            asset_type: asset_type.into(),
             validator,
         }
     }
@@ -77,7 +77,9 @@ mod tests {
         DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
+    use crate::util::constants::{
+        ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VALIDATOR_ADDRESS_KEY,
+    };
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_validator;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -173,8 +175,9 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 // Invalid because the address is blank
                 validator: ValidatorDetail::new(
-                    String::new(),
+                    "",
                     Uint128::new(0),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -227,10 +230,11 @@ mod tests {
             deps.as_mut(),
             mock_info(DEFAULT_INFO_NAME, &[]),
             AddAssetValidatorV1::new(
-                DEFAULT_ASSET_TYPE.to_string(),
+                DEFAULT_ASSET_TYPE,
                 ValidatorDetail::new(
-                    DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                    DEFAULT_VALIDATOR_ADDRESS,
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -258,13 +262,11 @@ mod tests {
 
     fn get_valid_new_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
-            "new-validator_address".to_string(),
+            "new-validator_address",
             Uint128::new(500000),
+            NHASH,
             Decimal::percent(10),
-            vec![FeeDestination::new(
-                "fees".to_string(),
-                Decimal::percent(100),
-            )],
+            vec![FeeDestination::new("fees", Decimal::percent(100))],
         );
         validate_validator(&validator, &mock_dependencies(&[]).as_ref())
             .expect("expected the new validator to pass validation");

@@ -91,19 +91,21 @@ where
     }
 }
 
-pub fn bank_send<S: Into<String>, D: Into<String>>(
-    sender: S,
+/// Creates a message that sends funds of the specified denomination from the contract to the recipient address.
+pub fn bank_send<R: Into<String>, D: Into<String>>(
+    recipient: R,
     amount: u128,
     denom: D,
 ) -> CosmosMsg<BankMsg> {
     CosmosMsg::Bank(BankMsg::Send {
-        to_address: sender.into(),
+        to_address: recipient.into(),
         amount: vec![coin(amount, denom)],
     })
 }
 
-pub fn bank_send_nhash<S: Into<String>>(sender: S, amount: u128) -> CosmosMsg<BankMsg> {
-    bank_send(sender, amount, NHASH)
+/// Creates a message that sends nhash from the contract to the recipient address
+pub fn bank_send_nhash<R: Into<String>>(recipient: R, amount: u128) -> CosmosMsg<BankMsg> {
+    bank_send(recipient, amount, NHASH)
 }
 
 #[cfg(test)]

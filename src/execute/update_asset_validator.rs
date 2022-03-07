@@ -14,9 +14,9 @@ pub struct UpdateAssetValidatorV1 {
     pub validator: ValidatorDetail,
 }
 impl UpdateAssetValidatorV1 {
-    pub fn new(asset_type: String, validator: ValidatorDetail) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, validator: ValidatorDetail) -> Self {
         UpdateAssetValidatorV1 {
-            asset_type,
+            asset_type: asset_type.into(),
             validator,
         }
     }
@@ -90,7 +90,9 @@ mod tests {
         DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
+    use crate::util::constants::{
+        ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VALIDATOR_ADDRESS_KEY,
+    };
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_validator;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -186,8 +188,9 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: ValidatorDetail::new(
                     // Invalid because the address is blank
-                    String::new(),
+                    "",
                     Uint128::new(0),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -240,10 +243,11 @@ mod tests {
             deps.as_mut(),
             mock_info(DEFAULT_INFO_NAME, &[]),
             UpdateAssetValidatorV1::new(
-                DEFAULT_ASSET_TYPE.to_string(),
+                DEFAULT_ASSET_TYPE,
                 ValidatorDetail::new(
-                    "unknown-address-guy".to_string(),
+                    "unknown-address-guy",
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -272,12 +276,13 @@ mod tests {
     // details
     fn get_valid_update_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
-            DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            DEFAULT_VALIDATOR_ADDRESS,
             Uint128::new(420),
+            NHASH,
             Decimal::percent(100),
             vec![
-                FeeDestination::new("first".to_string(), Decimal::percent(50)),
-                FeeDestination::new("second".to_string(), Decimal::percent(50)),
+                FeeDestination::new("first", Decimal::percent(50)),
+                FeeDestination::new("second", Decimal::percent(50)),
             ],
         );
         validate_validator(&validator, &mock_dependencies(&[]).as_ref())
@@ -286,6 +291,6 @@ mod tests {
     }
 
     fn get_valid_update_validator_msg() -> UpdateAssetValidatorV1 {
-        UpdateAssetValidatorV1::new(DEFAULT_ASSET_TYPE.to_string(), get_valid_update_validator())
+        UpdateAssetValidatorV1::new(DEFAULT_ASSET_TYPE, get_valid_update_validator())
     }
 }

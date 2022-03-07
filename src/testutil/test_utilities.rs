@@ -4,7 +4,6 @@ use cosmwasm_std::{
 };
 use provwasm_std::ProvenanceMsg;
 
-use crate::core::msg::AssetDefinitionInput;
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
@@ -13,11 +12,13 @@ use crate::{
         state::{AssetDefinition, ValidatorDetail},
     },
 };
+use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 
 pub const DEFAULT_INFO_NAME: &str = "admin";
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
 pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
+pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
 pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
@@ -26,6 +27,7 @@ pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
         validators: vec![ValidatorDetail {
             address: DEFAULT_VALIDATOR_ADDRESS.into(),
             onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
+            onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
             fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
             fee_destinations: vec![],
         }],

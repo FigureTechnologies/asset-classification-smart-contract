@@ -85,7 +85,7 @@ mod tests {
         DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -147,11 +147,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinitionInput::new(
-                DEFAULT_ASSET_TYPE.to_string(),
-                vec![],
-                None,
-            ),
+            asset_definition: AssetDefinitionInput::new(DEFAULT_ASSET_TYPE, vec![], None),
         };
         let error = execute(
             deps.as_mut(),
@@ -203,15 +199,13 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let missing_asset_definition = AssetDefinition::new(
-            "nonexistent-type".to_string(),
+            "nonexistent-type",
             vec![ValidatorDetail::new(
-                "validator".to_string(),
+                "validator",
                 Uint128::new(100),
+                NHASH,
                 Decimal::percent(25),
-                vec![FeeDestination::new(
-                    "fee-guy".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("fee-guy", Decimal::percent(100))],
             )],
         );
         let error = update_asset_definition(
@@ -244,16 +238,17 @@ mod tests {
     // details
     fn get_update_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
-            DEFAULT_ASSET_TYPE.into(),
-            vec![ValidatorDetail {
-                address: "different-validator-address".to_string(),
-                onboarding_cost: Uint128::new(1500000),
-                fee_percent: Decimal::percent(50),
-                fee_destinations: vec![
-                    FeeDestination::new("first".to_string(), Decimal::percent(70)),
-                    FeeDestination::new("second".to_string(), Decimal::percent(30)),
+            DEFAULT_ASSET_TYPE,
+            vec![ValidatorDetail::new(
+                "different-validator-address",
+                Uint128::new(1500000),
+                NHASH,
+                Decimal::percent(50),
+                vec![
+                    FeeDestination::new("first", Decimal::percent(70)),
+                    FeeDestination::new("second", Decimal::percent(30)),
                 ],
-            }],
+            )],
             None,
         );
         validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())

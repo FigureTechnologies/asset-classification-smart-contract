@@ -60,9 +60,9 @@ mod tests {
     use crate::testutil::test_utilities::{
         get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
         DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
-        DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
     };
-    use crate::util::constants::ASSET_EVENT_TYPE_KEY;
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use cosmwasm_std::testing::mock_info;
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -129,25 +129,24 @@ mod tests {
         let first_asset_def = AssetDefinitionInput::new(
             "heloc".to_string(),
             vec![ValidatorDetail::new(
-                DEFAULT_VALIDATOR_ADDRESS.into(),
+                DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
+                DEFAULT_ONBOARDING_DENOM,
                 Decimal::percent(50),
-                vec![FeeDestination::new(
-                    "first".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("first", Decimal::percent(100))],
             )],
             None,
         );
         let second_asset_def = AssetDefinitionInput::new(
-            "mortgage".to_string(),
+            "mortgage",
             vec![ValidatorDetail::new(
-                "other-address".to_string(),
+                "other-address",
                 Uint128::new(150),
+                NHASH,
                 Decimal::percent(100),
                 vec![
-                    FeeDestination::new("first".to_string(), Decimal::percent(50)),
-                    FeeDestination::new("second".to_string(), Decimal::percent(50)),
+                    FeeDestination::new("first", Decimal::percent(50)),
+                    FeeDestination::new("second", Decimal::percent(50)),
                 ],
             )],
             None,
@@ -211,7 +210,7 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInput::new(String::new(), vec![], None)],
+            asset_definitions: vec![AssetDefinitionInput::new("", vec![], None)],
             ..Default::default()
         };
         let error = instantiate(

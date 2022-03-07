@@ -86,7 +86,7 @@ mod tests {
         DEFAULT_INFO_NAME,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -151,7 +151,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
-            asset_definition: AssetDefinition::new(String::new(), vec![]).into(),
+            asset_definition: AssetDefinition::new("", vec![]).into(),
         };
         let error = execute(deps.as_mut(), mock_env(), empty_mock_info(), msg).unwrap_err();
         assert!(
@@ -235,15 +235,13 @@ mod tests {
 
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
-            TEST_MOCK_LOAN_TYPE.to_string(),
+            TEST_MOCK_LOAN_TYPE,
             vec![ValidatorDetail::new(
-                "validator-address".to_string(),
+                "validator-address",
                 Uint128::new(1000),
+                NHASH,
                 Decimal::percent(50),
-                vec![FeeDestination::new(
-                    "fee-address".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("fee-address", Decimal::percent(100))],
             )],
             None,
         );

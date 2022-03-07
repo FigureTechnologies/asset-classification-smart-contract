@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::util::aliases::ContractResult;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{coin, BankMsg, CosmosMsg, Decimal, Uint128};
+use cosmwasm_std::{coin, Addr, BankMsg, CosmosMsg, Decimal, Uint128};
 use provwasm_std::ProvenanceMsg;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -102,6 +102,18 @@ pub fn bank_send<R: Into<String>, D: Into<String>>(
         to_address: recipient.into(),
         amount: vec![coin(amount, denom)],
     })
+}
+
+/// A helper that ensures address params are non-empty. Taken from non-exposed provwasm codebase.
+/// Allows address validation without having to pass in deps.
+/// TODO: Make this check to see if the address is valid Bech32
+pub fn validate_address<H: Into<Addr>>(input: H) -> ContractResult<Addr> {
+    let address: Addr = input.into();
+    if address.to_string().trim().is_empty() {
+        ContractError::std_err("address must not be empty").to_err()
+    } else {
+        Ok(address)
+    }
 }
 
 #[cfg(test)]

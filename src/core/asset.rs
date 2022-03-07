@@ -1,6 +1,8 @@
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use crate::util::{aliases::ContractResult, functions::validate_address, traits::ResultExtensions};
 
 use super::msg::AssetDefinitionInput;
 
@@ -77,3 +79,67 @@ impl FeeDestination {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+enum AssetOnboardingStatus {
+    Pending,
+    Denied,
+    Approved,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+struct AssetValidationResult {
+    pub message: String,
+    pub success: bool,
+    pub index: u32,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+struct AssetScopeAttribute {
+    pub asset_uuid: String,
+    pub asset_type: String,
+    pub requestor_address: Addr,
+    pub validator_address: Addr,
+    pub onboarding_status: AssetOnboardingStatus,
+    pub validation_results: Vec<AssetValidationResult>,
+    pub access_routes: Vec<String>,
+}
+impl AssetScopeAttribute {
+    pub fn new_unchecked<S1: Into<String>, S2: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+        asset_uuid: S1,
+        asset_type: S2,
+        requestor_address: A1,
+        validator_address: A2,
+        onboarding_status: Option<AssetOnboardingStatus>,
+    ) -> Self {
+        AssetScopeAttribute {
+            asset_uuid: asset_uuid.into(),
+            asset_type: asset_type.into(),
+            requestor_address: requestor_address.into(),
+            validator_address: validator_address.into(),
+            onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
+            validation_results: vec![],
+            access_routes: vec![],
+        }
+    }
+
+    pub fn new<S1: Into<String>, S2: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+        asset_uuid: S1,
+        asset_type: S2,
+        requestor_address: A1,
+        validator_address: A2,
+        onboarding_status: Option<AssetOnboardingStatus>,
+    ) -> ContractResult<Self> {
+        let req_addr = validate_address(requestor_address)?;
+        let val_addr = validate_address(validator_address)?;
+        AssetScopeAttribute::new_unchecked(
+            asset_uuid,
+            asset_type,
+            req_addr,
+            val_addr,
+            onboarding_status,
+        )
+        .to_ok()
+    }
+}
+impl ResultExtensions for AssetScopeAttribute {}

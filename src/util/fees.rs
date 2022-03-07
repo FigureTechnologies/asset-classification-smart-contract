@@ -31,7 +31,7 @@ pub fn calculate_validator_cost_messages(
              denom,
         )).to_err();
     }
-    // The total finds disbursed to the validator itself is the remainder from subtracting the fee cost from the onboarding cost
+    // The total funds disbursed to the validator itself is the remainder from subtracting the fee cost from the onboarding cost
     let validator_cost = validator.onboarding_cost - fee_total;
     // If all the fee totals plus the validator cost do not equate to the onboarding cost, then the validator is misconfigured
     let inner_fee_distribution_sum = validator

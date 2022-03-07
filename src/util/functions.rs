@@ -2,6 +2,7 @@ use crate::core::error::ContractError;
 use crate::util::aliases::ContractResult;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{coin, BankMsg, CosmosMsg, Decimal, Uint128};
+use provwasm_std::ProvenanceMsg;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::ops::Mul;
@@ -90,11 +91,13 @@ where
 }
 
 /// Creates a message that sends funds of the specified denomination from the contract to the recipient address.
+/// Important: The response type is of ProvenanceMsg, which allows this bank send message to match the type
+/// used for contract execution routes.
 pub fn bank_send<R: Into<String>, D: Into<String>>(
     recipient: R,
     amount: u128,
     denom: D,
-) -> CosmosMsg<BankMsg> {
+) -> CosmosMsg<ProvenanceMsg> {
     CosmosMsg::Bank(BankMsg::Send {
         to_address: recipient.into(),
         amount: vec![coin(amount, denom)],

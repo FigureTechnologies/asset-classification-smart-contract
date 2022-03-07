@@ -1,6 +1,7 @@
 use std::ops::Mul;
 
-use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
+use cosmwasm_std::{CosmosMsg, Uint128};
+use provwasm_std::ProvenanceMsg;
 
 use crate::core::{error::ContractError, state::ValidatorDetail};
 
@@ -9,10 +10,12 @@ use super::{aliases::ContractResult, functions::bank_send, traits::ResultExtensi
 /// This function distributes funds from the sender address to the targets defined by a ValidatorDetail.
 /// It breaks down all percentages defined in the validator detail's fee destinations and core onboarding
 /// cost to derive a variable sized vector of destination messages.
+/// Important: The response type is of ProvenanceMsg, which allows these bank send messages to match the type
+/// used for contract execution routes.
 pub fn calculate_validator_cost_messages(
     validator: &ValidatorDetail,
-) -> ContractResult<Vec<CosmosMsg<BankMsg>>> {
-    let mut cost_messages = vec![];
+) -> ContractResult<Vec<CosmosMsg<ProvenanceMsg>>> {
+    let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // The total funds disbursed across fees are equal to the cost multiplied by the fee percent
     let fee_total = validator.onboarding_cost.mul(validator.fee_percent);
     let denom = &validator.onboarding_denom;
@@ -67,6 +70,7 @@ pub fn calculate_validator_cost_messages(
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::{BankMsg, CosmosMsg, Decimal, StdError, Uint128};
+    use provwasm_std::ProvenanceMsg;
 
     use crate::{
         core::{
@@ -287,7 +291,7 @@ mod tests {
         D: Into<String>,
         M: Into<String>,
     >(
-        messages: &[CosmosMsg<BankMsg>],
+        messages: &[CosmosMsg<ProvenanceMsg>],
         address: S,
         expected_amount: u128,
         expected_denom: D,

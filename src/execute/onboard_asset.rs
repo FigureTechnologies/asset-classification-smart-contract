@@ -230,7 +230,7 @@ mod tests {
         toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(),
-            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
+            ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(

@@ -56,6 +56,7 @@ pub enum ExecuteMsg {
     },
     ToggleAssetDefinition {
         asset_type: String,
+        expected_result: bool,
     },
     AddAssetValidator {
         asset_type: String,

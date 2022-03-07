@@ -1,4 +1,4 @@
-use crate::core::state::{AssetDefinition, ValidatorDetail};
+use crate::core::asset::{AssetDefinition, ValidatorDetail};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

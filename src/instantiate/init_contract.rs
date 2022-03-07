@@ -1,5 +1,6 @@
+use crate::core::asset::AssetDefinition;
 use crate::core::msg::InitMsg;
-use crate::core::state::{asset_state, config, AssetDefinition, State};
+use crate::core::state::{asset_state, config, State};
 use crate::migrate::version_info::migrate_version_info;
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::util::contract_helpers::check_funds_are_empty;
@@ -52,9 +53,10 @@ pub fn init_contract(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
+    use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
-    use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::core::state::asset_state_read;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_utilities::{

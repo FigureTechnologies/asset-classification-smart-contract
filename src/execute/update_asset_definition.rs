@@ -1,6 +1,7 @@
+use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-use crate::core::state::{asset_state, asset_state_read, AssetDefinition};
+use crate::core::state::{asset_state, asset_state_read};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -74,9 +75,10 @@ pub fn update_asset_definition(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
+    use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-    use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::core::state::asset_state_read;
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };

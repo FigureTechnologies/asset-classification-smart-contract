@@ -1,6 +1,7 @@
+use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_state, ValidatorDetail};
+use crate::core::state::asset_state;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -81,9 +82,10 @@ pub fn update_asset_validator(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
+    use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::core::state::asset_state_read;
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,

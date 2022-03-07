@@ -8,8 +8,8 @@ use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
     core::{
+        asset::{AssetDefinition, ValidatorDetail},
         msg::InitMsg,
-        state::{AssetDefinition, ValidatorDetail},
     },
 };
 use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};

@@ -87,49 +87,53 @@ enum AssetOnboardingStatus {
     Approved,
 }
 
+/// Defines the full process of onboarding through validation. Stores relevant details
+/// about how each onboarding run proceeded.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetValidationResult {
-    pub message: String,
-    pub success: bool,
+struct AssetOnboardingTransaction {
+    /// The index of the onboarding transaction. These values start at zero, and each subsequent transaction increases the value by 1.
     pub index: u32,
+    /// This is a capture of the validator detail used when the loan onboarded, detailing how much coin was taken by the contract during onboarding
+    /// and how it will/did distribute that amount when the chosen validator responds.
+    pub validator_detail: ValidatorDetail,
+    /// This is a free-form field, specified by the validator on the results of validation. This field will not be populated until the validator
+    /// responds and collects its fees.
+    pub message: Option<String>,
+    /// This field denotes whether or not validation has passed. If this field is blank, that indicates that the chosen validator has not yet
+    /// responded.
+    pub success: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 struct AssetScopeAttribute {
     pub asset_type: String,
     pub requestor_address: Addr,
-    pub validator_address: Addr,
     pub onboarding_status: AssetOnboardingStatus,
-    pub validation_results: Vec<AssetValidationResult>,
+    pub onboarding_transactions: Vec<AssetOnboardingTransaction>,
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
-    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
-        validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
     ) -> Self {
         AssetScopeAttribute {
             asset_type: asset_type.into(),
             requestor_address: requestor_address.into(),
-            validator_address: validator_address.into(),
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            validation_results: vec![],
+            onboarding_transactions: vec![],
             access_routes: vec![],
         }
     }
 
-    pub fn new<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+    pub fn new<S1: Into<String>, A1: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
-        validator_address: A2,
         onboarding_status: Option<AssetOnboardingStatus>,
     ) -> ContractResult<Self> {
         let req_addr = validate_address(requestor_address)?;
-        let val_addr = validate_address(validator_address)?;
-        AssetScopeAttribute::new_unchecked(asset_type, req_addr, val_addr, onboarding_status)
-            .to_ok()
+        AssetScopeAttribute::new_unchecked(asset_type, req_addr, onboarding_status).to_ok()
     }
 }
 impl ResultExtensions for AssetScopeAttribute {}

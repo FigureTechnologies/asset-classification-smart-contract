@@ -217,6 +217,68 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_many_fee_destinations_and_some_to_validator() {
+        let validator = ValidatorDetail::new(
+            "validator",
+            Uint128::new(200),
+            NHASH,
+            Decimal::percent(50),
+            vec![
+                FeeDestination::new("first", Decimal::percent(20)),
+                FeeDestination::new("second", Decimal::percent(20)),
+                FeeDestination::new("third", Decimal::percent(40)),
+                FeeDestination::new("fourth", Decimal::percent(5)),
+                FeeDestination::new("fifth", Decimal::percent(15)),
+            ],
+        );
+        let messages = calculate_validator_cost_messages(&validator)
+            .expect("validation should pass and messages should be returned");
+        assert_eq!(6, messages.len(), "expected six messages to be sent");
+        test_messages_contains_send_for_address(
+            &messages,
+            "validator",
+            100,
+            NHASH,
+            "expected half of all funds to be sent to the validator",
+        );
+        test_messages_contains_send_for_address(
+            &messages,
+            "first",
+            20,
+            NHASH,
+            "expected 20 percent of the remainder to be sent to the first fee destination",
+        );
+        test_messages_contains_send_for_address(
+            &messages,
+            "second",
+            20,
+            NHASH,
+            "expected 20 percent of the remainder to be sent to the second fee destination",
+        );
+        test_messages_contains_send_for_address(
+            &messages,
+            "third",
+            40,
+            NHASH,
+            "expected 40 percent of the remainder to be sent to the third fee destination",
+        );
+        test_messages_contains_send_for_address(
+            &messages,
+            "fourth",
+            5,
+            NHASH,
+            "expected 5 percent of the remainder to be sent to the fourth fee destination",
+        );
+        test_messages_contains_send_for_address(
+            &messages,
+            "fifth",
+            15,
+            NHASH,
+            "expected 15 percent of the remainder to be sent to the fifth fee destination",
+        );
+    }
+
     /// Loops through all messages contained in the input slice until it finds a message with the given address,
     /// ensuring that the expected amount was sent in the expected denom to that address.  All output errors are
     /// prefixed with the input error_message string.

@@ -181,6 +181,7 @@
       "type": "object",
       "required": [
         "asset_type",
+        "scope_spec_address",
         "validators"
       ],
       "properties": {
@@ -192,6 +193,9 @@
             "boolean",
             "null"
           ]
+        },
+        "scope_spec_address": {
+          "type": "string"
         },
         "validators": {
           "type": "array",
@@ -230,7 +234,8 @@
         "address",
         "fee_destinations",
         "fee_percent",
-        "onboarding_cost"
+        "onboarding_cost",
+        "onboarding_denom"
       ],
       "properties": {
         "address": {
@@ -247,6 +252,9 @@
         },
         "onboarding_cost": {
           "$ref": "#/definitions/Uint128"
+        },
+        "onboarding_denom": {
+          "type": "string"
         }
       }
     }

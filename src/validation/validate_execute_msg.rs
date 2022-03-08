@@ -1,6 +1,6 @@
+use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::ValidatorDetail;
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use crate::validation::validate_init_msg::{

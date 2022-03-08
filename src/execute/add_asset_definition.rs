@@ -1,6 +1,7 @@
+use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-use crate::core::state::{asset_state, asset_state_read, config_read, AssetDefinition};
+use crate::core::state::{config_read, insert_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -44,16 +45,12 @@ pub fn add_asset_definition(
     info: MessageInfo,
     msg: AddAssetDefinitionV1,
 ) -> ContractResponse {
+    // Verify that the admin is making this call and no funds are provided
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    // Ensure that this loan type has not ever yet been added
-    if asset_state_read(deps.storage, &msg.asset_definition.asset_type)
-        .may_load()?
-        .is_some()
-    {
-        return ContractError::DuplicateAssetDefinitionProvided.to_err();
-    }
-    asset_state(deps.storage, &msg.asset_definition.asset_type).save(&msg.asset_definition)?;
+    // The insert function includes its own checking to verify that the asset definition does not yet exist, and an error
+    // will be returned if a duplicate is attempted
+    insert_asset_definition(deps.storage, &msg.asset_definition)?;
     // Bind the new asset type's name the contract in order to be able to write new attributes for onboarded scopes
     let name_msg = bind_name(
         generate_asset_attribute_name(
@@ -76,17 +73,18 @@ pub fn add_asset_definition(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
+    use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-    use crate::core::state::{asset_state_read, AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_INFO_NAME,
+        DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -94,6 +92,7 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     const TEST_MOCK_LOAN_TYPE: &str = "fakeloantype";
+    const TEST_MOCK_SCOPE_SPEC_ADDRESS: &str = "fakescopespecaddress";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
@@ -151,7 +150,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
-            asset_definition: AssetDefinition::new(String::new(), vec![]).into(),
+            asset_definition: AssetDefinition::new("", DEFAULT_SCOPE_SPEC_ADDRESS, vec![]).into(),
         };
         let error = execute(deps.as_mut(), mock_env(), empty_mock_info(), msg).unwrap_err();
         assert!(
@@ -210,7 +209,7 @@ mod tests {
         add_asset().expect("expected the first asset definition to be added successfully");
         let error = add_asset().unwrap_err();
         assert!(
-            matches!(error, ContractError::DuplicateAssetDefinitionProvided),
+            matches!(error, ContractError::RecordAlreadyExists { .. }),
             "expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type",
         );
     }
@@ -220,8 +219,7 @@ mod tests {
     }
 
     fn test_asset_definition_was_added(asset_definition: &AssetDefinition, deps: &DepsC) {
-        let state_def = asset_state_read(deps.storage, &asset_definition.asset_type)
-            .load()
+        let state_def = load_asset_definition_by_type(deps.storage, &asset_definition.asset_type)
             .expect("expected the added asset type to be stored in the state");
         assert_eq!(
             asset_definition, &state_def,
@@ -235,15 +233,14 @@ mod tests {
 
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
-            TEST_MOCK_LOAN_TYPE.to_string(),
+            TEST_MOCK_LOAN_TYPE,
+            TEST_MOCK_SCOPE_SPEC_ADDRESS,
             vec![ValidatorDetail::new(
-                "validator-address".to_string(),
+                "validator-address",
                 Uint128::new(1000),
+                NHASH,
                 Decimal::percent(50),
-                vec![FeeDestination::new(
-                    "fee-address".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("fee-address", Decimal::percent(100))],
             )],
             None,
         );

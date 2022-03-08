@@ -1,5 +1,6 @@
+use crate::core::asset::AssetDefinition;
 use crate::core::msg::InitMsg;
-use crate::core::state::{asset_state, config, AssetDefinition, State};
+use crate::core::state::{config, insert_asset_definition, State};
 use crate::migrate::version_info::migrate_version_info;
 use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::util::contract_helpers::check_funds_are_empty;
@@ -29,7 +30,7 @@ pub fn init_contract(
     for input in msg.asset_definitions.iter() {
         let asset_definition: AssetDefinition = input.into();
         // Create a new state storage for the provided asset definition
-        asset_state(deps.storage, &asset_definition.asset_type).save(&asset_definition)?;
+        insert_asset_definition(deps.storage, &asset_definition)?;
         messages.push(bind_name(
             generate_asset_attribute_name(&asset_definition.asset_type, &msg.base_contract_name),
             env.contract.address.clone(),
@@ -52,17 +53,18 @@ pub fn init_contract(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
+    use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
-    use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::core::state::load_asset_definition_by_type;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_utilities::{
         get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
         DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
-        DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
     };
-    use crate::util::constants::ASSET_EVENT_TYPE_KEY;
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use cosmwasm_std::testing::mock_info;
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -90,8 +92,7 @@ mod tests {
         );
         test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, DEFAULT_ASSET_TYPE);
-        let asset_state = asset_state_read(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
-            .load()
+        let asset_state = load_asset_definition_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect("expected the asset state data should be added to storage");
         assert_eq!(
             DEFAULT_ASSET_TYPE, asset_state.asset_type,
@@ -127,27 +128,28 @@ mod tests {
     fn test_valid_init_with_multiple_asset_definitions() {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInput::new(
-            "heloc".to_string(),
+            "heloc",
+            "heloc_scope_spec",
             vec![ValidatorDetail::new(
-                DEFAULT_VALIDATOR_ADDRESS.into(),
+                DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
+                DEFAULT_ONBOARDING_DENOM,
                 Decimal::percent(50),
-                vec![FeeDestination::new(
-                    "first".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("first", Decimal::percent(100))],
             )],
             None,
         );
         let second_asset_def = AssetDefinitionInput::new(
-            "mortgage".to_string(),
+            "mortgage",
+            "mortgage-scope-spec",
             vec![ValidatorDetail::new(
-                "other-address".to_string(),
+                "other-address",
                 Uint128::new(150),
+                NHASH,
                 Decimal::percent(100),
                 vec![
-                    FeeDestination::new("first".to_string(), Decimal::percent(50)),
-                    FeeDestination::new("second".to_string(), Decimal::percent(50)),
+                    FeeDestination::new("first", Decimal::percent(50)),
+                    FeeDestination::new("second", Decimal::percent(50)),
                 ],
             )],
             None,
@@ -173,16 +175,14 @@ mod tests {
         test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, "heloc");
         test_message_is_name_bind(&response.messages, "mortgage");
-        let heloc_asset_state = asset_state_read(deps.as_ref().storage, "heloc")
-            .load()
+        let heloc_asset_state = load_asset_definition_by_type(deps.as_ref().storage, "heloc")
             .expect("the heloc asset definition should be added to the state");
         assert_eq!(
             heloc_asset_state,
             first_asset_def.into(),
             "the heloc asset state should equate to the heloc input"
         );
-        let mortgage_asset_state = asset_state_read(deps.as_ref().storage, "mortgage")
-            .load()
+        let mortgage_asset_state = load_asset_definition_by_type(deps.as_ref().storage, "mortgage")
             .expect("the mortgage asset definition should be added to the state");
         assert_eq!(
             mortgage_asset_state,
@@ -211,7 +211,7 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInput::new(String::new(), vec![], None)],
+            asset_definitions: vec![AssetDefinitionInput::new("", "", vec![], None)],
             ..Default::default()
         };
         let error = instantiate(

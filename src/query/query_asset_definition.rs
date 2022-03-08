@@ -1,4 +1,4 @@
-use crate::core::state::asset_state_read;
+use crate::core::state::load_asset_definition_by_type;
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{to_binary, Binary};
@@ -7,15 +7,16 @@ pub fn query_asset_definition<S: Into<String>>(
     deps: &DepsC,
     asset_type: S,
 ) -> ContractResult<Binary> {
-    let asset_definition = asset_state_read(deps.storage, asset_type).load()?;
+    let asset_definition = load_asset_definition_by_type(deps.storage, asset_type)?;
     to_binary(&asset_definition)?.to_ok()
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
+    use crate::core::asset::AssetDefinition;
     use crate::core::error::ContractError::Std;
-    use crate::core::state::{asset_state, AssetDefinition};
+    use crate::core::state::insert_asset_definition;
     use crate::query::query_asset_definition::query_asset_definition;
     use crate::testutil::test_utilities::{
         get_default_asset_definition, test_instantiate_success, InstArgs,
@@ -42,8 +43,7 @@ mod tests {
     fn test_successful_query_from_direct_serialization() {
         let mut deps = mock_dependencies(&[]);
         let asset_def = get_default_asset_definition();
-        asset_state(deps.as_mut().storage, &asset_def.asset_type)
-            .save(&asset_def)
+        insert_asset_definition(deps.as_mut().storage, &asset_def)
             .expect("expected the asset definition to be properly saved to state");
         let query_def = get_asset_from_query(&deps.as_ref(), &asset_def.asset_type);
         assert_eq!(

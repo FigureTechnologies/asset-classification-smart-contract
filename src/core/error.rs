@@ -80,6 +80,12 @@ pub enum ContractError {
     #[error("Asset type {asset_type} is currently disabled")]
     AssetTypeDisabled { asset_type: String },
 
+    #[error("Existing record found: {explanation}")]
+    RecordAlreadyExists { explanation: String },
+
+    #[error("Record not found: {explanation}")]
+    RecordNotFound { explanation: String },
+
     #[error("Unauthorized: {explanation}")]
     Unauthorized { explanation: String },
 

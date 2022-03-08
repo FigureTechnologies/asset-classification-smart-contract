@@ -18,6 +18,7 @@ where
 // Implement for commonly-used structs that are out of scope of this project
 impl<T> ResultExtensions for Response<T> {}
 impl ResultExtensions for Binary {}
+impl<T> ResultExtensions for Vec<T> {}
 
 #[cfg(test)]
 mod tests {

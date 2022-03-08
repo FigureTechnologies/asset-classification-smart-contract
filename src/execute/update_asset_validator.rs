@@ -1,6 +1,7 @@
+use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_state, ValidatorDetail};
+use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -14,9 +15,9 @@ pub struct UpdateAssetValidatorV1 {
     pub validator: ValidatorDetail,
 }
 impl UpdateAssetValidatorV1 {
-    pub fn new(asset_type: String, validator: ValidatorDetail) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, validator: ValidatorDetail) -> Self {
         UpdateAssetValidatorV1 {
-            asset_type,
+            asset_type: asset_type.into(),
             validator,
         }
     }
@@ -43,8 +44,7 @@ pub fn update_asset_validator(
 ) -> ContractResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_state = asset_state(deps.storage, &msg.asset_type);
-    let mut asset_definition = asset_state.load()?;
+    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
     let validator_address = msg.validator.address.clone();
     // If a single validator for the given address cannot be found, data is either corrupt, or the
     // validator does not exist.  Given validation upfront prevents multiple validators with the
@@ -72,7 +72,7 @@ pub fn update_asset_validator(
         replace_single_matching_vec_element(asset_definition.validators, msg.validator, |v| {
             v.address == validator_address
         })?;
-    asset_state.save(&asset_definition)?;
+    replace_asset_definition(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -81,16 +81,19 @@ pub fn update_asset_validator(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
+    use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::{asset_state_read, FeeDestination, ValidatorDetail};
+    use crate::core::state::load_asset_definition_by_type;
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
         DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
-    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, VALIDATOR_ADDRESS_KEY};
+    use crate::util::constants::{
+        ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VALIDATOR_ADDRESS_KEY,
+    };
     use crate::util::event_attributes::EventType;
     use crate::validation::validate_init_msg::validate_validator;
     use cosmwasm_std::testing::{mock_env, mock_info};
@@ -186,8 +189,9 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: ValidatorDetail::new(
                     // Invalid because the address is blank
-                    String::new(),
+                    "",
                     Uint128::new(0),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -240,10 +244,11 @@ mod tests {
             deps.as_mut(),
             mock_info(DEFAULT_INFO_NAME, &[]),
             UpdateAssetValidatorV1::new(
-                DEFAULT_ASSET_TYPE.to_string(),
+                DEFAULT_ASSET_TYPE,
                 ValidatorDetail::new(
-                    "unknown-address-guy".to_string(),
+                    "unknown-address-guy",
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(0),
                     vec![],
                 ),
@@ -257,8 +262,7 @@ mod tests {
     }
 
     fn test_default_validator_was_updated(validator: &ValidatorDetail, deps: &DepsC) {
-        let state_def = asset_state_read(deps.storage, DEFAULT_ASSET_TYPE)
-            .load()
+        let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_validator = state_def.validators.into_iter().find(|v| v.address == validator.address)
             .expect("expected a single validator to be produced when searching for the updated validator's address");
@@ -272,12 +276,13 @@ mod tests {
     // details
     fn get_valid_update_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
-            DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            DEFAULT_VALIDATOR_ADDRESS,
             Uint128::new(420),
+            NHASH,
             Decimal::percent(100),
             vec![
-                FeeDestination::new("first".to_string(), Decimal::percent(50)),
-                FeeDestination::new("second".to_string(), Decimal::percent(50)),
+                FeeDestination::new("first", Decimal::percent(50)),
+                FeeDestination::new("second", Decimal::percent(50)),
             ],
         );
         validate_validator(&validator, &mock_dependencies(&[]).as_ref())
@@ -286,6 +291,6 @@ mod tests {
     }
 
     fn get_valid_update_validator_msg() -> UpdateAssetValidatorV1 {
-        UpdateAssetValidatorV1::new(DEFAULT_ASSET_TYPE.to_string(), get_valid_update_validator())
+        UpdateAssetValidatorV1::new(DEFAULT_ASSET_TYPE, get_valid_update_validator())
     }
 }

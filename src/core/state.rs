@@ -39,9 +39,9 @@ pub struct AssetDefinition {
     pub enabled: bool,
 }
 impl AssetDefinition {
-    pub fn new(asset_type: String, validators: Vec<ValidatorDetail>) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, validators: Vec<ValidatorDetail>) -> Self {
         AssetDefinition {
-            asset_type,
+            asset_type: asset_type.into(),
             validators,
             enabled: true,
         }
@@ -70,19 +70,22 @@ impl From<&AssetDefinitionInput> for AssetDefinition {
 pub struct ValidatorDetail {
     pub address: String,
     pub onboarding_cost: Uint128,
+    pub onboarding_denom: String,
     pub fee_percent: Decimal,
     pub fee_destinations: Vec<FeeDestination>,
 }
 impl ValidatorDetail {
-    pub fn new(
-        address: String,
+    pub fn new<S1: Into<String>, S2: Into<String>>(
+        address: S1,
         onboarding_cost: Uint128,
+        onboarding_denom: S2,
         fee_percent: Decimal,
         fee_destinations: Vec<FeeDestination>,
     ) -> Self {
         ValidatorDetail {
-            address,
+            address: address.into(),
             onboarding_cost,
+            onboarding_denom: onboarding_denom.into(),
             fee_percent,
             fee_destinations,
         }
@@ -95,9 +98,9 @@ pub struct FeeDestination {
     pub fee_percent: Decimal,
 }
 impl FeeDestination {
-    pub fn new(address: String, fee_percent: Decimal) -> Self {
+    pub fn new<S: Into<String>>(address: S, fee_percent: Decimal) -> Self {
         FeeDestination {
-            address,
+            address: address.into(),
             fee_percent,
         }
     }

@@ -113,6 +113,9 @@ fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec
     if deps.api.addr_validate(&validator.address).is_err() {
         invalid_fields.push("validator:address: must be a valid address".to_string());
     }
+    if validator.onboarding_denom.is_empty() {
+        invalid_fields.push("validator:onboarding_denom: must not be blank".to_string());
+    }
     if validator.fee_percent > Decimal::percent(100) {
         invalid_fields
             .push("validator:fee_percent: must be less than or equal to 100%".to_string());
@@ -197,6 +200,7 @@ pub mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
     use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::util::constants::NHASH;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_internal, validate_destination_internal, validate_init_msg,
         validate_validator_internal,
@@ -217,15 +221,13 @@ pub mod tests {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![AssetDefinitionInput::new(
-                "heloc".to_string(),
+                "heloc",
                 vec![ValidatorDetail::new(
-                    "address".to_string(),
+                    "address",
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(100),
-                    vec![FeeDestination::new(
-                        "fee".to_string(),
-                        Decimal::percent(100),
-                    )],
+                    vec![FeeDestination::new("fee", Decimal::percent(100))],
                 )],
                 None,
             )],
@@ -238,47 +240,48 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![
                 AssetDefinitionInput::new(
-                    "heloc".to_string(),
+                    "heloc",
                     vec![ValidatorDetail::new(
-                        "address".to_string(),
+                        "address",
                         Uint128::new(100),
+                        NHASH,
                         Decimal::percent(100),
-                        vec![FeeDestination::new(
-                            "fee".to_string(),
-                            Decimal::percent(100),
-                        )],
+                        vec![FeeDestination::new("fee", Decimal::percent(100))],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
-                    "mortgage".to_string(),
+                    "mortgage",
                     vec![ValidatorDetail::new(
-                        "address".to_string(),
+                        "address",
                         Uint128::new(500),
+                        NHASH,
                         Decimal::percent(50),
                         vec![
-                            FeeDestination::new("mort-fees".to_string(), Decimal::percent(50)),
-                            FeeDestination::new("other-fee".to_string(), Decimal::percent(50)),
+                            FeeDestination::new("mort-fees", Decimal::percent(50)),
+                            FeeDestination::new("other-fee", Decimal::percent(50)),
                         ],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
-                    "pl".to_string(),
+                    "pl",
                     vec![
                         ValidatorDetail::new(
-                            "address".to_string(),
+                            "address",
                             Uint128::new(0),
+                            NHASH,
                             Decimal::percent(0),
                             vec![],
                         ),
                         ValidatorDetail::new(
-                            "other-validator".to_string(),
+                            "other-validator",
                             Uint128::new(1000000),
+                            NHASH,
                             Decimal::percent(100),
                             vec![
-                                FeeDestination::new("community".to_string(), Decimal::percent(25)),
-                                FeeDestination::new("figure".to_string(), Decimal::percent(75)),
+                                FeeDestination::new("community", Decimal::percent(25)),
+                                FeeDestination::new("figure", Decimal::percent(75)),
                             ],
                         ),
                     ],
@@ -294,15 +297,13 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 asset_definitions: vec![AssetDefinitionInput::new(
-                    "heloc".to_string(),
+                    "heloc",
                     vec![ValidatorDetail::new(
-                        "address".to_string(),
+                        "address",
                         Uint128::new(100),
+                        NHASH,
                         Decimal::percent(100),
-                        vec![FeeDestination::new(
-                            "fee".to_string(),
-                            Decimal::percent(100),
-                        )],
+                        vec![FeeDestination::new("fee", Decimal::percent(100))],
                     )],
                     None,
                 )],
@@ -317,8 +318,8 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 asset_definitions: vec![
-                    AssetDefinitionInput::new("heloc".to_string(), vec![], None),
-                    AssetDefinitionInput::new("heloc".to_string(), vec![], None),
+                    AssetDefinitionInput::new("heloc", vec![], None),
+                    AssetDefinitionInput::new("heloc", vec![], None),
                 ],
             },
             "asset_definitions: each definition must specify a unique asset type",
@@ -330,7 +331,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: "asset".to_string(),
-                asset_definitions: vec![AssetDefinitionInput::new(String::new(), vec![], None)],
+                asset_definitions: vec![AssetDefinitionInput::new("", vec![], None)],
             },
             "asset_definition:asset_type: must not be blank",
         );
@@ -340,15 +341,13 @@ pub mod tests {
     fn test_valid_asset_definition() {
         let deps = mock_dependencies(&[]);
         let definition = AssetDefinition::new(
-            "heloc".to_string(),
+            "heloc",
             vec![ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(100),
+                NHASH,
                 Decimal::percent(100),
-                vec![FeeDestination::new(
-                    "fee".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("fee", Decimal::percent(100))],
             )],
         );
         let response = validate_asset_definition_internal(&definition, &deps.as_ref());
@@ -363,15 +362,13 @@ pub mod tests {
     fn test_invalid_asset_definition_asset_type() {
         test_invalid_asset_definition(
             &AssetDefinition::new(
-                String::new(),
+                "",
                 vec![ValidatorDetail::new(
-                    "address".to_string(),
+                    "address",
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(100),
-                    vec![FeeDestination::new(
-                        "fee".to_string(),
-                        Decimal::percent(100),
-                    )],
+                    vec![FeeDestination::new("fee", Decimal::percent(100))],
                 )],
             ),
             "asset_definition:asset_type: must not be blank",
@@ -381,7 +378,7 @@ pub mod tests {
     #[test]
     fn test_invalid_asset_definition_empty_validators() {
         test_invalid_asset_definition(
-            &AssetDefinition::new("mortgage".to_string(), vec![]),
+            &AssetDefinition::new("mortgage", vec![]),
             "asset_definition:validators: at least one validator must be supplied per asset type",
         );
     }
@@ -390,15 +387,13 @@ pub mod tests {
     fn test_invalid_asset_definition_picks_up_invalid_validator_scenarios() {
         test_invalid_asset_definition(
             &AssetDefinition::new(
-                String::new(),
+                "",
                 vec![ValidatorDetail::new(
-                    String::new(),
+                    "",
                     Uint128::new(100),
+                    NHASH,
                     Decimal::percent(100),
-                    vec![FeeDestination::new(
-                        "fee".to_string(),
-                        Decimal::percent(100),
-                    )],
+                    vec![FeeDestination::new("fee", Decimal::percent(100))],
                 )],
             ),
             "validator:address: must be a valid address",
@@ -409,8 +404,9 @@ pub mod tests {
     fn test_valid_validator_with_no_fee_destinations() {
         let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address".to_string(),
+            "good-address",
             Uint128::new(100),
+            NHASH,
             Decimal::percent(0),
             vec![],
         );
@@ -426,13 +422,11 @@ pub mod tests {
     fn test_valid_validator_with_single_fee_destination() {
         let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address".to_string(),
+            "good-address",
             Uint128::new(1000),
+            NHASH,
             Decimal::percent(50),
-            vec![FeeDestination::new(
-                "gooder-address".to_string(),
-                Decimal::percent(100),
-            )],
+            vec![FeeDestination::new("gooder-address", Decimal::percent(100))],
         );
         let response = validate_validator_internal(&validator, &deps.as_ref());
         assert!(
@@ -446,15 +440,16 @@ pub mod tests {
     fn test_valid_validator_with_multiple_fee_destinations() {
         let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address".to_string(),
+            "good-address",
             Uint128::new(150000),
+            NHASH,
             Decimal::percent(50),
             vec![
-                FeeDestination::new("first".to_string(), Decimal::percent(20)),
-                FeeDestination::new("second".to_string(), Decimal::percent(10)),
-                FeeDestination::new("third".to_string(), Decimal::percent(30)),
-                FeeDestination::new("fourth".to_string(), Decimal::percent(35)),
-                FeeDestination::new("fifth".to_string(), Decimal::percent(5)),
+                FeeDestination::new("first", Decimal::percent(20)),
+                FeeDestination::new("second", Decimal::percent(10)),
+                FeeDestination::new("third", Decimal::percent(30)),
+                FeeDestination::new("fourth", Decimal::percent(35)),
+                FeeDestination::new("fifth", Decimal::percent(5)),
             ],
         );
         let response = validate_validator_internal(&validator, &deps.as_ref());
@@ -468,8 +463,16 @@ pub mod tests {
     #[test]
     fn test_invalid_validator_address() {
         test_invalid_validator(
-            &ValidatorDetail::new(String::new(), Uint128::new(150), Decimal::zero(), vec![]),
+            &ValidatorDetail::new("", Uint128::new(150), NHASH, Decimal::zero(), vec![]),
             "validator:address: must be a valid address",
+        );
+    }
+
+    #[test]
+    fn test_invalid_validator_onboarding_denom() {
+        test_invalid_validator(
+            &ValidatorDetail::new("address", Uint128::new(100), "", Decimal::zero(), vec![]),
+            "validator:onboarding_denom: must not be blank",
         );
     }
 
@@ -477,13 +480,11 @@ pub mod tests {
     fn test_invalid_validator_fee_percent_too_high() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(1010),
+                NHASH,
                 Decimal::percent(101),
-                vec![FeeDestination::new(
-                    "fee".to_string(),
-                    Decimal::percent(100),
-                )],
+                vec![FeeDestination::new("fee", Decimal::percent(100))],
             ),
             "validator:fee_percent: must be less than or equal to 100%",
         );
@@ -494,11 +495,12 @@ pub mod tests {
         // Try to take 1% of 1 nhash, which should end up as zero after decimals are rounded
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(1),
+                NHASH,
                 Decimal::percent(1),
                 vec![FeeDestination::new(
-                    "fee".to_string(),
+                    "fee",
                     Decimal::percent(100),
                 )],
             ),
@@ -510,8 +512,9 @@ pub mod tests {
     fn test_invalid_validator_no_fee_destinations_but_fee_percent_provided() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(150),
+                NHASH,
                 Decimal::percent(100),
                 vec![],
             ),
@@ -523,11 +526,12 @@ pub mod tests {
     fn test_invalid_validator_provided_fee_destinations_but_fee_percent_zero() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(150),
+                NHASH,
                 Decimal::percent(0),
                 vec![FeeDestination::new(
-                    "fee".to_string(),
+                    "fee",
                     Decimal::percent(100),
                 )],
             ),
@@ -539,10 +543,11 @@ pub mod tests {
     fn test_invalid_validator_fee_destinations_do_not_sum_correctly_single_destination() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(420),
+                NHASH,
                 Decimal::percent(50),
-                vec![FeeDestination::new("first".to_string(), Decimal::percent(99))],
+                vec![FeeDestination::new("first", Decimal::percent(99))],
             ),
             "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
         );
@@ -552,13 +557,14 @@ pub mod tests {
     fn test_invalid_validator_fee_destinations_do_not_sum_correctly_multiple_destinations() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(55),
+                NHASH,
                 Decimal::percent(100),
                 vec![
-                    FeeDestination::new("first".to_string(), Decimal::percent(33)),
-                    FeeDestination::new("second".to_string(), Decimal::percent(33)),
-                    FeeDestination::new("third".to_string(), Decimal::percent(33)),
+                    FeeDestination::new("first", Decimal::percent(33)),
+                    FeeDestination::new("second", Decimal::percent(33)),
+                    FeeDestination::new("third", Decimal::percent(33)),
                 ],
             ),
             "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
@@ -569,14 +575,15 @@ pub mod tests {
     fn test_invalid_validator_destination_fee_percents_do_not_sum_to_correct_number() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(100),
+                NHASH,
                 Decimal::percent(20),
                 vec![
                     // Trying to split 20 by 99% and by 1% will drop some of the numbers because the decimal places get removed after doing division.
                     // The 99% fee sound end up with 19nhash and the 1% fee should result in 0nhash, resulting in 19nhash as the total
-                    FeeDestination::new("first".to_string(), Decimal::percent(99)),
-                    FeeDestination::new("second".to_string(), Decimal::percent(1)),
+                    FeeDestination::new("first", Decimal::percent(99)),
+                    FeeDestination::new("second", Decimal::percent(1)),
                 ],
             ),
             "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
@@ -587,12 +594,13 @@ pub mod tests {
     fn test_invalid_validator_destinations_contains_duplicate_address() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(100),
+                NHASH,
                 Decimal::percent(50),
                 vec![
-                    FeeDestination::new("fee-guy".to_string(), Decimal::percent(50)),
-                    FeeDestination::new("fee-guy".to_string(), Decimal::percent(50)),
+                    FeeDestination::new("fee-guy", Decimal::percent(50)),
+                    FeeDestination::new("fee-guy", Decimal::percent(50)),
                 ]
             ),
             "validator:fee_destinations: all fee destinations within a validator must have unique addresses",
@@ -603,10 +611,11 @@ pub mod tests {
     fn test_invalid_validator_picks_up_invalid_fee_destination_scenarios() {
         test_invalid_validator(
             &ValidatorDetail::new(
-                "address".to_string(),
+                "address",
                 Uint128::new(100),
+                NHASH,
                 Decimal::percent(100),
-                vec![FeeDestination::new(String::new(), Decimal::percent(100))],
+                vec![FeeDestination::new("", Decimal::percent(100))],
             ),
             "fee_destination:address: must be a valid address",
         );
@@ -615,7 +624,7 @@ pub mod tests {
     #[test]
     fn test_valid_destination() {
         let deps = mock_dependencies(&[]);
-        let destination = FeeDestination::new("good-address".to_string(), Decimal::percent(100));
+        let destination = FeeDestination::new("good-address", Decimal::percent(100));
         assert!(
             validate_destination_internal(&destination, &deps.as_ref()).is_empty(),
             "a valid fee destination should pass validation and return no error messages",
@@ -625,7 +634,7 @@ pub mod tests {
     #[test]
     fn test_invalid_destination_address() {
         test_invalid_destination(
-            &FeeDestination::new(String::new(), Decimal::percent(1)),
+            &FeeDestination::new("", Decimal::percent(1)),
             "fee_destination:address: must be a valid address",
         );
     }
@@ -633,7 +642,7 @@ pub mod tests {
     #[test]
     fn test_invalid_destination_fee_percent_too_high() {
         test_invalid_destination(
-            &FeeDestination::new("good-address".to_string(), Decimal::percent(101)),
+            &FeeDestination::new("good-address", Decimal::percent(101)),
             "fee_destination:fee_percent: must be less than or equal to 100%",
         );
     }
@@ -641,7 +650,7 @@ pub mod tests {
     #[test]
     fn test_invalid_destination_fee_percent_too_low() {
         test_invalid_destination(
-            &FeeDestination::new("good-address".to_string(), Decimal::percent(0)),
+            &FeeDestination::new("good-address", Decimal::percent(0)),
             "fee_destination:fee_percent: must not be zero",
         );
     }

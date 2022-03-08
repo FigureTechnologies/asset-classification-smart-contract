@@ -11,13 +11,13 @@ pub struct AssetDefinitionInput {
     pub enabled: Option<bool>,
 }
 impl AssetDefinitionInput {
-    pub fn new(
-        asset_type: String,
+    pub fn new<S: Into<String>>(
+        asset_type: S,
         validators: Vec<ValidatorDetail>,
         enabled: Option<bool>,
     ) -> AssetDefinitionInput {
         AssetDefinitionInput {
-            asset_type,
+            asset_type: asset_type.into(),
             validators,
             enabled,
         }

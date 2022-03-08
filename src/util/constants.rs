@@ -24,3 +24,8 @@ pub const ASSET_TYPE_KEY: &str = "asset_type";
 pub const VALIDATOR_ADDRESS_KEY: &str = "asset_validator_address";
 /// Value = Any new value being changed that can be coerced to a string target. Dynamic to be used on various routes (String)
 pub const NEW_VALUE_KEY: &str = "new_value";
+
+//////////////////////
+// Global Constants //
+//////////////////////
+pub const NHASH: &str = "nhash";

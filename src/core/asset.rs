@@ -63,7 +63,6 @@ impl From<&AssetDefinitionInput> for AssetDefinition {
         }
     }
 }
-impl ResultExtensions for AssetDefinition {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -158,4 +157,3 @@ impl AssetScopeAttribute {
         .to_ok()
     }
 }
-impl ResultExtensions for AssetScopeAttribute {}

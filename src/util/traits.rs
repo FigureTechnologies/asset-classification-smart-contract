@@ -1,5 +1,3 @@
-use cosmwasm_std::{Binary, Response};
-
 /// Allows any implementing type to functionally move itself into a Result<T, U>
 pub trait ResultExtensions
 where
@@ -15,11 +13,8 @@ where
         Err(self)
     }
 }
-// Implement for commonly-used structs that are out of scope of this project
-impl<T> ResultExtensions for Response<T> {}
-impl ResultExtensions for Binary {}
-impl<T> ResultExtensions for Vec<T> {}
-impl ResultExtensions for String {}
+// Implement for EVERYTHING IN THE UNIVERSE
+impl<T> ResultExtensions for T {}
 
 #[cfg(test)]
 mod tests {

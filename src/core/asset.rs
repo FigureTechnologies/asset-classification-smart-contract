@@ -134,32 +134,10 @@ pub struct AssetScopeAttribute {
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
-    // TODO: Remove this annotation when this is used
-    #[allow(dead_code)]
-    pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
+    pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         asset_type: S1,
-        requestor_address: A1,
-        validator_address: A2,
-        onboarding_status: Option<AssetOnboardingStatus>,
-        latest_validator_detail: ValidatorDetail,
-    ) -> Self {
-        AssetScopeAttribute {
-            asset_type: asset_type.into(),
-            requestor_address: requestor_address.into(),
-            validator_address: validator_address.into(),
-            onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            latest_validator_detail: Some(latest_validator_detail),
-            latest_validation_result: None,
-            access_routes: vec![],
-        }
-    }
-
-    // TODO: Remove this annotation when this is used
-    #[allow(dead_code)]
-    pub fn new<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
-        asset_type: S1,
-        requestor_address: A1,
-        validator_address: A2,
+        requestor_address: S2,
+        validator_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
     ) -> ContractResult<Self> {
@@ -168,13 +146,15 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
-        AssetScopeAttribute::new_unchecked(
-            asset_type,
-            req_addr,
-            val_addr,
-            onboarding_status,
-            latest_validator_detail,
-        )
+        AssetScopeAttribute {
+            asset_type: asset_type.into(),
+            requestor_address: req_addr,
+            validator_address: val_addr,
+            onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
+            latest_validator_detail: Some(latest_validator_detail),
+            latest_validation_result: None,
+            access_routes: vec![],
+        }
         .to_ok()
     }
 }

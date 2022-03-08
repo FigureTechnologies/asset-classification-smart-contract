@@ -13,9 +13,6 @@ pub enum ContractError {
     #[error("Semver parsing error: {0}")]
     SemVer(#[from] semver::Error),
 
-    #[error("duplicate/existing asset definition provided as input")]
-    DuplicateAssetDefinitionProvided,
-
     #[error("duplicate/existing validator address provided as input")]
     DuplicateValidatorProvided,
 

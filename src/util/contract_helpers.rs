@@ -10,14 +10,16 @@ use cosmwasm_std::MessageInfo;
 /// ```
 /// use cosmwasm_std::MessageInfo;
 /// use asset_classification_smart_contract::util::contract_helpers::check_admin_only;
+/// use cosmwasm_std::Addr;
 /// use cosmwasm_std::testing::mock_info;
 /// use provwasm_mocks::mock_dependencies;
-/// use asset_classification_smart_contract::testutil::test_utilities::{test_instantiate_success, InstArgs, DEFAULT_INFO_NAME};
+/// use asset_classification_smart_contract::core::state::{config, State};
 ///
 /// let mut deps = mock_dependencies(&[]);
-/// test_instantiate_success(deps.as_mut(), InstArgs::default());
-/// let info = mock_info(DEFAULT_INFO_NAME, &[]);
-/// check_admin_only(&deps.as_ref(), &info).expect("DEFAULT_INFO_NAME was used as the admin and should return a success");
+/// config(deps.as_mut().storage).save(&State { base_contract_name: "contract-name".to_string(), admin: Addr::unchecked("admin-name") })
+///     .expect("expected state to save successfully");
+/// let info = mock_info("admin-name", &[]);
+/// check_admin_only(&deps.as_ref(), &info).expect("admin-name was used as the admin and should return a success");
 /// ```
 pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> {
     let state = config_read(deps.storage).load()?;
@@ -37,9 +39,8 @@ pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> 
 /// ```
 /// use asset_classification_smart_contract::util::contract_helpers::check_funds_are_empty;
 /// use cosmwasm_std::testing::mock_info;
-/// use asset_classification_smart_contract::testutil::test_utilities::DEFAULT_INFO_NAME;
 ///
-/// let info = mock_info(DEFAULT_INFO_NAME, &[]);
+/// let info = mock_info("admin-nmae", &[]);
 /// check_funds_are_empty(&info).expect("no coin provided in info - should be success");
 /// ```
 pub fn check_funds_are_empty(info: &MessageInfo) -> ContractResult<()> {

@@ -45,8 +45,9 @@ pub enum ExecuteMsg {
         validator_address: String,
     },
     ValidateAsset {
-        asset_uuid: String,
-        approve: bool,
+        asset_uuid: Option<String>,
+        scope_address: Option<String>,
+        error: Option<String>,
     },
     AddAssetDefinition {
         asset_definition: AssetDefinitionInput,
@@ -71,8 +72,14 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    QueryAssetDefinition { asset_type: String },
+    QueryAssetDefinition {
+        asset_type: String,
+    },
     QueryState {},
+    QueryAssetByScopeAddress {
+        scope_address: String,
+        asset_type: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

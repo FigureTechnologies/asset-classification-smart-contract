@@ -84,3 +84,20 @@ pub fn asset_meta(storage: &mut dyn Storage) -> Bucket<AssetMeta> {
 pub fn asset_meta_read(storage: &dyn Storage) -> ReadonlyBucket<AssetMeta> {
     bucket_read(storage, ASSET_META_KEY)
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub enum ValidationResult {
+    PENDING,
+    APPROVED,
+    DENIED,
+}
+
+/// This struct is serialized directly as an attribute on each payable's scope
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct AssetScopeAttribute {
+    // The address of the validator that handles validation for this payable
+    pub validator_address: Addr,
+    // Whether or not the validator has reviewed the structure of the payable and determine if it is
+    // a valid payable
+    pub validation_result: ValidationResult,
+}

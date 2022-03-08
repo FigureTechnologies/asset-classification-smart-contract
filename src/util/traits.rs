@@ -1,6 +1,4 @@
-use cosmwasm_std::{Binary, Response};
-
-/// Allows any implementing type to functionally move itself into a Result<T, U>
+/// Allows any Sized type to functionally move itself into a Result<T, U>
 pub trait ResultExtensions
 where
     Self: Sized,
@@ -15,18 +13,26 @@ where
         Err(self)
     }
 }
-// Implement for commonly-used structs that are out of scope of this project
-impl<T> ResultExtensions for Response<T> {}
-impl ResultExtensions for Binary {}
-impl<T> ResultExtensions for Vec<T> {}
+// Implement for EVERYTHING IN THE UNIVERSE
+impl<T> ResultExtensions for T {}
+
+/// Allows any Sized type to functionally move itself into an Option<T>
+pub trait OptionExtensions
+where
+    Self: Sized,
+{
+    fn to_option(self) -> Option<Self> {
+        Some(self)
+    }
+}
+// Implement for EVERYTHING IN THE UNIVERSE
+impl<T> OptionExtensions for T {}
 
 #[cfg(test)]
 mod tests {
     use crate::core::error::ContractError;
 
-    use super::ResultExtensions;
-
-    impl ResultExtensions for String {}
+    use super::{OptionExtensions, ResultExtensions};
 
     #[test]
     fn test_to_ok() {
@@ -45,6 +51,18 @@ mod tests {
         assert!(
             matches!(error.unwrap_err(), ContractError::InvalidFunds(_)),
             "the error should unwrap correctly",
+        );
+    }
+
+    #[test]
+    fn test_to_option() {
+        let option: Option<String> = "hello".to_string().to_option();
+        assert_eq!(
+            "hello",
+            option
+                .expect("option should unwrap because it was initialized with a value")
+                .as_str(),
+            "incorrect value contained in wrapped Option",
         );
     }
 }

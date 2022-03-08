@@ -25,7 +25,6 @@ impl AddAssetDefinitionV1 {
         }
     }
 }
-impl ResultExtensions for AddAssetDefinitionV1 {}
 impl From<AssetDefinitionInput> for AddAssetDefinitionV1 {
     fn from(input: AssetDefinitionInput) -> Self {
         AddAssetDefinitionV1 {

@@ -1,18 +1,26 @@
 use cosmwasm_std::{
-    testing::{mock_env, mock_info},
-    Coin, Decimal, Env, MessageInfo, Response, Uint128,
+    testing::{mock_env, mock_info, MockApi, MockStorage},
+    Addr, Coin, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
-use provwasm_std::ProvenanceMsg;
+use provwasm_mocks::ProvenanceMockQuerier;
+use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
+use serde_json_wasm::to_string;
 
-use crate::util::aliases::{ContractResponse, DepsMutC};
 use crate::{
     contract::instantiate,
     core::{
         asset::{AssetDefinition, ValidatorDetail},
         msg::InitMsg,
     },
+    util::functions::generate_asset_attribute_name,
+};
+use crate::{
+    core::asset::AssetScopeAttribute,
+    util::aliases::{ContractResponse, DepsMutC},
 };
 use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
+
+pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
 pub const DEFAULT_INFO_NAME: &str = "admin";
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
@@ -108,4 +116,48 @@ pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) 
         .unwrap()
         .value
         .as_str()
+}
+
+pub fn get_duped_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    scope_id: S1,
+    spec_id: S2,
+    owner_address: S3,
+) -> Scope {
+    let owner_address = owner_address.into();
+    Scope {
+        scope_id: scope_id.into(),
+        specification_id: spec_id.into(),
+        owners: vec![Party {
+            address: Addr::unchecked(&owner_address),
+            role: PartyType::Owner,
+        }],
+        data_access: vec![],
+        value_owner_address: Addr::unchecked(owner_address),
+    }
+}
+
+pub fn mock_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    deps: &mut MockOwnedDeps,
+    scope_id: S1,
+    spec_id: S2,
+    owner_address: S3,
+) {
+    deps.querier
+        .with_scope(get_duped_scope(scope_id, spec_id, owner_address))
+}
+
+pub fn mock_scope_attribute<S: Into<String>>(
+    deps: &mut MockOwnedDeps,
+    attribute: &AssetScopeAttribute,
+    scope_address: S,
+) {
+    let address: String = scope_address.into();
+    deps.querier.with_attributes(
+        &address,
+        &[(
+            &generate_asset_attribute_name(&attribute.asset_type, DEFAULT_CONTRACT_BASE_NAME),
+            &to_string(attribute).expect("failed to convert AssetScopeAttribute to json string"),
+            "json",
+        )],
+    );
 }

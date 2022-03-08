@@ -2,11 +2,16 @@ use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::util::{aliases::ContractResult, functions::validate_address, traits::ResultExtensions};
+use crate::util::{
+    aliases::{ContractResult, DepsC},
+    functions::{generate_asset_attribute_name, validate_address},
+    traits::ResultExtensions,
+};
 
-use super::{error::ContractError, msg::AssetDefinitionInput};
+use super::{error::ContractError, msg::AssetDefinitionInput, state::config_read};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct AssetDefinition {
     pub asset_type: String,
     pub scope_spec_address: String,
@@ -32,6 +37,11 @@ impl AssetDefinition {
     pub fn storage_key(&self) -> Vec<u8> {
         self.asset_type.to_lowercase().as_bytes().to_vec()
     }
+
+    pub fn attribute_name(&self, deps: &DepsC) -> ContractResult<String> {
+        let state = config_read(deps.storage).load()?;
+        generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
+    }
 }
 impl From<AssetDefinitionInput> for AssetDefinition {
     fn from(input: AssetDefinitionInput) -> Self {
@@ -56,6 +66,7 @@ impl From<&AssetDefinitionInput> for AssetDefinition {
 impl ResultExtensions for AssetDefinition {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct ValidatorDetail {
     pub address: String,
     pub onboarding_cost: Uint128,
@@ -82,6 +93,7 @@ impl ValidatorDetail {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct FeeDestination {
     pub address: String,
     pub fee_percent: Decimal,
@@ -96,20 +108,23 @@ impl FeeDestination {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-enum AssetOnboardingStatus {
+#[serde(rename_all = "snake_case")]
+pub enum AssetOnboardingStatus {
     Pending,
     Denied,
     Approved,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetValidationResult {
+#[serde(rename_all = "snake_case")]
+pub struct AssetValidationResult {
     pub message: String,
     pub success: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetScopeAttribute {
+#[serde(rename_all = "snake_case")]
+pub struct AssetScopeAttribute {
     pub asset_type: String,
     pub requestor_address: Addr,
     pub validator_address: Addr,

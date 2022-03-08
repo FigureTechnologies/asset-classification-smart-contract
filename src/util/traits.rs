@@ -19,14 +19,13 @@ where
 impl<T> ResultExtensions for Response<T> {}
 impl ResultExtensions for Binary {}
 impl<T> ResultExtensions for Vec<T> {}
+impl ResultExtensions for String {}
 
 #[cfg(test)]
 mod tests {
     use crate::core::error::ContractError;
 
     use super::ResultExtensions;
-
-    impl ResultExtensions for String {}
 
     #[test]
     fn test_to_ok() {

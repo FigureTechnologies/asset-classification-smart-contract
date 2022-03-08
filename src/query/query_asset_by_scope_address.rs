@@ -1,5 +1,5 @@
-use crate::core::error::ContractError;
-use crate::core::state::{config_read, AssetScopeAttribute};
+use crate::core::state::config_read;
+use crate::core::{asset::AssetScopeAttribute, error::ContractError};
 use crate::util::functions::generate_asset_attribute_name;
 use cosmwasm_std::{to_binary, Addr, Binary, Deps};
 use provwasm_std::{ProvenanceQuerier, ProvenanceQuery};
@@ -49,8 +49,8 @@ pub fn query_asset_attribute_by_scope_address(
 #[cfg(test)]
 mod tests {
     use crate::contract::query;
+    use crate::core::asset::{AssetOnboardingStatus, AssetScopeAttribute};
     use crate::core::msg::QueryMsg;
-    use crate::core::state::{AssetScopeAttribute, ValidationResult};
     use crate::query::query_asset_by_scope_address::query_asset_attribute_by_scope_address;
     use crate::testutil::onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset};
     use crate::testutil::test_utilities::{
@@ -61,15 +61,14 @@ mod tests {
     use cosmwasm_std::{from_binary, CosmosMsg, SubMsg};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
-    use serde_json_wasm::to_string;
 
     #[test]
     fn test_query_asset_by_scope_address_after_register() {
         let mut deps = mock_dependencies(&[]);
-        let asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(
             &mut deps,
-            &asset_meta_repository,
+            &mut asset_meta_repository,
             TestOnboardAsset::default(),
         )
         .unwrap();
@@ -88,16 +87,16 @@ mod tests {
             scope_attribute.validator_address.as_str(),
             "expected the default validator address to be returned",
         );
-        assert_eq!(ValidationResult::PENDING, scope_attribute.validation_result, "when initially created, the meta should show that the validator has not yet approved the asset");
+        assert_eq!(AssetOnboardingStatus::Pending, scope_attribute.onboarding_status, "when initially created, the meta should show that the validator has not yet approved the asset");
     }
 
     #[test]
     fn test_query_asset_attribute_by_scope_address() {
         let mut deps = mock_dependencies(&[]);
-        let asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
         let result = test_onboard_asset(
             &mut deps,
-            &asset_meta_repository,
+            &mut asset_meta_repository,
             TestOnboardAsset::default(),
         )
         .unwrap();
@@ -125,7 +124,8 @@ mod tests {
             ..
         }) = result.messages.first()
         {
-            assert_eq!(value.to_string(), to_string(&scope_attr).unwrap());
+            let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+            assert_eq!(deserialized, scope_attr);
         } else {
             panic!("Unexpected onboard_asset resultant message type")
         }

@@ -1,3 +1,4 @@
+use crate::core::asset::AssetScopeAttribute;
 use crate::core::error::ContractError;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::testutil::test_utilities::{
@@ -7,8 +8,9 @@ use crate::testutil::test_utilities::{
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::message_gathering_service::MessageGatheringService;
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, Env, MessageInfo, Response};
+use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo, Response};
 use provwasm_std::ProvenanceMsg;
+use serde_json_wasm::to_string;
 
 use super::test_utilities::DEFAULT_ONBOARDING_COST;
 
@@ -69,7 +71,7 @@ impl Default for TestOnboardAsset {
 
 pub fn test_onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     deps: &mut MockOwnedDeps,
-    asset_meta_repository: &T,
+    asset_meta_repository: &mut T,
     msg: TestOnboardAsset,
 ) -> Result<Response<ProvenanceMsg>, ContractError> {
     let response = onboard_asset(
@@ -83,20 +85,28 @@ pub fn test_onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     asset_meta_repository
         .get_messages()
         .iter()
-        .for_each(|m| match &m.params {
-            provwasm_std::ProvenanceMsgParams::Attribute(
-                provwasm_std::AttributeMsgParams::AddAttribute {
-                    address,
-                    name,
-                    value,
-                    ..
-                },
-            ) => {
-                // bind name w/ provmock querier
-                println!("GOT A THING");
+        .for_each(|m| match m {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    provwasm_std::ProvenanceMsgParams::Attribute(
+                        provwasm_std::AttributeMsgParams::AddAttribute {
+                            address,
+                            name,
+                            value,
+                            ..
+                        },
+                    ),
+                ..
+            }) => {
+                // inject bound name into provmock querier
+                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
                 deps.querier.with_attributes(
                     address.as_str(),
-                    &[(name.as_str(), value.to_string().as_str(), "json")],
+                    &[(
+                        name.as_str(),
+                        to_string(&deserialized).unwrap().as_str(),
+                        "json",
+                    )],
                 )
             }
             _ => panic!("Unexpected message type from onboard_asset call in test_onboard_asset"),

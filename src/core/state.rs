@@ -59,7 +59,6 @@ pub struct AssetMeta {
     pub scope_address: String,
     pub asset_type: String,
     pub validator_address: String,
-    pub onboarding_fee: Uint128,
 }
 impl AssetMeta {
     pub fn new<T1: Into<String>, T2: Into<String>, T3: Into<String>>(
@@ -72,7 +71,6 @@ impl AssetMeta {
             scope_address: scope_address.into(),
             asset_type: asset_type.into(),
             validator_address: validator_address.into(),
-            onboarding_fee,
         }
     }
 }
@@ -83,21 +81,4 @@ pub fn asset_meta(storage: &mut dyn Storage) -> Bucket<AssetMeta> {
 
 pub fn asset_meta_read(storage: &dyn Storage) -> ReadonlyBucket<AssetMeta> {
     bucket_read(storage, ASSET_META_KEY)
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub enum ValidationResult {
-    PENDING,
-    APPROVED,
-    DENIED,
-}
-
-/// This struct is serialized directly as an attribute on each payable's scope
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct AssetScopeAttribute {
-    // The address of the validator that handles validation for this payable
-    pub validator_address: Addr,
-    // Whether or not the validator has reviewed the structure of the payable and determine if it is
-    // a valid payable
-    pub validation_result: ValidationResult,
 }

@@ -146,7 +146,6 @@ mod tests {
                     scope_address: "scope1234".to_string(),
                     asset_type: DEFAULT_ASSET_TYPE.to_string(),
                     validator_address: "tpcorrectvalidator".to_string(),
-                    onboarding_fee: Uint128::from(DEFAULT_ONBOARDING_COST),
                 },
             )
             .unwrap();
@@ -199,7 +198,6 @@ mod tests {
                     scope_address: "scope1234".to_string(),
                     asset_type: DEFAULT_ASSET_TYPE.to_string(),
                     validator_address: info.sender.to_string(),
-                    onboarding_fee: Uint128::from(DEFAULT_ONBOARDING_COST),
                 },
             )
             .unwrap();

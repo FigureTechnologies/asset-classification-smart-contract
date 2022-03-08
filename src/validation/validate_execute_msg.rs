@@ -225,13 +225,13 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_success() {
-        validate_validate_asset("asset_uuid")
+        validate_validate_asset(&Some("asset_uuid".to_string()), &None)
             .expect("expected the validation to pass when all fields are correctly supplied");
     }
 
     #[test]
     fn test_validate_validate_asset_invalid_asset_uuid() {
-        let result = validate_validate_asset("");
+        let result = validate_validate_asset(&None, &None);
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::ValidateAsset",
@@ -239,13 +239,18 @@ mod tests {
                 "incorrect message type for error"
             );
             assert_eq!(
-                1,
+                2,
                 invalid_fields.len(),
                 "expected only a single invalid field to be found"
             );
             assert_eq!(
-                "asset_uuid: must not be blank",
+                "asset_uuid: must not be blank if scope_address not provided",
                 invalid_fields.first().unwrap().as_str(),
+                "expected the appropriate error message to be returned"
+            );
+            assert_eq!(
+                "scope_address: must not be blank if asset_uuid not provided",
+                invalid_fields[1].as_str(),
                 "expected the appropriate error message to be returned"
             );
         });

@@ -1,23 +1,18 @@
 use std::vec;
 
-use cosmwasm_std::{QuerierWrapper, Storage};
+use cosmwasm_std::{Addr, CosmosMsg, QuerierWrapper, Storage};
 use provwasm_std::{ProvenanceMsg, ProvenanceQuery};
 
-use crate::core::{error::ContractError, state::asset_meta_read};
+use crate::core::{
+    asset::{AssetOnboardingStatus, AssetScopeAttribute, ValidatorDetail},
+    error::ContractError,
+    state::{asset_meta, asset_meta_read, config_read, AssetMeta},
+};
 
 use super::{
     aliases::ContractResult, message_gathering_service::MessageGatheringService,
-    traits::ResultExtensions,
+    provenance_util::get_add_attribute_to_scope_msg, traits::ResultExtensions,
 };
-
-#[derive(Clone, PartialEq)]
-pub struct AssetMeta {
-    pub scope_address: String,
-    pub asset_type: String,
-    pub validator_address: String,
-    pub onboarding_fee: String,
-    pub validated: String,
-}
 
 pub trait AssetMetaRepository {
     fn has_asset(
@@ -28,22 +23,26 @@ pub trait AssetMetaRepository {
     ) -> ContractResult<bool>;
 
     fn add_asset(
-        &self,
+        &mut self,
+        storage: &mut dyn Storage,
+        _querier: &QuerierWrapper<ProvenanceQuery>,
         scope_address: String,
         asset_type: String,
         validator_address: String,
+        onboarding_status: AssetOnboardingStatus,
+        validator_detail: ValidatorDetail,
     ) -> ContractResult<()>;
 
-    fn get_asset(&self, scope_address: String) -> ContractResult<AssetMeta>;
+    fn get_asset(&self, scope_address: String) -> ContractResult<AssetScopeAttribute>;
 
-    fn try_get_asset(&self, scope_address: String) -> Option<AssetMeta>;
+    fn try_get_asset(&self, scope_address: String) -> Option<AssetScopeAttribute>;
 
     fn validate_asset(&self, scope_address: String, validation_result: bool) -> ContractResult<()>;
 }
 
 // An AssetMeta repository instance that stores the metadata split between contract storage and scope attribute
 pub struct ContractAndAttributeAssetMeta {
-    messages: Vec<ProvenanceMsg>,
+    messages: Vec<CosmosMsg<ProvenanceMsg>>,
 }
 
 impl ContractAndAttributeAssetMeta {
@@ -68,21 +67,48 @@ impl AssetMetaRepository for ContractAndAttributeAssetMeta {
     }
 
     fn add_asset(
-        &self,
-        _scope_address: String,
-        _asset_type: String,
-        _validator_address: String,
+        &mut self,
+        storage: &mut dyn Storage,
+        _querier: &QuerierWrapper<ProvenanceQuery>,
+        scope_address: String,
+        asset_type: String,
+        validator_address: String,
+        onboarding_status: AssetOnboardingStatus,
+        validator_detail: ValidatorDetail,
     ) -> ContractResult<()> {
-        todo!()
+        let mut asset_meta = asset_meta(storage);
+        asset_meta.save(
+            scope_address.clone().as_bytes(),
+            &AssetMeta {
+                scope_address: scope_address.clone(),
+                asset_type: asset_type.clone(),
+                validator_address: validator_address.clone(),
+            },
+        )?;
+        let contract_base_name = config_read(storage).load()?.base_contract_name;
+        let attribute = AssetScopeAttribute::new(
+            asset_type.clone(),
+            Addr::unchecked("todo"),
+            Addr::unchecked(validator_address),
+            Some(onboarding_status),
+            validator_detail,
+        )?;
+        self.add_message(get_add_attribute_to_scope_msg(
+            scope_address,
+            asset_type,
+            &attribute,
+            contract_base_name,
+        )?);
+        Ok(())
         // insert asset meta and generate attribute -> scope bind message
     }
 
-    fn get_asset(&self, _scope_address: String) -> ContractResult<AssetMeta> {
+    fn get_asset(&self, _scope_address: String) -> ContractResult<AssetScopeAttribute> {
         todo!()
         // try to fetch asset from attribute meta, if found also fetch scope attribute and reconstruct AssetMeta from relevant pieces
     }
 
-    fn try_get_asset(&self, _scope_address: String) -> Option<AssetMeta> {
+    fn try_get_asset(&self, _scope_address: String) -> Option<AssetScopeAttribute> {
         todo!()
         // try/catch get_asset and transform to option
     }
@@ -98,11 +124,11 @@ impl AssetMetaRepository for ContractAndAttributeAssetMeta {
 }
 
 impl MessageGatheringService for ContractAndAttributeAssetMeta {
-    fn get_messages(&self) -> Vec<ProvenanceMsg> {
+    fn get_messages(&self) -> Vec<CosmosMsg<ProvenanceMsg>> {
         self.messages.clone()
     }
 
-    fn add_message(&mut self, message: ProvenanceMsg) {
+    fn add_message(&mut self, message: CosmosMsg<ProvenanceMsg>) {
         self.messages.push(message)
     }
 }

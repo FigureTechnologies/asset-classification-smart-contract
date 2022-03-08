@@ -17,11 +17,11 @@ use crate::{
         functions::generate_asset_attribute_name,
     },
 };
-use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 use crate::{
-    core::state::AssetScopeAttribute,
+    core::asset::AssetScopeAttribute,
     util::aliases::{ContractResponse, DepsMutC},
 };
+use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 

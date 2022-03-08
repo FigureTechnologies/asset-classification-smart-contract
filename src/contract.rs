@@ -47,7 +47,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             deps,
             env,
             info,
-            &ContractAndAttributeAssetMeta::new(),
+            &mut ContractAndAttributeAssetMeta::new(),
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::ValidateAsset { .. } => {

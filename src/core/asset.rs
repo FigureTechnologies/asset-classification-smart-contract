@@ -81,20 +81,20 @@ impl FeeDestination {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-enum AssetOnboardingStatus {
+pub enum AssetOnboardingStatus {
     Pending,
     Denied,
     Approved,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetValidationResult {
+pub struct AssetValidationResult {
     pub message: String,
     pub success: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-struct AssetScopeAttribute {
+pub struct AssetScopeAttribute {
     pub asset_type: String,
     pub requestor_address: Addr,
     pub validator_address: Addr,

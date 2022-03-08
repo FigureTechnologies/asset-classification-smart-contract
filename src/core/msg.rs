@@ -7,17 +7,20 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetDefinitionInput {
     pub asset_type: String,
+    pub scope_spec_address: String,
     pub validators: Vec<ValidatorDetail>,
     pub enabled: Option<bool>,
 }
 impl AssetDefinitionInput {
-    pub fn new<S: Into<String>>(
-        asset_type: S,
+    pub fn new<S1: Into<String>, S2: Into<String>>(
+        asset_type: S1,
+        scope_spec_address: S2,
         validators: Vec<ValidatorDetail>,
         enabled: Option<bool>,
     ) -> AssetDefinitionInput {
         AssetDefinitionInput {
             asset_type: asset_type.into(),
+            scope_spec_address: scope_spec_address.into(),
             validators,
             enabled,
         }
@@ -25,7 +28,12 @@ impl AssetDefinitionInput {
 }
 impl From<AssetDefinition> for AssetDefinitionInput {
     fn from(def: AssetDefinition) -> Self {
-        Self::new(def.asset_type, def.validators, Some(def.enabled))
+        Self::new(
+            def.asset_type,
+            def.scope_spec_address,
+            def.validators,
+            Some(def.enabled),
+        )
     }
 }
 

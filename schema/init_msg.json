@@ -23,6 +23,7 @@
       "type": "object",
       "required": [
         "asset_type",
+        "scope_spec_address",
         "validators"
       ],
       "properties": {
@@ -34,6 +35,9 @@
             "boolean",
             "null"
           ]
+        },
+        "scope_spec_address": {
+          "type": "string"
         },
         "validators": {
           "type": "array",

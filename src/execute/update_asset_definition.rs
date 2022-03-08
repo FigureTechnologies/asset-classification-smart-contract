@@ -1,7 +1,7 @@
 use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-use crate::core::state::{asset_state, asset_state_read};
+use crate::core::state::replace_asset_definition;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -48,21 +48,8 @@ pub fn update_asset_definition(
 ) -> ContractResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    // If the asset definition does not exist within the state, there is nothing to update
-    if asset_state_read(deps.storage, &msg.asset_definition.asset_type)
-        .may_load()?
-        .is_none()
-    {
-        return ContractError::NotFound {
-            explanation: format!(
-                "no record exists for asset type {}. please use add asset definition instead",
-                msg.asset_definition.asset_type
-            ),
-        }
-        .to_err();
-    }
     // Overwrite the existing asset definition with the new one
-    asset_state(deps.storage, &msg.asset_definition.asset_type).save(&msg.asset_definition)?;
+    replace_asset_definition(deps.storage, &msg.asset_definition)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::UpdateAssetDefinition)
@@ -78,13 +65,13 @@ mod tests {
     use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
-    use crate::core::state::asset_state_read;
+    use crate::core::state::load_asset_definition_by_type;
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME,
+        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -149,7 +136,12 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinitionInput::new(DEFAULT_ASSET_TYPE, vec![], None),
+            asset_definition: AssetDefinitionInput::new(
+                DEFAULT_ASSET_TYPE,
+                DEFAULT_SCOPE_SPEC_ADDRESS,
+                vec![],
+                None,
+            ),
         };
         let error = execute(
             deps.as_mut(),
@@ -202,6 +194,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let missing_asset_definition = AssetDefinition::new(
             "nonexistent-type",
+            DEFAULT_SCOPE_SPEC_ADDRESS,
             vec![ValidatorDetail::new(
                 "validator",
                 Uint128::new(100),
@@ -217,7 +210,7 @@ mod tests {
         )
         .unwrap_err();
         assert!(
-            matches!(error, ContractError::NotFound { .. }),
+            matches!(error, ContractError::RecordNotFound { .. }),
             "expected the not found response to be returned when an update is attempted for a definition that does not exist",
         );
     }
@@ -227,8 +220,7 @@ mod tests {
     }
 
     fn test_asset_definition_was_updated(asset_definition: &AssetDefinition, deps: &DepsC) {
-        let state_def = asset_state_read(deps.storage, &asset_definition.asset_type)
-            .load()
+        let state_def = load_asset_definition_by_type(deps.storage, &asset_definition.asset_type)
             .expect("expected the updated asset definition to be stored in the state");
         assert_eq!(
             asset_definition, &state_def,
@@ -241,6 +233,7 @@ mod tests {
     fn get_update_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             DEFAULT_ASSET_TYPE,
+            DEFAULT_SCOPE_SPEC_ADDRESS,
             vec![ValidatorDetail::new(
                 "different-validator-address",
                 Uint128::new(1500000),

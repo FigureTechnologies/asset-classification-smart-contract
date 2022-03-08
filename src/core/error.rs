@@ -13,9 +13,6 @@ pub enum ContractError {
     #[error("Semver parsing error: {0}")]
     SemVer(#[from] semver::Error),
 
-    #[error("duplicate/existing asset definition provided as input")]
-    DuplicateAssetDefinitionProvided,
-
     #[error("duplicate/existing validator address provided as input")]
     DuplicateValidatorProvided,
 
@@ -92,6 +89,12 @@ pub enum ContractError {
         scope_address: String,
         attribute_amount: usize,
     },
+
+    #[error("Existing record found: {explanation}")]
+    RecordAlreadyExists { explanation: String },
+
+    #[error("Record not found: {explanation}")]
+    RecordNotFound { explanation: String },
 
     #[error("Unauthorized: {explanation}")]
     Unauthorized { explanation: String },

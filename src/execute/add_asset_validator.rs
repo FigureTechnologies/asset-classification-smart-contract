@@ -1,7 +1,7 @@
 use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::asset_state;
+use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -43,8 +43,7 @@ pub fn add_asset_validator(
 ) -> ContractResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_state = asset_state(deps.storage, &msg.asset_type);
-    let mut asset_definition = asset_state.load()?;
+    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
     // If the asset definition has any validators on it (only ever should be 1 max) with a matching
     // address to the new validator, this request should be an update, not an add
     if asset_definition
@@ -60,7 +59,7 @@ pub fn add_asset_validator(
         .set_validator(&msg.validator.address);
     // Store the new validator in the definition and save it to storage
     asset_definition.validators.push(msg.validator);
-    asset_state.save(&asset_definition)?;
+    replace_asset_definition(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -72,7 +71,7 @@ mod tests {
     use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::asset_state_read;
+    use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_validator::{add_asset_validator, AddAssetValidatorV1};
     use crate::testutil::test_utilities::{
         single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
@@ -251,8 +250,7 @@ mod tests {
 
     // Checks that the validator passed in was added to the default asset type's definition
     fn test_default_validator_was_added(validator: &ValidatorDetail, deps: &DepsC) {
-        let state_def = asset_state_read(deps.storage, DEFAULT_ASSET_TYPE)
-            .load()
+        let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_validator = state_def.validators.into_iter().find(|v| v.address == validator.address)
             .expect("expected a single validator to be produced when searching for the new validator's address");

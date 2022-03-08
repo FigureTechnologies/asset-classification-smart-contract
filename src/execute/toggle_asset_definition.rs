@@ -1,7 +1,11 @@
 use cosmwasm_std::{MessageInfo, Response};
 
 use crate::{
-    core::{error::ContractError, msg::ExecuteMsg, state::asset_state},
+    core::{
+        error::ContractError,
+        msg::ExecuteMsg,
+        state::{load_asset_definition_by_type, replace_asset_definition},
+    },
     util::{
         aliases::{ContractResponse, ContractResult, DepsMutC},
         contract_helpers::{check_admin_only, check_funds_are_empty},
@@ -45,8 +49,7 @@ pub fn toggle_asset_definition(
 ) -> ContractResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_def_storage = asset_state(deps.storage, &msg.asset_type);
-    let mut asset_definition = asset_def_storage.load()?;
+    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
     // Never toggle the state if the caller didn't expect the target result
     // If current state == expected result, then the requestor wants to change TO the current state. So this is a no-op.
     if asset_definition.enabled == msg.expected_result {
@@ -60,7 +63,7 @@ pub fn toggle_asset_definition(
     }
     // Simply negate the current value in state to swap it
     asset_definition.enabled = !asset_definition.enabled;
-    asset_def_storage.save(&asset_definition)?;
+    replace_asset_definition(deps.storage, &asset_definition)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::ToggleAssetDefinition)
@@ -81,7 +84,7 @@ mod tests {
 
     use crate::{
         contract::execute,
-        core::{error::ContractError, msg::ExecuteMsg, state::asset_state_read},
+        core::{error::ContractError, msg::ExecuteMsg, state::load_asset_definition_by_type},
         testutil::test_utilities::{
             empty_mock_info, mock_info_with_nhash, single_attribute_for_key,
             test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
@@ -266,8 +269,7 @@ mod tests {
     }
 
     fn test_toggle_has_succesfully_occurred(deps: &DepsC, expected_enabled_value: bool) {
-        let asset_def = asset_state_read(deps.storage, DEFAULT_ASSET_TYPE)
-            .load()
+        let asset_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("the default asset definition should exist in storage");
         assert_eq!(
             expected_enabled_value, asset_def.enabled,

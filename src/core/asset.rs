@@ -9,22 +9,35 @@ use super::{error::ContractError, msg::AssetDefinitionInput};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetDefinition {
     pub asset_type: String,
+    pub scope_spec_address: String,
     pub validators: Vec<ValidatorDetail>,
     pub enabled: bool,
 }
 impl AssetDefinition {
-    pub fn new<S: Into<String>>(asset_type: S, validators: Vec<ValidatorDetail>) -> Self {
+    pub fn new<S1: Into<String>, S2: Into<String>>(
+        asset_type: S1,
+        scope_spec_address: S2,
+        validators: Vec<ValidatorDetail>,
+    ) -> Self {
         AssetDefinition {
             asset_type: asset_type.into(),
+            scope_spec_address: scope_spec_address.into(),
             validators,
             enabled: true,
         }
+    }
+
+    /// Converts the asset_type value to lowercase and serializes it as bytes,
+    /// then uplifts the value to a vector to allow it to be returned.
+    pub fn storage_key(&self) -> Vec<u8> {
+        self.asset_type.to_lowercase().as_bytes().to_vec()
     }
 }
 impl From<AssetDefinitionInput> for AssetDefinition {
     fn from(input: AssetDefinitionInput) -> Self {
         Self {
             asset_type: input.asset_type,
+            scope_spec_address: input.scope_spec_address,
             validators: input.validators,
             enabled: input.enabled.unwrap_or(true),
         }
@@ -34,11 +47,13 @@ impl From<&AssetDefinitionInput> for AssetDefinition {
     fn from(input: &AssetDefinitionInput) -> Self {
         AssetDefinition {
             asset_type: input.asset_type.clone(),
+            scope_spec_address: input.scope_spec_address.clone(),
             validators: input.validators.clone(),
             enabled: input.enabled.unwrap_or(true),
         }
     }
 }
+impl ResultExtensions for AssetDefinition {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ValidatorDetail {
@@ -104,6 +119,8 @@ pub struct AssetScopeAttribute {
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
+    // TODO: Remove this annotation when this is used
+    #[allow(dead_code)]
     pub fn new_unchecked<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
@@ -122,6 +139,8 @@ impl AssetScopeAttribute {
         }
     }
 
+    // TODO: Remove this annotation when this is used
+    #[allow(dead_code)]
     pub fn new<S1: Into<String>, A1: Into<Addr>, A2: Into<Addr>>(
         asset_type: S1,
         requestor_address: A1,
@@ -131,7 +150,7 @@ impl AssetScopeAttribute {
     ) -> ContractResult<Self> {
         let req_addr = validate_address(requestor_address)?;
         let val_addr = validate_address(validator_address)?;
-        if val_addr.to_string() != latest_validator_detail.address {
+        if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
         AssetScopeAttribute::new_unchecked(

@@ -1,7 +1,7 @@
 use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::asset_state;
+use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -44,8 +44,7 @@ pub fn update_asset_validator(
 ) -> ContractResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_state = asset_state(deps.storage, &msg.asset_type);
-    let mut asset_definition = asset_state.load()?;
+    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
     let validator_address = msg.validator.address.clone();
     // If a single validator for the given address cannot be found, data is either corrupt, or the
     // validator does not exist.  Given validation upfront prevents multiple validators with the
@@ -73,7 +72,7 @@ pub fn update_asset_validator(
         replace_single_matching_vec_element(asset_definition.validators, msg.validator, |v| {
             v.address == validator_address
         })?;
-    asset_state.save(&asset_definition)?;
+    replace_asset_definition(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -85,7 +84,7 @@ mod tests {
     use crate::core::asset::{FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::asset_state_read;
+    use crate::core::state::load_asset_definition_by_type;
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
@@ -263,8 +262,7 @@ mod tests {
     }
 
     fn test_default_validator_was_updated(validator: &ValidatorDetail, deps: &DepsC) {
-        let state_def = asset_state_read(deps.storage, DEFAULT_ASSET_TYPE)
-            .load()
+        let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_validator = state_def.validators.into_iter().find(|v| v.address == validator.address)
             .expect("expected a single validator to be produced when searching for the updated validator's address");

@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_meta, asset_state_read, AssetMeta};
+use crate::core::state::{asset_meta, load_asset_definition_by_type, AssetMeta};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::scope_address_utils::get_validate_scope_address;
@@ -48,11 +48,11 @@ pub fn onboard_asset(
     msg: OnboardAssetV1,
 ) -> ContractResponse {
     // get asset state config for type, or error if not present
-    let asset_state = match asset_state_read(deps.storage, &msg.asset_type).load() {
+    let asset_state = match load_asset_definition_by_type(deps.storage, &msg.asset_type) {
         Ok(state) => {
             if !state.enabled {
                 return ContractError::AssetTypeDisabled {
-                    asset_type: msg.asset_type.to_string(),
+                    asset_type: msg.asset_type,
                 }
                 .to_err();
             }
@@ -60,7 +60,7 @@ pub fn onboard_asset(
         }
         Err(_) => {
             return ContractError::UnsupportedAssetType {
-                asset_type: msg.asset_type.to_string(),
+                asset_type: msg.asset_type,
             }
             .to_err()
         }

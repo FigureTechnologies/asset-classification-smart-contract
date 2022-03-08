@@ -40,7 +40,6 @@ impl ToggleAssetDefinitionV1 {
         }
     }
 }
-impl ResultExtensions for ToggleAssetDefinitionV1 {}
 
 pub fn toggle_asset_definition(
     deps: DepsMutC,

@@ -107,12 +107,12 @@ pub fn bank_send<R: Into<String>, D: Into<String>>(
 /// A helper that ensures address params are non-empty. Taken from non-exposed provwasm codebase.
 /// Allows address validation without having to pass in deps.
 /// TODO: Make this check to see if the address is valid Bech32
-pub fn validate_address<A: Into<Addr>>(input: A) -> ContractResult<Addr> {
-    let address: Addr = input.into();
-    if address.to_string().trim().is_empty() {
+pub fn validate_address<A: Into<String>>(input: A) -> ContractResult<Addr> {
+    let address_string: String = input.into();
+    if address_string.trim().is_empty() {
         ContractError::std_err("address must not be empty").to_err()
     } else {
-        Ok(address)
+        Ok(Addr::unchecked(address_string))
     }
 }
 

@@ -1,4 +1,3 @@
-use crate::util::traits::ResultExtensions;
 use cosmwasm_std::StdError;
 use thiserror::Error;
 
@@ -108,7 +107,6 @@ pub enum ContractError {
     #[error("{0}")]
     UuidError(#[from] uuid::Error),
 }
-impl ResultExtensions for ContractError {}
 impl ContractError {
     /// Allows ContractError instances to be generically returned as a Response in a fluent manner
     /// instead of wrapping in an Err() call, improving readability.

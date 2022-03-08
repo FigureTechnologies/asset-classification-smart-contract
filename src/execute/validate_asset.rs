@@ -36,7 +36,6 @@ impl ValidateAssetV1 {
         }
     }
 }
-impl ResultExtensions for ValidateAssetV1 {}
 
 pub fn validate_asset(
     deps: DepsMutC,

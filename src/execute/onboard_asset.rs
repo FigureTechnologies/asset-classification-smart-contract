@@ -41,7 +41,6 @@ impl OnboardAssetV1 {
         }
     }
 }
-impl ResultExtensions for OnboardAssetV1 {}
 
 pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     deps: DepsMutC,

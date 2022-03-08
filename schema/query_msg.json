@@ -11,11 +11,31 @@
         "query_asset_definition": {
           "type": "object",
           "required": [
-            "asset_type"
+            "qualifier"
           ],
           "properties": {
-            "asset_type": {
-              "type": "string"
+            "qualifier": {
+              "$ref": "#/definitions/AssetQualifier"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "query_asset_scope_attribute"
+      ],
+      "properties": {
+        "query_asset_scope_attribute": {
+          "type": "object",
+          "required": [
+            "identifier"
+          ],
+          "properties": {
+            "identifier": {
+              "$ref": "#/definitions/AssetIdentifier"
             }
           }
         }
@@ -34,5 +54,95 @@
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "AssetIdentifier": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "asset_uuid"
+          ],
+          "properties": {
+            "asset_uuid": {
+              "type": "object",
+              "required": [
+                "asset_uuid"
+              ],
+              "properties": {
+                "asset_uuid": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "scope_address"
+          ],
+          "properties": {
+            "scope_address": {
+              "type": "object",
+              "required": [
+                "scope_address"
+              ],
+              "properties": {
+                "scope_address": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AssetQualifier": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "asset_type"
+          ],
+          "properties": {
+            "asset_type": {
+              "type": "object",
+              "required": [
+                "asset_type"
+              ],
+              "properties": {
+                "asset_type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "scope_spec_address"
+          ],
+          "properties": {
+            "scope_spec_address": {
+              "type": "object",
+              "required": [
+                "scope_spec_address"
+              ],
+              "properties": {
+                "scope_spec_address": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
 }

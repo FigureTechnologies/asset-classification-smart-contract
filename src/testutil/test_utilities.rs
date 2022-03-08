@@ -183,3 +183,47 @@ pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) 
         .value
         .as_str()
 }
+
+pub fn get_duped_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    scope_id: S1,
+    spec_id: S2,
+    owner_address: S3,
+) -> Scope {
+    let owner_address = owner_address.into();
+    Scope {
+        scope_id: scope_id.into(),
+        specification_id: spec_id.into(),
+        owners: vec![Party {
+            address: Addr::unchecked(&owner_address),
+            role: PartyType::Owner,
+        }],
+        data_access: vec![],
+        value_owner_address: Addr::unchecked(owner_address),
+    }
+}
+
+pub fn mock_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    deps: &mut MockOwnedDeps,
+    scope_id: S1,
+    spec_id: S2,
+    owner_address: S3,
+) {
+    deps.querier
+        .with_scope(get_duped_scope(scope_id, spec_id, owner_address))
+}
+
+pub fn mock_scope_attribute<S: Into<String>>(
+    deps: &mut MockOwnedDeps,
+    attribute: &AssetScopeAttribute,
+    scope_address: S,
+) {
+    let address: String = scope_address.into();
+    deps.querier.with_attributes(
+        &address,
+        &[(
+            &generate_asset_attribute_name(&attribute.asset_type, DEFAULT_CONTRACT_BASE_NAME),
+            &to_string(attribute).expect("failed to convert AssetScopeAttribute to json string"),
+            "json",
+        )],
+    );
+}

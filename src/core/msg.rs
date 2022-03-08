@@ -45,6 +45,46 @@ pub struct InitMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub enum AssetIdentifier {
+    AssetUuid { asset_uuid: String },
+    ScopeAddress { scope_address: String },
+}
+impl AssetIdentifier {
+    pub fn asset_uuid<S: Into<String>>(asset_uuid: S) -> Self {
+        AssetIdentifier::AssetUuid {
+            asset_uuid: asset_uuid.into(),
+        }
+    }
+
+    pub fn scope_address<S: Into<String>>(scope_address: S) -> Self {
+        AssetIdentifier::ScopeAddress {
+            scope_address: scope_address.into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum AssetQualifier {
+    AssetType { asset_type: String },
+    ScopeSpecAddress { scope_spec_address: String },
+}
+impl AssetQualifier {
+    pub fn asset_type<S: Into<String>>(asset_type: S) -> Self {
+        AssetQualifier::AssetType {
+            asset_type: asset_type.into(),
+        }
+    }
+
+    pub fn scope_spec_address<S: Into<String>>(scope_spec_address: S) -> Self {
+        AssetQualifier::ScopeSpecAddress {
+            scope_spec_address: scope_spec_address.into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     OnboardAsset {
         asset_uuid: Option<String>,
@@ -80,14 +120,9 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    QueryAssetDefinition {
-        asset_type: String,
-    },
+    QueryAssetDefinition { qualifier: AssetQualifier },
+    QueryAssetScopeAttribute { identifier: AssetIdentifier },
     QueryState {},
-    QueryAssetByScopeAddress {
-        scope_address: String,
-        asset_type: String,
-    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

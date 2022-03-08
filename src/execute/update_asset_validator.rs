@@ -35,7 +35,6 @@ impl UpdateAssetValidatorV1 {
         }
     }
 }
-impl ResultExtensions for UpdateAssetValidatorV1 {}
 
 pub fn update_asset_validator(
     deps: DepsMutC,

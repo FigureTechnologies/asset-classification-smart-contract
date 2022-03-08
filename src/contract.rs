@@ -10,6 +10,7 @@ use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_by_scope_address::query_asset_binary_by_scope_address;
 use crate::query::query_asset_definition::query_asset_definition;
+use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
 use crate::query::query_state::query_state;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsC, DepsMutC};
 use crate::util::asset_meta_repository::ContractAndAttributeAssetMeta;
@@ -29,7 +30,10 @@ pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) ->
 #[entry_point]
 pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        QueryMsg::QueryAssetDefinition { asset_type } => query_asset_definition(&deps, asset_type),
+        QueryMsg::QueryAssetDefinition { qualifier } => query_asset_definition(&deps, qualifier),
+        QueryMsg::QueryAssetScopeAttribute { identifier } => {
+            query_asset_scope_attribute(&deps, identifier)
+        }
         QueryMsg::QueryState {} => query_state(&deps),
         QueryMsg::QueryAssetByScopeAddress {
             scope_address,

@@ -1,6 +1,6 @@
+use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, InitMsg};
-use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
 use crate::util::traits::ResultExtensions;
@@ -197,9 +197,9 @@ fn validate_destination_internal(destination: &FeeDestination, deps: &DepsC) -> 
 
 #[cfg(test)]
 pub mod tests {
+    use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::{AssetDefinitionInput, InitMsg};
-    use crate::core::state::{AssetDefinition, FeeDestination, ValidatorDetail};
     use crate::util::constants::NHASH;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_internal, validate_destination_internal, validate_init_msg,

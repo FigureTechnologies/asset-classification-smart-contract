@@ -93,6 +93,9 @@ fn validate_asset_definition_internal(
     if asset_definition.asset_type.is_empty() {
         invalid_fields.push("asset_definition:asset_type: must not be blank".to_string());
     }
+    if asset_definition.scope_spec_address.is_empty() {
+        invalid_fields.push("asset_definition:scope_spec_address: must not be blank".to_string());
+    }
     if asset_definition.validators.is_empty() {
         invalid_fields.push(
             "asset_definition:validators: at least one validator must be supplied per asset type"
@@ -222,6 +225,7 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
+                "heloc-scope-spec-address",
                 vec![ValidatorDetail::new(
                     "address",
                     Uint128::new(100),
@@ -241,6 +245,7 @@ pub mod tests {
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
+                    "heloc-scope-spec-address",
                     vec![ValidatorDetail::new(
                         "address",
                         Uint128::new(100),
@@ -252,6 +257,7 @@ pub mod tests {
                 ),
                 AssetDefinitionInput::new(
                     "mortgage",
+                    "mortgage-scope-spec-address",
                     vec![ValidatorDetail::new(
                         "address",
                         Uint128::new(500),
@@ -266,6 +272,7 @@ pub mod tests {
                 ),
                 AssetDefinitionInput::new(
                     "pl",
+                    "pl-scope-spec-address",
                     vec![
                         ValidatorDetail::new(
                             "address",
@@ -298,6 +305,7 @@ pub mod tests {
                 base_contract_name: String::new(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc",
+                    "heloc-scope-spec-address",
                     vec![ValidatorDetail::new(
                         "address",
                         Uint128::new(100),
@@ -318,8 +326,8 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 asset_definitions: vec![
-                    AssetDefinitionInput::new("heloc", vec![], None),
-                    AssetDefinitionInput::new("heloc", vec![], None),
+                    AssetDefinitionInput::new("heloc", "heloc-scope-spec-address", vec![], None),
+                    AssetDefinitionInput::new("heloc", "heloc-scope-spec-address", vec![], None),
                 ],
             },
             "asset_definitions: each definition must specify a unique asset type",
@@ -331,7 +339,12 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: "asset".to_string(),
-                asset_definitions: vec![AssetDefinitionInput::new("", vec![], None)],
+                asset_definitions: vec![AssetDefinitionInput::new(
+                    "",
+                    "scope-spec-address",
+                    vec![],
+                    None,
+                )],
             },
             "asset_definition:asset_type: must not be blank",
         );
@@ -342,6 +355,7 @@ pub mod tests {
         let deps = mock_dependencies(&[]);
         let definition = AssetDefinition::new(
             "heloc",
+            "heloc-scope-spec-address",
             vec![ValidatorDetail::new(
                 "address",
                 Uint128::new(100),
@@ -363,6 +377,7 @@ pub mod tests {
         test_invalid_asset_definition(
             &AssetDefinition::new(
                 "",
+                "scope-spec-address",
                 vec![ValidatorDetail::new(
                     "address",
                     Uint128::new(100),
@@ -376,9 +391,27 @@ pub mod tests {
     }
 
     #[test]
+    fn test_invalid_asset_definition_scope_spec_address() {
+        test_invalid_asset_definition(
+            &AssetDefinition::new(
+                "heloc",
+                "",
+                vec![ValidatorDetail::new(
+                    "address",
+                    Uint128::new(100),
+                    NHASH,
+                    Decimal::percent(100),
+                    vec![FeeDestination::new("fee", Decimal::percent(100))],
+                )],
+            ),
+            "asset_definition:scope_spec_address: must not be blank",
+        )
+    }
+
+    #[test]
     fn test_invalid_asset_definition_empty_validators() {
         test_invalid_asset_definition(
-            &AssetDefinition::new("mortgage", vec![]),
+            &AssetDefinition::new("mortgage", "scope-spec-address", vec![]),
             "asset_definition:validators: at least one validator must be supplied per asset type",
         );
     }
@@ -388,6 +421,7 @@ pub mod tests {
         test_invalid_asset_definition(
             &AssetDefinition::new(
                 "",
+                "scope-spec-address",
                 vec![ValidatorDetail::new(
                     "",
                     Uint128::new(100),

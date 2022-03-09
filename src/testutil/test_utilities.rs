@@ -22,14 +22,21 @@ use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
-pub const DEFAULT_INFO_NAME: &str = "admin";
+/// All addresses in these test constants were randomly generated for testing purposes
+/// This address should be used for the contract administrator address in state
+pub const DEFAULT_ADMIN_ADDRESS: &str = "tp1grjeedyfmx0hujsgmqhdr6thjrye4hfesvh2lz";
 // DEFAULT_ASSET_UUID is a randomly-generated uuid and the DEFAULT_SCOPE_ADDRESS was generated from it
 // They can be expected to convert to each other bidirectionally
 pub const DEFAULT_ASSET_UUID: &str = "c55cfe0e-9fed-11ec-8191-0b95c8a1239c";
+/// Use this address in a circumstance that is testing a user onboarding and/or interacting with an asset
+pub const DEFAULT_SENDER_ADDRESS: &str = "tp1dv7562fvlvf74904t222ze362m036ugtmg45ll";
+/// Use this address in a circumstance that is testing an asset definition
+pub const DEFAULT_VALIDATOR_ADDRESS: &str = "tp1dj50kvzsknr3ydypw3lt8f4dulrrncw4j626vk";
+/// Use this address in a circumstance that is testing a fee on validator detail
+pub const DEFAULT_FEE_ADDRESS: &str = "tp1kq5zx7w0x6jvavcay8tutqldync62r29gp8e68";
 pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1qrz4elswnlk3rmypjy9etj9pywwqz6myzw";
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
-pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespecaddress";
-pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
+pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespec1q323khk2jgw5hfada5ukdv3y739ssw53td";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
 pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
@@ -74,7 +81,7 @@ impl Default for InstArgs {
     fn default() -> Self {
         InstArgs {
             env: mock_env(),
-            info: mock_info(DEFAULT_INFO_NAME, &[]),
+            info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
             asset_definitions: get_default_asset_definition_inputs(),
         }
@@ -98,11 +105,11 @@ pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<Prov
 }
 
 pub fn empty_mock_info() -> MessageInfo {
-    mock_info(DEFAULT_INFO_NAME, &[])
+    mock_info(DEFAULT_ADMIN_ADDRESS, &[])
 }
 
 pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
-    mock_info(DEFAULT_INFO_NAME, funds)
+    mock_info(DEFAULT_ADMIN_ADDRESS, funds)
 }
 
 pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {

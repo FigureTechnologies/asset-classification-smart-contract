@@ -185,7 +185,7 @@ mod tests {
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         testutil::test_utilities::{
             empty_mock_info, mock_info_with_funds, mock_info_with_nhash, test_instantiate_success,
-            InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
+            InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_COST,
             DEFAULT_VALIDATOR_ADDRESS,
         },
         util::constants::{
@@ -447,7 +447,7 @@ mod tests {
             scope_id: "scope1234".to_string(),
             specification_id: "".to_string(),
             owners: [Party {
-                address: Addr::unchecked(DEFAULT_INFO_NAME),
+                address: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
                 role: PartyType::Owner,
             }]
             .to_vec(),
@@ -501,7 +501,7 @@ mod tests {
             scope_id: "scope1234".to_string(),
             specification_id: "".to_string(),
             owners: [Party {
-                address: Addr::unchecked(DEFAULT_INFO_NAME),
+                address: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
                 role: PartyType::Owner,
             }]
             .to_vec(),

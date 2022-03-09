@@ -2,14 +2,22 @@ use std::{convert::TryInto, str::FromStr};
 
 use crate::{core::error::ContractError, util::aliases::ContractResult};
 use bech32::{FromBase32, ToBase32, Variant};
+use cosmwasm_std::Addr;
 use uuid::Uuid;
 
 use super::traits::ResultExtensions;
 
 /// Standard scope key prefix from the Provenance libs
 const KEY_SCOPE: u8 = 0x00;
-/// Standard bech32 encoding for scope addresses simply begin with the string "scope"
+/// Standard bech32 encoding for mainnet addresses simply begins the with the string "pb"
+const MAINNET_HRP: &str = "pb";
+/// Standard bech32 encoding for testnet addresses simply begins with the string "tp"
+const TESTNET_HRP: &str = "tp";
+/// Standard bech32 encoding for scope addresses simply begins with the string "scope"
 const SCOPE_HRP: &str = "scope";
+/// Standard bech32 encoding for scope spec addresses simply begins with the string "scopespec"
+const SCOPE_SPEC_HRP: &str = "scopespec";
+const VALID_HRPS: [&str; 4] = [MAINNET_HRP, TESTNET_HRP, SCOPE_HRP, SCOPE_SPEC_HRP];
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// big-endian bytes to a byte slice that also contains a scope prefix key (as defined in the provenance source).
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
@@ -38,6 +46,23 @@ pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> Contrac
     // caller that they are using valid data that can convert to a uuid.  To avoid any weird panics when calling
     // to_string(), we just use the sliced data
     Uuid::from_slice(&uuid_bytes)?.to_string().to_ok()
+}
+
+/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr
+pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> ContractResult<Addr> {
+    let address_string = address.into();
+    // First, try to decode the string as Bech32.  If this fails, then the input is invalid and should not be converted to an Addr
+    let (hrp, _, _) = bech32::decode(&address_string)?;
+    return if !VALID_HRPS.contains(&hrp.as_str()) {
+        ContractError::InvalidAddress {
+            address: address_string,
+            explanation: format!("invalid address prefix [{}]", hrp),
+        }
+        .to_err()
+    } else {
+        // Once the address has been validated as bech32, just funnel it into the Addr struct with an unchecked call
+        Addr::unchecked(&address_string).to_ok()
+    };
 }
 
 pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + Clone>(
@@ -70,7 +95,7 @@ mod tests {
         core::error::ContractError, util::scope_address_utils::asset_uuid_to_scope_address,
     };
 
-    use super::{get_validate_scope_address, scope_address_to_asset_uuid};
+    use super::{bech32_string_to_addr, get_validate_scope_address, scope_address_to_asset_uuid};
 
     #[test]
     fn test_successful_asset_uuid_to_scope_address() {
@@ -102,6 +127,72 @@ mod tests {
             matches!(not_even_close, ContractError::UuidError(_)),
             "a uuid error should occur when an invalid uuid is processed: very malformatted uuid",
         );
+    }
+
+    #[test]
+    fn test_successful_scope_address_to_asset_uuid() {
+        // These values were generated using the MetadataAddress kotlin helper to verify their authenticity
+        // from random input
+        let scope_address = "scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra";
+        let expected_uuid = "9d62ec88-9fd9-11ec-ba6b-f73d7c938348";
+        let result_uuid = scope_address_to_asset_uuid(scope_address)
+            .expect("expected the conversion to occur without error");
+        assert_eq!(
+            expected_uuid, result_uuid,
+            "the function produced the incorrect uuid value"
+        );
+    }
+
+    #[test]
+    fn test_invalid_scope_address_to_asset_uuid() {
+        let error = scope_address_to_asset_uuid("not a scope address").unwrap_err();
+        assert!(
+            matches!(error, ContractError::Bech32Error(_)),
+            "a bech32 error should occur when attempting to parse an invalid scope address",
+        );
+    }
+
+    #[test]
+    fn test_valid_bech32_to_addr() {
+        let bech_32_string = "tp15e6l9dv8s2rdshjfn34k8a2nju55tr4z42phrt";
+        let addr = bech32_string_to_addr(bech_32_string)
+            .expect("the resulting value should be converted to an Addr");
+        assert_eq!(
+            bech_32_string,
+            addr.as_str(),
+            "the resulting Addr value should reflect the input"
+        );
+    }
+
+    #[test]
+    fn test_invalid_bech32_to_addr_non_address_input() {
+        let error = bech32_string_to_addr("not an address").unwrap_err();
+        assert!(
+            matches!(error, ContractError::Bech32Error(_)),
+            "the underlying bech32 library should provide an error for an invalid address",
+        );
+    }
+
+    #[test]
+    fn test_invalid_bech32_to_addr_unsupported_hrp() {
+        let bc_address = "bc1q35a3dc2e5lj237ns39q5pd7t8wxm2ah7rdvx5d";
+        match bech32_string_to_addr(bc_address).unwrap_err() {
+            ContractError::InvalidAddress {
+                address,
+                explanation,
+            } => {
+                assert_eq!(
+                    bc_address,
+                    address.as_str(),
+                    "expected the address to be appended to the error",
+                );
+                assert_eq!(
+                    "invalid address prefix [bc]", explanation,
+                    "expected the explanation to include the invalid hrp",
+                );
+            }
+            _ => panic!("unexpected error encountered"),
+        }
     }
 
     #[test]
@@ -167,28 +258,5 @@ mod tests {
             expected_bech32, result,
             "The resulting scope address should match when only a uuid was provided"
         )
-    }
-
-    #[test]
-    fn test_successful_scope_address_to_asset_uuid() {
-        // These values were generated using the MetadataAddress kotlin helper to verify their authenticity
-        // from random input
-        let scope_address = "scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra";
-        let expected_uuid = "9d62ec88-9fd9-11ec-ba6b-f73d7c938348";
-        let result_uuid = scope_address_to_asset_uuid(scope_address)
-            .expect("expected the conversion to occur without error");
-        assert_eq!(
-            expected_uuid, result_uuid,
-            "the function produced the incorrect uuid value"
-        );
-    }
-
-    #[test]
-    fn test_invalid_scope_address_to_asset_uuid() {
-        let error = scope_address_to_asset_uuid("not a scope address").unwrap_err();
-        assert!(
-            matches!(error, ContractError::Bech32Error(_)),
-            "a bech32 error should occur when attempting to parse an invalid scope address",
-        );
     }
 }

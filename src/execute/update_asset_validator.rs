@@ -87,7 +87,7 @@ mod tests {
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ASSET_TYPE, DEFAULT_ADMIN_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
@@ -148,7 +148,7 @@ mod tests {
         let msg = get_valid_update_validator_msg();
         update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg.clone(),
         )
         .expect("expected the update validator function to return properly");
@@ -162,7 +162,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             ExecuteMsg::UpdateAssetValidator {
                 // Invalid because the asset type is missing
                 asset_type: String::new(),
@@ -183,7 +183,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             ExecuteMsg::UpdateAssetValidator {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: ValidatorDetail::new(
@@ -225,7 +225,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(93849382, "dopehash")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(93849382, "dopehash")]),
             get_valid_update_validator_msg(),
         )
         .unwrap_err();
@@ -241,7 +241,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetValidatorV1::new(
                 DEFAULT_ASSET_TYPE,
                 ValidatorDetail::new(
@@ -284,8 +284,7 @@ mod tests {
                 FeeDestination::new("second", Decimal::percent(50)),
             ],
         );
-        validate_validator(&validator, &mock_dependencies(&[]).as_ref())
-            .expect("expected the validator to pass validation");
+        validate_validator(&validator).expect("expected the validator to pass validation");
         validator
     }
 

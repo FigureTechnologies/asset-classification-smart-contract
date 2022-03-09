@@ -15,6 +15,12 @@ pub enum ContractError {
     #[error("duplicate/existing validator address provided as input")]
     DuplicateValidatorProvided,
 
+    #[error("Invalid address provided [{address}]: {explanation}")]
+    InvalidAddress {
+        address: String,
+        explanation: String,
+    },
+
     #[error("Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]")]
     InvalidContractName {
         current_contract: String,

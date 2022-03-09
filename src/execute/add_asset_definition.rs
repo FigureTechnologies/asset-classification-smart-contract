@@ -80,7 +80,7 @@ mod tests {
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -183,7 +183,7 @@ mod tests {
         let error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(150, "nhash")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(150, "nhash")]),
             get_valid_add_asset_definition(),
         )
         .unwrap_err();
@@ -243,8 +243,7 @@ mod tests {
             )],
             None,
         );
-        validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())
-            .expect("expected the asset definition to be valid");
+        validate_asset_definition_input(&def).expect("expected the asset definition to be valid");
         def
     }
 

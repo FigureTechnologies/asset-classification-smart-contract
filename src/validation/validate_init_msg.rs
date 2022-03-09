@@ -1,13 +1,14 @@
 use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, InitMsg};
-use crate::util::aliases::{ContractResult, DepsC};
+use crate::util::aliases::ContractResult;
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
+use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use std::ops::Mul;
 
-pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
+pub fn validate_init_msg(msg: &InitMsg) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if msg.base_contract_name.is_empty() {
         invalid_fields.push("base_contract_name: must not be blank".to_string());
@@ -22,7 +23,7 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     let mut asset_messages = msg
         .asset_definitions
         .iter()
-        .flat_map(|asset| validate_asset_definition_internal(&asset.into(), deps))
+        .flat_map(|asset| validate_asset_definition_internal(&asset.into()))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut asset_messages);
     if !invalid_fields.is_empty() {
@@ -36,18 +37,12 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     }
 }
 
-pub fn validate_asset_definition_input(
-    input: &AssetDefinitionInput,
-    deps: &DepsC,
-) -> ContractResult<()> {
-    validate_asset_definition(&input.clone().into(), deps)
+pub fn validate_asset_definition_input(input: &AssetDefinitionInput) -> ContractResult<()> {
+    validate_asset_definition(&input.clone().into())
 }
 
-pub fn validate_asset_definition(
-    asset_definition: &AssetDefinition,
-    deps: &DepsC,
-) -> ContractResult<()> {
-    let invalid_fields = validate_asset_definition_internal(asset_definition, deps);
+pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> ContractResult<()> {
+    let invalid_fields = validate_asset_definition_internal(asset_definition);
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
             message_type: "AssetDefinition".to_string(),
@@ -59,16 +54,15 @@ pub fn validate_asset_definition(
     }
 }
 
-pub fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> ContractResult<()> {
-    validate_validator_with_provided_errors(validator, deps, None)
+pub fn validate_validator(validator: &ValidatorDetail) -> ContractResult<()> {
+    validate_validator_with_provided_errors(validator, None)
 }
 
 pub fn validate_validator_with_provided_errors(
     validator: &ValidatorDetail,
-    deps: &DepsC,
     provided_errors: Option<Vec<String>>,
 ) -> ContractResult<()> {
-    let mut invalid_fields = validate_validator_internal(validator, deps);
+    let mut invalid_fields = validate_validator_internal(validator);
     if let Some(errors) = provided_errors {
         for error in errors {
             invalid_fields.push(error);
@@ -85,10 +79,7 @@ pub fn validate_validator_with_provided_errors(
     }
 }
 
-fn validate_asset_definition_internal(
-    asset_definition: &AssetDefinition,
-    deps: &DepsC,
-) -> Vec<String> {
+fn validate_asset_definition_internal(asset_definition: &AssetDefinition) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_definition.asset_type.is_empty() {
         invalid_fields.push("asset_definition:asset_type: must not be blank".to_string());
@@ -105,15 +96,15 @@ fn validate_asset_definition_internal(
     let mut validator_messages = asset_definition
         .validators
         .iter()
-        .flat_map(|valid| validate_validator_internal(valid, deps))
+        .flat_map(|valid| validate_validator_internal(valid))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut validator_messages);
     invalid_fields
 }
 
-fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> {
+fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
-    if deps.api.addr_validate(&validator.address).is_err() {
+    if bech32_string_to_addr(&validator.address).is_err() {
         invalid_fields.push("validator:address: must be a valid address".to_string());
     }
     if validator.onboarding_denom.is_empty() {
@@ -177,15 +168,15 @@ fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec
     let mut fee_destination_messages = validator
         .fee_destinations
         .iter()
-        .flat_map(|destination| validate_destination_internal(destination, deps))
+        .flat_map(|destination| validate_destination_internal(destination))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut fee_destination_messages);
     invalid_fields
 }
 
-fn validate_destination_internal(destination: &FeeDestination, deps: &DepsC) -> Vec<String> {
+fn validate_destination_internal(destination: &FeeDestination) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
-    if deps.api.addr_validate(&destination.address).is_err() {
+    if bech32_string_to_addr(&destination.address).is_err() {
         invalid_fields.push("fee_destination:address: must be a valid address".to_string());
     }
     if destination.fee_percent > Decimal::percent(100) {
@@ -352,7 +343,6 @@ pub mod tests {
 
     #[test]
     fn test_valid_asset_definition() {
-        let deps = mock_dependencies(&[]);
         let definition = AssetDefinition::new(
             "heloc",
             "heloc-scope-spec-address",
@@ -364,7 +354,7 @@ pub mod tests {
                 vec![FeeDestination::new("fee", Decimal::percent(100))],
             )],
         );
-        let response = validate_asset_definition_internal(&definition, &deps.as_ref());
+        let response = validate_asset_definition_internal(&definition);
         assert!(
             response.is_empty(),
             "a valid asset definition should pass validation and return no error messages, but got messages: {:?}",
@@ -436,7 +426,6 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_no_fee_destinations() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
             "good-address",
             Uint128::new(100),
@@ -444,7 +433,7 @@ pub mod tests {
             Decimal::percent(0),
             vec![],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -454,7 +443,6 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_single_fee_destination() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
             "good-address",
             Uint128::new(1000),
@@ -462,7 +450,7 @@ pub mod tests {
             Decimal::percent(50),
             vec![FeeDestination::new("gooder-address", Decimal::percent(100))],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -486,7 +474,7 @@ pub mod tests {
                 FeeDestination::new("fifth", Decimal::percent(5)),
             ],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -657,10 +645,9 @@ pub mod tests {
 
     #[test]
     fn test_valid_destination() {
-        let deps = mock_dependencies(&[]);
         let destination = FeeDestination::new("good-address", Decimal::percent(100));
         assert!(
-            validate_destination_internal(&destination, &deps.as_ref()).is_empty(),
+            validate_destination_internal(&destination).is_empty(),
             "a valid fee destination should pass validation and return no error messages",
         );
     }
@@ -690,8 +677,7 @@ pub mod tests {
     }
 
     fn test_valid_init_msg(msg: &InitMsg) {
-        let deps = mock_dependencies(&[]);
-        match validate_init_msg(&msg, &deps.as_ref()) {
+        match validate_init_msg(&msg) {
             Ok(_) => (),
             Err(e) => match e {
                 ContractError::InvalidMessageFields { invalid_fields, .. } => panic!(
@@ -705,8 +691,7 @@ pub mod tests {
     }
 
     fn test_invalid_init_msg(msg: &InitMsg, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        match validate_init_msg(&msg, &deps.as_ref()) {
+        match validate_init_msg(&msg) {
             Ok(_) => panic!("expected init msg to be invalid, but passed validation"),
             Err(e) => match e {
                 ContractError::InvalidMessageFields {
@@ -731,8 +716,7 @@ pub mod tests {
     }
 
     fn test_invalid_asset_definition(definition: &AssetDefinition, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_asset_definition_internal(&definition, &deps.as_ref());
+        let results = validate_asset_definition_internal(&definition);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -742,8 +726,7 @@ pub mod tests {
     }
 
     fn test_invalid_validator(validator: &ValidatorDetail, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_validator_internal(&validator, &deps.as_ref());
+        let results = validate_validator_internal(&validator);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -753,8 +736,7 @@ pub mod tests {
     }
 
     fn test_invalid_destination(destination: &FeeDestination, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_destination_internal(&destination, &deps.as_ref());
+        let results = validate_destination_internal(&destination);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",

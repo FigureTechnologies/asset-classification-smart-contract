@@ -1,13 +1,13 @@
 use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::util::aliases::{ContractResult, DepsC};
+use crate::util::aliases::ContractResult;
 use crate::util::traits::ResultExtensions;
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_validator_with_provided_errors,
 };
 
-pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), ContractError> {
+pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
     match msg {
         ExecuteMsg::OnboardAsset {
             asset_uuid,
@@ -17,10 +17,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
         ExecuteMsg::ValidateAsset { asset_uuid, .. } => validate_validate_asset(asset_uuid),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.into(), deps)
+            validate_asset_definition(&asset_definition.into())
         }
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.into(), deps)
+            validate_asset_definition(&asset_definition.into())
         }
         ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
@@ -28,11 +28,11 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
         ExecuteMsg::AddAssetValidator {
             asset_type,
             validator,
-        } => validate_asset_validator_msg(asset_type, validator, deps),
+        } => validate_asset_validator_msg(asset_type, validator),
         ExecuteMsg::UpdateAssetValidator {
             asset_type,
             validator,
-        } => validate_asset_validator_msg(asset_type, validator, deps),
+        } => validate_asset_validator_msg(asset_type, validator),
     }
 }
 
@@ -101,14 +101,13 @@ fn validate_toggle_asset_definition(asset_type: &str) -> ContractResult<()> {
 fn validate_asset_validator_msg(
     asset_type: &str,
     validator: &ValidatorDetail,
-    deps: &DepsC,
 ) -> ContractResult<()> {
     let errors = if asset_type.is_empty() {
         Some(vec!["asset_type must not be empty".to_string()])
     } else {
         None
     };
-    validate_validator_with_provided_errors(validator, deps, errors)
+    validate_validator_with_provided_errors(validator, errors)
 }
 
 #[cfg(test)]

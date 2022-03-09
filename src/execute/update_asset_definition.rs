@@ -70,7 +70,7 @@ mod tests {
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_ASSET_TYPE, DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -123,7 +123,7 @@ mod tests {
         let msg = get_valid_update_asset_definition();
         update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg.clone(),
         )
         .expect("expected the update asset definition function to return properly");
@@ -145,7 +145,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg,
         )
         .unwrap_err();
@@ -177,7 +177,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(420, "usdf")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(420, "usdf")]),
             get_valid_update_asset_definition(),
         )
         .unwrap_err();
@@ -204,7 +204,7 @@ mod tests {
         );
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetDefinitionV1::new(missing_asset_definition),
         )
         .unwrap_err();
@@ -245,8 +245,7 @@ mod tests {
             )],
             None,
         );
-        validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())
-            .expect("expected the asset definition to be valid");
+        validate_asset_definition_input(&def).expect("expected the asset definition to be valid");
         def
     }
 

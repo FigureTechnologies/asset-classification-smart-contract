@@ -19,7 +19,7 @@ use cosmwasm_std::{entry_point, Binary, Env, MessageInfo};
 #[entry_point]
 pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) -> ContractResponse {
     // Ensure the init message is properly formatted before doing anything
-    validate_init_msg(&msg, &deps.as_ref())?;
+    validate_init_msg(&msg)?;
     // Execute the core instantiation code
     init_contract(deps, env, info, msg)
 }
@@ -38,7 +38,7 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
 #[entry_point]
 pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> ContractResponse {
     // Ensure the execute message is properly formatted before doing anything
-    validate_execute_msg(&msg, &deps.as_ref())?;
+    validate_execute_msg(&msg)?;
     match msg {
         ExecuteMsg::OnboardAsset { .. } => {
             onboard_asset(deps, env, info, OnboardAssetV1::from_execute_msg(msg)?)

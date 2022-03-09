@@ -39,6 +39,9 @@ pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> Contrac
                 &target_address,
             ))
         })?;
+    // Important: this uses from_slice instead of from_bytes.  from_bytes is fully unchecked and trusts the
+    // caller that they are using valid data that can convert to a uuid.  To avoid any weird panics when calling
+    // to_string(), we just use the sliced data
     Uuid::from_slice(&uuid_bytes)?.to_string().to_ok()
 }
 

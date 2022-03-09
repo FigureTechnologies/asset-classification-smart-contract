@@ -45,6 +45,32 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,
 ) -> ContractResult<AssetScopeAttribute> {
+    let scope_address_str = scope_address.into();
+    let scope_attribute =
+        may_query_scope_attribute_by_scope_address(deps, scope_address_str.clone())?;
+    // This is a normal scenario, which just means the scope didn't have an attribute.  This can happen if a
+    // scope was created with a scope spec that is attached to the contract via AssetDefinition, but the scope was
+    // never registered by using onboard_asset.
+    if scope_attribute.is_none() {
+        return ContractError::NotFound {
+            explanation: format!(
+                "scope at address [{}] did not include an asset scope attribute",
+                scope_address_str
+            ),
+        }
+        .to_err();
+    }
+
+    scope_attribute.unwrap().to_ok()
+}
+
+/// Fetches an AssetScopeAttribubte by the scope address value directly.  The most efficient version
+/// of these functions, but still has to do quite a few lookups.  This functionality should only be used
+/// on a once-per-transaction basis, if possible. Returns ContractResult<None> in the case of
+pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
+    deps: &DepsC,
+    scope_address: S,
+) -> ContractResult<Option<AssetScopeAttribute>> {
     let querier = ProvenanceQuerier::new(&deps.querier);
     // First, query up the scope in order to find the asset definition's type
     let scope = querier.get_scope(scope_address.into())?;
@@ -59,18 +85,6 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
         Addr::unchecked(&scope.scope_id),
         &attribute_name,
     )?;
-    // This is a normal scenario, which just means the scope didn't have an attribute.  This can happen if a
-    // scope was created with a scope spec that is attached to the contract via AssetDefinition, but the scope was
-    // never registered by using onboard_asset.
-    if scope_attributes.is_empty() {
-        return ContractError::NotFound {
-            explanation: format!(
-                "scope at address [{}] did not include an asset scope attribute",
-                &scope.scope_id
-            ),
-        }
-        .to_err();
-    }
     // This is a very bad scenario - this means that the contract messed up and created multiple attributes under
     // the attribute name.  This should only ever happen in error, and would require a horrible cleanup process
     // that manually removed the bad attributes
@@ -82,7 +96,7 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
         .to_err();
     }
     // Retain ownership of the first and verified only scope attribute and return it
-    scope_attributes.first().unwrap().to_owned().to_ok()
+    scope_attributes.first().map(|a| a.to_owned()).to_ok()
 }
 
 #[cfg(test)]

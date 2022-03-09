@@ -1,10 +1,13 @@
 pub mod aliases;
+pub mod asset_meta_repository;
 pub mod constants;
 pub mod contract_helpers;
 pub mod deps_container;
 pub mod event_attributes;
 pub mod fees;
 pub mod functions;
+pub mod message_gathering_service;
+pub mod provenance_util;
 pub mod scope_address_utils;
 pub mod traits;
 pub mod vec_container;

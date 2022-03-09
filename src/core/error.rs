@@ -76,6 +76,22 @@ pub enum ContractError {
     #[error("Asset type {asset_type} is currently disabled")]
     AssetTypeDisabled { asset_type: String },
 
+    #[error("Unauthorized validator [{validator_address}] for scope [{scope_address}], expected validator [{expected_validator_address}]")]
+    UnathorizedAssetValidator {
+        scope_address: String,
+        validator_address: String,
+        expected_validator_address: String,
+    },
+
+    #[error("Asset [{scope_address}] already validated")]
+    AssetAlreadyValidated { scope_address: String },
+
+    #[error("Expected only a single asset attribute on scope {scope_address}, but found {attribute_amount}")]
+    InvalidScopeAttribute {
+        scope_address: String,
+        attribute_amount: usize,
+    },
+
     #[error("Existing record found: {explanation}")]
     RecordAlreadyExists { explanation: String },
 

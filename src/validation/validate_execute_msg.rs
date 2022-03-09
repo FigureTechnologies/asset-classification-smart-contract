@@ -15,7 +15,11 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
             scope_address,
             validator_address,
         } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
-        ExecuteMsg::ValidateAsset { asset_uuid, .. } => validate_validate_asset(asset_uuid),
+        ExecuteMsg::ValidateAsset {
+            asset_uuid,
+            scope_address,
+            ..
+        } => validate_validate_asset(asset_uuid, scope_address),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.into(), deps)
         }
@@ -66,10 +70,16 @@ fn validate_onboard_asset(
     }
 }
 
-fn validate_validate_asset(asset_uuid: &str) -> ContractResult<()> {
+fn validate_validate_asset(
+    asset_uuid: &Option<String>,
+    scope_address: &Option<String>,
+) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    if asset_uuid.is_empty() {
-        invalid_fields.push("asset_uuid: must not be blank".to_string());
+    if asset_uuid.is_none() && scope_address.is_none() {
+        invalid_fields
+            .push("asset_uuid: must not be blank if scope_address not provided".to_string());
+        invalid_fields
+            .push("scope_address: must not be blank if asset_uuid not provided".to_string());
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -215,13 +225,13 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_success() {
-        validate_validate_asset("asset_uuid")
+        validate_validate_asset(&Some("asset_uuid".to_string()), &None)
             .expect("expected the validation to pass when all fields are correctly supplied");
     }
 
     #[test]
     fn test_validate_validate_asset_invalid_asset_uuid() {
-        let result = validate_validate_asset("");
+        let result = validate_validate_asset(&None, &None);
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::ValidateAsset",
@@ -229,13 +239,18 @@ mod tests {
                 "incorrect message type for error"
             );
             assert_eq!(
-                1,
+                2,
                 invalid_fields.len(),
                 "expected only a single invalid field to be found"
             );
             assert_eq!(
-                "asset_uuid: must not be blank",
+                "asset_uuid: must not be blank if scope_address not provided",
                 invalid_fields.first().unwrap().as_str(),
+                "expected the appropriate error message to be returned"
+            );
+            assert_eq!(
+                "scope_address: must not be blank if asset_uuid not provided",
+                invalid_fields[1].as_str(),
                 "expected the appropriate error message to be returned"
             );
         });

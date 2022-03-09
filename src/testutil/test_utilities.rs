@@ -37,17 +37,22 @@ pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
         scope_spec_address: DEFAULT_SCOPE_SPEC_ADDRESS.into(),
-        validators: vec![ValidatorDetail {
-            address: DEFAULT_VALIDATOR_ADDRESS.into(),
-            onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
-            onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
-            fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
-            fee_destinations: vec![],
-        }],
+        validators: vec![get_default_validator_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
     }
 }
+
+pub fn get_default_validator_detail() -> ValidatorDetail {
+    ValidatorDetail {
+        address: DEFAULT_VALIDATOR_ADDRESS.into(),
+        onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
+        onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
+        fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
+        fee_destinations: vec![],
+    }
+}
+
 pub fn get_default_asset_definition() -> AssetDefinition {
     get_default_asset_definition_input().into()
 }

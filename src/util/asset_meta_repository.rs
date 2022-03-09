@@ -74,6 +74,14 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
     ) -> ContractResult<()> {
+        let scope_address_str = scope_address.into();
+        if self.has_asset(deps, scope_address_str.clone())? {
+            return ContractError::AssetAlreadyOnboarded {
+                scope_address: scope_address_str,
+            }
+            .to_result();
+        }
+
         // generate attribute -> scope bind message
         let contract_base_name = config_read(deps.storage).load()?.base_contract_name;
         let attribute = AssetScopeAttribute::new(
@@ -84,7 +92,7 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
             validator_detail,
         )?;
         self.add_message(get_add_attribute_to_scope_msg(
-            scope_address,
+            scope_address_str,
             &attribute,
             contract_base_name,
         )?);
@@ -130,10 +138,16 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::state::{asset_meta, AssetMeta},
-        testutil::test_utilities::{
-            setup_test_suite, InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+        core::{
+            asset::AssetOnboardingStatus,
+            state::{asset_meta, AssetMeta},
+        },
+        testutil::{
+            onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
+            test_utilities::{
+                get_default_asset_definition, get_default_validator_detail, setup_test_suite,
+                InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
         },
         util::asset_meta_repository::AssetMetaRepository,
     };
@@ -156,10 +170,49 @@ mod tests {
     }
 
     #[test]
-    fn has_asset_returns_true_if_asset_has_attribute() {}
+    fn has_asset_returns_true_if_asset_has_attribute() {
+        let mut deps = mock_dependencies(&[]);
+        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default());
+
+        let result = repository
+            .has_asset(&deps.as_ref(), DEFAULT_SCOPE_ADDRESS)
+            .unwrap();
+
+        assert_eq!(
+            true, result,
+            "Repository should return true when asset does have attribute"
+        );
+    }
 
     #[test]
-    fn add_asset_fails_if_asset_already_exists() {}
+    fn add_asset_fails_if_asset_already_exists() {
+        let mut deps = mock_dependencies(&[]);
+        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default());
+
+        let err = repository
+            .add_asset(
+                &deps.as_ref(),
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE,
+                DEFAULT_VALIDATOR_ADDRESS,
+                AssetOnboardingStatus::Pending,
+                get_default_validator_detail(),
+            )
+            .unwrap_err();
+
+        match err {
+            crate::core::error::ContractError::AssetAlreadyOnboarded { scope_address } => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS.to_string(),
+                    scope_address,
+                    "Scope address should be reflected in AssetAlreadyOnboarded error"
+                )
+            }
+            _ => panic!("Received unknown error when onboarding already-onboarded asset"),
+        }
+    }
 
     #[test]
     fn add_asset_adds_to_storage_and_generates_proper_attribute_message() {}

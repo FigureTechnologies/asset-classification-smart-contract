@@ -41,7 +41,7 @@ impl TestOnboardAsset {
     }
 
     pub fn default_with_sender(sender: &str) -> Self {
-        Self::default_full_sender(sender, 100, DEFAULT_ONBOARDING_DENOM)
+        Self::default_full_sender(sender, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM)
     }
 
     pub fn default_with_amount(amount: u128) -> Self {
@@ -49,7 +49,7 @@ impl TestOnboardAsset {
     }
 
     pub fn default_with_denom(denom: &str) -> Self {
-        Self::default_full_sender(DEFAULT_INFO_NAME, 100, denom)
+        Self::default_full_sender(DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST, denom)
     }
 }
 impl Default for TestOnboardAsset {

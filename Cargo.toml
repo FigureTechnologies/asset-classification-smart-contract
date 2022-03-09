@@ -45,7 +45,6 @@ cosmwasm-std = { version = "1.0.0-beta", features = ["stargate"] }
 cosmwasm-storage = { version = "1.0.0-beta" }
 cw-storage-plus = "0.12.1"
 cw2 = "0.12.1"
-once_cell = "1.10.0"
 schemars = "0.8.3"
 semver = "1"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }

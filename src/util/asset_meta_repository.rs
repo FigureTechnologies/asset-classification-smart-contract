@@ -93,7 +93,7 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
             return ContractError::AssetAlreadyOnboarded {
                 scope_address: scope_address_str,
             }
-            .to_result();
+            .to_err();
         }
 
         // generate attribute -> scope bind message

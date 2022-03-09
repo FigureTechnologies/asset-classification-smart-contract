@@ -111,14 +111,6 @@ pub enum ContractError {
     UuidError(#[from] uuid::Error),
 }
 impl ContractError {
-    /// Allows ContractError instances to be generically returned as a Response in a fluent manner
-    /// instead of wrapping in an Err() call, improving readability.
-    /// Ex: return ContractError::NameNotFound.to_result();
-    /// vs
-    ///     return Err(ContractError::NameNotFound);
-    pub fn to_result<T>(self) -> Result<T, ContractError> {
-        Err(self)
-    }
     pub fn std_err<S: Into<String>>(msg: S) -> ContractError {
         ContractError::Std(StdError::generic_err(msg))
     }

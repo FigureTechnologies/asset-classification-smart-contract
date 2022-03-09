@@ -120,7 +120,7 @@ mod tests {
             );
         // Simulate an asset onboard by building our own attribute
         let asset_attribute = AssetScopeAttribute::new(
-            AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             DEFAULT_ASSET_TYPE,
             "requestor-address",
             DEFAULT_VALIDATOR_ADDRESS,

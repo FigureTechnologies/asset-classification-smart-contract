@@ -144,7 +144,7 @@ impl AssetScopeAttribute {
     /// It ensures passed addresses are valid, as well as ensuring that the
     /// asset uuid and scope address match each other
     pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
-        identifier: AssetIdentifier,
+        identifier: &AssetIdentifier,
         asset_type: S1,
         requestor_address: S2,
         validator_address: S3,

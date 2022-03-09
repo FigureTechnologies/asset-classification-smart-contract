@@ -33,5 +33,5 @@ optimize:
 	@docker run --rm -v $(CURDIR):/code \
 		--mount type=volume,source=tutorial_cache,target=/code/target \
 		--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-		cosmwasm/rust-optimizer:0.12.4
+		cosmwasm/rust-optimizer:0.12.5
 

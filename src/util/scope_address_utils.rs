@@ -1,6 +1,7 @@
+use std::{convert::TryInto, str::FromStr};
+
 use crate::{core::error::ContractError, util::aliases::ContractResult};
-use bech32::{ToBase32, Variant};
-use bytes::{BufMut, BytesMut};
+use bech32::{FromBase32, ToBase32, Variant};
 use uuid::Uuid;
 
 use super::traits::ResultExtensions;
@@ -9,33 +10,36 @@ use super::traits::ResultExtensions;
 const KEY_SCOPE: u8 = 0x00;
 /// Standard bech32 encoding for scope addresses simply begin with the string "scope"
 const SCOPE_HRP: &str = "scope";
-const MOST_SIGNIFICANT_BITMASK: u128 = 0xFFFFFFFFFFFFFFFF0000000000000000;
-const LEAST_SIGNIFICANT_BITMASK: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
-
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// most and least significant bits a byte buffer that contains the scope key prefix.
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
-    let (most_sig, least_sig) = get_uuid_bits(asset_uuid)?;
-    let mut buf = BytesMut::new();
-    // Append the scope prefix key
-    buf.put_u8(KEY_SCOPE);
-    // Order matters!  Append most significant bits first, least second
-    buf.put_i64(most_sig);
-    buf.put_i64(least_sig);
-    Ok(bech32::encode(
-        SCOPE_HRP,
-        buf.to_vec().to_base32(),
-        Variant::Bech32,
-    )?)
+    let mut buffer: Vec<u8> = vec![KEY_SCOPE];
+    buffer.append(
+        &mut Uuid::from_str(&asset_uuid.into())?
+            .as_u128()
+            .to_be_bytes()
+            .to_vec(),
+    );
+    bech32::encode(SCOPE_HRP, buffer.to_vec().to_base32(), Variant::Bech32)?.to_ok()
 }
 
-/// Standard uuid most/least significant bits source, logically abstracted from the java tools for
-/// locating these values.
-fn get_uuid_bits<S: Into<String>>(uuid_source: S) -> ContractResult<(i64, i64)> {
-    let uuid_value = Uuid::parse_str(&uuid_source.into())?.as_u128();
-    let most_significant_bits: i64 = ((uuid_value & MOST_SIGNIFICANT_BITMASK) >> 64) as i64;
-    let least_significant_bits: i64 = (uuid_value & LEAST_SIGNIFICANT_BITMASK) as i64;
-    Ok((most_significant_bits, least_significant_bits))
+/// Takes a string representation of a scope address and converts it into an asset uuid string.
+pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> ContractResult<String> {
+    let target_address = scope_address.into();
+    let (_, base_32, _) = bech32::decode(&target_address)?;
+    let uuid_bytes: [u8; 16] = Vec::from_base32(&base_32)?
+        .into_iter()
+        // Lop off the first byte - it represents the scope key prefix and is not a portion of the uuid bytes
+        .skip(1)
+        .collect::<Vec<u8>>()
+        .try_into()
+        .map_err(|_| {
+            ContractError::std_err(format!(
+                "Failed deserializing base32 data for scope address {}",
+                &target_address,
+            ))
+        })?;
+    Uuid::from_slice(&uuid_bytes)?.to_string().to_ok()
 }
 
 pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + Clone>(
@@ -65,14 +69,13 @@ pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + C
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::error::ContractError,
-        util::scope_address_utils::{asset_uuid_to_scope_address, get_uuid_bits},
+        core::error::ContractError, util::scope_address_utils::asset_uuid_to_scope_address,
     };
 
-    use super::get_validate_scope_address;
+    use super::{get_validate_scope_address, scope_address_to_asset_uuid};
 
     #[test]
-    fn test_conversion_result() {
+    fn test_successful_asset_uuid_to_scope_address() {
         // Source uuid randomly generated via CLI tool
         let source_uuid = "a5e5a828-9a48-11ec-8193-1731fd63d6a6";
         // Expected result taken from MetadataAddress Provenance tool for verification that this
@@ -88,22 +91,18 @@ mod tests {
     }
 
     #[test]
-    fn test_bit_extraction() {
-        // Source uuid randomly generated via CLI tool
-        let source_uuid = "fb932526-9a56-11ec-b5de-b3e1f55b0723";
-        // Expected results taken from the battle-tested java util.UUID output for verification that
-        // this functionality set produces the same result
-        let expected_most_sig: i64 = -318870300884856340;
-        let expected_least_sig: i64 = -5341634324949432541;
-        let (most_sig, least_sig) = get_uuid_bits(source_uuid)
-            .expect("expected the source uuid to properly derive most and least significant bits");
-        assert_eq!(
-            expected_most_sig, most_sig,
-            "the most significant bits value should match expected output"
+    fn test_invalid_asset_uuid_to_scope_address() {
+        // Close to a UUID but has invalid characters
+        let similar_but_bad =
+            asset_uuid_to_scope_address("zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz").unwrap_err();
+        assert!(
+            matches!(similar_but_bad, ContractError::UuidError(_)),
+            "a uuid error should occur when an invalid uuid is processed: similar to good uuid but invalid characters",
         );
-        assert_eq!(
-            expected_least_sig, least_sig,
-            "the least significant bits value should match expected output"
+        let not_even_close = asset_uuid_to_scope_address("definitely not a uuid").unwrap_err();
+        assert!(
+            matches!(not_even_close, ContractError::UuidError(_)),
+            "a uuid error should occur when an invalid uuid is processed: very malformatted uuid",
         );
     }
 
@@ -170,5 +169,28 @@ mod tests {
             expected_bech32, result,
             "The resulting scope address should match when only a uuid was provided"
         )
+    }
+
+    #[test]
+    fn test_successful_scope_address_to_asset_uuid() {
+        // These values were generated using the MetadataAddress kotlin helper to verify their authenticity
+        // from random input
+        let scope_address = "scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra";
+        let expected_uuid = "9d62ec88-9fd9-11ec-ba6b-f73d7c938348";
+        let result_uuid = scope_address_to_asset_uuid(scope_address)
+            .expect("expected the conversion to occur without error");
+        assert_eq!(
+            expected_uuid, result_uuid,
+            "the function produced the incorrect uuid value"
+        );
+    }
+
+    #[test]
+    fn test_invalid_scope_address_to_asset_uuid() {
+        let error = scope_address_to_asset_uuid("not a scope address").unwrap_err();
+        assert!(
+            matches!(error, ContractError::Bech32Error(_)),
+            "a bech32 error should occur when attempting to parse an invalid scope address",
+        );
     }
 }

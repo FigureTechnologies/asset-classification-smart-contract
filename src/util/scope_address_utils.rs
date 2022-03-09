@@ -15,7 +15,7 @@ const SCOPE_HRP: &str = "scope";
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
     let mut buffer: Vec<u8> = vec![KEY_SCOPE];
     buffer.append(&mut Uuid::from_str(&asset_uuid.into())?.as_bytes().to_vec());
-    bech32::encode(SCOPE_HRP, buffer.to_vec().to_base32(), Variant::Bech32)?.to_ok()
+    bech32::encode(SCOPE_HRP, buffer.to_base32(), Variant::Bech32)?.to_ok()
 }
 
 /// Takes a string representation of a scope address and converts it into an asset uuid string.

@@ -7,4 +7,7 @@ pub trait MessageGatheringService {
 
     // add a message to the end of the list of messages
     fn add_message(&mut self, message: CosmosMsg<ProvenanceMsg>);
+
+    // clear all messages from service
+    fn drain_messages(&mut self);
 }

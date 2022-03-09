@@ -95,7 +95,8 @@ pub enum ExecuteMsg {
     ValidateAsset {
         asset_uuid: Option<String>,
         scope_address: Option<String>,
-        error: Option<String>,
+        success: bool,
+        message: Option<String>,
     },
     AddAssetDefinition {
         asset_definition: AssetDefinitionInput,

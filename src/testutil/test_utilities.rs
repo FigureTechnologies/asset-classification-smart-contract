@@ -9,7 +9,7 @@ use serde_json_wasm::to_string;
 use crate::{
     contract::instantiate,
     core::{
-        asset::{AssetDefinition, ValidatorDetail},
+        asset::{AssetDefinition, AssetOnboardingStatus, ValidatorDetail},
         msg::InitMsg,
     },
     util::{
@@ -66,6 +66,18 @@ pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
         .into_iter()
         .map(|input| AssetDefinition::from(input))
         .collect()
+}
+
+pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
+    AssetScopeAttribute {
+        asset_type: DEFAULT_ASSET_TYPE.to_string(),
+        requestor_address: Addr::unchecked(DEFAULT_INFO_NAME.to_string()),
+        validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS.to_string()),
+        onboarding_status: AssetOnboardingStatus::Pending,
+        latest_validator_detail: Some(get_default_validator_detail()),
+        latest_validation_result: None,
+        access_routes: vec![], // todo: add access_routes schtuff
+    }
 }
 
 pub struct InstArgs {
@@ -134,7 +146,7 @@ pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
 
 pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
     mock_info_with_funds(&[Coin {
-        denom: "nhash".into(),
+        denom: DEFAULT_ONBOARDING_DENOM.into(),
         amount: Uint128::from(amount),
     }])
 }

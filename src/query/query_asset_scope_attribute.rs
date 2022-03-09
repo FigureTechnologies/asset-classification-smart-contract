@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use cosmwasm_std::{to_binary, Addr, Binary};
 use provwasm_std::ProvenanceQuerier;
 

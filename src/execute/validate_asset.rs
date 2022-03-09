@@ -1,17 +1,19 @@
+use crate::core::asset::AssetOnboardingStatus;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_meta_read, config_read};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::functions::generate_asset_attribute_name;
+use crate::util::asset_meta_repository::AssetMetaRepository;
+use crate::util::event_attributes::{EventAttributes, EventType};
+use crate::util::message_gathering_service::MessageGatheringService;
 use crate::util::scope_address_utils::get_validate_scope_address;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Addr, Env, MessageInfo};
-use provwasm_std::ProvenanceQuerier;
+use cosmwasm_std::{Env, MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
     pub scope_address: String,
-    pub error: Option<String>,
+    pub success: bool,
+    pub message: Option<String>,
 }
 impl ValidateAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ValidateAssetV1> {
@@ -19,13 +21,15 @@ impl ValidateAssetV1 {
             ExecuteMsg::ValidateAsset {
                 asset_uuid,
                 scope_address,
-                error,
+                success,
+                message,
             } => {
                 let scope_address = get_validate_scope_address(asset_uuid, scope_address)?;
 
                 ValidateAssetV1 {
                     scope_address,
-                    error,
+                    success,
+                    message,
                 }
                 .to_ok()
             }
@@ -37,71 +41,68 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset(
+pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
     deps: DepsMutC,
     _env: Env,
     info: MessageInfo,
+    asset_meta_repository: &mut T,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
-    // look up asset in meta storage
-    let meta_storage = asset_meta_read(deps.storage);
-    let meta = meta_storage
-        .load(msg.scope_address.as_bytes())
-        .map_err(|_| ContractError::AssetNotFound {
-            scope_address: msg.scope_address.clone(),
-        })?;
+    // look up asset in repository
+    let meta = asset_meta_repository.get_asset(&deps.as_ref(), msg.scope_address.clone())?;
 
     // verify sender is requested validator
     if info.sender != meta.validator_address {
         return ContractError::UnathorizedAssetValidator {
             scope_address: msg.scope_address,
             validator_address: info.sender.into(),
-            expected_validator_address: meta.validator_address,
+            expected_validator_address: meta.validator_address.into_string(),
         }
         .to_err();
     }
 
-    // verify asset not already validated? (fetch attribute?)
-    let contract_state = config_read(deps.storage).load()?;
-    let attribute_name =
-        generate_asset_attribute_name(meta.asset_type, contract_state.base_contract_name);
-    let querier = ProvenanceQuerier::new(&deps.querier);
-    let existing_attributes =
-        querier.get_attributes(Addr::unchecked(msg.scope_address), Some(attribute_name))?;
-
-    if let Some(err) = msg.error {
-        if !existing_attributes.attributes.is_empty() {
-            // if attribute already exists, check if error already exists
-            // existing_attributes
-        } else {
-            // no existing attribute, construct/set fresh
+    if meta.onboarding_status == AssetOnboardingStatus::Approved {
+        return ContractError::AssetAlreadyValidated {
+            scope_address: msg.scope_address,
         }
-    } else {
-        if !existing_attributes.attributes.is_empty() {
-            // check if attribute is successful, else reject
-        } else {
-            // nothing exists, set attribute fresh
-        }
+        .to_err();
     }
 
+    asset_meta_repository.validate_asset(
+        &deps.as_ref(),
+        msg.scope_address.clone(),
+        msg.success,
+        msg.message,
+    )?;
+
     // construct/emit validation attribute
-    ContractError::Unimplemented.to_err()
+    Ok(Response::new()
+        .add_attributes(
+            EventAttributes::for_asset_event(
+                EventType::ValidateAsset,
+                meta.asset_type,
+                msg.scope_address,
+            )
+            .set_validator(info.sender),
+        )
+        .add_messages(asset_meta_repository.get_messages()))
 }
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{testing::mock_env, Uint128};
+    use cosmwasm_std::{testing::mock_env, Addr, MessageInfo};
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::{
-            error::ContractError,
-            state::{asset_meta, AssetMeta},
+        core::error::ContractError,
+        testutil::{
+            onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
+            test_utilities::{
+                mock_info_with_nhash, setup_test_suite, InstArgs, DEFAULT_ONBOARDING_COST,
+                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
         },
-        testutil::test_utilities::{
-            mock_info_with_nhash, test_instantiate, InstArgs, DEFAULT_ASSET_TYPE,
-            DEFAULT_ONBOARDING_COST,
-        },
+        util::message_gathering_service::MessageGatheringService,
     };
 
     use super::{validate_asset, ValidateAssetV1};
@@ -109,54 +110,56 @@ mod tests {
     #[test]
     fn test_validate_asset_not_found_error() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
 
         let err = validate_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            &mut repository,
             ValidateAssetV1 {
-                scope_address: "scope1234".to_string(),
-                error: None,
+                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                success: true,
+                message: None,
             },
         )
         .unwrap_err();
 
         match err {
-            ContractError::AssetNotFound { scope_address } => {
+            ContractError::NotFound { explanation } => {
                 assert_eq!(
-                    "scope1234", scope_address,
-                    "the asset not found message should reflect that the asset uuid was not found"
+                    format!(
+                        "scope at address [{}] did not include an asset scope attribute",
+                        DEFAULT_SCOPE_ADDRESS
+                    ),
+                    explanation,
+                    "the asset not found message should reflect that the asset was not found"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!("unexpected error when non-onboarded asset provided"),
         }
     }
 
     #[test]
     fn test_validate_asset_wrong_validator_error() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
 
-        asset_meta(&mut deps.storage)
-            .save(
-                b"scope1234",
-                &AssetMeta {
-                    scope_address: "scope1234".to_string(),
-                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                    validator_address: "tpcorrectvalidator".to_string(),
-                },
-            )
-            .unwrap();
+        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
 
-        let info = mock_info_with_nhash(DEFAULT_ONBOARDING_COST);
+        let info = MessageInfo {
+            sender: Addr::unchecked("totallybogusvalidatorimposter"),
+            ..mock_info_with_nhash(DEFAULT_ONBOARDING_COST)
+        };
         let err = validate_asset(
             deps.as_mut(),
             mock_env(),
             info.clone(),
+            &mut repository,
             ValidateAssetV1 {
-                scope_address: "scope1234".to_string(),
-                error: None,
+                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                success: true,
+                message: None,
             },
         )
         .unwrap_err();
@@ -168,7 +171,7 @@ mod tests {
                 expected_validator_address,
             } => {
                 assert_eq!(
-                    "scope1234", scope_address,
+                    DEFAULT_SCOPE_ADDRESS, scope_address,
                     "the unauthorized validator message should reflect the scope address"
                 );
                 assert_eq!(
@@ -176,42 +179,43 @@ mod tests {
                     "the unauthorized validator message should reflect the provided (sender) validator address"
                 );
                 assert_eq!(
-                    "tpcorrectvalidator", expected_validator_address,
+                    DEFAULT_VALIDATOR_ADDRESS, expected_validator_address,
                     "the unauthorized validator message should reflect the expected validator address (from onboarding)"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!("unexpected error when unauthorized validator submits validation"),
         }
     }
 
     #[test]
     fn test_validate_asset_adds_error_message_on_negative_validation() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate(deps.as_mut(), InstArgs::default()).expect("contract should instantiate");
+        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
+        repository.drain_messages();
 
-        let info = mock_info_with_nhash(DEFAULT_ONBOARDING_COST);
-        asset_meta(&mut deps.storage)
-            .save(
-                b"scope1234",
-                &AssetMeta {
-                    scope_address: "scope1234".to_string(),
-                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                    validator_address: info.sender.to_string(),
-                },
-            )
-            .unwrap();
+        let info = MessageInfo {
+            sender: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS),
+            ..mock_info_with_nhash(DEFAULT_ONBOARDING_COST)
+        };
 
-        let err = validate_asset(
+        let result = validate_asset(
             deps.as_mut(),
             mock_env(),
             info.clone(),
+            &mut repository,
             ValidateAssetV1 {
-                scope_address: "scope1234".to_string(),
-                error: Some("Your data sucks".to_string()),
+                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                success: true,
+                message: Some("Your data sucks".to_string()),
             },
         )
         .unwrap();
 
-        assert_eq!(true, true);
+        assert_eq!(
+            2,
+            result.messages.len(),
+            "validate asset should produce two messages (attribute delete/update combo)"
+        );
     }
 }

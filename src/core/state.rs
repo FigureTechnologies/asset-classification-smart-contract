@@ -2,11 +2,8 @@ use crate::{
     core::msg::InitMsg,
     util::{aliases::ContractResult, traits::ResultExtensions},
 };
-use cosmwasm_std::{Addr, Storage, Uint128};
-use cosmwasm_storage::{
-    bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
-    Singleton,
-};
+use cosmwasm_std::{Addr, Storage};
+use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -36,35 +33,6 @@ pub fn config(storage: &mut dyn Storage) -> Singleton<State> {
 
 pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
     singleton_read(storage, STATE_KEY)
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct AssetMeta {
-    pub scope_address: String,
-    pub asset_type: String,
-    pub validator_address: String,
-}
-impl AssetMeta {
-    pub fn new<T1: Into<String>, T2: Into<String>, T3: Into<String>>(
-        scope_address: T1,
-        asset_type: T2,
-        validator_address: T3,
-        onboarding_fee: Uint128,
-    ) -> Self {
-        AssetMeta {
-            scope_address: scope_address.into(),
-            asset_type: asset_type.into(),
-            validator_address: validator_address.into(),
-        }
-    }
-}
-
-pub fn asset_meta(storage: &mut dyn Storage) -> Bucket<AssetMeta> {
-    bucket(storage, ASSET_META_KEY)
-}
-
-pub fn asset_meta_read(storage: &dyn Storage) -> ReadonlyBucket<AssetMeta> {
-    bucket_read(storage, ASSET_META_KEY)
 }
 
 /// Boilerplate implementation of indexes for an IndexMap around state.

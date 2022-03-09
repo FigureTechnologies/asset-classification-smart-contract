@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{asset_meta, load_asset_definition_by_type, AssetMeta};
+use crate::core::state::load_asset_definition_by_type;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -121,7 +121,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     };
 
     // verify that the sender of this message is a scope owner
-    let sender = info.sender;
+    let sender = info.sender.clone();
     if !scope
         .owners
         .into_iter()
@@ -147,6 +147,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
         msg.scope_address.clone(),
         msg.asset_type.clone(),
         msg.validator_address.clone(),
+        info.sender,
         crate::core::asset::AssetOnboardingStatus::Pending,
         validator_config,
     )?;
@@ -166,24 +167,23 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, testing::mock_env, Addr, Coin, CosmosMsg, SubMsg, Uint128};
+    use cosmwasm_std::{from_binary, testing::mock_env, Coin, CosmosMsg, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{
-        AttributeMsgParams, Party, PartyType, ProvenanceMsg, ProvenanceMsgParams, Scope,
-    };
+    use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
     use crate::{
         core::{
             asset::{AssetOnboardingStatus, AssetScopeAttribute},
             error::ContractError,
-            state::{asset_meta, asset_meta_read, AssetMeta},
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
-        testutil::test_utilities::{
-            empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
-            test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-            DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+        testutil::{
+            onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
+            test_utilities::{
+                empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
+                InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
         },
         util::{
             constants::{
@@ -453,31 +453,12 @@ mod tests {
     fn test_onboard_asset_errors_on_already_onboarded_asset() {
         let mut deps = mock_dependencies(&[]);
         let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
-
-        deps.querier.with_scope(Scope {
-            scope_id: "scope1234".to_string(),
-            specification_id: "".to_string(),
-            owners: [Party {
-                address: Addr::unchecked(DEFAULT_INFO_NAME),
-                role: PartyType::Owner,
-            }]
-            .to_vec(),
-            data_access: [].to_vec(),
-            value_owner_address: Addr::unchecked(""),
-        });
-
-        let mut asset_storage = asset_meta(&mut deps.storage);
-        asset_storage
-            .save(
-                b"scope1234",
-                &AssetMeta::new(
-                    "scope1234".to_string(),
-                    "".to_string(),
-                    "".to_string(),
-                    Uint128::from(123u128),
-                ),
-            )
-            .unwrap();
+        test_onboard_asset(
+            &mut deps,
+            &mut asset_meta_repository,
+            TestOnboardAsset::default(),
+        )
+        .unwrap();
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -485,7 +466,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                scope_address: DEFAULT_SCOPE_ADDRESS.into(),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -495,7 +476,7 @@ mod tests {
         match err {
             ContractError::AssetAlreadyOnboarded { scope_address } => {
                 assert_eq!(
-                    "scope1234",
+                    DEFAULT_SCOPE_ADDRESS,
                     scope_address,
                     "the asset already onboarded message should reflect that the asset uuid was already onboarded"
                 );
@@ -509,39 +490,18 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
 
-        deps.querier.with_scope(Scope {
-            scope_id: "scope1234".to_string(),
-            specification_id: "".to_string(),
-            owners: [Party {
-                address: Addr::unchecked(DEFAULT_INFO_NAME),
-                role: PartyType::Owner,
-            }]
-            .to_vec(),
-            data_access: [].to_vec(),
-            value_owner_address: Addr::unchecked(""),
-        });
-
         let result = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                scope_address: DEFAULT_SCOPE_ADDRESS.into(),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
         )
         .unwrap();
-
-        let asset_storage = asset_meta_read(&deps.storage);
-
-        let asset_entry = asset_storage.load(b"scope1234").unwrap();
-
-        assert_eq!(
-            "scope1234", asset_entry.scope_address,
-            "Asset uuid in storage should match what was provided at onboarding"
-        );
 
         assert_eq!(
             1,

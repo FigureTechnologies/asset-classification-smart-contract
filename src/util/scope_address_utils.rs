@@ -14,12 +14,7 @@ const SCOPE_HRP: &str = "scope";
 /// big-endian bytes to a byte slice that also contains a scope prefix key (as defined in the provenance source).
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
     let mut buffer: Vec<u8> = vec![KEY_SCOPE];
-    buffer.append(
-        &mut Uuid::from_str(&asset_uuid.into())?
-            .as_u128()
-            .to_be_bytes()
-            .to_vec(),
-    );
+    buffer.append(&mut Uuid::from_str(&asset_uuid.into())?.as_bytes().to_vec());
     bech32::encode(SCOPE_HRP, buffer.to_vec().to_base32(), Variant::Bech32)?.to_ok()
 }
 

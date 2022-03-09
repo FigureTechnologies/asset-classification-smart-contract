@@ -8,7 +8,11 @@ use crate::util::{
     traits::ResultExtensions,
 };
 
-use super::{error::ContractError, msg::AssetDefinitionInput, state::config_read};
+use super::{
+    error::ContractError,
+    msg::{AssetDefinitionInput, AssetIdentifier},
+    state::config_read,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -124,6 +128,8 @@ pub struct AssetValidationResult {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
+    pub asset_uuid: String,
+    pub scope_address: String,
     pub asset_type: String,
     pub requestor_address: Addr,
     pub validator_address: Addr,
@@ -133,19 +139,27 @@ pub struct AssetScopeAttribute {
     pub access_routes: Vec<String>,
 }
 impl AssetScopeAttribute {
+    /// Constructs a new instance of AssetScopeAttribute from the input params
+    /// Prefer initializing a scope attribute with this function!
+    /// It ensures passed addresses are valid, as well as ensuring that the
+    /// asset uuid and scope address match each other
     pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+        identifier: AssetIdentifier,
         asset_type: S1,
         requestor_address: S2,
         validator_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
     ) -> ContractResult<Self> {
+        let identifiers = identifier.parse_identifiers()?;
         let req_addr = validate_address(requestor_address)?;
         let val_addr = validate_address(validator_address)?;
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
         AssetScopeAttribute {
+            asset_uuid: identifiers.asset_uuid,
+            scope_address: identifiers.scope_address,
             asset_type: asset_type.into(),
             requestor_address: req_addr,
             validator_address: val_addr,

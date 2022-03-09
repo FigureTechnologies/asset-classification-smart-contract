@@ -98,7 +98,8 @@ mod tests {
         },
         testutil::test_utilities::{
             mock_scope, mock_scope_attribute, test_instantiate_success, InstArgs,
-            DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS,
+            DEFAULT_VALIDATOR_ADDRESS,
         },
         util::scope_address_utils::asset_uuid_to_scope_address,
     };
@@ -119,6 +120,7 @@ mod tests {
             );
         // Simulate an asset onboard by building our own attribute
         let asset_attribute = AssetScopeAttribute::new(
+            AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             DEFAULT_ASSET_TYPE,
             "requestor-address",
             DEFAULT_VALIDATOR_ADDRESS,

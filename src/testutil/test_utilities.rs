@@ -23,6 +23,10 @@ use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
 pub const DEFAULT_INFO_NAME: &str = "admin";
+// DEFAULT_ASSET_UUID is a randomly-generated uuid and the DEFAULT_SCOPE_ADDRESS was generated from it
+// They can be expected to convert to each other bidirectionally
+pub const DEFAULT_ASSET_UUID: &str = "c55cfe0e-9fed-11ec-8191-0b95c8a1239c";
+pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1qrz4elswnlk3rmypjy9etj9pywwqz6myzw";
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
 pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespecaddress";
 pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";

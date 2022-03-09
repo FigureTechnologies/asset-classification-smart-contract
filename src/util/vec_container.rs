@@ -43,6 +43,11 @@ impl<T: Copy> VecContainer<T> {
         self.values.borrow().deref().to_owned()
     }
 }
+impl<T> Default for VecContainer<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[cfg(test)]
 mod tests {

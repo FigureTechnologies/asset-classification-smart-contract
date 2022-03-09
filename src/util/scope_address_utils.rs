@@ -11,7 +11,7 @@ const KEY_SCOPE: u8 = 0x00;
 /// Standard bech32 encoding for scope addresses simply begin with the string "scope"
 const SCOPE_HRP: &str = "scope";
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
-/// most and least significant bits a byte buffer that contains the scope key prefix.
+/// big-ending bytes to a byte scice that also contains a scope prefix key (as defined in the provenance source).
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
     let mut buffer: Vec<u8> = vec![KEY_SCOPE];
     buffer.append(

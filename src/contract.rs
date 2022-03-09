@@ -8,12 +8,11 @@ use crate::execute::update_asset_validator::{update_asset_validator, UpdateAsset
 use crate::execute::validate_asset::{validate_asset, ValidateAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
-use crate::query::query_asset_by_scope_address::query_asset_binary_by_scope_address;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
 use crate::query::query_state::query_state;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsC, DepsMutC};
-use crate::util::asset_meta_repository::ContractAndAttributeAssetMeta;
+use crate::util::asset_meta_repository::AttributeOnlyAssetMeta;
 use crate::util::traits::ResultExtensions;
 use crate::validation::validate_execute_msg::validate_execute_msg;
 use crate::validation::validate_init_msg::validate_init_msg;
@@ -35,10 +34,6 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
             query_asset_scope_attribute(&deps, identifier)
         }
         QueryMsg::QueryState {} => query_state(&deps),
-        QueryMsg::QueryAssetByScopeAddress {
-            scope_address,
-            asset_type,
-        } => query_asset_binary_by_scope_address(&deps, scope_address, asset_type),
     }
 }
 
@@ -51,7 +46,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             deps,
             env,
             info,
-            &mut ContractAndAttributeAssetMeta::new(),
+            &mut AttributeOnlyAssetMeta::new(),
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::ValidateAsset { .. } => {

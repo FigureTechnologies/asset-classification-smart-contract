@@ -13,8 +13,7 @@ use crate::{
         msg::InitMsg,
     },
     util::{
-        asset_meta_repository::ContractAndAttributeAssetMeta,
-        functions::generate_asset_attribute_name,
+        asset_meta_repository::AttributeOnlyAssetMeta, functions::generate_asset_attribute_name,
     },
 };
 use crate::{
@@ -93,10 +92,10 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
     )
 }
 
-pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) -> ContractAndAttributeAssetMeta {
-    test_instantiate(deps.as_mut(), args).expect("instantiation should succeed");
+pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) -> AttributeOnlyAssetMeta {
+    test_instantiate_success(deps.as_mut(), args);
     mock_default_scope(deps);
-    ContractAndAttributeAssetMeta::new()
+    AttributeOnlyAssetMeta::new()
 }
 
 pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
@@ -107,47 +106,13 @@ pub fn empty_mock_info() -> MessageInfo {
     mock_info(DEFAULT_INFO_NAME, &[])
 }
 
-pub fn get_duped_scope(scope_id: impl Into<String>, owner_address: impl Into<String>) -> Scope {
-    let owner_address = owner_address.into();
-    Scope {
-        scope_id: scope_id.into(),
-        specification_id: "duped_spec_id".into(),
-        owners: vec![Party {
-            address: Addr::unchecked(&owner_address),
-            role: PartyType::Owner,
-        }],
-        data_access: vec![],
-        value_owner_address: Addr::unchecked(owner_address),
-    }
-}
-
-pub fn mock_scope(
-    deps: &mut MockOwnedDeps,
-    scope_id: impl Into<String>,
-    owner_address: impl Into<String>,
-) {
-    deps.querier
-        .with_scope(get_duped_scope(scope_id, owner_address))
-}
-
 pub fn mock_default_scope(deps: &mut MockOwnedDeps) {
-    mock_scope(deps, DEFAULT_SCOPE_ADDRESS, DEFAULT_INFO_NAME)
-}
-
-pub fn mock_scope_attribute(
-    deps: &mut MockOwnedDeps,
-    contract_name: impl Into<String>,
-    scope_address: impl Into<String>,
-    attribute: &AssetScopeAttribute,
-) {
-    deps.querier.with_attributes(
-        scope_address.into().as_str(),
-        &[(
-            contract_name.into().as_str(),
-            to_string(attribute).unwrap().as_str(),
-            "json",
-        )],
-    );
+    mock_scope(
+        deps,
+        DEFAULT_SCOPE_ADDRESS,
+        DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_INFO_NAME,
+    )
 }
 
 pub fn mock_default_scope_attribute(
@@ -155,12 +120,7 @@ pub fn mock_default_scope_attribute(
     scope_address: impl Into<String>,
     attribute: &AssetScopeAttribute,
 ) {
-    mock_scope_attribute(
-        deps,
-        generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-        scope_address,
-        attribute,
-    );
+    mock_scope_attribute(deps, attribute, scope_address);
 }
 
 pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {

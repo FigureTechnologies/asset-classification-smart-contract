@@ -1,7 +1,4 @@
-use crate::{
-    core::{asset::AssetScopeAttribute, error::ContractError},
-    query::query_asset_by_scope_address::query_asset_attribute_by_scope_address,
-};
+use crate::core::{asset::AssetScopeAttribute, error::ContractError};
 use cosmwasm_std::{Addr, CosmosMsg, Deps, QuerierWrapper, StdResult};
 use provwasm_std::{
     add_json_attribute, delete_attributes, ProvenanceMsg, ProvenanceQuerier, ProvenanceQuery, Scope,
@@ -117,7 +114,6 @@ pub struct ProvenanceUtilImpl;
 /// multiple functions.
 pub fn get_add_attribute_to_scope_msg(
     scope_address: impl Into<String>,
-    asset_type: impl Into<String>,
     attribute: &AssetScopeAttribute,
     contract_base_name: impl Into<String>,
 ) -> Result<CosmosMsg<ProvenanceMsg>, ContractError> {
@@ -127,7 +123,7 @@ pub fn get_add_attribute_to_scope_msg(
         // so it'll just fail later down the line with a less sane error message than if it was
         // being properly checked.
         Addr::unchecked(scope_address),
-        generate_asset_attribute_name(asset_type, contract_base_name),
+        generate_asset_attribute_name(attribute.asset_type.clone(), contract_base_name),
         attribute,
     )
     .map_err(ContractError::Std)

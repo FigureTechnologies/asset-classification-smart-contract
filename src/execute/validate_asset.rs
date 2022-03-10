@@ -4,7 +4,6 @@ use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::message_gathering_service::MessageGatheringService;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 
@@ -35,16 +34,16 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
-    deps: DepsMutC,
+pub fn validate_asset(
+    mut deps: DepsMutC,
     _env: Env,
     info: MessageInfo,
-    asset_meta_repository: &mut T,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
+    let asset_meta_repository = AssetMetaRepository::new(&mut deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
-    let meta = asset_meta_repository.get_asset(&deps.as_ref(), &asset_identifiers.scope_address)?;
+    let meta = asset_meta_repository.get_asset(&asset_identifiers.scope_address)?;
 
     // verify sender is requested validator
     if info.sender != meta.validator_address {
@@ -64,7 +63,6 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
     }
 
     asset_meta_repository.validate_asset(
-        &deps.as_ref(),
         &asset_identifiers.scope_address,
         msg.success,
         msg.message,
@@ -80,7 +78,7 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
             )
             .set_validator(info.sender),
         )
-        .add_messages(asset_meta_repository.get_messages()))
+        .add_messages(asset_meta_repository.messages.get()))
 }
 
 #[cfg(test)]
@@ -106,13 +104,12 @@ mod tests {
     #[test]
     fn test_validate_asset_not_found_error() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = validate_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
@@ -142,9 +139,9 @@ mod tests {
     #[test]
     fn test_validate_asset_wrong_validator_error() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
-        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let info = mock_info_with_nhash(
             "tp129z88fpzthllrdzktw98cck3ypd34wv77nqfyl",
@@ -154,7 +151,6 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             info.clone(),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
@@ -192,9 +188,8 @@ mod tests {
     #[test]
     fn test_validate_asset_adds_error_message_on_negative_validation() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
-        repository.drain_messages();
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let info = mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST);
 
@@ -202,7 +197,6 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             info.clone(),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,

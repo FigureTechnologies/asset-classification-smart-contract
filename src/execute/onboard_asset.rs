@@ -36,13 +36,13 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
-    deps: DepsMutC,
+pub fn onboard_asset(
+    mut deps: DepsMutC,
     _env: Env,
     info: MessageInfo,
-    asset_meta_repository: &mut T,
     msg: OnboardAssetV1,
 ) -> ContractResponse {
+    let asset_meta_repository = AssetMetaRepository::new(&mut deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
     let asset_state = match load_asset_definition_by_type(deps.storage, &msg.asset_type) {
@@ -126,7 +126,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     }
 
     // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if asset_meta_repository.has_asset(&deps.as_ref(), &asset_identifiers.scope_address)? {
+    if asset_meta_repository.has_asset(&asset_identifiers.scope_address)? {
         return ContractError::AssetAlreadyOnboarded {
             scope_address: asset_identifiers.scope_address,
         }
@@ -135,7 +135,6 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
     asset_meta_repository.add_asset(
-        &deps.as_ref(),
         &msg.identifier,
         &msg.asset_type,
         &msg.validator_address,
@@ -153,7 +152,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
             )
             .set_validator(msg.validator_address),
         )
-        .add_messages(asset_meta_repository.get_messages()))
+        .add_messages(asset_meta_repository.messages.get()))
 }
 
 #[cfg(test)]
@@ -196,13 +195,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_unsupported_asset_type() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: "bogus".into(),
@@ -228,7 +226,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_disabled_asset_type() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
         toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
@@ -239,7 +237,6 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -257,13 +254,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_unsupported_validator() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -293,13 +289,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_no_funds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -325,7 +320,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_extra_funds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -343,7 +338,6 @@ mod tests {
                     },
                 ],
             ),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -369,7 +363,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_denom() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -381,7 +375,6 @@ mod tests {
                     amount: Uint128::from(2432u128),
                 }],
             ),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -407,13 +400,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_amount() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -444,7 +436,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_asset_not_found() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
         // Some random scope address unrelated to the default scope address, which is mocked during setup_test_suite
         let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
 
@@ -452,7 +444,6 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -479,19 +470,13 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_already_onboarded_asset() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(
-            &mut deps,
-            &mut asset_meta_repository,
-            TestOnboardAsset::default(),
-        )
-        .unwrap();
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -518,13 +503,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_succeeds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let result = onboard_asset(
             deps.as_mut(),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),

@@ -39,22 +39,14 @@
         "validate_asset": {
           "type": "object",
           "required": [
+            "identifier",
             "success"
           ],
           "properties": {
-            "asset_uuid": {
-              "type": [
-                "string",
-                "null"
-              ]
+            "identifier": {
+              "$ref": "#/definitions/AssetIdentifier"
             },
             "message": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "scope_address": {
               "type": [
                 "string",
                 "null"

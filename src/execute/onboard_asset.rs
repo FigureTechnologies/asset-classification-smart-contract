@@ -4,7 +4,6 @@ use crate::core::state::load_asset_definition_by_type;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::message_gathering_service::MessageGatheringService;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
@@ -37,15 +36,18 @@ impl OnboardAssetV1 {
 }
 
 pub fn onboard_asset(
-    mut deps: DepsMutC,
+    deps: DepsMutC,
     _env: Env,
     info: MessageInfo,
     msg: OnboardAssetV1,
 ) -> ContractResponse {
-    let asset_meta_repository = AssetMetaRepository::new(&mut deps);
+    let repository = AssetMetaRepository::new(deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
-    let asset_state = match load_asset_definition_by_type(deps.storage, &msg.asset_type) {
+    let asset_state = match repository
+        .deps
+        .use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type))
+    {
         Ok(state) => {
             if !state.enabled {
                 return ContractError::AssetTypeDisabled {
@@ -105,16 +107,17 @@ pub fn onboard_asset(
     };
 
     // verify asset (scope) exists
-    let scope =
-        match ProvenanceQuerier::new(&deps.querier).get_scope(&asset_identifiers.scope_address) {
-            Err(..) => {
-                return ContractError::AssetNotFound {
-                    scope_address: asset_identifiers.scope_address,
-                }
-                .to_err()
+    let scope = match repository.deps.use_deps(|d| {
+        ProvenanceQuerier::new(&d.querier).get_scope(&asset_identifiers.scope_address)
+    }) {
+        Err(..) => {
+            return ContractError::AssetNotFound {
+                scope_address: asset_identifiers.scope_address,
             }
-            Ok(scope) => scope,
-        };
+            .to_err()
+        }
+        Ok(scope) => scope,
+    };
 
     // verify that the sender of this message is a scope owner
     let sender = info.sender.clone();
@@ -126,7 +129,7 @@ pub fn onboard_asset(
     }
 
     // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if asset_meta_repository.has_asset(&asset_identifiers.scope_address)? {
+    if repository.has_asset(&asset_identifiers.scope_address)? {
         return ContractError::AssetAlreadyOnboarded {
             scope_address: asset_identifiers.scope_address,
         }
@@ -134,7 +137,7 @@ pub fn onboard_asset(
     }
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
-    asset_meta_repository.add_asset(
+    repository.add_asset(
         &msg.identifier,
         &msg.asset_type,
         &msg.validator_address,
@@ -152,7 +155,7 @@ pub fn onboard_asset(
             )
             .set_validator(msg.validator_address),
         )
-        .add_messages(asset_meta_repository.messages.get()))
+        .add_messages(repository.messages.get()))
 }
 
 #[cfg(test)]

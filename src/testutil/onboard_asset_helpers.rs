@@ -1,13 +1,10 @@
 use crate::core::asset::AssetScopeAttribute;
-use crate::core::error::ContractError;
 use crate::core::msg::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::testutil::test_utilities::MockOwnedDeps;
 use crate::util::aliases::ContractResponse;
-use crate::util::asset_meta_repository::AssetMetaRepository;
-use crate::util::message_gathering_service::MessageGatheringService;
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo, Response};
+use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo};
 use provwasm_std::ProvenanceMsg;
 use serde_json_wasm::to_string;
 
@@ -74,41 +71,40 @@ impl Default for TestOnboardAsset {
 
 pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> ContractResponse {
     let response = onboard_asset(deps.as_mut(), msg.env, msg.info, msg.onboard_asset);
-    let messages = match response {
-        Ok(res) => res.messages,
+    match response {
+        Ok(ref res) => res.messages.iter().for_each(|m| match &m.msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    provwasm_std::ProvenanceMsgParams::Attribute(
+                        provwasm_std::AttributeMsgParams::AddAttribute {
+                            address,
+                            name,
+                            value,
+                            ..
+                        },
+                    ),
+                ..
+            }) => {
+                // inject bound name into provmock querier
+                let deserialized: AssetScopeAttribute = from_binary(&value).unwrap();
+                deps.querier.with_attributes(
+                    address.as_str(),
+                    &[(
+                        name.as_str(),
+                        to_string(&deserialized).unwrap().as_str(),
+                        "json",
+                    )],
+                )
+            }
+            _ => panic!(
+                "Unexpected message type from onboard_asset call in test_onboard_asset: {:?}",
+                m
+            ),
+        }),
         Err(e) => panic!(
             "expected onboard_asset call to succeed, but got error: {:?}",
             e
         ),
     };
-    messages.iter().for_each(|m| match m.msg {
-        CosmosMsg::Custom(ProvenanceMsg {
-            params:
-                provwasm_std::ProvenanceMsgParams::Attribute(
-                    provwasm_std::AttributeMsgParams::AddAttribute {
-                        address,
-                        name,
-                        value,
-                        ..
-                    },
-                ),
-            ..
-        }) => {
-            // inject bound name into provmock querier
-            let deserialized: AssetScopeAttribute = from_binary(&value).unwrap();
-            deps.querier.with_attributes(
-                address.as_str(),
-                &[(
-                    name.as_str(),
-                    to_string(&deserialized).unwrap().as_str(),
-                    "json",
-                )],
-            )
-        }
-        _ => panic!(
-            "Unexpected message type from onboard_asset call in test_onboard_asset: {:?}",
-            m
-        ),
-    });
     response
 }

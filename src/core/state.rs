@@ -1,6 +1,9 @@
 use crate::{
     core::msg::InitMsg,
-    util::{aliases::ContractResult, traits::ResultExtensions},
+    util::{
+        aliases::ContractResult,
+        traits::{OptionExtensions, ResultExtensions},
+    },
 };
 use cosmwasm_std::{Addr, Storage};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
@@ -88,7 +91,7 @@ pub fn insert_asset_definition(
         // At this point, we know there is no old data available, so we can safely call the replace function and
         // specify None for the old_data param.
         state
-            .replace(storage, key, Some(definition), None)
+            .replace(storage, key, definition.to_some(), None)
             .map_err(ContractError::Std)
     }
 }
@@ -110,7 +113,7 @@ pub fn replace_asset_definition(
         // The documentation for the save() function in IndexedMap recommends calling replace() directly after
         // loading the data, because it's needed for an update and happens internally anyway
         state
-            .replace(storage, key, Some(definition), Some(&existing_def))
+            .replace(storage, key, definition.to_some(), Some(&existing_def))
             .map_err(ContractError::Std)
     } else {
         ContractError::RecordNotFound {

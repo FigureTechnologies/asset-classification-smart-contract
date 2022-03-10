@@ -35,12 +35,12 @@ impl ValidateAssetV1 {
 }
 
 pub fn validate_asset(
-    mut deps: DepsMutC,
+    deps: DepsMutC,
     _env: Env,
     info: MessageInfo,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
-    let asset_meta_repository = AssetMetaRepository::new(&mut deps);
+    let asset_meta_repository = AssetMetaRepository::new(deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
     let meta = asset_meta_repository.get_asset(&asset_identifiers.scope_address)?;
@@ -96,7 +96,6 @@ mod tests {
             },
             test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
         },
-        util::message_gathering_service::MessageGatheringService,
     };
 
     use super::{validate_asset, ValidateAssetV1};

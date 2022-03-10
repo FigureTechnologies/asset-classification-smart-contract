@@ -28,6 +28,7 @@ use super::{
 pub trait AssetMetaRepository {
     fn has_asset<S1: Into<String>>(&self, deps: &DepsC, scope_address: S1) -> ContractResult<bool>;
 
+    #[allow(clippy::too_many_arguments)]
     fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         &mut self,
         _deps: &DepsC,

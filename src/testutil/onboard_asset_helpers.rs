@@ -2,10 +2,7 @@ use crate::core::asset::AssetScopeAttribute;
 use crate::core::error::ContractError;
 use crate::core::msg::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
-use crate::testutil::test_utilities::{
-    MockOwnedDeps, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_DENOM,
-    DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
-};
+use crate::testutil::test_utilities::MockOwnedDeps;
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::message_gathering_service::MessageGatheringService;
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -13,7 +10,11 @@ use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo, Response};
 use provwasm_std::ProvenanceMsg;
 use serde_json_wasm::to_string;
 
-use super::test_utilities::{DEFAULT_ONBOARDING_COST, DEFAULT_SENDER_ADDRESS};
+use super::test_constants::{
+    DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+    DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+    DEFAULT_VALIDATOR_ADDRESS,
+};
 
 pub struct TestOnboardAsset {
     pub env: Env,

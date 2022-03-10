@@ -3,7 +3,7 @@ use provwasm_std::{NameMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
 use crate::util::functions::generate_asset_attribute_name;
 
-use super::test_utilities::DEFAULT_CONTRACT_BASE_NAME;
+use super::test_constants::DEFAULT_CONTRACT_BASE_NAME;
 
 // Tests that the DEFAULT_CONTRACT_BASE_NAME message was bound in a message contained in the slice
 pub fn test_for_default_base_name(messages: &[SubMsg<ProvenanceMsg>]) {

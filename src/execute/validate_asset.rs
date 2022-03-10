@@ -97,10 +97,10 @@ mod tests {
         core::error::ContractError,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
-            test_utilities::{
-                mock_info_with_nhash, setup_test_suite, InstArgs, DEFAULT_ONBOARDING_COST,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            test_constants::{
+                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
+            test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
         },
         util::message_gathering_service::MessageGatheringService,
     };

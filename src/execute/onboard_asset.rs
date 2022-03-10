@@ -172,11 +172,14 @@ mod tests {
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
-            test_utilities::{
-                empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
-                InstArgs, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+            test_constants::{
+                DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
                 DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
                 DEFAULT_VALIDATOR_ADDRESS,
+            },
+            test_utilities::{
+                empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
+                InstArgs,
             },
         },
         util::{

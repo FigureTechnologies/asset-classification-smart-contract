@@ -110,10 +110,14 @@ mod tests {
             asset::AssetScopeAttribute, error::ContractError, msg::AssetIdentifier,
             state::load_asset_definition_by_type,
         },
-        testutil::test_utilities::{
-            mock_scope, mock_scope_attribute, test_instantiate_success, InstArgs,
-            DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS,
-            DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+        testutil::{
+            test_constants::{
+                DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
+            test_utilities::{
+                mock_scope, mock_scope_attribute, test_instantiate_success, InstArgs,
+            },
         },
         util::scope_address_utils::asset_uuid_to_scope_address,
     };

@@ -204,10 +204,13 @@ mod tests {
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
+            test_constants::{
+                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
             test_utilities::{
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
-                InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                InstArgs,
             },
         },
         util::{

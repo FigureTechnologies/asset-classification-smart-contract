@@ -68,10 +68,12 @@ mod tests {
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
-    use crate::testutil::test_utilities::{
-        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
+    use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_SPEC_ADDRESS,
         DEFAULT_SENDER_ADDRESS,
+    };
+    use crate::testutil::test_utilities::{
+        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};

@@ -84,9 +84,12 @@ mod tests {
     use crate::{
         contract::execute,
         core::{error::ContractError, msg::ExecuteMsg, state::load_asset_definition_by_type},
-        testutil::test_utilities::{
-            empty_mock_info, mock_info_with_nhash, single_attribute_for_key,
-            test_instantiate_success, InstArgs, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
+        testutil::{
+            test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE},
+            test_utilities::{
+                empty_mock_info, mock_info_with_nhash, single_attribute_for_key,
+                test_instantiate_success, InstArgs,
+            },
         },
         util::{
             aliases::{DepsC, DepsMutC},

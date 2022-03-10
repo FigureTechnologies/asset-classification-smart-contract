@@ -85,9 +85,11 @@ mod tests {
     use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{

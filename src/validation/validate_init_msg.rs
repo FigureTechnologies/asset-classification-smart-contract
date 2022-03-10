@@ -200,7 +200,6 @@ pub mod tests {
         validate_validator_internal,
     };
     use cosmwasm_std::{Decimal, Uint128};
-    use provwasm_mocks::mock_dependencies;
 
     #[test]
     fn test_valid_init_msg_no_definitions() {
@@ -460,7 +459,6 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_multiple_fee_destinations() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
             "good-address",
             Uint128::new(150000),

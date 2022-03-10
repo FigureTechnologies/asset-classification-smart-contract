@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::util::aliases::DepsMutC;
 
-/// Holds a mutable reference to a DepsMutC, which allows it to be passed to sub-objects
+/// Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects
 /// relatively easily and then freed when required.
 pub struct DepsContainer<'a> {
     deps_cell: RefCell<DepsMutC<'a>>,

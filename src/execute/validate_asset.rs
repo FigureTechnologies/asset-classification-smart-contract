@@ -40,10 +40,10 @@ pub fn validate_asset(
     info: MessageInfo,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
-    let asset_meta_repository = AssetMetaRepository::new(deps);
+    let repository = AssetMetaRepository::new(deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
-    let meta = asset_meta_repository.get_asset(&asset_identifiers.scope_address)?;
+    let meta = repository.get_asset(&asset_identifiers.scope_address)?;
 
     // verify sender is requested validator
     if info.sender != meta.validator_address {
@@ -62,11 +62,7 @@ pub fn validate_asset(
         .to_err();
     }
 
-    asset_meta_repository.validate_asset(
-        &asset_identifiers.scope_address,
-        msg.success,
-        msg.message,
-    )?;
+    repository.validate_asset(&asset_identifiers.scope_address, msg.success, msg.message)?;
 
     // construct/emit validation attribute
     Ok(Response::new()
@@ -78,7 +74,7 @@ pub fn validate_asset(
             )
             .set_validator(info.sender),
         )
-        .add_messages(asset_meta_repository.messages.get()))
+        .add_messages(repository.messages.get()))
 }
 
 #[cfg(test)]

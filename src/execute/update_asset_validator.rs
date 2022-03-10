@@ -87,7 +87,7 @@ mod tests {
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_ADMIN_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
@@ -107,7 +107,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::UpdateAssetValidator {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: validator.clone(),
@@ -272,7 +272,7 @@ mod tests {
     }
 
     // This builds off of the existing default asset validator in test_utilities and adds/tweaks
-    // details
+    // details.  The fee addresses are randomly-generated bech32 provenance testnet addresses
     fn get_valid_update_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
             DEFAULT_VALIDATOR_ADDRESS,
@@ -280,8 +280,14 @@ mod tests {
             NHASH,
             Decimal::percent(100),
             vec![
-                FeeDestination::new("first", Decimal::percent(50)),
-                FeeDestination::new("second", Decimal::percent(50)),
+                FeeDestination::new(
+                    "tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx",
+                    Decimal::percent(50),
+                ),
+                FeeDestination::new(
+                    "tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8",
+                    Decimal::percent(50),
+                ),
             ],
         );
         validate_validator(&validator).expect("expected the validator to pass validation");

@@ -103,7 +103,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::AddAssetDefinition {
                 asset_definition: asset_definition.clone(),
             },
@@ -138,10 +138,14 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = get_valid_add_asset_definition();
-        let messages =
-            add_asset_definition(deps.as_mut(), mock_env(), empty_mock_info(), msg.clone())
-                .expect("expected the add asset definition function to return properly")
-                .messages;
+        let messages = add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            msg.clone(),
+        )
+        .expect("expected the add asset definition function to return properly")
+        .messages;
         test_message_is_name_bind(&messages, &msg.asset_definition.asset_type);
         test_asset_definition_was_added(&msg.asset_definition, &deps.as_ref());
     }
@@ -153,7 +157,13 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinition::new("", DEFAULT_SCOPE_SPEC_ADDRESS, vec![]).into(),
         };
-        let error = execute(deps.as_mut(), mock_env(), empty_mock_info(), msg).unwrap_err();
+        let error = execute(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            msg,
+        )
+        .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
             "expected an invalid asset definition to cause an InvalidMessageFields error",
@@ -203,7 +213,7 @@ mod tests {
             add_asset_definition(
                 deps.as_mut(),
                 mock_env(),
-                empty_mock_info(),
+                empty_mock_info(DEFAULT_ADMIN_ADDRESS),
                 get_valid_add_asset_definition(),
             )
         };

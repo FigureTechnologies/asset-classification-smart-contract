@@ -131,8 +131,8 @@ pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<Prov
     test_instantiate(deps, args).expect("expected instantiation to succeed")
 }
 
-pub fn empty_mock_info() -> MessageInfo {
-    mock_info(DEFAULT_ADMIN_ADDRESS, &[])
+pub fn empty_mock_info<S: Into<String>>(sender: S) -> MessageInfo {
+    mock_info(&sender.into(), &[])
 }
 
 pub fn mock_default_scope(deps: &mut MockOwnedDeps) {
@@ -152,15 +152,18 @@ pub fn mock_default_scope_attribute(
     mock_scope_attribute(deps, attribute, scope_address);
 }
 
-pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
-    mock_info(DEFAULT_ADMIN_ADDRESS, funds)
+pub fn mock_info_with_funds<S: Into<String>>(sender: S, funds: &[Coin]) -> MessageInfo {
+    mock_info(&sender.into(), funds)
 }
 
-pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
-    mock_info_with_funds(&[Coin {
-        denom: DEFAULT_ONBOARDING_DENOM.into(),
-        amount: Uint128::from(amount),
-    }])
+pub fn mock_info_with_nhash<S: Into<String>>(sender: S, amount: u128) -> MessageInfo {
+    mock_info_with_funds(
+        sender,
+        &[Coin {
+            denom: DEFAULT_ONBOARDING_DENOM.into(),
+            amount: Uint128::from(amount),
+        }],
+    )
 }
 
 pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) -> &'a str {

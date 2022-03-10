@@ -118,11 +118,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
 
     // verify that the sender of this message is a scope owner
     let sender = info.sender.clone();
-    if !scope
-        .owners
-        .into_iter()
-        .any(|owner| owner.address == sender)
-    {
+    if !scope.owners.iter().any(|owner| owner.address == sender) {
         return ContractError::Unauthorized {
             explanation: "sender address does not own the scope".to_string(),
         }
@@ -178,8 +174,9 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_utilities::{
                 empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
-                InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                InstArgs, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+                DEFAULT_VALIDATOR_ADDRESS,
             },
         },
         util::{
@@ -201,7 +198,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(1000),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -228,14 +225,14 @@ mod tests {
         let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
         toggle_asset_definition(
             deps.as_mut(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(1000),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -258,7 +255,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(1000),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -291,7 +288,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_funds(&[]),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -320,16 +317,19 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_funds(&[
-                Coin {
-                    denom: "nhash".into(),
-                    amount: Uint128::from(123u128),
-                },
-                Coin {
-                    denom: "otherdenom".into(),
-                    amount: Uint128::from(2432u128),
-                },
-            ]),
+            mock_info_with_funds(
+                DEFAULT_SENDER_ADDRESS,
+                &[
+                    Coin {
+                        denom: "nhash".into(),
+                        amount: Uint128::from(123u128),
+                    },
+                    Coin {
+                        denom: "otherdenom".into(),
+                        amount: Uint128::from(2432u128),
+                    },
+                ],
+            ),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -358,10 +358,13 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_funds(&[Coin {
-                denom: "otherdenom".into(),
-                amount: Uint128::from(2432u128),
-            }]),
+            mock_info_with_funds(
+                DEFAULT_SENDER_ADDRESS,
+                &[Coin {
+                    denom: "otherdenom".into(),
+                    amount: Uint128::from(2432u128),
+                }],
+            ),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -390,7 +393,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(DEFAULT_ONBOARDING_COST + 1),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -412,7 +415,10 @@ mod tests {
                     "the invalid funds message should reflect that improper funds were sent"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -426,7 +432,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
@@ -444,7 +450,10 @@ mod tests {
                     "the asset not found message should reflect that the asset uuid was not found"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -462,7 +471,7 @@ mod tests {
         let err = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -480,7 +489,10 @@ mod tests {
                     "the asset already onboarded message should reflect that the asset uuid was already onboarded"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -492,7 +504,7 @@ mod tests {
         let result = onboard_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),

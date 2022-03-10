@@ -22,7 +22,7 @@ mod tests {
     use crate::{
         core::state::State,
         testutil::test_utilities::{
-            test_instantiate_success, InstArgs, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ADMIN_ADDRESS,
+            test_instantiate_success, InstArgs, DEFAULT_ADMIN_ADDRESS, DEFAULT_CONTRACT_BASE_NAME,
         },
     };
 

@@ -86,7 +86,7 @@ mod tests {
         core::{error::ContractError, msg::ExecuteMsg, state::load_asset_definition_by_type},
         testutil::test_utilities::{
             empty_mock_info, mock_info_with_nhash, single_attribute_for_key,
-            test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
+            test_instantiate_success, InstArgs, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
         },
         util::{
             aliases::{DepsC, DepsMutC},
@@ -104,7 +104,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::ToggleAssetDefinition {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 expected_result: false,
@@ -165,7 +165,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::ToggleAssetDefinition {
                 asset_type: String::new(),
                 expected_result: false,
@@ -200,7 +200,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = toggle_asset_definition(
             deps.as_mut(),
-            mock_info_with_nhash(150),
+            mock_info_with_nhash(DEFAULT_ADMIN_ADDRESS, 150),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .unwrap_err();
@@ -216,7 +216,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = toggle_asset_definition(
             deps.as_mut(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ToggleAssetDefinitionV1::new("no-u", false),
         )
         .unwrap_err();
@@ -233,7 +233,7 @@ mod tests {
         // The asset type should be enabled by default, so trying to toggle it to enabled again should fail
         let enable_error = toggle_asset_definition(
             deps.as_mut(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, true),
         )
         .unwrap_err();
@@ -251,7 +251,7 @@ mod tests {
         toggle_default_asset_definition(deps.as_mut(), false);
         let disable_error = toggle_asset_definition(
             deps.as_mut(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .unwrap_err();
@@ -279,7 +279,7 @@ mod tests {
     fn toggle_default_asset_definition(deps: DepsMutC, expected_result: bool) {
         toggle_asset_definition(
             deps,
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, expected_result),
         )
         .expect("toggle should execute without fail");

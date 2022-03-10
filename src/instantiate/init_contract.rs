@@ -61,8 +61,8 @@ mod tests {
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_utilities::{
         get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_COST,
-        DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;

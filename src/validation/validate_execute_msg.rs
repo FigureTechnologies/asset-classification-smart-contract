@@ -2,7 +2,7 @@ use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::util::aliases::ContractResult;
-use crate::util::traits::ResultExtensions;
+use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_validator_with_provided_errors,
 };
@@ -116,7 +116,7 @@ fn validate_asset_validator_msg(
     validator: &ValidatorDetail,
 ) -> ContractResult<()> {
     let errors = if asset_type.is_empty() {
-        Some(vec!["asset_type must not be empty".to_string()])
+        vec!["asset_type must not be empty".to_string()].to_some()
     } else {
         None
     };

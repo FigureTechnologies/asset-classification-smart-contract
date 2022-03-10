@@ -20,7 +20,7 @@ use super::{
     aliases::{ContractResult, DepsMutC},
     deps_container::DepsContainer,
     provenance_util::get_add_attribute_to_scope_msg,
-    traits::ResultExtensions,
+    traits::{OptionExtensions, ResultExtensions},
     vec_container::VecContainer,
 };
 
@@ -66,7 +66,7 @@ impl<'a> AssetMetaRepository<'a> {
             asset_type,
             requestor_address,
             validator_address,
-            Some(onboarding_status),
+            onboarding_status.to_some(),
             validator_detail,
         )?;
 
@@ -358,10 +358,13 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaRepository::new(deps.as_mut());
 
-        let result = repository.try_get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .try_get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("asset result should return without error")
+            .expect("encapsulated asset should be present in the Option");
 
         assert_eq!(
-            Some(get_default_asset_scope_attribute()),
+            get_default_asset_scope_attribute(),
             result,
             "try_get_asset should return attribute for an onboarded asset"
         );
@@ -462,7 +465,7 @@ mod tests {
             }) => {
                 let mut value = get_default_asset_scope_attribute();
                 value.latest_validator_detail = None;
-                value.latest_validation_result = Some(AssetValidationResult {
+                value.latest_validation_result = AssetValidationResult {
                     message: message
                         .unwrap_or_else(|| match result {
                             true => "validation successful",
@@ -470,7 +473,8 @@ mod tests {
                         })
                         .to_string(),
                     success: result,
-                });
+                }
+                .to_some();
                 assert_eq!(
                     AttributeMsgParams::AddAttribute {
                         address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),

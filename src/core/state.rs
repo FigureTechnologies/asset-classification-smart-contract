@@ -113,7 +113,12 @@ pub fn replace_asset_definition(
         // The documentation for the save() function in IndexedMap recommends calling replace() directly after
         // loading the data, because it's needed for an update and happens internally anyway
         state
-            .replace(storage, key, definition.to_some(), Some(&existing_def))
+            .replace(
+                storage,
+                key,
+                definition.to_some(),
+                (&existing_def).to_some(),
+            )
             .map_err(ContractError::Std)
     } else {
         ContractError::RecordNotFound {

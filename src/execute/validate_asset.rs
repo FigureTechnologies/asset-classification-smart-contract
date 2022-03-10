@@ -92,6 +92,7 @@ mod tests {
             },
             test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
         },
+        util::traits::OptionExtensions,
     };
 
     use super::{validate_asset, ValidateAssetV1};
@@ -195,7 +196,7 @@ mod tests {
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
-                message: Some("Your data sucks".to_string()),
+                message: "Your data sucks".to_string().to_some(),
             },
         )
         .unwrap();

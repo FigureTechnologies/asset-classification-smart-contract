@@ -14,11 +14,7 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
             asset_type,
             validator_address,
         } => validate_onboard_asset(identifier, asset_type, validator_address),
-        ExecuteMsg::ValidateAsset {
-            asset_uuid,
-            scope_address,
-            ..
-        } => validate_validate_asset(asset_uuid, scope_address),
+        ExecuteMsg::ValidateAsset { identifier, .. } => validate_validate_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.into())
         }
@@ -74,16 +70,19 @@ fn validate_onboard_asset(
     }
 }
 
-fn validate_validate_asset(
-    asset_uuid: &Option<String>,
-    scope_address: &Option<String>,
-) -> ContractResult<()> {
+fn validate_validate_asset(identifier: &AssetIdentifier) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    if asset_uuid.is_none() && scope_address.is_none() {
-        invalid_fields
-            .push("asset_uuid: must not be blank if scope_address not provided".to_string());
-        invalid_fields
-            .push("scope_address: must not be blank if asset_uuid not provided".to_string());
+    match identifier {
+        AssetIdentifier::AssetUuid { asset_uuid } => {
+            if asset_uuid.is_empty() {
+                invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
+            }
+        }
+        AssetIdentifier::ScopeAddress { scope_address } => {
+            if scope_address.is_empty() {
+                invalid_fields.push("identifier:scope_address: must not be blank".to_string());
+            }
+        }
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -205,34 +204,61 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_validate_asset_success() {
-        validate_validate_asset(&Some("asset_uuid".to_string()), &None)
-            .expect("expected the validation to pass when all fields are correctly supplied");
+    fn test_validate_validate_asset_success_for_asset_uuid() {
+        validate_validate_asset(&AssetIdentifier::asset_uuid(
+            "4b9601f4-a0ad-11ec-b214-2f7b0096dea6",
+        ))
+        .expect("expected the validation to pass when all fields are correctly supplied");
+    }
+
+    #[test]
+    fn test_validate_validate_asset_success_for_scope_address() {
+        validate_validate_asset(&AssetIdentifier::scope_address(
+            "scope1qps4rfeu5zk3rm9r2gp36dl9r3tq6rpyqd",
+        ))
+        .expect("expected the validation to pass when all fields are correctly supplied");
     }
 
     #[test]
     fn test_validate_validate_asset_invalid_asset_uuid() {
-        let result = validate_validate_asset(&None, &None);
+        let result = validate_validate_asset(&AssetIdentifier::asset_uuid(""));
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::ValidateAsset",
                 message_type.as_str(),
-                "incorrect message type for error"
+                "incorrect message type for error",
             );
             assert_eq!(
-                2,
+                1,
                 invalid_fields.len(),
-                "expected only a single invalid field to be found"
+                "expected only a single invalid field to be found",
             );
             assert_eq!(
-                "asset_uuid: must not be blank if scope_address not provided",
+                "identifier:asset_uuid: must not be blank",
                 invalid_fields.first().unwrap().as_str(),
-                "expected the appropriate error message to be returned"
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_validate_asset_invalid_scope_address() {
+        let result = validate_validate_asset(&AssetIdentifier::scope_address(""));
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::ValidateAsset",
+                message_type.as_str(),
+                "incorrect message type for error",
             );
             assert_eq!(
-                "scope_address: must not be blank if asset_uuid not provided",
-                invalid_fields[1].as_str(),
-                "expected the appropriate error message to be returned"
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier:scope_address: must not be blank",
+                invalid_fields.first().unwrap().as_str(),
+                "expected the appropriate error message to be returned",
             );
         });
     }

@@ -1,17 +1,16 @@
 use crate::core::asset::AssetOnboardingStatus;
 use crate::core::error::ContractError;
-use crate::core::msg::ExecuteMsg;
+use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::message_gathering_service::MessageGatheringService;
-use crate::util::scope_address_utils::get_validate_scope_address;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
-    pub scope_address: String,
+    pub identifier: AssetIdentifier,
     pub success: bool,
     pub message: Option<String>,
 }
@@ -19,20 +18,15 @@ impl ValidateAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ValidateAssetV1> {
         match msg {
             ExecuteMsg::ValidateAsset {
-                asset_uuid,
-                scope_address,
+                identifier,
                 success,
                 message,
-            } => {
-                let scope_address = get_validate_scope_address(asset_uuid, scope_address)?;
-
-                ValidateAssetV1 {
-                    scope_address,
-                    success,
-                    message,
-                }
-                .to_ok()
+            } => ValidateAssetV1 {
+                identifier,
+                success,
+                message,
             }
+            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::ValidateAsset".to_string(),
             }
@@ -48,13 +42,14 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
     asset_meta_repository: &mut T,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
+    let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
-    let meta = asset_meta_repository.get_asset(&deps.as_ref(), msg.scope_address.clone())?;
+    let meta = asset_meta_repository.get_asset(&deps.as_ref(), &asset_identifiers.scope_address)?;
 
     // verify sender is requested validator
     if info.sender != meta.validator_address {
         return ContractError::UnathorizedAssetValidator {
-            scope_address: msg.scope_address,
+            scope_address: asset_identifiers.scope_address,
             validator_address: info.sender.into(),
             expected_validator_address: meta.validator_address.into_string(),
         }
@@ -63,14 +58,14 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
 
     if meta.onboarding_status == AssetOnboardingStatus::Approved {
         return ContractError::AssetAlreadyValidated {
-            scope_address: msg.scope_address,
+            scope_address: asset_identifiers.scope_address,
         }
         .to_err();
     }
 
     asset_meta_repository.validate_asset(
         &deps.as_ref(),
-        msg.scope_address.clone(),
+        &asset_identifiers.scope_address,
         msg.success,
         msg.message,
     )?;
@@ -80,8 +75,8 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::ValidateAsset,
-                meta.asset_type,
-                msg.scope_address,
+                &meta.asset_type,
+                &asset_identifiers.scope_address,
             )
             .set_validator(info.sender),
         )
@@ -89,12 +84,13 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::testing::mock_env;
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::error::ContractError,
+        core::{error::ContractError, msg::AssetIdentifier},
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -118,7 +114,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
             &mut repository,
             ValidateAssetV1 {
-                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: None,
             },
@@ -160,7 +156,7 @@ mod tests {
             info.clone(),
             &mut repository,
             ValidateAssetV1 {
-                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: None,
             },
@@ -208,7 +204,7 @@ mod tests {
             info.clone(),
             &mut repository,
             ValidateAssetV1 {
-                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: Some("Your data sucks".to_string()),
             },

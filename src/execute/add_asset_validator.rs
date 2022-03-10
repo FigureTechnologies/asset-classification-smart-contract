@@ -73,8 +73,8 @@ mod tests {
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_validator::{add_asset_validator, AddAssetValidatorV1};
     use crate::testutil::test_utilities::{
-        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ASSET_TYPE,
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+        single_attribute_for_key, test_instantiate_success, InstArgs, DEFAULT_ADMIN_ADDRESS,
+        DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
@@ -85,6 +85,10 @@ mod tests {
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
+
+    // Addresses must be valid bech32, so these are valid randomly-generated values for testing
+    const TEST_VALIDATOR_ADDRESS: &str = "tp1g83pm46c8wxsnlra2ytruec7nuy95ttc8yy5n3";
+    const TEST_FEE_ADDRESS: &str = "tp1jz6mk0mfxd7heqhveezd2yf8ht0m3nekm6xve6";
 
     #[test]
     fn test_valid_add_asset_validator_via_execute() {
@@ -261,11 +265,11 @@ mod tests {
 
     fn get_valid_new_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
-            "new-validator_address",
+            TEST_VALIDATOR_ADDRESS,
             Uint128::new(500000),
             NHASH,
             Decimal::percent(10),
-            vec![FeeDestination::new("fees", Decimal::percent(100))],
+            vec![FeeDestination::new(TEST_FEE_ADDRESS, Decimal::percent(100))],
         );
         validate_validator(&validator).expect("expected the new validator to pass validation");
         validator

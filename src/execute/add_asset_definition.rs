@@ -80,7 +80,8 @@ mod tests {
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_FEE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -90,8 +91,9 @@ mod tests {
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
 
-    const TEST_MOCK_LOAN_TYPE: &str = "fakeloantype";
-    const TEST_MOCK_SCOPE_SPEC_ADDRESS: &str = "fakescopespecaddress";
+    // These tests board a new asset type, so they need values other than the default to work with
+    const TEST_ASSET_TYPE: &str = "add_asset_type";
+    const TEST_SCOPE_ADDRESS: &str = "scope1qqxqfltv5zfprm9xtp8aymnt9hfqxn7mtf";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
@@ -124,7 +126,7 @@ mod tests {
             "the proper event type should be emitted",
         );
         assert_eq!(
-            TEST_MOCK_LOAN_TYPE,
+            TEST_ASSET_TYPE,
             single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "the value on the attribute should be the loan type of the added definition",
         );
@@ -232,14 +234,19 @@ mod tests {
 
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
-            TEST_MOCK_LOAN_TYPE,
-            TEST_MOCK_SCOPE_SPEC_ADDRESS,
+            TEST_ASSET_TYPE,
+            TEST_SCOPE_ADDRESS,
+            // Defining the validator to be the same as the default values is fine, because
+            // it is realistic that different asset types might use the same validators
             vec![ValidatorDetail::new(
-                "validator-address",
+                DEFAULT_VALIDATOR_ADDRESS,
                 Uint128::new(1000),
                 NHASH,
                 Decimal::percent(50),
-                vec![FeeDestination::new("fee-address", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    DEFAULT_FEE_ADDRESS,
+                    Decimal::percent(100),
+                )],
             )],
             None,
         );

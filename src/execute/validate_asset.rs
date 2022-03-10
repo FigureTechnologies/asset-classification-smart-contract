@@ -90,17 +90,17 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{testing::mock_env, Addr, MessageInfo};
+    use cosmwasm_std::testing::mock_env;
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
         core::error::ContractError,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
-            test_utilities::{
-                mock_info_with_nhash, setup_test_suite, InstArgs, DEFAULT_ONBOARDING_COST,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            test_constants::{
+                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
+            test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
         },
         util::message_gathering_service::MessageGatheringService,
     };
@@ -115,7 +115,7 @@ mod tests {
         let err = validate_asset(
             deps.as_mut(),
             mock_env(),
-            mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
+            mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
             &mut repository,
             ValidateAssetV1 {
                 scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
@@ -136,7 +136,10 @@ mod tests {
                     "the asset not found message should reflect that the asset was not found"
                 );
             }
-            _ => panic!("unexpected error when non-onboarded asset provided"),
+            _ => panic!(
+                "unexpected error when non-onboarded asset provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -147,10 +150,10 @@ mod tests {
 
         test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
 
-        let info = MessageInfo {
-            sender: Addr::unchecked("totallybogusvalidatorimposter"),
-            ..mock_info_with_nhash(DEFAULT_ONBOARDING_COST)
-        };
+        let info = mock_info_with_nhash(
+            "tp129z88fpzthllrdzktw98cck3ypd34wv77nqfyl",
+            DEFAULT_ONBOARDING_COST,
+        );
         let err = validate_asset(
             deps.as_mut(),
             mock_env(),
@@ -183,7 +186,10 @@ mod tests {
                     "the unauthorized validator message should reflect the expected validator address (from onboarding)"
                 );
             }
-            _ => panic!("unexpected error when unauthorized validator submits validation"),
+            _ => panic!(
+                "unexpected error when unauthorized validator submits validation: {:?}",
+                err
+            ),
         }
     }
 
@@ -194,10 +200,7 @@ mod tests {
         test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
         repository.drain_messages();
 
-        let info = MessageInfo {
-            sender: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS),
-            ..mock_info_with_nhash(DEFAULT_ONBOARDING_COST)
-        };
+        let info = mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST);
 
         let result = validate_asset(
             deps.as_mut(),

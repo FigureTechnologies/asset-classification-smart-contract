@@ -92,7 +92,8 @@ mod tests {
             Decimal::percent(150),
             vec![FeeDestination::new("fee", Decimal::percent(100))],
         );
-        match calculate_validator_cost_messages(&validator).unwrap_err() {
+        let error = calculate_validator_cost_messages(&validator).unwrap_err();
+        match error {
             ContractError::Std(e) => match e {
                 StdError::GenericErr { msg, .. } => {
                     assert_eq!(
@@ -102,10 +103,10 @@ mod tests {
                         );
                 }
                 _ => panic!(
-                    "unexpected cosmwasm StdError encountered when providing an invalid validator"
+                    "unexpected cosmwasm StdError encountered when providing an invalid validator: {:?}", e,
                 ),
             },
-            _ => panic!("unexpected error encountered when providing a bad validator"),
+            _ => panic!("unexpected error encountered when providing a bad validator: {:?}", error),
         }
     }
 
@@ -120,7 +121,8 @@ mod tests {
             // All fee destinations should always add up to 100% (as enforced by validation)
             vec![FeeDestination::new("fee", Decimal::percent(50))],
         );
-        match calculate_validator_cost_messages(&validator).unwrap_err() {
+        let error = calculate_validator_cost_messages(&validator).unwrap_err();
+        match error {
             ContractError::Std(e) => match e {
                 StdError::GenericErr { msg, .. } => {
                     assert_eq!(
@@ -130,10 +132,10 @@ mod tests {
                     );
                 }
                 _ => panic!(
-                    "unexpected cosmwasm StdError encountered when providing an invalid validator"
+                    "unexpected cosmwasm StdError encountered when providing an invalid validator: {:?}", e,
                 ),
             },
-            _ => panic!("unepected error encountered when providing a bad validator"),
+            _ => panic!("unepected error encountered when providing a bad validator: {:?}", error),
         }
     }
 

@@ -59,10 +59,12 @@ mod tests {
     use crate::core::state::load_asset_definition_by_type;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
+    };
     use crate::testutil::test_utilities::{
         get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST,
-        DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
@@ -129,27 +131,36 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInput::new(
             "heloc",
-            "heloc_scope_spec",
+            "scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn",
             vec![ValidatorDetail::new(
                 DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
                 DEFAULT_ONBOARDING_DENOM,
                 Decimal::percent(50),
-                vec![FeeDestination::new("first", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
+                    Decimal::percent(100),
+                )],
             )],
             None,
         );
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
-            "mortgage-scope-spec",
+            "scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3",
             vec![ValidatorDetail::new(
-                "other-address",
+                "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
                 NHASH,
                 Decimal::percent(100),
                 vec![
-                    FeeDestination::new("first", Decimal::percent(50)),
-                    FeeDestination::new("second", Decimal::percent(50)),
+                    FeeDestination::new(
+                        "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
+                        Decimal::percent(50),
+                    ),
+                    FeeDestination::new(
+                        "tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn",
+                        Decimal::percent(50),
+                    ),
                 ],
             )],
             None,
@@ -197,14 +208,15 @@ mod tests {
         let error = test_instantiate(
             deps.as_mut(),
             InstArgs {
-                info: mock_info(DEFAULT_INFO_NAME, &[coin(100, "nhash")]),
+                info: mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(100, "nhash")]),
                 ..Default::default()
             },
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "the responding error should indicate invalid funds",
+            "the responding error should indicate invalid funds, but got: {:?}",
+            error,
         );
     }
 
@@ -226,7 +238,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "the responding error should indicate that the InitMsg was badly formatted",
+            "the responding error should indicate that the InitMsg was badly formatted, but got: {:?}",
+            error,
         );
     }
 }

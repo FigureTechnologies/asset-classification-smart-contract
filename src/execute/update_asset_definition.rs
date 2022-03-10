@@ -68,9 +68,12 @@ mod tests {
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_SENDER_ADDRESS,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -88,7 +91,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::UpdateAssetDefinition {
                 asset_definition: asset_definition.clone(),
             },
@@ -123,7 +126,7 @@ mod tests {
         let msg = get_valid_update_asset_definition();
         update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg.clone(),
         )
         .expect("expected the update asset definition function to return properly");
@@ -145,13 +148,14 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg,
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "expected an invalid asset definition to cause an InvalidMessageFields error",
+            "expected an invalid asset definition to cause an InvalidMessageFields error, but got {:?}",
+            error,
         );
     }
 
@@ -161,13 +165,15 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info("not-the-admin", &[]),
+            // Send from the "sender address" which is the address of the account that does onboarding in tests
+            mock_info(DEFAULT_SENDER_ADDRESS, &[]),
             get_valid_update_asset_definition(),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized response to be returned when a different address than the admin is the sender",
+            "expected the unauthorized response to be returned when a different address than the admin is the sender, but got error: {:?}",
+            error,
         );
     }
 
@@ -177,13 +183,14 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(420, "usdf")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(420, "usdf")]),
             get_valid_update_asset_definition(),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -204,13 +211,14 @@ mod tests {
         );
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetDefinitionV1::new(missing_asset_definition),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::RecordNotFound { .. }),
-            "expected the not found response to be returned when an update is attempted for a definition that does not exist",
+            "expected the not found response to be returned when an update is attempted for a definition that does not exist, but got: {:?}",
+            error,
         );
     }
 
@@ -228,25 +236,31 @@ mod tests {
     }
 
     // This builds off of the existing default asset definition in test_utilities and adds/tweaks
-    // details
+    // details.  This uses randomly-generated bech32 provenance testnet addresses to be different than
+    // the default values
     fn get_update_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             DEFAULT_ASSET_TYPE,
             DEFAULT_SCOPE_SPEC_ADDRESS,
             vec![ValidatorDetail::new(
-                "different-validator-address",
+                "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),
                 NHASH,
                 Decimal::percent(50),
                 vec![
-                    FeeDestination::new("first", Decimal::percent(70)),
-                    FeeDestination::new("second", Decimal::percent(30)),
+                    FeeDestination::new(
+                        "tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7",
+                        Decimal::percent(70),
+                    ),
+                    FeeDestination::new(
+                        "tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52",
+                        Decimal::percent(30),
+                    ),
                 ],
             )],
             None,
         );
-        validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())
-            .expect("expected the asset definition to be valid");
+        validate_asset_definition_input(&def).expect("expected the asset definition to be valid");
         def
     }
 

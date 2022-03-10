@@ -99,7 +99,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, Std(StdError::NotFound { .. })),
-            "a not found error should be returned when the asset type is not registered",
+            "a not found error should be returned when the asset type is not registered, but got: {:?}",
+            error,
         );
     }
 
@@ -112,7 +113,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::RecordNotFound { .. }),
-            "a record not found error should be returned when the scope spec is not registered",
+            "a record not found error should be returned when the scope spec is not registered, but got: {:?}",
+            error,
         );
     }
 

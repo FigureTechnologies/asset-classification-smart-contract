@@ -85,9 +85,11 @@ mod tests {
     use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_ASSET_TYPE, DEFAULT_INFO_NAME, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
@@ -107,7 +109,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::UpdateAssetValidator {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: validator.clone(),
@@ -148,7 +150,7 @@ mod tests {
         let msg = get_valid_update_validator_msg();
         update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg.clone(),
         )
         .expect("expected the update validator function to return properly");
@@ -162,7 +164,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             ExecuteMsg::UpdateAssetValidator {
                 // Invalid because the asset type is missing
                 asset_type: String::new(),
@@ -172,7 +174,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "when an invalid asset type is provided to execute, the invalid message fields error should be returned",
+            "when an invalid asset type is provided to execute, the invalid message fields error should be returned, but got: {:?}",
+            error,
         );
     }
 
@@ -183,7 +186,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             ExecuteMsg::UpdateAssetValidator {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 validator: ValidatorDetail::new(
@@ -199,7 +202,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "when an invalid validator is provided to execute, the invalid message fields error should be returned",
+            "when an invalid validator is provided to execute, the invalid message fields error should be returned, but got: {:?}",
+            error,
         );
     }
 
@@ -215,7 +219,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized response to be returned when a different address than the admin is the sender",
+            "expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}",
+            error,
         );
     }
 
@@ -225,13 +230,14 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(93849382, "dopehash")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(93849382, "dopehash")]),
             get_valid_update_validator_msg(),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -241,7 +247,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = update_asset_validator(
             deps.as_mut(),
-            mock_info(DEFAULT_INFO_NAME, &[]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetValidatorV1::new(
                 DEFAULT_ASSET_TYPE,
                 ValidatorDetail::new(
@@ -256,7 +262,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::NotFound { .. }),
-            "the not found error should be returned when the provided update validator cannot be located in the asset definition",
+            "the not found error should be returned when the provided update validator cannot be located in the asset definition, but got: {:?}",
+            error,
         );
     }
 
@@ -272,7 +279,7 @@ mod tests {
     }
 
     // This builds off of the existing default asset validator in test_utilities and adds/tweaks
-    // details
+    // details.  The fee addresses are randomly-generated bech32 provenance testnet addresses
     fn get_valid_update_validator() -> ValidatorDetail {
         let validator = ValidatorDetail::new(
             DEFAULT_VALIDATOR_ADDRESS,
@@ -280,12 +287,17 @@ mod tests {
             NHASH,
             Decimal::percent(100),
             vec![
-                FeeDestination::new("first", Decimal::percent(50)),
-                FeeDestination::new("second", Decimal::percent(50)),
+                FeeDestination::new(
+                    "tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx",
+                    Decimal::percent(50),
+                ),
+                FeeDestination::new(
+                    "tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8",
+                    Decimal::percent(50),
+                ),
             ],
         );
-        validate_validator(&validator, &mock_dependencies(&[]).as_ref())
-            .expect("expected the validator to pass validation");
+        validate_validator(&validator).expect("expected the validator to pass validation");
         validator
     }
 

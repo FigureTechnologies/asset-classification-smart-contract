@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::util::{
     aliases::{ContractResult, DepsC},
-    functions::{generate_asset_attribute_name, validate_address},
+    functions::generate_asset_attribute_name,
+    scope_address_utils::bech32_string_to_addr,
     traits::ResultExtensions,
 };
 
@@ -152,8 +153,8 @@ impl AssetScopeAttribute {
         latest_validator_detail: ValidatorDetail,
     ) -> ContractResult<Self> {
         let identifiers = identifier.parse_identifiers()?;
-        let req_addr = validate_address(requestor_address)?;
-        let val_addr = validate_address(validator_address)?;
+        let req_addr = bech32_string_to_addr(requestor_address)?;
+        let val_addr = bech32_string_to_addr(validator_address)?;
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }

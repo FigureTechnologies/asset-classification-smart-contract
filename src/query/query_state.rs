@@ -21,8 +21,9 @@ mod tests {
 
     use crate::{
         core::state::State,
-        testutil::test_utilities::{
-            test_instantiate_success, InstArgs, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME,
+        testutil::{
+            test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_CONTRACT_BASE_NAME},
+            test_utilities::{test_instantiate_success, InstArgs},
         },
     };
 
@@ -41,7 +42,7 @@ mod tests {
             "the base contract name in the state should be the default value after default instantiation",
         );
         assert_eq!(
-            DEFAULT_INFO_NAME,
+            DEFAULT_ADMIN_ADDRESS,
             state.admin.as_str(),
             "the default info name should be tagged as the admin address after default instantiation",
         );

@@ -2,10 +2,7 @@ use crate::core::asset::AssetScopeAttribute;
 use crate::core::error::ContractError;
 use crate::core::msg::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
-use crate::testutil::test_utilities::{
-    MockOwnedDeps, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME,
-    DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
-};
+use crate::testutil::test_utilities::MockOwnedDeps;
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::message_gathering_service::MessageGatheringService;
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -13,7 +10,11 @@ use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo, Response};
 use provwasm_std::ProvenanceMsg;
 use serde_json_wasm::to_string;
 
-use super::test_utilities::DEFAULT_ONBOARDING_COST;
+use super::test_constants::{
+    DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+    DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+    DEFAULT_VALIDATOR_ADDRESS,
+};
 
 pub struct TestOnboardAsset {
     pub env: Env,
@@ -38,7 +39,7 @@ impl TestOnboardAsset {
     }
 
     pub fn default_with_coin(amount: u128, denom: &str) -> Self {
-        Self::default_full_sender(DEFAULT_INFO_NAME, amount, denom)
+        Self::default_full_sender(DEFAULT_SENDER_ADDRESS, amount, denom)
     }
 
     pub fn default_with_sender(sender: &str) -> Self {
@@ -46,18 +47,18 @@ impl TestOnboardAsset {
     }
 
     pub fn default_with_amount(amount: u128) -> Self {
-        Self::default_full_sender(DEFAULT_INFO_NAME, amount, DEFAULT_ONBOARDING_DENOM)
+        Self::default_full_sender(DEFAULT_SENDER_ADDRESS, amount, DEFAULT_ONBOARDING_DENOM)
     }
 
     pub fn default_with_denom(denom: &str) -> Self {
-        Self::default_full_sender(DEFAULT_INFO_NAME, DEFAULT_ONBOARDING_COST, denom)
+        Self::default_full_sender(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST, denom)
     }
 }
 impl Default for TestOnboardAsset {
     fn default() -> Self {
         TestOnboardAsset {
             info: mock_info(
-                DEFAULT_INFO_NAME,
+                DEFAULT_SENDER_ADDRESS,
                 &[coin(
                     DEFAULT_ONBOARDING_COST,
                     DEFAULT_ONBOARDING_DENOM.to_string(),
@@ -110,7 +111,10 @@ pub fn test_onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
                     )],
                 )
             }
-            _ => panic!("Unexpected message type from onboard_asset call in test_onboard_asset"),
+            _ => panic!(
+                "Unexpected message type from onboard_asset call in test_onboard_asset: {:?}",
+                m
+            ),
         });
     response
 }

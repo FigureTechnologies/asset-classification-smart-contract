@@ -6,6 +6,7 @@ use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
 use serde_json_wasm::to_string;
 
+use crate::core::msg::AssetDefinitionInput;
 use crate::{
     contract::instantiate,
     core::{
@@ -20,22 +21,15 @@ use crate::{
     core::asset::AssetScopeAttribute,
     util::aliases::{ContractResponse, DepsMutC},
 };
-use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
+
+use super::test_constants::{
+    DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
+    DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
+    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+};
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
-pub const DEFAULT_INFO_NAME: &str = "admin";
-// DEFAULT_ASSET_UUID is a randomly-generated uuid and the DEFAULT_SCOPE_ADDRESS was generated from it
-// They can be expected to convert to each other bidirectionally
-pub const DEFAULT_ASSET_UUID: &str = "c55cfe0e-9fed-11ec-8191-0b95c8a1239c";
-pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1qrz4elswnlk3rmypjy9etj9pywwqz6myzw";
-pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
-pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespecaddress";
-pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
-pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
-pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
-pub const DEFAULT_FEE_PERCENT: u64 = 0;
-pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
 pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -76,7 +70,7 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
         asset_uuid: DEFAULT_ASSET_UUID.to_string(),
         scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
         asset_type: DEFAULT_ASSET_TYPE.to_string(),
-        requestor_address: Addr::unchecked(DEFAULT_INFO_NAME.to_string()),
+        requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS.to_string()),
         validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS.to_string()),
         onboarding_status: AssetOnboardingStatus::Pending,
         latest_validator_detail: Some(get_default_validator_detail()),
@@ -95,7 +89,7 @@ impl Default for InstArgs {
     fn default() -> Self {
         InstArgs {
             env: mock_env(),
-            info: mock_info(DEFAULT_INFO_NAME, &[]),
+            info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
             asset_definitions: get_default_asset_definition_inputs(),
         }
@@ -124,8 +118,8 @@ pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<Prov
     test_instantiate(deps, args).expect("expected instantiation to succeed")
 }
 
-pub fn empty_mock_info() -> MessageInfo {
-    mock_info(DEFAULT_INFO_NAME, &[])
+pub fn empty_mock_info<S: Into<String>>(sender: S) -> MessageInfo {
+    mock_info(&sender.into(), &[])
 }
 
 pub fn mock_default_scope(deps: &mut MockOwnedDeps) {
@@ -133,7 +127,7 @@ pub fn mock_default_scope(deps: &mut MockOwnedDeps) {
         deps,
         DEFAULT_SCOPE_ADDRESS,
         DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_INFO_NAME,
+        DEFAULT_SENDER_ADDRESS,
     )
 }
 
@@ -145,15 +139,18 @@ pub fn mock_default_scope_attribute(
     mock_scope_attribute(deps, attribute, scope_address);
 }
 
-pub fn mock_info_with_funds(funds: &[Coin]) -> MessageInfo {
-    mock_info(DEFAULT_INFO_NAME, funds)
+pub fn mock_info_with_funds<S: Into<String>>(sender: S, funds: &[Coin]) -> MessageInfo {
+    mock_info(&sender.into(), funds)
 }
 
-pub fn mock_info_with_nhash(amount: u128) -> MessageInfo {
-    mock_info_with_funds(&[Coin {
-        denom: DEFAULT_ONBOARDING_DENOM.into(),
-        amount: Uint128::from(amount),
-    }])
+pub fn mock_info_with_nhash<S: Into<String>>(sender: S, amount: u128) -> MessageInfo {
+    mock_info_with_funds(
+        sender,
+        &[Coin {
+            denom: DEFAULT_ONBOARDING_DENOM.into(),
+            amount: Uint128::from(amount),
+        }],
+    )
 }
 
 pub fn single_attribute_for_key<'a, T>(response: &'a Response<T>, key: &'a str) -> &'a str {

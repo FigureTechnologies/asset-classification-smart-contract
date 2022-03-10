@@ -175,7 +175,8 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let def = AssetDefinition::new("heloc", "heloc-scope-spec", vec![]);
         insert_asset_definition(deps.as_mut().storage, &def).expect("insert should work correctly");
-        match insert_asset_definition(deps.as_mut().storage, &def).unwrap_err() {
+        let error = insert_asset_definition(deps.as_mut().storage, &def).unwrap_err();
+        match error {
             ContractError::RecordAlreadyExists { explanation } => {
                 assert_eq!(
                     "unique constraints violated! record exists with asset type [heloc] and scope spec address [heloc-scope-spec]",
@@ -183,14 +184,15 @@ mod tests {
                     "the proper record type should be returned in the resulting error"
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         }
         let def_with_same_scope_spec = AssetDefinition::new("mortgage", "heloc-scope-spec", vec![]);
         let scope_spec_key_violation_error =
             insert_asset_definition(deps.as_mut().storage, &def_with_same_scope_spec).unwrap_err();
         assert!(
             matches!(scope_spec_key_violation_error, ContractError::Std(_)),
-            "violating the scope spec unique key should result in an error",
+            "violating the scope spec unique key should result in an error, but got incorrect error: {:?}",
+            scope_spec_key_violation_error,
         );
         let loaded_asset_definition =
             load_asset_definition_by_type(deps.as_ref().storage, &def.asset_type)
@@ -205,14 +207,15 @@ mod tests {
     fn test_replace_asset_definition() {
         let mut deps = mock_dependencies(&[]);
         let mut def = AssetDefinition::new("heloc", "heloc-scope-spec", vec![]);
-        match replace_asset_definition(deps.as_mut().storage, &def).unwrap_err() {
+        let error = replace_asset_definition(deps.as_mut().storage, &def).unwrap_err();
+        match error {
             ContractError::RecordNotFound { explanation } => {
                 assert_eq!(
                     "no record exists to update for asset type [heloc]", explanation,
                     "the proper record type should be returned in the resulting error",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         };
         insert_asset_definition(deps.as_mut().storage, &def).expect("insert should work correctly");
         def.scope_spec_address = "new-spec-address".to_string();

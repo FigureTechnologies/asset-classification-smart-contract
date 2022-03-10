@@ -70,6 +70,11 @@ impl AttributeOnlyAssetMeta {
         Self { messages: vec![] }
     }
 }
+impl Default for AttributeOnlyAssetMeta {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl AssetMetaRepository for AttributeOnlyAssetMeta {
     fn has_asset<S1: Into<String>>(&self, deps: &DepsC, scope_address: S1) -> ContractResult<bool> {
@@ -199,10 +204,13 @@ mod tests {
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
+            test_constants::{
+                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
             test_utilities::{
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
-                InstArgs, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                InstArgs,
             },
         },
         util::{
@@ -254,7 +262,7 @@ mod tests {
                 &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
                 DEFAULT_VALIDATOR_ADDRESS,
-                DEFAULT_INFO_NAME,
+                DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
             )
@@ -268,7 +276,10 @@ mod tests {
                     "Scope address should be reflected in AssetAlreadyOnboarded error"
                 )
             }
-            _ => panic!("Received unknown error when onboarding already-onboarded asset"),
+            _ => panic!(
+                "Received unknown error when onboarding already-onboarded asset: {:?}",
+                err
+            ),
         }
     }
 
@@ -283,7 +294,7 @@ mod tests {
                 &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
                 DEFAULT_VALIDATOR_ADDRESS,
-                DEFAULT_INFO_NAME,
+                DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
             )
@@ -294,8 +305,13 @@ mod tests {
             repository.get_messages().len(),
             "add_asset should only generate one message"
         );
-        match repository.get_messages().first() {
-            Some(CosmosMsg::Custom(ProvenanceMsg {
+        let message = repository
+            .get_messages()
+            .first()
+            .expect("expected a first message to be added")
+            .to_owned();
+        match message {
+            CosmosMsg::Custom(ProvenanceMsg {
                 params:
                     ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
                         name,
@@ -304,13 +320,13 @@ mod tests {
                         ..
                     }),
                 ..
-            })) => {
+            }) => {
                 assert_eq!(
                     generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     name.to_owned(),
                     "attribute name should match what is expected"
                 );
-                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                let deserialized: AssetScopeAttribute = from_binary(&value).unwrap();
                 let expected = get_default_asset_scope_attribute();
                 assert_eq!(
                     expected, deserialized,
@@ -322,7 +338,10 @@ mod tests {
                     "generated attribute value_type should be Json"
                 );
             }
-            _ => panic!("Unexpected message type resultig from add_asset"),
+            _ => panic!(
+                "Unexpected message type resulting from add_asset: {:?}",
+                message
+            ),
         }
     }
 
@@ -343,7 +362,7 @@ mod tests {
                 ),
                 explanation
             ),
-            err => panic!(
+            _ => panic!(
                 "Unexpected error type returned from get_asset on non-existant asset {:?}",
                 err
             ),
@@ -416,7 +435,7 @@ mod tests {
                     DEFAULT_SCOPE_ADDRESS
                 )
             ),
-            err => panic!(
+            _ => panic!(
                 "Unexpected error type returned from validate_asset on non-existant asset {:?}",
                 err
             ),
@@ -466,7 +485,8 @@ mod tests {
             repository.get_messages().len(),
             "validate asset should produce 2 messages for scope update (delete/write combination)"
         );
-        match &repository.get_messages()[0] {
+        let first_message = &repository.get_messages()[0];
+        match first_message {
             CosmosMsg::Custom(ProvenanceMsg {
                 params: ProvenanceMsgParams::Attribute(msg),
                 ..
@@ -483,9 +503,13 @@ mod tests {
                     "delete attribute message should match what is expected"
                 );
             }
-            _ => panic!("Unexpected first message type for validate_asset"),
+            _ => panic!(
+                "Unexpected first message type for validate_asset: {:?}",
+                first_message,
+            ),
         }
-        match &repository.get_messages()[1] {
+        let second_message = &repository.get_messages()[1];
+        match second_message {
             CosmosMsg::Custom(ProvenanceMsg {
                 params: ProvenanceMsgParams::Attribute(msg),
                 ..
@@ -515,7 +539,10 @@ mod tests {
                     "add attribute message should match what is expected"
                 );
             }
-            _ => panic!("Unexpected second message type for validate_asset"),
+            _ => panic!(
+                "Unexpected second message type for validate_asset: ${:?}",
+                second_message
+            ),
         }
     }
 }

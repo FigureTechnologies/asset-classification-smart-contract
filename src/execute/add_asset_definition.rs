@@ -78,9 +78,12 @@ mod tests {
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_FEE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_VALIDATOR_ADDRESS,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
-        DEFAULT_INFO_NAME, DEFAULT_SCOPE_SPEC_ADDRESS,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -90,8 +93,9 @@ mod tests {
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
 
-    const TEST_MOCK_LOAN_TYPE: &str = "fakeloantype";
-    const TEST_MOCK_SCOPE_SPEC_ADDRESS: &str = "fakescopespecaddress";
+    // These tests board a new asset type, so they need values other than the default to work with
+    const TEST_ASSET_TYPE: &str = "add_asset_type";
+    const TEST_SCOPE_ADDRESS: &str = "scope1qqxqfltv5zfprm9xtp8aymnt9hfqxn7mtf";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
@@ -101,7 +105,7 @@ mod tests {
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            empty_mock_info(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::AddAssetDefinition {
                 asset_definition: asset_definition.clone(),
             },
@@ -124,7 +128,7 @@ mod tests {
             "the proper event type should be emitted",
         );
         assert_eq!(
-            TEST_MOCK_LOAN_TYPE,
+            TEST_ASSET_TYPE,
             single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "the value on the attribute should be the loan type of the added definition",
         );
@@ -136,10 +140,14 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = get_valid_add_asset_definition();
-        let messages =
-            add_asset_definition(deps.as_mut(), mock_env(), empty_mock_info(), msg.clone())
-                .expect("expected the add asset definition function to return properly")
-                .messages;
+        let messages = add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            msg.clone(),
+        )
+        .expect("expected the add asset definition function to return properly")
+        .messages;
         test_message_is_name_bind(&messages, &msg.asset_definition.asset_type);
         test_asset_definition_was_added(&msg.asset_definition, &deps.as_ref());
     }
@@ -151,10 +159,17 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinition::new("", DEFAULT_SCOPE_SPEC_ADDRESS, vec![]).into(),
         };
-        let error = execute(deps.as_mut(), mock_env(), empty_mock_info(), msg).unwrap_err();
+        let error = execute(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            msg,
+        )
+        .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "expected an invalid asset definition to cause an InvalidMessageFields error",
+            "expected an invalid asset definition to cause an InvalidMessageFields error, but got: {:?}",
+            error,
         );
     }
 
@@ -172,7 +187,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized response to be returned when a different address than the admin is the sender",
+            "expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}",
+            error,
         );
     }
 
@@ -183,13 +199,14 @@ mod tests {
         let error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_INFO_NAME, &[coin(150, "nhash")]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(150, "nhash")]),
             get_valid_add_asset_definition(),
         )
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -201,7 +218,7 @@ mod tests {
             add_asset_definition(
                 deps.as_mut(),
                 mock_env(),
-                empty_mock_info(),
+                empty_mock_info(DEFAULT_ADMIN_ADDRESS),
                 get_valid_add_asset_definition(),
             )
         };
@@ -209,7 +226,8 @@ mod tests {
         let error = add_asset().unwrap_err();
         assert!(
             matches!(error, ContractError::RecordAlreadyExists { .. }),
-            "expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type",
+            "expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type, but got: {:?}",
+            error,
         );
     }
 
@@ -232,19 +250,23 @@ mod tests {
 
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
-            TEST_MOCK_LOAN_TYPE,
-            TEST_MOCK_SCOPE_SPEC_ADDRESS,
+            TEST_ASSET_TYPE,
+            TEST_SCOPE_ADDRESS,
+            // Defining the validator to be the same as the default values is fine, because
+            // it is realistic that different asset types might use the same validators
             vec![ValidatorDetail::new(
-                "validator-address",
+                DEFAULT_VALIDATOR_ADDRESS,
                 Uint128::new(1000),
                 NHASH,
                 Decimal::percent(50),
-                vec![FeeDestination::new("fee-address", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    DEFAULT_FEE_ADDRESS,
+                    Decimal::percent(100),
+                )],
             )],
             None,
         );
-        validate_asset_definition_input(&def, &mock_dependencies(&[]).as_ref())
-            .expect("expected the asset definition to be valid");
+        validate_asset_definition_input(&def).expect("expected the asset definition to be valid");
         def
     }
 

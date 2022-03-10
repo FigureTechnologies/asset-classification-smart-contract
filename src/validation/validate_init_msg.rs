@@ -1,13 +1,14 @@
 use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetDefinitionInput, InitMsg};
-use crate::util::aliases::{ContractResult, DepsC};
+use crate::util::aliases::ContractResult;
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
+use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use std::ops::Mul;
 
-pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
+pub fn validate_init_msg(msg: &InitMsg) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if msg.base_contract_name.is_empty() {
         invalid_fields.push("base_contract_name: must not be blank".to_string());
@@ -22,7 +23,7 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     let mut asset_messages = msg
         .asset_definitions
         .iter()
-        .flat_map(|asset| validate_asset_definition_internal(&asset.into(), deps))
+        .flat_map(|asset| validate_asset_definition_internal(&asset.into()))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut asset_messages);
     if !invalid_fields.is_empty() {
@@ -36,18 +37,12 @@ pub fn validate_init_msg(msg: &InitMsg, deps: &DepsC) -> ContractResult<()> {
     }
 }
 
-pub fn validate_asset_definition_input(
-    input: &AssetDefinitionInput,
-    deps: &DepsC,
-) -> ContractResult<()> {
-    validate_asset_definition(&input.clone().into(), deps)
+pub fn validate_asset_definition_input(input: &AssetDefinitionInput) -> ContractResult<()> {
+    validate_asset_definition(&input.clone().into())
 }
 
-pub fn validate_asset_definition(
-    asset_definition: &AssetDefinition,
-    deps: &DepsC,
-) -> ContractResult<()> {
-    let invalid_fields = validate_asset_definition_internal(asset_definition, deps);
+pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> ContractResult<()> {
+    let invalid_fields = validate_asset_definition_internal(asset_definition);
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
             message_type: "AssetDefinition".to_string(),
@@ -59,16 +54,15 @@ pub fn validate_asset_definition(
     }
 }
 
-pub fn validate_validator(validator: &ValidatorDetail, deps: &DepsC) -> ContractResult<()> {
-    validate_validator_with_provided_errors(validator, deps, None)
+pub fn validate_validator(validator: &ValidatorDetail) -> ContractResult<()> {
+    validate_validator_with_provided_errors(validator, None)
 }
 
 pub fn validate_validator_with_provided_errors(
     validator: &ValidatorDetail,
-    deps: &DepsC,
     provided_errors: Option<Vec<String>>,
 ) -> ContractResult<()> {
-    let mut invalid_fields = validate_validator_internal(validator, deps);
+    let mut invalid_fields = validate_validator_internal(validator);
     if let Some(errors) = provided_errors {
         for error in errors {
             invalid_fields.push(error);
@@ -85,10 +79,7 @@ pub fn validate_validator_with_provided_errors(
     }
 }
 
-fn validate_asset_definition_internal(
-    asset_definition: &AssetDefinition,
-    deps: &DepsC,
-) -> Vec<String> {
+fn validate_asset_definition_internal(asset_definition: &AssetDefinition) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_definition.asset_type.is_empty() {
         invalid_fields.push("asset_definition:asset_type: must not be blank".to_string());
@@ -105,15 +96,15 @@ fn validate_asset_definition_internal(
     let mut validator_messages = asset_definition
         .validators
         .iter()
-        .flat_map(|valid| validate_validator_internal(valid, deps))
+        .flat_map(validate_validator_internal)
         .collect::<Vec<String>>();
     invalid_fields.append(&mut validator_messages);
     invalid_fields
 }
 
-fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec<String> {
+fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
-    if deps.api.addr_validate(&validator.address).is_err() {
+    if bech32_string_to_addr(&validator.address).is_err() {
         invalid_fields.push("validator:address: must be a valid address".to_string());
     }
     if validator.onboarding_denom.is_empty() {
@@ -158,7 +149,6 @@ fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec
             .iter()
             .map(|d| fee_total.mul(d.fee_percent))
             .sum::<Uint128>();
-        //panic!("Sum: {}", destination_sum);
         if fee_total != Uint128::zero() && destination_sum != fee_total {
             invalid_fields.push(
                 format!(
@@ -177,15 +167,15 @@ fn validate_validator_internal(validator: &ValidatorDetail, deps: &DepsC) -> Vec
     let mut fee_destination_messages = validator
         .fee_destinations
         .iter()
-        .flat_map(|destination| validate_destination_internal(destination, deps))
+        .flat_map(validate_destination_internal)
         .collect::<Vec<String>>();
     invalid_fields.append(&mut fee_destination_messages);
     invalid_fields
 }
 
-fn validate_destination_internal(destination: &FeeDestination, deps: &DepsC) -> Vec<String> {
+fn validate_destination_internal(destination: &FeeDestination) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
-    if deps.api.addr_validate(&destination.address).is_err() {
+    if bech32_string_to_addr(&destination.address).is_err() {
         invalid_fields.push("fee_destination:address: must be a valid address".to_string());
     }
     if destination.fee_percent > Decimal::percent(100) {
@@ -209,7 +199,6 @@ pub mod tests {
         validate_validator_internal,
     };
     use cosmwasm_std::{Decimal, Uint128};
-    use provwasm_mocks::mock_dependencies;
 
     #[test]
     fn test_valid_init_msg_no_definitions() {
@@ -225,13 +214,16 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
-                "heloc-scope-spec-address",
+                "scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt",
                 vec![ValidatorDetail::new(
-                    "address",
+                    "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                     Uint128::new(100),
                     NHASH,
                     Decimal::percent(100),
-                    vec![FeeDestination::new("fee", Decimal::percent(100))],
+                    vec![FeeDestination::new(
+                        "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                        Decimal::percent(100),
+                    )],
                 )],
                 None,
             )],
@@ -245,50 +237,65 @@ pub mod tests {
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
-                    "heloc-scope-spec-address",
+                    "scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt",
                     vec![ValidatorDetail::new(
-                        "address",
+                        "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(100),
                         NHASH,
                         Decimal::percent(100),
-                        vec![FeeDestination::new("fee", Decimal::percent(100))],
+                        vec![FeeDestination::new(
+                            "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                            Decimal::percent(100),
+                        )],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
                     "mortgage",
-                    "mortgage-scope-spec-address",
+                    "scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86",
                     vec![ValidatorDetail::new(
-                        "address",
+                        "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(500),
                         NHASH,
                         Decimal::percent(50),
                         vec![
-                            FeeDestination::new("mort-fees", Decimal::percent(50)),
-                            FeeDestination::new("other-fee", Decimal::percent(50)),
+                            FeeDestination::new(
+                                "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
+                                Decimal::percent(50),
+                            ),
+                            FeeDestination::new(
+                                "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
+                                Decimal::percent(50),
+                            ),
                         ],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
                     "pl",
-                    "pl-scope-spec-address",
+                    "scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084",
                     vec![
                         ValidatorDetail::new(
-                            "address",
+                            "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                             Uint128::new(0),
                             NHASH,
                             Decimal::percent(0),
                             vec![],
                         ),
                         ValidatorDetail::new(
-                            "other-validator",
+                            "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
                             Uint128::new(1000000),
                             NHASH,
                             Decimal::percent(100),
                             vec![
-                                FeeDestination::new("community", Decimal::percent(25)),
-                                FeeDestination::new("figure", Decimal::percent(75)),
+                                FeeDestination::new(
+                                    "tp1jdcwtaendn9y75jv9dqnmlm7dy8pv4kgu9fs9g",
+                                    Decimal::percent(25),
+                                ),
+                                FeeDestination::new(
+                                    "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
+                                    Decimal::percent(75),
+                                ),
                             ],
                         ),
                     ],
@@ -341,7 +348,7 @@ pub mod tests {
                 base_contract_name: "asset".to_string(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "",
-                    "scope-spec-address",
+                    "scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn",
                     vec![],
                     None,
                 )],
@@ -352,19 +359,21 @@ pub mod tests {
 
     #[test]
     fn test_valid_asset_definition() {
-        let deps = mock_dependencies(&[]);
         let definition = AssetDefinition::new(
             "heloc",
-            "heloc-scope-spec-address",
+            "scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz",
             vec![ValidatorDetail::new(
-                "address",
+                "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
                 Uint128::new(100),
                 NHASH,
                 Decimal::percent(100),
-                vec![FeeDestination::new("fee", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
+                    Decimal::percent(100),
+                )],
             )],
         );
-        let response = validate_asset_definition_internal(&definition, &deps.as_ref());
+        let response = validate_asset_definition_internal(&definition);
         assert!(
             response.is_empty(),
             "a valid asset definition should pass validation and return no error messages, but got messages: {:?}",
@@ -436,15 +445,14 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_no_fee_destinations() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
             Uint128::new(100),
             NHASH,
             Decimal::percent(0),
             vec![],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -454,15 +462,17 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_single_fee_destination() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp1z28j4v88vz3jyzz286a8627lfsclemk294essy",
             Uint128::new(1000),
             NHASH,
             Decimal::percent(50),
-            vec![FeeDestination::new("gooder-address", Decimal::percent(100))],
+            vec![FeeDestination::new(
+                "tp143p2m575fqre9rmaf9tpqwp9ux0mrzv83tdfh6",
+                Decimal::percent(100),
+            )],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -472,21 +482,35 @@ pub mod tests {
 
     #[test]
     fn test_valid_validator_with_multiple_fee_destinations() {
-        let deps = mock_dependencies(&[]);
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
             Uint128::new(150000),
             NHASH,
             Decimal::percent(50),
             vec![
-                FeeDestination::new("first", Decimal::percent(20)),
-                FeeDestination::new("second", Decimal::percent(10)),
-                FeeDestination::new("third", Decimal::percent(30)),
-                FeeDestination::new("fourth", Decimal::percent(35)),
-                FeeDestination::new("fifth", Decimal::percent(5)),
+                FeeDestination::new(
+                    "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
+                    Decimal::percent(20),
+                ),
+                FeeDestination::new(
+                    "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                    Decimal::percent(10),
+                ),
+                FeeDestination::new(
+                    "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
+                    Decimal::percent(30),
+                ),
+                FeeDestination::new(
+                    "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
+                    Decimal::percent(35),
+                ),
+                FeeDestination::new(
+                    "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
+                    Decimal::percent(5),
+                ),
             ],
         );
-        let response = validate_validator_internal(&validator, &deps.as_ref());
+        let response = validate_validator_internal(&validator);
         assert!(
             response.is_empty(),
             "a valid validator should pass validation and return no error messages, but got messages: {:?}",
@@ -657,10 +681,12 @@ pub mod tests {
 
     #[test]
     fn test_valid_destination() {
-        let deps = mock_dependencies(&[]);
-        let destination = FeeDestination::new("good-address", Decimal::percent(100));
+        let destination = FeeDestination::new(
+            "tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5",
+            Decimal::percent(100),
+        );
         assert!(
-            validate_destination_internal(&destination, &deps.as_ref()).is_empty(),
+            validate_destination_internal(&destination).is_empty(),
             "a valid fee destination should pass validation and return no error messages",
         );
     }
@@ -690,8 +716,7 @@ pub mod tests {
     }
 
     fn test_valid_init_msg(msg: &InitMsg) {
-        let deps = mock_dependencies(&[]);
-        match validate_init_msg(&msg, &deps.as_ref()) {
+        match validate_init_msg(&msg) {
             Ok(_) => (),
             Err(e) => match e {
                 ContractError::InvalidMessageFields { invalid_fields, .. } => panic!(
@@ -699,14 +724,13 @@ pub mod tests {
                     invalid_fields
                 ),
 
-                _ => panic!("unexpected contract error on failure"),
+                _ => panic!("unexpected contract error on failure: {:?}", e),
             },
         }
     }
 
     fn test_invalid_init_msg(msg: &InitMsg, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        match validate_init_msg(&msg, &deps.as_ref()) {
+        match validate_init_msg(&msg) {
             Ok(_) => panic!("expected init msg to be invalid, but passed validation"),
             Err(e) => match e {
                 ContractError::InvalidMessageFields {
@@ -725,14 +749,16 @@ pub mod tests {
                         invalid_fields,
                     );
                 }
-                _ => panic!("unexpected error type on init msg validation failure"),
+                _ => panic!(
+                    "unexpected error type on init msg validation failure: {:?}",
+                    e
+                ),
             },
         }
     }
 
     fn test_invalid_asset_definition(definition: &AssetDefinition, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_asset_definition_internal(&definition, &deps.as_ref());
+        let results = validate_asset_definition_internal(&definition);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -742,8 +768,7 @@ pub mod tests {
     }
 
     fn test_invalid_validator(validator: &ValidatorDetail, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_validator_internal(&validator, &deps.as_ref());
+        let results = validate_validator_internal(&validator);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",
@@ -753,8 +778,7 @@ pub mod tests {
     }
 
     fn test_invalid_destination(destination: &FeeDestination, expected_message: &str) {
-        let deps = mock_dependencies(&[]);
-        let results = validate_destination_internal(&destination, &deps.as_ref());
+        let results = validate_destination_internal(&destination);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",

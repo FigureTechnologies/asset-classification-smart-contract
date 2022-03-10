@@ -279,7 +279,7 @@ mod tests {
                     message_type,
                     invalid_fields,
                 } => test_func(message_type, invalid_fields),
-                _ => panic!("unexpected error type encountered"),
+                _ => panic!("unexpected error type encountered: {:?}", e),
             },
         }
     }

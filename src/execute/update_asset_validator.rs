@@ -174,7 +174,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "when an invalid asset type is provided to execute, the invalid message fields error should be returned",
+            "when an invalid asset type is provided to execute, the invalid message fields error should be returned, but got: {:?}",
+            error,
         );
     }
 
@@ -201,7 +202,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "when an invalid validator is provided to execute, the invalid message fields error should be returned",
+            "when an invalid validator is provided to execute, the invalid message fields error should be returned, but got: {:?}",
+            error,
         );
     }
 
@@ -217,7 +219,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized response to be returned when a different address than the admin is the sender",
+            "expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}",
+            error,
         );
     }
 
@@ -233,7 +236,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -258,7 +262,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::NotFound { .. }),
-            "the not found error should be returned when the provided update validator cannot be located in the asset definition",
+            "the not found error should be returned when the provided update validator cannot be located in the asset definition, but got: {:?}",
+            error,
         );
     }
 

@@ -313,14 +313,16 @@ mod tests {
         let error = bech32_string_to_addr("not an address").unwrap_err();
         assert!(
             matches!(error, ContractError::Bech32Error(_)),
-            "the underlying bech32 library should provide an error for an invalid address",
+            "the underlying bech32 library should provide an error for an invalid address, but got error: {:?}",
+            error,
         );
     }
 
     #[test]
     fn test_invalid_bech32_to_addr_unsupported_hrp() {
         let bc_address = "bc1q35a3dc2e5lj237ns39q5pd7t8wxm2ah7rdvx5d";
-        match bech32_string_to_addr(bc_address).unwrap_err() {
+        let error = bech32_string_to_addr(bc_address).unwrap_err();
+        match error {
             ContractError::InvalidAddress {
                 address,
                 explanation,
@@ -335,7 +337,7 @@ mod tests {
                     "expected the explanation to include the invalid hrp",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         }
     }
 
@@ -362,7 +364,7 @@ mod tests {
                     "Asset identifier mismatch error should contain the provided scope_address"
                 );
             }
-            _ => panic!("Unexpected error for asset identifier mismatch"),
+            _ => panic!("Unexpected error for asset identifier mismatch: {:?}", err),
         }
     }
 
@@ -372,7 +374,7 @@ mod tests {
 
         match err {
             ContractError::AssetIdentifierNotSupplied => {}
-            _ => panic!("Unexpected error for asset identifier mismatch"),
+            _ => panic!("Unexpected error for asset identifier mismatch: {:?}", err),
         }
     }
 

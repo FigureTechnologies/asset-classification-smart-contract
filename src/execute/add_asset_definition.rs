@@ -168,7 +168,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "expected an invalid asset definition to cause an InvalidMessageFields error",
+            "expected an invalid asset definition to cause an InvalidMessageFields error, but got: {:?}",
+            error,
         );
     }
 
@@ -186,7 +187,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized response to be returned when a different address than the admin is the sender",
+            "expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}",
+            error,
         );
     }
 
@@ -203,7 +205,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -223,7 +226,8 @@ mod tests {
         let error = add_asset().unwrap_err();
         assert!(
             matches!(error, ContractError::RecordAlreadyExists { .. }),
-            "expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type",
+            "expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type, but got: {:?}",
+            error,
         );
     }
 

@@ -111,7 +111,10 @@ pub fn test_onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
                     )],
                 )
             }
-            _ => panic!("Unexpected message type from onboard_asset call in test_onboard_asset"),
+            _ => panic!(
+                "Unexpected message type from onboard_asset call in test_onboard_asset: {:?}",
+                m
+            ),
         });
     response
 }

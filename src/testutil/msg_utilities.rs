@@ -62,11 +62,17 @@ fn test_message_is_name_bind_with_base_name(
                         // panic doesn't fire
                         return;
                     }
-                    _ => panic!("unexpected name module message type was emitted"),
+                    _ => panic!(
+                        "unexpected name module message type was emitted: {:?}",
+                        param
+                    ),
                 },
-                _ => panic!("unexpected provenance message type was emitted"),
+                _ => panic!(
+                    "unexpected provenance message type was emitted: {:?}",
+                    &msg.params
+                ),
             },
-            _ => panic!("unexpected message type was emitted"),
+            _ => panic!("unexpected message type was emitted: {:?}", &message.msg),
         }
     }
     panic!(

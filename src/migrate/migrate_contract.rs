@@ -111,7 +111,8 @@ mod tests {
             },
         )
         .unwrap();
-        match migrate_contract(deps.as_mut()).unwrap_err() {
+        let error = migrate_contract(deps.as_mut()).unwrap_err();
+        match error {
             ContractError::InvalidContractName {
                 current_contract,
                 migration_contract,
@@ -127,7 +128,7 @@ mod tests {
                     "the migration contract should be the env contract name",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         };
     }
 
@@ -142,7 +143,8 @@ mod tests {
             },
         )
         .unwrap();
-        match migrate_contract(deps.as_mut()).unwrap_err() {
+        let error = migrate_contract(deps.as_mut()).unwrap_err();
+        match error {
             ContractError::InvalidContractVersion {
                 current_version,
                 migration_version,
@@ -158,7 +160,7 @@ mod tests {
                     "the migration contract version should equate to the env value",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         };
     }
 }

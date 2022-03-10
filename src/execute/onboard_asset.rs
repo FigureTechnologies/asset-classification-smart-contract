@@ -218,7 +218,10 @@ mod tests {
                     "the unsupported asset type message should reflect the type provided"
                 )
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -246,7 +249,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(err, ContractError::AssetTypeDisabled { .. }),
-            "the request should be rejected for a disabled asset type",
+            "the request should be rejected for a disabled asset type, but got: {:?}",
+            err,
         );
     }
 
@@ -279,7 +283,10 @@ mod tests {
                 );
                 assert_eq!(DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(), validator_address, "the unsupported validator message should reflect the validator address provided");
             }
-            _ => panic!("unexpected error when unsupported validator provided"),
+            _ => panic!(
+                "unexpected error when unsupported validator provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -308,7 +315,10 @@ mod tests {
                     "the invalid funds message should reflect invalid amount of funds list"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -349,7 +359,10 @@ mod tests {
                     "the invalid funds message should reflect invalid amount of funds list"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -384,7 +397,10 @@ mod tests {
                     "the invalid funds message should reflect that improper funds were sent"
                 );
             }
-            _ => panic!("unexpected error when unsupported asset type provided"),
+            _ => panic!(
+                "unexpected error when unsupported asset type provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -523,7 +539,9 @@ mod tests {
             "Onboarding should produce only one (bind attribute) message"
         );
 
-        match result.messages.first() {
+        let msg = result.messages.first();
+
+        match msg {
             Some(SubMsg {
                 msg:
                     CosmosMsg::Custom(ProvenanceMsg {
@@ -554,7 +572,7 @@ mod tests {
                     "Onboarding status should initially be Pending"
                 );
             }
-            _ => panic!("Unexpected message from onboard_asset"),
+            _ => panic!("Unexpected message from onboard_asset: {:?}", msg),
         }
 
         assert_eq!(

@@ -215,7 +215,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "the responding error should indicate invalid funds",
+            "the responding error should indicate invalid funds, but got: {:?}",
+            error,
         );
     }
 
@@ -237,7 +238,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "the responding error should indicate that the InitMsg was badly formatted",
+            "the responding error should indicate that the InitMsg was badly formatted, but got: {:?}",
+            error,
         );
     }
 }

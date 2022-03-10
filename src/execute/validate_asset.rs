@@ -136,7 +136,10 @@ mod tests {
                     "the asset not found message should reflect that the asset was not found"
                 );
             }
-            _ => panic!("unexpected error when non-onboarded asset provided"),
+            _ => panic!(
+                "unexpected error when non-onboarded asset provided: {:?}",
+                err
+            ),
         }
     }
 
@@ -183,7 +186,10 @@ mod tests {
                     "the unauthorized validator message should reflect the expected validator address (from onboarding)"
                 );
             }
-            _ => panic!("unexpected error when unauthorized validator submits validation"),
+            _ => panic!(
+                "unexpected error when unauthorized validator submits validation: {:?}",
+                err
+            ),
         }
     }
 

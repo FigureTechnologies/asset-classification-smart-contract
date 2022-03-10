@@ -6,6 +6,7 @@ use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
 use serde_json_wasm::to_string;
 
+use crate::core::msg::AssetDefinitionInput;
 use crate::{
     contract::instantiate,
     core::{
@@ -20,7 +21,6 @@ use crate::{
     core::asset::AssetScopeAttribute,
     util::aliases::{ContractResponse, DepsMutC},
 };
-use crate::{core::msg::AssetDefinitionInput, util::constants::NHASH};
 
 use super::test_constants::{
     DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,

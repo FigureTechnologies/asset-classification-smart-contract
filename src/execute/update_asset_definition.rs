@@ -154,7 +154,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "expected an invalid asset definition to cause an InvalidMessageFields error",
+            "expected an invalid asset definition to cause an InvalidMessageFields error, but got {:?}",
+            error,
         );
     }
 
@@ -188,7 +189,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds response to be returned when funds are provided to the function",
+            "expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}",
+            error,
         );
     }
 
@@ -215,7 +217,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::RecordNotFound { .. }),
-            "expected the not found response to be returned when an update is attempted for a definition that does not exist",
+            "expected the not found response to be returned when an update is attempted for a definition that does not exist, but got: {:?}",
+            error,
         );
     }
 

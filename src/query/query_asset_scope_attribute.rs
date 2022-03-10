@@ -190,12 +190,12 @@ mod tests {
     fn test_query_failure_for_missing_scope() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        match query_asset_scope_attribute(
+        let error = query_asset_scope_attribute(
             &deps.as_ref(),
             AssetIdentifier::scope_address("missing-scope-address"),
         )
-        .unwrap_err()
-        {
+        .unwrap_err();
+        match error {
             ContractError::Std(e) => match e {
                 StdError::GenericErr { msg, .. } => {
                     assert!(
@@ -207,9 +207,9 @@ mod tests {
                         "the error should denote that the scope fetch was the failure",
                     );
                 }
-                _ => panic!("unexpected StdError encountered"),
+                _ => panic!("unexpected StdError encountered: {:?}", e),
             },
-            _ => panic!("unexpected error type encountered"),
+            _ => panic!("unexpected error type encountered: {:?}", error),
         };
     }
 
@@ -222,12 +222,12 @@ mod tests {
             "some-scope-spec-address",
             "test-owner",
         );
-        match query_asset_scope_attribute(
+        let error = query_asset_scope_attribute(
             &deps.as_ref(),
             AssetIdentifier::scope_address("fake-scope-address"),
         )
-        .unwrap_err()
-        {
+        .unwrap_err();
+        match error {
             ContractError::RecordNotFound { explanation } => {
                 assert_eq!(
                     "no asset definition existed for scope spec address some-scope-spec-address",
@@ -235,7 +235,7 @@ mod tests {
                     "incorrect record not found message encountered",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         };
     }
 
@@ -258,12 +258,12 @@ mod tests {
             DEFAULT_SCOPE_SPEC_ADDRESS,
             "test-owner",
         );
-        match query_asset_scope_attribute(
+        let error = query_asset_scope_attribute(
             &deps.as_ref(),
             AssetIdentifier::scope_address(&scope_address),
         )
-        .unwrap_err()
-        {
+        .unwrap_err();
+        match error {
             ContractError::NotFound { explanation } => {
                 assert_eq!(
                     "scope at address [scope-address] did not include an asset scope attribute",
@@ -271,7 +271,7 @@ mod tests {
                     "incorrect not found message encountered",
                 );
             }
-            _ => panic!("unexpected error encountered"),
+            _ => panic!("unexpected error encountered: {:?}", error),
         };
     }
 }

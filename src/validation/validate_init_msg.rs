@@ -149,7 +149,6 @@ fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
             .iter()
             .map(|d| fee_total.mul(d.fee_percent))
             .sum::<Uint128>();
-        //panic!("Sum: {}", destination_sum);
         if fee_total != Uint128::zero() && destination_sum != fee_total {
             invalid_fields.push(
                 format!(
@@ -725,7 +724,7 @@ pub mod tests {
                     invalid_fields
                 ),
 
-                _ => panic!("unexpected contract error on failure"),
+                _ => panic!("unexpected contract error on failure: {:?}", e),
             },
         }
     }
@@ -750,7 +749,10 @@ pub mod tests {
                         invalid_fields,
                     );
                 }
-                _ => panic!("unexpected error type on init msg validation failure"),
+                _ => panic!(
+                    "unexpected error type on init msg validation failure: {:?}",
+                    e
+                ),
             },
         }
     }

@@ -177,7 +177,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "expected the invalid message fields error to be returned when the message is malformatted",
+            "expected the invalid message fields error to be returned when the message is malformatted, but got: {:?}",
+            error,
         );
     }
 
@@ -193,7 +194,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Unauthorized { .. }),
-            "expected the unauthorized error to be returned when the sender is not the admin",
+            "expected the unauthorized error to be returned when the sender is not the admin, but got: {:?}",
+            error,
         );
     }
 
@@ -209,7 +211,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidFunds(_)),
-            "expected the invalid funds error to be returned when the sender provides funds",
+            "expected the invalid funds error to be returned when the sender provides funds, but got: {:?}",
+            error,
         );
     }
 
@@ -225,7 +228,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::Std(StdError::NotFound { .. })),
-            "expected the not found error to be returned",
+            "expected the not found error to be returned, but got: {:?}",
+            error,
         );
     }
 
@@ -248,7 +252,10 @@ mod tests {
                     "incorrect error message encountered on invalid toggle false -> true",
                 );
             }
-            _ => panic!("unexpected error encountered on invalid toggle false -> true"),
+            _ => panic!(
+                "unexpected error encountered on invalid toggle false -> true: {:?}",
+                enable_error
+            ),
         };
         // Toggle off successfully to ensure the opposite attempt cannot be made either
         toggle_default_asset_definition(deps.as_mut(), false);
@@ -266,7 +273,10 @@ mod tests {
                     "incorrect error message encountered on invalid toggle true -> false",
                 );
             }
-            _ => panic!("unexpected error encountered on invalid toggle true -> false"),
+            _ => panic!(
+                "unexpected error encountered on invalid toggle true -> false: {:?}",
+                disable_error
+            ),
         }
     }
 

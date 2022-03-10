@@ -46,11 +46,13 @@ mod tests {
 
     #[test]
     fn test_to_err() {
-        let error: Result<(), ContractError> =
+        let result: Result<(), ContractError> =
             ContractError::InvalidFunds("no u".to_string()).to_err();
+        let error = result.unwrap_err();
         assert!(
-            matches!(error.unwrap_err(), ContractError::InvalidFunds(_)),
-            "the error should unwrap correctly",
+            matches!(error, ContractError::InvalidFunds(_)),
+            "the error should unwrap correctly, but got incorrect error: {:?}",
+            error,
         );
     }
 

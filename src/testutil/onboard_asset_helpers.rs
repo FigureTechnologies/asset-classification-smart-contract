@@ -1,5 +1,6 @@
 use crate::core::asset::AssetScopeAttribute;
 use crate::core::error::ContractError;
+use crate::core::msg::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::testutil::test_utilities::{
     MockOwnedDeps, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_INFO_NAME,
@@ -23,8 +24,8 @@ pub struct TestOnboardAsset {
 impl TestOnboardAsset {
     pub fn default_onboard_asset() -> OnboardAssetV1 {
         OnboardAssetV1 {
+            identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
             asset_type: DEFAULT_ASSET_TYPE.to_string(),
-            scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
             validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
         }
     }

@@ -1,18 +1,17 @@
 use crate::core::error::ContractError;
-use crate::core::msg::ExecuteMsg;
+use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::core::state::load_asset_definition_by_type;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::message_gathering_service::MessageGatheringService;
-use crate::util::scope_address_utils::get_validate_scope_address;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct OnboardAssetV1 {
-    pub scope_address: String,
+    pub identifier: AssetIdentifier,
     pub asset_type: String,
     pub validator_address: String,
 }
@@ -20,20 +19,15 @@ impl OnboardAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<OnboardAssetV1> {
         match msg {
             ExecuteMsg::OnboardAsset {
-                asset_uuid,
+                identifier,
                 asset_type,
-                scope_address,
                 validator_address,
-            } => {
-                let parsed_address = get_validate_scope_address(asset_uuid, scope_address)?;
-
-                OnboardAssetV1 {
-                    scope_address: parsed_address,
-                    asset_type,
-                    validator_address,
-                }
-                .to_ok()
+            } => OnboardAssetV1 {
+                identifier,
+                asset_type,
+                validator_address,
             }
+            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::OnboardAsset".to_string(),
             }
@@ -49,6 +43,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     asset_meta_repository: &mut T,
     msg: OnboardAssetV1,
 ) -> ContractResponse {
+    let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
     let asset_state = match load_asset_definition_by_type(deps.storage, &msg.asset_type) {
         Ok(state) => {
@@ -110,15 +105,16 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     };
 
     // verify asset (scope) exists
-    let scope = match ProvenanceQuerier::new(&deps.querier).get_scope(&msg.scope_address) {
-        Err(..) => {
-            return ContractError::AssetNotFound {
-                scope_address: msg.scope_address,
+    let scope =
+        match ProvenanceQuerier::new(&deps.querier).get_scope(&asset_identifiers.scope_address) {
+            Err(..) => {
+                return ContractError::AssetNotFound {
+                    scope_address: asset_identifiers.scope_address,
+                }
+                .to_err()
             }
-            .to_err()
-        }
-        Ok(scope) => scope,
-    };
+            Ok(scope) => scope,
+        };
 
     // verify that the sender of this message is a scope owner
     let sender = info.sender.clone();
@@ -134,9 +130,9 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     }
 
     // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if asset_meta_repository.has_asset(&deps.as_ref(), msg.scope_address.clone())? {
+    if asset_meta_repository.has_asset(&deps.as_ref(), &asset_identifiers.scope_address)? {
         return ContractError::AssetAlreadyOnboarded {
-            scope_address: msg.scope_address,
+            scope_address: asset_identifiers.scope_address,
         }
         .to_err();
     }
@@ -144,9 +140,9 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
     asset_meta_repository.add_asset(
         &deps.as_ref(),
-        msg.scope_address.clone(),
-        msg.asset_type.clone(),
-        msg.validator_address.clone(),
+        &msg.identifier,
+        &msg.asset_type,
+        &msg.validator_address,
         info.sender,
         crate::core::asset::AssetOnboardingStatus::Pending,
         validator_config,
@@ -157,7 +153,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
             EventAttributes::for_asset_event(
                 EventType::OnboardAsset,
                 &msg.asset_type,
-                &msg.scope_address,
+                &asset_identifiers.scope_address,
             )
             .set_validator(msg.validator_address),
         )
@@ -175,6 +171,7 @@ mod tests {
         core::{
             asset::{AssetOnboardingStatus, AssetScopeAttribute},
             error::ContractError,
+            msg::AssetIdentifier,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         testutil::{
@@ -207,7 +204,7 @@ mod tests {
             mock_info_with_nhash(1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: "bogus".into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
             },
@@ -241,7 +238,7 @@ mod tests {
             mock_info_with_nhash(1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope420".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
             },
@@ -264,7 +261,7 @@ mod tests {
             mock_info_with_nhash(1000),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(),
             },
@@ -297,7 +294,7 @@ mod tests {
             mock_info_with_funds(&[]),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -335,7 +332,7 @@ mod tests {
             ]),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -367,7 +364,7 @@ mod tests {
             }]),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -396,7 +393,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST + 1),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: "scope1234".into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -423,7 +420,8 @@ mod tests {
     fn test_onboard_asset_errors_on_asset_not_found() {
         let mut deps = mock_dependencies(&[]);
         let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
-        let bogus_scope_address = DEFAULT_SCOPE_ADDRESS.to_string() + "bogus";
+        // Some random scope address unrelated to the default scope address, which is mocked during setup_test_suite
+        let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
 
         let err = onboard_asset(
             deps.as_mut(),
@@ -431,7 +429,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: bogus_scope_address.clone(),
+                identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -441,7 +439,8 @@ mod tests {
         match err {
             ContractError::AssetNotFound { scope_address } => {
                 assert_eq!(
-                    bogus_scope_address, scope_address,
+                    bogus_scope_address,
+                    scope_address.as_str(),
                     "the asset not found message should reflect that the asset uuid was not found"
                 );
             }
@@ -466,7 +465,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: DEFAULT_SCOPE_ADDRESS.into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -496,7 +495,7 @@ mod tests {
             mock_info_with_nhash(DEFAULT_ONBOARDING_COST),
             &mut asset_meta_repository,
             OnboardAssetV1 {
-                scope_address: DEFAULT_SCOPE_ADDRESS.into(),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
             },
@@ -547,7 +546,7 @@ mod tests {
             vec![
                 (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
                 (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
-                (ASSET_SCOPE_ADDRESS_KEY, "scope1234"),
+                (ASSET_SCOPE_ADDRESS_KEY, DEFAULT_SCOPE_ADDRESS),
                 (VALIDATOR_ADDRESS_KEY, DEFAULT_VALIDATOR_ADDRESS)
             ],
             result.attributes

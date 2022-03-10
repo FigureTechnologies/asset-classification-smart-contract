@@ -90,11 +90,7 @@ pub fn get_validate_scope_address<S1: Into<String> + Clone, S2: Into<String> + C
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// big-endian bytes to a byte slice that also contains a prefix key (as defined in the provenance source).
-fn uuid_to_address<'a, S: Into<String>>(
-    key_byte: u8,
-    hrp: &'a str,
-    uuid: S,
-) -> ContractResult<String> {
+fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> ContractResult<String> {
     let mut buffer = vec![key_byte];
     buffer.append(&mut Uuid::from_str(&uuid.into())?.as_bytes().to_vec());
     bech32::encode(hrp, buffer.to_base32(), Variant::Bech32)?.to_ok()

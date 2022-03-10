@@ -70,6 +70,11 @@ impl AttributeOnlyAssetMeta {
         Self { messages: vec![] }
     }
 }
+impl Default for AttributeOnlyAssetMeta {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl AssetMetaRepository for AttributeOnlyAssetMeta {
     fn has_asset<S1: Into<String>>(&self, deps: &DepsC, scope_address: S1) -> ContractResult<bool> {

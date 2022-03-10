@@ -96,7 +96,7 @@ fn validate_asset_definition_internal(asset_definition: &AssetDefinition) -> Vec
     let mut validator_messages = asset_definition
         .validators
         .iter()
-        .flat_map(|valid| validate_validator_internal(valid))
+        .flat_map(validate_validator_internal)
         .collect::<Vec<String>>();
     invalid_fields.append(&mut validator_messages);
     invalid_fields
@@ -168,7 +168,7 @@ fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
     let mut fee_destination_messages = validator
         .fee_destinations
         .iter()
-        .flat_map(|destination| validate_destination_internal(destination))
+        .flat_map(validate_destination_internal)
         .collect::<Vec<String>>();
     invalid_fields.append(&mut fee_destination_messages);
     invalid_fields

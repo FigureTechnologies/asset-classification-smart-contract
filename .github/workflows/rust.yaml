@@ -38,12 +38,13 @@ jobs:
           version: '0.19.1'
           out-type: Xml
           args: '--ignore-config --ignore-tests --features enable-test-utils'
-      - name: upload to codecov.io
-        uses: codecov/codecov-action@v2
-        with:
-          files: cobertura.xml
-          fail_ci_if_error: false
-          verbose: true
+      # TODO: Enable when we move this to public-facing
+      # - name: upload to codecov.io
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     files: cobertura.xml
+      #     fail_ci_if_error: false
+      #     verbose: true
       - name: archive code coverage results
         uses: actions/upload-artifact@v1
         with:

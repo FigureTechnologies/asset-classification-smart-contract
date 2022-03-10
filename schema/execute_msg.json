@@ -12,23 +12,15 @@
           "type": "object",
           "required": [
             "asset_type",
+            "identifier",
             "validator_address"
           ],
           "properties": {
             "asset_type": {
               "type": "string"
             },
-            "asset_uuid": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "scope_address": {
-              "type": [
-                "string",
-                "null"
-              ]
+            "identifier": {
+              "$ref": "#/definitions/AssetIdentifier"
             },
             "validator_address": {
               "type": "string"
@@ -47,15 +39,29 @@
         "validate_asset": {
           "type": "object",
           "required": [
-            "approve",
-            "asset_uuid"
+            "success"
           ],
           "properties": {
-            "approve": {
-              "type": "boolean"
-            },
             "asset_uuid": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "message": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scope_address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "success": {
+              "type": "boolean"
             }
           }
         }
@@ -204,6 +210,50 @@
           }
         }
       }
+    },
+    "AssetIdentifier": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "asset_uuid"
+          ],
+          "properties": {
+            "asset_uuid": {
+              "type": "object",
+              "required": [
+                "asset_uuid"
+              ],
+              "properties": {
+                "asset_uuid": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "scope_address"
+          ],
+          "properties": {
+            "scope_address": {
+              "type": "object",
+              "required": [
+                "scope_address"
+              ],
+              "properties": {
+                "scope_address": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "Decimal": {
       "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",

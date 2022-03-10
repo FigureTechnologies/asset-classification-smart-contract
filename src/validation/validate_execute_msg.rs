@@ -1,6 +1,6 @@
 use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
-use crate::core::msg::ExecuteMsg;
+use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use crate::validation::validate_init_msg::{
@@ -10,11 +10,10 @@ use crate::validation::validate_init_msg::{
 pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), ContractError> {
     match msg {
         ExecuteMsg::OnboardAsset {
-            asset_uuid,
+            identifier,
             asset_type,
-            scope_address,
             validator_address,
-        } => validate_onboard_asset(asset_uuid, asset_type, scope_address, validator_address),
+        } => validate_onboard_asset(identifier, asset_type, validator_address),
         ExecuteMsg::ValidateAsset {
             asset_uuid,
             scope_address,
@@ -41,17 +40,22 @@ pub fn validate_execute_msg(msg: &ExecuteMsg, deps: &DepsC) -> Result<(), Contra
 }
 
 fn validate_onboard_asset(
-    asset_uuid: &Option<String>,
+    identifier: &AssetIdentifier,
     asset_type: &str,
-    scope_address: &Option<String>,
     validator_address: &str,
 ) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    if asset_uuid.is_none() && scope_address.is_none() {
-        invalid_fields
-            .push("asset_uuid: must not be blank if scope_address not provided".to_string());
-        invalid_fields
-            .push("scope_address: must not be blank if asset_uuid not provided".to_string());
+    match identifier {
+        AssetIdentifier::AssetUuid { asset_uuid } => {
+            if asset_uuid.is_empty() {
+                invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
+            }
+        }
+        AssetIdentifier::ScopeAddress { scope_address } => {
+            if scope_address.is_empty() {
+                invalid_fields.push("identifier:scope_address: must not be blank".to_string());
+            }
+        }
     }
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
@@ -123,58 +127,40 @@ fn validate_asset_validator_msg(
 
 #[cfg(test)]
 mod tests {
-    use crate::{core::error::ContractError, util::aliases::ContractResult};
+    use crate::{
+        core::{error::ContractError, msg::AssetIdentifier},
+        util::aliases::ContractResult,
+    };
 
     use super::{
         validate_onboard_asset, validate_toggle_asset_definition, validate_validate_asset,
     };
 
     #[test]
-    fn test_validate_onboard_asset_success() {
+    fn test_validate_onboard_asset_success_for_asset_uuid() {
         validate_onboard_asset(
-            &Some("asset_uuid".to_string()),
+            &AssetIdentifier::asset_uuid("asset_uuid"),
             "asset_type",
-            &Some("scope_address".to_string()),
             "validator_address",
         )
         .expect("expected validation to pass when all arguments are properly supplied");
     }
 
     #[test]
-    fn test_validate_onboard_asset_invalid_asset_uuid_and_scope_address() {
-        let result = validate_onboard_asset(&None, "asset_type", &None, "validator_address");
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::OnboardAsset",
-                message_type.as_str(),
-                "incorrect message type for error"
-            );
-            assert_eq!(
-                2,
-                invalid_fields.len(),
-                "two invalid fields should be returned"
-            );
-            invalid_fields
-                .iter()
-                .find(|f| {
-                    f.as_str() == "asset_uuid: must not be blank if scope_address not provided"
-                })
-                .expect("asset_uuid error should be included in the response");
-            invalid_fields
-                .iter()
-                .find(|f| {
-                    f.as_str() == "scope_address: must not be blank if asset_uuid not provided"
-                })
-                .expect("scope_address error should be included in the response");
-        });
+    fn test_validate_onboard_asset_success_for_scope_address() {
+        validate_onboard_asset(
+            &AssetIdentifier::scope_address("scope_address"),
+            "asset_type",
+            "validator_address",
+        )
+        .expect("expected validation to pass when all arguments are properly supplied");
     }
 
     #[test]
     fn test_validate_onboard_asset_invalid_asset_type() {
         let result = validate_onboard_asset(
-            &Some("asset_uuid".to_string()),
+            &AssetIdentifier::asset_uuid("asset_uuid"),
             "",
-            &Some("scope_address".to_string()),
             "validator_address",
         );
         test_invalid_message_fields(result, |message_type, invalid_fields| {
@@ -198,12 +184,8 @@ mod tests {
 
     #[test]
     fn test_validate_onboard_asset_invalid_validator_address() {
-        let result = validate_onboard_asset(
-            &Some("asset_uuid".to_string()),
-            "asset_type",
-            &Some("scope_address".to_string()),
-            "",
-        );
+        let result =
+            validate_onboard_asset(&AssetIdentifier::asset_uuid("asset_uuid"), "asset_type", "");
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::OnboardAsset",

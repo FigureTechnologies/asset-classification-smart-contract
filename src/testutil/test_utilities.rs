@@ -30,7 +30,6 @@ pub const DEFAULT_INFO_NAME: &str = "admin";
 pub const DEFAULT_ASSET_UUID: &str = "c55cfe0e-9fed-11ec-8191-0b95c8a1239c";
 pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1qrz4elswnlk3rmypjy9etj9pywwqz6myzw";
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
-pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1234";
 pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespecaddress";
 pub const DEFAULT_VALIDATOR_ADDRESS: &str = "validatoraddress";
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
@@ -74,6 +73,8 @@ pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
 
 pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
     AssetScopeAttribute {
+        asset_uuid: DEFAULT_ASSET_UUID.to_string(),
+        scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
         asset_type: DEFAULT_ASSET_TYPE.to_string(),
         requestor_address: Addr::unchecked(DEFAULT_INFO_NAME.to_string()),
         validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS.to_string()),

@@ -9,6 +9,7 @@ use crate::{
             AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult, ValidatorDetail,
         },
         error::ContractError,
+        msg::AssetIdentifier,
         state::config_read,
     },
     query::query_asset_scope_attribute::{
@@ -27,13 +28,13 @@ use super::{
 pub trait AssetMetaRepository {
     fn has_asset<S1: Into<String>>(&self, deps: &DepsC, scope_address: S1) -> ContractResult<bool>;
 
-    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>>(
+    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         &mut self,
         _deps: &DepsC,
-        scope_address: S1,
-        asset_type: S2,
-        validator_address: S3,
-        requestor_address: S4,
+        identifier: &AssetIdentifier,
+        asset_type: S1,
+        validator_address: S2,
+        requestor_address: S3,
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
     ) -> ContractResult<()>;
@@ -78,35 +79,34 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
             .to_ok()
     }
 
-    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>>(
+    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         &mut self,
         deps: &DepsC,
-        scope_address: S1,
-        asset_type: S2,
-        validator_address: S3,
-        requestor_address: S4,
+        identifier: &AssetIdentifier,
+        asset_type: S1,
+        validator_address: S2,
+        requestor_address: S3,
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
     ) -> ContractResult<()> {
-        let scope_address_str = scope_address.into();
-        if self.has_asset(deps, scope_address_str.clone())? {
-            return ContractError::AssetAlreadyOnboarded {
-                scope_address: scope_address_str,
-            }
-            .to_err();
-        }
-
         // generate attribute -> scope bind message
         let contract_base_name = config_read(deps.storage).load()?.base_contract_name;
         let attribute = AssetScopeAttribute::new(
+            identifier,
             asset_type,
-            Addr::unchecked(requestor_address),
-            Addr::unchecked(validator_address),
+            requestor_address,
+            validator_address,
             Some(onboarding_status),
             validator_detail,
         )?;
+
+        if self.has_asset(deps, &attribute.scope_address)? {
+            return ContractError::AssetAlreadyOnboarded {
+                scope_address: attribute.scope_address,
+            }
+            .to_err();
+        }
         self.add_message(get_add_attribute_to_scope_msg(
-            scope_address_str,
             &attribute,
             contract_base_name,
         )?);
@@ -146,7 +146,7 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
         let attribute_name =
             generate_asset_attribute_name(attribute.asset_type.clone(), contract_base_name.clone());
         self.messages.push(delete_attributes(
-            Addr::unchecked(scope_address_str.clone()),
+            Addr::unchecked(scope_address_str),
             attribute_name,
         )?);
 
@@ -160,10 +160,8 @@ impl AssetMetaRepository for AttributeOnlyAssetMeta {
 
         attribute.latest_validator_detail = None;
         attribute.latest_validation_result = Some(AssetValidationResult { message, success });
-        let new_attribute = attribute.clone();
         self.messages.push(get_add_attribute_to_scope_msg(
-            scope_address_str,
-            &new_attribute,
+            &attribute,
             contract_base_name,
         )?);
         Ok(())
@@ -185,6 +183,7 @@ impl MessageGatheringService for AttributeOnlyAssetMeta {
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg};
     use provwasm_mocks::mock_dependencies;
@@ -196,6 +195,7 @@ mod tests {
         core::{
             asset::{AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult},
             error::ContractError,
+            msg::AssetIdentifier,
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
@@ -251,7 +251,7 @@ mod tests {
         let err = repository
             .add_asset(
                 &deps.as_ref(),
-                DEFAULT_SCOPE_ADDRESS,
+                &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
                 DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_INFO_NAME,
@@ -280,7 +280,7 @@ mod tests {
         repository
             .add_asset(
                 &deps.as_ref(),
-                DEFAULT_SCOPE_ADDRESS,
+                &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
                 DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_INFO_NAME,

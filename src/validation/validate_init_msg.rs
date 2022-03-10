@@ -215,13 +215,16 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
-                "heloc-scope-spec-address",
+                "scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt",
                 vec![ValidatorDetail::new(
-                    "address",
+                    "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                     Uint128::new(100),
                     NHASH,
                     Decimal::percent(100),
-                    vec![FeeDestination::new("fee", Decimal::percent(100))],
+                    vec![FeeDestination::new(
+                        "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                        Decimal::percent(100),
+                    )],
                 )],
                 None,
             )],
@@ -235,50 +238,65 @@ pub mod tests {
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
-                    "heloc-scope-spec-address",
+                    "scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt",
                     vec![ValidatorDetail::new(
-                        "address",
+                        "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(100),
                         NHASH,
                         Decimal::percent(100),
-                        vec![FeeDestination::new("fee", Decimal::percent(100))],
+                        vec![FeeDestination::new(
+                            "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                            Decimal::percent(100),
+                        )],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
                     "mortgage",
-                    "mortgage-scope-spec-address",
+                    "scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86",
                     vec![ValidatorDetail::new(
-                        "address",
+                        "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(500),
                         NHASH,
                         Decimal::percent(50),
                         vec![
-                            FeeDestination::new("mort-fees", Decimal::percent(50)),
-                            FeeDestination::new("other-fee", Decimal::percent(50)),
+                            FeeDestination::new(
+                                "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
+                                Decimal::percent(50),
+                            ),
+                            FeeDestination::new(
+                                "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
+                                Decimal::percent(50),
+                            ),
                         ],
                     )],
                     None,
                 ),
                 AssetDefinitionInput::new(
                     "pl",
-                    "pl-scope-spec-address",
+                    "scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084",
                     vec![
                         ValidatorDetail::new(
-                            "address",
+                            "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                             Uint128::new(0),
                             NHASH,
                             Decimal::percent(0),
                             vec![],
                         ),
                         ValidatorDetail::new(
-                            "other-validator",
+                            "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
                             Uint128::new(1000000),
                             NHASH,
                             Decimal::percent(100),
                             vec![
-                                FeeDestination::new("community", Decimal::percent(25)),
-                                FeeDestination::new("figure", Decimal::percent(75)),
+                                FeeDestination::new(
+                                    "tp1jdcwtaendn9y75jv9dqnmlm7dy8pv4kgu9fs9g",
+                                    Decimal::percent(25),
+                                ),
+                                FeeDestination::new(
+                                    "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
+                                    Decimal::percent(75),
+                                ),
                             ],
                         ),
                     ],
@@ -331,7 +349,7 @@ pub mod tests {
                 base_contract_name: "asset".to_string(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "",
-                    "scope-spec-address",
+                    "scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn",
                     vec![],
                     None,
                 )],
@@ -344,13 +362,16 @@ pub mod tests {
     fn test_valid_asset_definition() {
         let definition = AssetDefinition::new(
             "heloc",
-            "heloc-scope-spec-address",
+            "scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz",
             vec![ValidatorDetail::new(
-                "address",
+                "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
                 Uint128::new(100),
                 NHASH,
                 Decimal::percent(100),
-                vec![FeeDestination::new("fee", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
+                    Decimal::percent(100),
+                )],
             )],
         );
         let response = validate_asset_definition_internal(&definition);
@@ -426,7 +447,7 @@ pub mod tests {
     #[test]
     fn test_valid_validator_with_no_fee_destinations() {
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
             Uint128::new(100),
             NHASH,
             Decimal::percent(0),
@@ -443,11 +464,14 @@ pub mod tests {
     #[test]
     fn test_valid_validator_with_single_fee_destination() {
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp1z28j4v88vz3jyzz286a8627lfsclemk294essy",
             Uint128::new(1000),
             NHASH,
             Decimal::percent(50),
-            vec![FeeDestination::new("gooder-address", Decimal::percent(100))],
+            vec![FeeDestination::new(
+                "tp143p2m575fqre9rmaf9tpqwp9ux0mrzv83tdfh6",
+                Decimal::percent(100),
+            )],
         );
         let response = validate_validator_internal(&validator);
         assert!(
@@ -460,16 +484,31 @@ pub mod tests {
     #[test]
     fn test_valid_validator_with_multiple_fee_destinations() {
         let validator = ValidatorDetail::new(
-            "good-address",
+            "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
             Uint128::new(150000),
             NHASH,
             Decimal::percent(50),
             vec![
-                FeeDestination::new("first", Decimal::percent(20)),
-                FeeDestination::new("second", Decimal::percent(10)),
-                FeeDestination::new("third", Decimal::percent(30)),
-                FeeDestination::new("fourth", Decimal::percent(35)),
-                FeeDestination::new("fifth", Decimal::percent(5)),
+                FeeDestination::new(
+                    "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
+                    Decimal::percent(20),
+                ),
+                FeeDestination::new(
+                    "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
+                    Decimal::percent(10),
+                ),
+                FeeDestination::new(
+                    "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
+                    Decimal::percent(30),
+                ),
+                FeeDestination::new(
+                    "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
+                    Decimal::percent(35),
+                ),
+                FeeDestination::new(
+                    "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
+                    Decimal::percent(5),
+                ),
             ],
         );
         let response = validate_validator_internal(&validator);
@@ -643,7 +682,10 @@ pub mod tests {
 
     #[test]
     fn test_valid_destination() {
-        let destination = FeeDestination::new("good-address", Decimal::percent(100));
+        let destination = FeeDestination::new(
+            "tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5",
+            Decimal::percent(100),
+        );
         assert!(
             validate_destination_internal(&destination).is_empty(),
             "a valid fee destination should pass validation and return no error messages",

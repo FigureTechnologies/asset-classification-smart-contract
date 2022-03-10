@@ -222,6 +222,15 @@ mod tests {
 
     #[test]
     fn test_successful_scope_address_to_asset_uuid() {
+        println!(
+            "{}",
+            scope_spec_uuid_to_scope_spec_address("63a7fe02-a09c-11ec-aefd-379750e5f559").unwrap()
+        );
+        println!(
+            "{}",
+            scope_spec_uuid_to_scope_spec_address("79375a88-a09c-11ec-bd55-83d4d1e52b5d").unwrap()
+        );
+
         // These values were generated using the MetadataAddress kotlin helper to verify their authenticity
         // from random input
         let scope_address = "scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra";

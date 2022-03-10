@@ -129,27 +129,36 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInput::new(
             "heloc",
-            "heloc_scope_spec",
+            "scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn",
             vec![ValidatorDetail::new(
                 DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
                 DEFAULT_ONBOARDING_DENOM,
                 Decimal::percent(50),
-                vec![FeeDestination::new("first", Decimal::percent(100))],
+                vec![FeeDestination::new(
+                    "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
+                    Decimal::percent(100),
+                )],
             )],
             None,
         );
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
-            "mortgage-scope-spec",
+            "scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3",
             vec![ValidatorDetail::new(
-                "other-address",
+                "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
                 NHASH,
                 Decimal::percent(100),
                 vec![
-                    FeeDestination::new("first", Decimal::percent(50)),
-                    FeeDestination::new("second", Decimal::percent(50)),
+                    FeeDestination::new(
+                        "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
+                        Decimal::percent(50),
+                    ),
+                    FeeDestination::new(
+                        "tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn",
+                        Decimal::percent(50),
+                    ),
                 ],
             )],
             None,

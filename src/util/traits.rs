@@ -21,7 +21,7 @@ pub trait OptionExtensions
 where
     Self: Sized,
 {
-    fn to_option(self) -> Option<Self> {
+    fn to_some(self) -> Option<Self> {
         Some(self)
     }
 }
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_to_option() {
-        let option: Option<String> = "hello".to_string().to_option();
+        let option: Option<String> = "hello".to_string().to_some();
         assert_eq!(
             "hello",
             option

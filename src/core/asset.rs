@@ -6,7 +6,7 @@ use crate::util::{
     aliases::{ContractResult, DepsC},
     functions::generate_asset_attribute_name,
     scope_address_utils::bech32_string_to_addr,
-    traits::ResultExtensions,
+    traits::{OptionExtensions, ResultExtensions},
 };
 
 use super::{
@@ -165,7 +165,7 @@ impl AssetScopeAttribute {
             requestor_address: req_addr,
             validator_address: val_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            latest_validator_detail: Some(latest_validator_detail),
+            latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
             access_routes: vec![],
         }

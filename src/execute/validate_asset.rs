@@ -1,12 +1,13 @@
 use crate::core::asset::AssetOnboardingStatus;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::message_gathering_service::MessageGatheringService;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
@@ -35,16 +36,17 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
-    deps: DepsMutC,
-    _env: Env,
+pub fn validate_asset<'a, T>(
+    repository: T,
     info: MessageInfo,
-    asset_meta_repository: &mut T,
     msg: ValidateAssetV1,
-) -> ContractResponse {
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
+{
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
-    let meta = asset_meta_repository.get_asset(&deps.as_ref(), &asset_identifiers.scope_address)?;
+    let meta = repository.get_asset(&asset_identifiers.scope_address)?;
 
     // verify sender is requested validator
     if info.sender != meta.validator_address {
@@ -63,12 +65,7 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
         .to_err();
     }
 
-    asset_meta_repository.validate_asset(
-        &deps.as_ref(),
-        &asset_identifiers.scope_address,
-        msg.success,
-        msg.message,
-    )?;
+    repository.validate_asset(&asset_identifiers.scope_address, msg.success, msg.message)?;
 
     // construct/emit validation attribute
     Ok(Response::new()
@@ -80,17 +77,17 @@ pub fn validate_asset<T: AssetMetaRepository + MessageGatheringService>(
             )
             .set_validator(info.sender),
         )
-        .add_messages(asset_meta_repository.get_messages()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
         core::{error::ContractError, msg::AssetIdentifier},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -98,7 +95,7 @@ mod tests {
             },
             test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
         },
-        util::message_gathering_service::MessageGatheringService,
+        util::traits::OptionExtensions,
     };
 
     use super::{validate_asset, ValidateAssetV1};
@@ -106,13 +103,11 @@ mod tests {
     #[test]
     fn test_validate_asset_not_found_error() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
@@ -142,19 +137,17 @@ mod tests {
     #[test]
     fn test_validate_asset_wrong_validator_error() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
-        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let info = mock_info_with_nhash(
             "tp129z88fpzthllrdzktw98cck3ypd34wv77nqfyl",
             DEFAULT_ONBOARDING_COST,
         );
         let err = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             info.clone(),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
@@ -192,21 +185,18 @@ mod tests {
     #[test]
     fn test_validate_asset_adds_error_message_on_negative_validation() {
         let mut deps = mock_dependencies(&[]);
-        let mut repository = setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, &mut repository, TestOnboardAsset::default()).unwrap();
-        repository.drain_messages();
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let info = mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST);
 
         let result = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             info.clone(),
-            &mut repository,
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
-                message: Some("Your data sucks".to_string()),
+                message: "Your data sucks".to_string().to_some(),
             },
         )
         .unwrap();

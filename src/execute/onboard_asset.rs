@@ -1,12 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::core::state::load_asset_definition_by_type;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::message_gathering_service::MessageGatheringService;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -36,32 +37,34 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
-    deps: DepsMutC,
-    _env: Env,
+pub fn onboard_asset<'a, T>(
+    repository: T,
     info: MessageInfo,
-    asset_meta_repository: &mut T,
     msg: OnboardAssetV1,
-) -> ContractResponse {
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
+{
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
-    let asset_state = match load_asset_definition_by_type(deps.storage, &msg.asset_type) {
-        Ok(state) => {
-            if !state.enabled {
-                return ContractError::AssetTypeDisabled {
+    let asset_state =
+        match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
+            Ok(state) => {
+                if !state.enabled {
+                    return ContractError::AssetTypeDisabled {
+                        asset_type: msg.asset_type,
+                    }
+                    .to_err();
+                }
+                state
+            }
+            Err(_) => {
+                return ContractError::UnsupportedAssetType {
                     asset_type: msg.asset_type,
                 }
-                .to_err();
+                .to_err()
             }
-            state
-        }
-        Err(_) => {
-            return ContractError::UnsupportedAssetType {
-                asset_type: msg.asset_type,
-            }
-            .to_err()
-        }
-    };
+        };
 
     // verify perscribed validator is present as a validator in asset state
     let validator_config = match asset_state
@@ -105,16 +108,17 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     };
 
     // verify asset (scope) exists
-    let scope =
-        match ProvenanceQuerier::new(&deps.querier).get_scope(&asset_identifiers.scope_address) {
-            Err(..) => {
-                return ContractError::AssetNotFound {
-                    scope_address: asset_identifiers.scope_address,
-                }
-                .to_err()
+    let scope = match repository.use_deps(|d| {
+        ProvenanceQuerier::new(&d.querier).get_scope(&asset_identifiers.scope_address)
+    }) {
+        Err(..) => {
+            return ContractError::AssetNotFound {
+                scope_address: asset_identifiers.scope_address,
             }
-            Ok(scope) => scope,
-        };
+            .to_err()
+        }
+        Ok(scope) => scope,
+    };
 
     // verify that the sender of this message is a scope owner
     let sender = info.sender.clone();
@@ -126,7 +130,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     }
 
     // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if asset_meta_repository.has_asset(&deps.as_ref(), &asset_identifiers.scope_address)? {
+    if repository.has_asset(&asset_identifiers.scope_address)? {
         return ContractError::AssetAlreadyOnboarded {
             scope_address: asset_identifiers.scope_address,
         }
@@ -134,8 +138,7 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
     }
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
-    asset_meta_repository.add_asset(
-        &deps.as_ref(),
+    repository.add_asset(
         &msg.identifier,
         &msg.asset_type,
         &msg.validator_address,
@@ -153,13 +156,13 @@ pub fn onboard_asset<T: AssetMetaRepository + MessageGatheringService>(
             )
             .set_validator(msg.validator_address),
         )
-        .add_messages(asset_meta_repository.get_messages()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, testing::mock_env, Coin, CosmosMsg, SubMsg, Uint128};
+    use cosmwasm_std::{from_binary, Coin, CosmosMsg, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
@@ -170,6 +173,7 @@ mod tests {
             msg::AssetIdentifier,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -196,13 +200,11 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_unsupported_asset_type() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: "bogus".into(),
@@ -228,7 +230,7 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_disabled_asset_type() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
         toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
@@ -236,10 +238,8 @@ mod tests {
         )
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -257,13 +257,11 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_unsupported_validator() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -293,13 +291,11 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_no_funds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -325,11 +321,10 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_extra_funds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[
@@ -343,7 +338,6 @@ mod tests {
                     },
                 ],
             ),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -369,11 +363,10 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_denom() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[Coin {
@@ -381,7 +374,6 @@ mod tests {
                     amount: Uint128::from(2432u128),
                 }],
             ),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -407,13 +399,11 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_wrong_fund_amount() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -444,15 +434,13 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_asset_not_found() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
         // Some random scope address unrelated to the default scope address, which is mocked during setup_test_suite
         let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -479,19 +467,12 @@ mod tests {
     #[test]
     fn test_onboard_asset_errors_on_already_onboarded_asset() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(
-            &mut deps,
-            &mut asset_meta_repository,
-            TestOnboardAsset::default(),
-        )
-        .unwrap();
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -518,13 +499,11 @@ mod tests {
     #[test]
     fn test_onboard_asset_succeeds() {
         let mut deps = mock_dependencies(&[]);
-        let mut asset_meta_repository = setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, InstArgs::default());
 
         let result = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
-            &mut asset_meta_repository,
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),

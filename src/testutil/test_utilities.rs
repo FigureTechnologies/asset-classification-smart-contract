@@ -13,9 +13,7 @@ use crate::{
         asset::{AssetDefinition, AssetOnboardingStatus, ValidatorDetail},
         msg::InitMsg,
     },
-    util::{
-        asset_meta_repository::AttributeOnlyAssetMeta, functions::generate_asset_attribute_name,
-    },
+    util::functions::generate_asset_attribute_name,
 };
 use crate::{
     core::asset::AssetScopeAttribute,
@@ -108,10 +106,9 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
     )
 }
 
-pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) -> AttributeOnlyAssetMeta {
+pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) {
     test_instantiate_success(deps.as_mut(), args);
-    mock_default_scope(deps);
-    AttributeOnlyAssetMeta::new()
+    mock_default_scope(deps)
 }
 
 pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {

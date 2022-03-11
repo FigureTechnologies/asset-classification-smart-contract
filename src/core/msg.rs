@@ -3,7 +3,7 @@ use crate::{
     util::{
         aliases::ContractResult,
         scope_address_utils::{asset_uuid_to_scope_address, scope_address_to_asset_uuid},
-        traits::ResultExtensions,
+        traits::{OptionExtensions, ResultExtensions},
     },
 };
 use schemars::JsonSchema;
@@ -39,7 +39,7 @@ impl From<AssetDefinition> for AssetDefinitionInput {
             def.asset_type,
             def.scope_spec_address,
             def.validators,
-            Some(def.enabled),
+            def.enabled.to_some(),
         )
     }
 }

@@ -1,8 +1,10 @@
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::core::state::load_asset_definition_by_type;
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::asset_meta_service::AssetMetaService;
+use crate::service::deps_manager::DepsManager;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
@@ -41,29 +43,27 @@ pub fn onboard_asset(
     info: MessageInfo,
     msg: OnboardAssetV1,
 ) -> ContractResponse {
-    let repository = AssetMetaRepository::new(deps);
+    let repository = AssetMetaService::new(deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
-    let asset_state = match repository
-        .deps
-        .use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type))
-    {
-        Ok(state) => {
-            if !state.enabled {
-                return ContractError::AssetTypeDisabled {
+    let asset_state =
+        match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
+            Ok(state) => {
+                if !state.enabled {
+                    return ContractError::AssetTypeDisabled {
+                        asset_type: msg.asset_type,
+                    }
+                    .to_err();
+                }
+                state
+            }
+            Err(_) => {
+                return ContractError::UnsupportedAssetType {
                     asset_type: msg.asset_type,
                 }
-                .to_err();
+                .to_err()
             }
-            state
-        }
-        Err(_) => {
-            return ContractError::UnsupportedAssetType {
-                asset_type: msg.asset_type,
-            }
-            .to_err()
-        }
-    };
+        };
 
     // verify perscribed validator is present as a validator in asset state
     let validator_config = match asset_state

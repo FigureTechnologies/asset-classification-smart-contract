@@ -1,8 +1,9 @@
 use crate::core::asset::AssetOnboardingStatus;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::asset_meta_service::AssetMetaService;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
@@ -40,7 +41,7 @@ pub fn validate_asset(
     info: MessageInfo,
     msg: ValidateAssetV1,
 ) -> ContractResponse {
-    let repository = AssetMetaRepository::new(deps);
+    let repository = AssetMetaService::new(deps);
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
     let meta = repository.get_asset(&asset_identifiers.scope_address)?;

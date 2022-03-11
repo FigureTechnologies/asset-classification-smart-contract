@@ -15,10 +15,10 @@ use crate::{
     },
     util::aliases::{ContractResult, DepsMutC},
     util::deps_container::DepsContainer,
-    util::functions::generate_asset_attribute_name,
     util::provenance_util::get_add_attribute_to_scope_msg,
     util::traits::{OptionExtensions, ResultExtensions},
     util::vec_container::VecContainer,
+    util::{fees::calculate_validator_cost_messages, functions::generate_asset_attribute_name},
 };
 
 use super::{
@@ -120,7 +120,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         let attribute_name =
             generate_asset_attribute_name(attribute.asset_type.clone(), contract_base_name.clone());
         self.messages.push(delete_attributes(
-            Addr::unchecked(scope_address_str),
+            Addr::unchecked(scope_address_str.clone()),
             attribute_name,
         )?);
         let message = validation_message.map(|m| m.into()).unwrap_or_else(|| {
@@ -130,12 +130,27 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             }
             .to_string()
         });
+        let existing_validator_detail = attribute.latest_validator_detail;
         attribute.latest_validator_detail = None;
         attribute.latest_validation_result = Some(AssetValidationResult { message, success });
         self.add_message(get_add_attribute_to_scope_msg(
             &attribute,
             contract_base_name,
         )?);
+
+        // distribute fees now that validation has happened
+        if let Some(validator_detail) = existing_validator_detail {
+            self.append_messages(&calculate_validator_cost_messages(&validator_detail)?);
+        } else {
+            return ContractError::UnexpectedState {
+                explanation: format!(
+                    "Validator detail not present on asset [{}] being validated",
+                    scope_address_str
+                ),
+            }
+            .to_err();
+        }
+
         Ok(())
     }
 }
@@ -172,7 +187,7 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg};
+    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, ProvenanceMsg, ProvenanceMsgParams,
@@ -192,8 +207,9 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+                DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+                DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
@@ -472,9 +488,9 @@ mod tests {
         let messages = repository.messages.get();
 
         assert_eq!(
-            2,
+            3,
             messages.len(),
-            "validate asset should produce 2 messages for scope update (delete/write combination)"
+            "validate asset should produce three messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)"
         );
         let first_message = &messages[0];
         match first_message {
@@ -532,8 +548,29 @@ mod tests {
                 );
             }
             _ => panic!(
-                "Unexpected second message type for validate_asset: ${:?}",
+                "Unexpected second message type for validate_asset: {:?}",
                 second_message
+            ),
+        }
+        let third_message = &messages[2];
+        match third_message {
+            CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
+                assert_eq!(
+                    DEFAULT_VALIDATOR_ADDRESS, to_address,
+                    "validation fee message should send to default validator"
+                );
+                assert_eq!(
+                    &vec![Coin {
+                        denom: DEFAULT_ONBOARDING_DENOM.to_string(),
+                        amount: Uint128::new(DEFAULT_ONBOARDING_COST)
+                    }],
+                    amount,
+                    "validation fee message should match what is configured"
+                )
+            }
+            _ => panic!(
+                "Unexpected third message type for validate_asset: {:?}",
+                third_message
             ),
         }
     }

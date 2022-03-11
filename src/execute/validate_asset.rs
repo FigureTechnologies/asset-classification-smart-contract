@@ -202,9 +202,9 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            2,
+            3,
             result.messages.len(),
-            "validate asset should produce two messages (attribute delete/update combo)"
+            "validate asset should produce three messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)"
         );
     }
 }

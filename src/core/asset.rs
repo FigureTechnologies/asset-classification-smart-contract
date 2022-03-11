@@ -152,7 +152,7 @@ impl AssetScopeAttribute {
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
     ) -> ContractResult<Self> {
-        let identifiers = identifier.parse_identifiers()?;
+        let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
         let val_addr = bech32_string_to_addr(validator_address)?;
         if val_addr != latest_validator_detail.address {

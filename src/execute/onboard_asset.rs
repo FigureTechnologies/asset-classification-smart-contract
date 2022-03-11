@@ -42,7 +42,7 @@ pub fn onboard_asset(
     msg: OnboardAssetV1,
 ) -> ContractResponse {
     let repository = AssetMetaRepository::new(deps);
-    let asset_identifiers = msg.identifier.parse_identifiers()?;
+    let asset_identifiers = msg.identifier.to_identifiers()?;
     // get asset state config for type, or error if not present
     let asset_state = match repository
         .deps

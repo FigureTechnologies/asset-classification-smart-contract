@@ -41,7 +41,7 @@ pub fn validate_asset(
     msg: ValidateAssetV1,
 ) -> ContractResponse {
     let repository = AssetMetaRepository::new(deps);
-    let asset_identifiers = msg.identifier.parse_identifiers()?;
+    let asset_identifiers = msg.identifier.to_identifiers()?;
     // look up asset in repository
     let meta = repository.get_asset(&asset_identifiers.scope_address)?;
 

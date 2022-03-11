@@ -181,9 +181,9 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ACCESS_ROUTE,
+                DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
+                DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{
                 empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
@@ -564,7 +564,11 @@ mod tests {
                     deserialized.onboarding_status,
                     "Onboarding status should initially be Pending"
                 );
-                assert_eq!(1, deserialized.access_routes.len(), "Provided access route should be set upon onboarding");
+                assert_eq!(
+                    1,
+                    deserialized.access_routes.len(),
+                    "Provided access route should be set upon onboarding"
+                );
                 assert_eq!(
                     DEFAULT_ACCESS_ROUTE,
                     deserialized.access_routes.first().unwrap(),

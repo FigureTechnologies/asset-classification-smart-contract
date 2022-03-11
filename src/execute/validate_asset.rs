@@ -36,9 +36,13 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset<T>(repository: T, info: MessageInfo, msg: ValidateAssetV1) -> ContractResponse
+pub fn validate_asset<'a, T>(
+    repository: T,
+    info: MessageInfo,
+    msg: ValidateAssetV1,
+) -> ContractResponse
 where
-    T: AssetMetaRepository + MessageGatheringService + DepsManager,
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository

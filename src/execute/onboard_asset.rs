@@ -37,9 +37,13 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset<T>(repository: T, info: MessageInfo, msg: OnboardAssetV1) -> ContractResponse
+pub fn onboard_asset<'a, T>(
+    repository: T,
+    info: MessageInfo,
+    msg: OnboardAssetV1,
+) -> ContractResponse
 where
-    T: AssetMetaRepository + MessageGatheringService + DepsManager,
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present

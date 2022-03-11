@@ -1,4 +1,3 @@
-use crate::core::asset::AssetDefinition;
 use crate::core::msg::InitMsg;
 use crate::core::state::{config, insert_asset_definition, State};
 use crate::migrate::version_info::migrate_version_info;
@@ -28,7 +27,7 @@ pub fn init_contract(
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
     for input in msg.asset_definitions.iter() {
-        let asset_definition: AssetDefinition = input.into();
+        let asset_definition = input.as_asset_definition()?;
         // Create a new state storage for the provided asset definition
         insert_asset_definition(deps.storage, &asset_definition)?;
         messages.push(bind_name(
@@ -53,7 +52,9 @@ pub fn init_contract(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
-    use crate::core::asset::{AssetDefinitionInput, FeeDestination, ValidatorDetail};
+    use crate::core::asset::{
+        AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+    };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
     use crate::core::state::load_asset_definition_by_type;
@@ -64,7 +65,7 @@ mod tests {
         DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        get_default_asset_definition_inputs, single_attribute_for_key, test_instantiate, InstArgs,
+        get_default_asset_definition, single_attribute_for_key, test_instantiate, InstArgs,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
@@ -107,11 +108,7 @@ mod tests {
         );
         assert_eq!(
             asset_state,
-            get_default_asset_definition_inputs()
-                .first()
-                .unwrap()
-                .to_owned()
-                .into(),
+            get_default_asset_definition(),
             "the returned value should directly match the default asset definition"
         );
         let version_info = get_version_info(deps.as_ref().storage)
@@ -131,7 +128,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInput::new(
             "heloc",
-            "scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn",
+            ScopeSpecIdentifier::address("scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn"),
             vec![ValidatorDetail::new(
                 DEFAULT_VALIDATOR_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
@@ -146,7 +143,7 @@ mod tests {
         );
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
-            "scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3",
+            ScopeSpecIdentifier::address("scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3"),
             vec![ValidatorDetail::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
@@ -190,14 +187,18 @@ mod tests {
             .expect("the heloc asset definition should be added to the state");
         assert_eq!(
             heloc_asset_state,
-            first_asset_def.into(),
+            first_asset_def
+                .into_asset_definition()
+                .expect("failed to convert input to asset definition"),
             "the heloc asset state should equate to the heloc input"
         );
         let mortgage_asset_state = load_asset_definition_by_type(deps.as_ref().storage, "mortgage")
             .expect("the mortgage asset definition should be added to the state");
         assert_eq!(
             mortgage_asset_state,
-            second_asset_def.into(),
+            second_asset_def
+                .into_asset_definition()
+                .expect("failed to convert input to asset definition"),
             "the mortgage asset state should equate to the mortgage input"
         );
     }
@@ -223,7 +224,12 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInput::new("", "", vec![], None)],
+            asset_definitions: vec![AssetDefinitionInput::new(
+                "",
+                ScopeSpecIdentifier::address(""),
+                vec![],
+                None,
+            )],
             ..Default::default()
         };
         let error = instantiate(

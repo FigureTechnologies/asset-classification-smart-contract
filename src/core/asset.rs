@@ -47,59 +47,48 @@ impl AssetDefinition {
         generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
     }
 }
-impl From<AssetDefinitionInput> for AssetDefinition {
-    fn from(input: AssetDefinitionInput) -> Self {
-        Self {
-            asset_type: input.asset_type,
-            scope_spec_address: input.scope_spec_address,
-            validators: input.validators,
-            enabled: input.enabled.unwrap_or(true),
-        }
-    }
-}
-impl From<&AssetDefinitionInput> for AssetDefinition {
-    fn from(input: &AssetDefinitionInput) -> Self {
-        AssetDefinition {
-            asset_type: input.asset_type.clone(),
-            scope_spec_address: input.scope_spec_address.clone(),
-            validators: input.validators.clone(),
-            enabled: input.enabled.unwrap_or(true),
-        }
-    }
-}
 
 /// Allows the user to optionally specify the enabled flag on an asset definition, versus forcing
 /// it to be added manually on every request, when it will likely always be specified as `true`.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct AssetDefinitionInput {
     pub asset_type: String,
-    pub scope_spec_address: String,
+    pub scope_spec_identifier: ScopeSpecIdentifier,
     pub validators: Vec<ValidatorDetail>,
     pub enabled: Option<bool>,
 }
 impl AssetDefinitionInput {
-    pub fn new<S1: Into<String>, S2: Into<String>>(
+    pub fn new<S1: Into<String>>(
         asset_type: S1,
-        scope_spec_address: S2,
+        scope_spec_identifier: ScopeSpecIdentifier,
         validators: Vec<ValidatorDetail>,
         enabled: Option<bool>,
     ) -> AssetDefinitionInput {
         AssetDefinitionInput {
             asset_type: asset_type.into(),
-            scope_spec_address: scope_spec_address.into(),
+            scope_spec_identifier,
             validators,
             enabled,
         }
     }
-}
-impl From<AssetDefinition> for AssetDefinitionInput {
-    fn from(def: AssetDefinition) -> Self {
-        Self::new(
-            def.asset_type,
-            def.scope_spec_address,
-            def.validators,
-            def.enabled.to_some(),
+
+    pub fn into_asset_definition(self) -> ContractResult<AssetDefinition> {
+        AssetDefinition {
+            asset_type: self.asset_type,
+            scope_spec_address: self.scope_spec_identifier.get_scope_spec_address()?,
+            validators: self.validators,
+            enabled: self.enabled.unwrap_or(true),
+        }
+        .to_ok()
+    }
+
+    pub fn as_asset_definition(&self) -> ContractResult<AssetDefinition> {
+        AssetDefinition::new(
+            &self.asset_type,
+            self.scope_spec_identifier.get_scope_spec_address()?,
+            self.validators.clone(),
         )
+        .to_ok()
     }
 }
 

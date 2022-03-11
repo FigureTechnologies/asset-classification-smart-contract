@@ -1,4 +1,4 @@
-use crate::core::asset::{AssetDefinition, AssetDefinitionInput};
+use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::replace_asset_definition;
@@ -19,24 +19,15 @@ impl UpdateAssetDefinitionV1 {
 
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<UpdateAssetDefinitionV1> {
         match msg {
-            ExecuteMsg::UpdateAssetDefinition { asset_definition } => Ok(asset_definition.into()),
+            ExecuteMsg::UpdateAssetDefinition { asset_definition } => Self {
+                asset_definition: asset_definition.into_asset_definition()?,
+            }
+            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::UpdateAssetDefinition".to_string(),
             }
             .to_err(),
         }
-    }
-}
-impl From<AssetDefinitionInput> for UpdateAssetDefinitionV1 {
-    fn from(input: AssetDefinitionInput) -> Self {
-        UpdateAssetDefinitionV1 {
-            asset_definition: input.into(),
-        }
-    }
-}
-impl From<AssetDefinition> for UpdateAssetDefinitionV1 {
-    fn from(asset_definition: AssetDefinition) -> Self {
-        UpdateAssetDefinitionV1 { asset_definition }
     }
 }
 
@@ -62,7 +53,7 @@ pub fn update_asset_definition(
 mod tests {
     use crate::contract::execute;
     use crate::core::asset::{
-        AssetDefinition, AssetDefinitionInput, FeeDestination, ValidatorDetail,
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
     };
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
@@ -142,7 +133,7 @@ mod tests {
         let msg = ExecuteMsg::UpdateAssetDefinition {
             asset_definition: AssetDefinitionInput::new(
                 DEFAULT_ASSET_TYPE,
-                DEFAULT_SCOPE_SPEC_ADDRESS,
+                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
                 vec![],
                 None,
             ),
@@ -225,7 +216,12 @@ mod tests {
     }
 
     fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInput, deps: &DepsC) {
-        test_asset_definition_was_updated(&AssetDefinition::from(input), deps)
+        test_asset_definition_was_updated(
+            &input
+                .as_asset_definition()
+                .expect("conversion should succeed"),
+            deps,
+        )
     }
 
     fn test_asset_definition_was_updated(asset_definition: &AssetDefinition, deps: &DepsC) {
@@ -243,7 +239,7 @@ mod tests {
     fn get_update_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             DEFAULT_ASSET_TYPE,
-            DEFAULT_SCOPE_SPEC_ADDRESS,
+            ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
             vec![ValidatorDetail::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),
@@ -267,6 +263,10 @@ mod tests {
     }
 
     fn get_valid_update_asset_definition() -> UpdateAssetDefinitionV1 {
-        get_update_asset_definition().into()
+        UpdateAssetDefinitionV1 {
+            asset_definition: get_update_asset_definition()
+                .into_asset_definition()
+                .expect("asset definition input conversion should succeed"),
+        }
     }
 }

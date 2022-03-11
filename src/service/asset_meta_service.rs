@@ -186,7 +186,8 @@ mod tests {
             state::config_read,
         },
         service::{
-            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService, deps_manager::DepsManager,
+            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+            deps_manager::DepsManager,
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},

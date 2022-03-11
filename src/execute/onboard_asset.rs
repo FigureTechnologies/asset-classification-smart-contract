@@ -4,6 +4,7 @@ use crate::core::state::load_asset_definition_by_type;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::asset_meta_service::AssetMetaService;
 use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
@@ -37,13 +38,15 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset(
-    deps: DepsMutC,
+pub fn onboard_asset<T>(
+    repository: T,
     _env: Env,
     info: MessageInfo,
     msg: OnboardAssetV1,
-) -> ContractResponse {
-    let repository = AssetMetaService::new(deps);
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager,
+{
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // get asset state config for type, or error if not present
     let asset_state =
@@ -107,7 +110,7 @@ pub fn onboard_asset(
     };
 
     // verify asset (scope) exists
-    let scope = match repository.deps.use_deps(|d| {
+    let scope = match repository.use_deps(|d| {
         ProvenanceQuerier::new(&d.querier).get_scope(&asset_identifiers.scope_address)
     }) {
         Err(..) => {
@@ -155,7 +158,7 @@ pub fn onboard_asset(
             )
             .set_validator(msg.validator_address),
         )
-        .add_messages(repository.messages.get()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
@@ -172,6 +175,7 @@ mod tests {
             msg::AssetIdentifier,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -201,7 +205,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
@@ -237,7 +241,7 @@ mod tests {
         )
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
@@ -260,7 +264,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
@@ -295,7 +299,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
@@ -326,7 +330,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
@@ -369,7 +373,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
@@ -406,7 +410,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
             OnboardAssetV1 {
@@ -444,7 +448,7 @@ mod tests {
         let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
@@ -477,7 +481,7 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let err = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
@@ -509,7 +513,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let result = onboard_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {

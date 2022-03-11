@@ -1,6 +1,7 @@
 use crate::core::asset::AssetScopeAttribute;
 use crate::core::msg::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
+use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_utilities::MockOwnedDeps;
 use crate::util::aliases::ContractResponse;
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -70,7 +71,12 @@ impl Default for TestOnboardAsset {
 }
 
 pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> ContractResponse {
-    let response = onboard_asset(deps.as_mut(), msg.env, msg.info, msg.onboard_asset);
+    let response = onboard_asset(
+        AssetMetaService::new(deps.as_mut()),
+        msg.env,
+        msg.info,
+        msg.onboard_asset,
+    );
     match response {
         Ok(ref res) => res.messages.iter().for_each(|m| match &m.msg {
             CosmosMsg::Custom(ProvenanceMsg {

@@ -3,6 +3,8 @@ use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::asset_meta_service::AssetMetaService;
+use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
@@ -35,13 +37,15 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset(
-    deps: DepsMutC,
+pub fn validate_asset<T>(
+    repository: T,
     _env: Env,
     info: MessageInfo,
     msg: ValidateAssetV1,
-) -> ContractResponse {
-    let repository = AssetMetaService::new(deps);
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager,
+{
     let asset_identifiers = msg.identifier.parse_identifiers()?;
     // look up asset in repository
     let meta = repository.get_asset(&asset_identifiers.scope_address)?;
@@ -75,7 +79,7 @@ pub fn validate_asset(
             )
             .set_validator(info.sender),
         )
-        .add_messages(repository.messages.get()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
@@ -86,6 +90,7 @@ mod tests {
 
     use crate::{
         core::{error::ContractError, msg::AssetIdentifier},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -104,7 +109,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = validate_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
             ValidateAssetV1 {
@@ -145,7 +150,7 @@ mod tests {
             DEFAULT_ONBOARDING_COST,
         );
         let err = validate_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             info.clone(),
             ValidateAssetV1 {
@@ -191,7 +196,7 @@ mod tests {
         let info = mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST);
 
         let result = validate_asset(
-            deps.as_mut(),
+            AssetMetaService::new(deps.as_mut()),
             mock_env(),
             info.clone(),
             ValidateAssetV1 {

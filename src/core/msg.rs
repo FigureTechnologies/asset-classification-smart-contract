@@ -125,6 +125,7 @@ pub enum ExecuteMsg {
         identifier: AssetIdentifier,
         asset_type: String,
         validator_address: String,
+        access_routes: Option<Vec<String>>,
     },
     ValidateAsset {
         identifier: AssetIdentifier,

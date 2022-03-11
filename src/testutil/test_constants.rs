@@ -26,3 +26,5 @@ pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 /// This is the default value that test_instantiate uses to create the contract's base name
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
+/// This is the default access route for an asset
+pub const DEFAULT_ACCESS_ROUTE: &str = "https://mycoolasset.info";

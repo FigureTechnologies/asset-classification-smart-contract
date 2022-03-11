@@ -151,6 +151,7 @@ impl AssetScopeAttribute {
         validator_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
+        access_routes: Vec<String>,
     ) -> ContractResult<Self> {
         let identifiers = identifier.parse_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
@@ -167,7 +168,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_routes: vec![],
+            access_routes,
         }
         .to_ok()
     }

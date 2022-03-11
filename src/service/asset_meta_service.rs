@@ -49,7 +49,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         .to_ok()
     }
 
-    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<Vec<String>>>(
         &self,
         identifier: &AssetIdentifier,
         asset_type: S1,
@@ -57,6 +57,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         requestor_address: S3,
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
+        access_routes: S4,
     ) -> ContractResult<()> {
         // generate attribute -> scope bind message
         let contract_base_name = self
@@ -69,6 +70,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             validator_address,
             onboarding_status.to_some(),
             validator_detail,
+            access_routes.into(),
         )?;
 
         if self.has_asset(&attribute.scope_address)? {
@@ -207,9 +209,9 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
-                DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_ACCESS_ROUTE, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+                DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
@@ -263,6 +265,7 @@ mod tests {
                 DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
+                vec![],
             )
             .unwrap_err();
 
@@ -296,6 +299,7 @@ mod tests {
                 DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
+                vec![DEFAULT_ACCESS_ROUTE.to_string()],
             )
             .unwrap();
 

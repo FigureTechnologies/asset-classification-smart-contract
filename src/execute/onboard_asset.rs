@@ -15,6 +15,7 @@ pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
     pub asset_type: String,
     pub validator_address: String,
+    pub access_routes: Vec<String>,
 }
 impl OnboardAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<OnboardAssetV1> {
@@ -23,10 +24,12 @@ impl OnboardAssetV1 {
                 identifier,
                 asset_type,
                 validator_address,
+                access_routes,
             } => OnboardAssetV1 {
                 identifier,
                 asset_type,
                 validator_address,
+                access_routes: access_routes.unwrap_or(vec![]),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -145,6 +148,7 @@ where
         info.sender,
         crate::core::asset::AssetOnboardingStatus::Pending,
         validator_config,
+        msg.access_routes,
     )?;
 
     Ok(Response::new()
@@ -179,7 +183,7 @@ mod tests {
             test_constants::{
                 DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
                 DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ACCESS_ROUTE,
             },
             test_utilities::{
                 empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
@@ -209,6 +213,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: "bogus".into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -244,6 +249,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -266,6 +272,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -300,6 +307,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -342,6 +350,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -378,6 +387,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -408,6 +418,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -445,6 +456,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -477,6 +489,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -508,6 +521,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
             },
         )
         .unwrap();
@@ -549,6 +563,12 @@ mod tests {
                     AssetOnboardingStatus::Pending,
                     deserialized.onboarding_status,
                     "Onboarding status should initially be Pending"
+                );
+                assert_eq!(1, deserialized.access_routes.len(), "Provided access route should be set upon onboarding");
+                assert_eq!(
+                    DEFAULT_ACCESS_ROUTE,
+                    deserialized.access_routes.first().unwrap(),
+                    "Proper access route should be set upon onboarding"
                 );
             }
             _ => panic!("Unexpected message from onboard_asset: {:?}", msg),

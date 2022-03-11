@@ -2,13 +2,12 @@ use crate::core::asset::AssetOnboardingStatus;
 use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::service::asset_meta_repository::AssetMetaRepository;
-use crate::service::asset_meta_service::AssetMetaService;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
@@ -37,12 +36,7 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset<T>(
-    repository: T,
-    _env: Env,
-    info: MessageInfo,
-    msg: ValidateAssetV1,
-) -> ContractResponse
+pub fn validate_asset<T>(repository: T, info: MessageInfo, msg: ValidateAssetV1) -> ContractResponse
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager,
 {
@@ -85,7 +79,6 @@ where
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
@@ -110,7 +103,6 @@ mod tests {
 
         let err = validate_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -151,7 +143,6 @@ mod tests {
         );
         let err = validate_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             info.clone(),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -197,7 +188,6 @@ mod tests {
 
         let result = validate_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             info.clone(),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),

@@ -2,13 +2,12 @@ use crate::core::error::ContractError;
 use crate::core::msg::{AssetIdentifier, ExecuteMsg};
 use crate::core::state::load_asset_definition_by_type;
 use crate::service::asset_meta_repository::AssetMetaRepository;
-use crate::service::asset_meta_service::AssetMetaService;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -38,12 +37,7 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset<T>(
-    repository: T,
-    _env: Env,
-    info: MessageInfo,
-    msg: OnboardAssetV1,
-) -> ContractResponse
+pub fn onboard_asset<T>(repository: T, info: MessageInfo, msg: OnboardAssetV1) -> ContractResponse
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager,
 {
@@ -164,7 +158,7 @@ where
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, testing::mock_env, Coin, CosmosMsg, SubMsg, Uint128};
+    use cosmwasm_std::{from_binary, Coin, CosmosMsg, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
@@ -206,7 +200,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -242,7 +235,6 @@ mod tests {
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -265,7 +257,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -300,7 +291,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -331,7 +321,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[
@@ -374,7 +363,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[Coin {
@@ -411,7 +399,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -449,7 +436,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
@@ -482,7 +468,6 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -514,7 +499,6 @@ mod tests {
 
         let result = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),

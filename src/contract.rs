@@ -43,13 +43,11 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
     match msg {
         ExecuteMsg::OnboardAsset { .. } => onboard_asset(
             AssetMetaService::new(deps),
-            env,
             info,
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::ValidateAsset { .. } => validate_asset(
             AssetMetaService::new(deps),
-            env,
             info,
             ValidateAssetV1::from_execute_msg(msg)?,
         ),

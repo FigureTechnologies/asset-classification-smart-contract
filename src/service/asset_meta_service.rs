@@ -4,50 +4,52 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 use crate::{
     core::{
         asset::{
-            AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult, ValidatorDetail,
+            AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+            ValidatorDetail,
         },
         error::ContractError,
-        msg::AssetIdentifier,
         state::config_read,
     },
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
     },
+    util::aliases::{ContractResult, DepsMutC},
+    util::deps_container::DepsContainer,
     util::functions::generate_asset_attribute_name,
+    util::provenance_util::get_add_attribute_to_scope_msg,
+    util::traits::{OptionExtensions, ResultExtensions},
+    util::vec_container::VecContainer,
 };
 
 use super::{
-    aliases::{ContractResult, DepsMutC},
-    deps_container::DepsContainer,
-    provenance_util::get_add_attribute_to_scope_msg,
-    traits::{OptionExtensions, ResultExtensions},
-    vec_container::VecContainer,
+    asset_meta_repository::AssetMetaRepository, deps_manager::DepsManager,
+    message_gathering_service::MessageGatheringService,
 };
 
-pub struct AssetMetaRepository<'a> {
-    pub deps: DepsContainer<'a>,
-    pub messages: VecContainer<CosmosMsg<ProvenanceMsg>>,
+pub struct AssetMetaService<'a> {
+    deps: DepsContainer<'a>,
+    messages: VecContainer<CosmosMsg<ProvenanceMsg>>,
 }
-impl<'a> AssetMetaRepository<'a> {
+impl<'a> AssetMetaService<'a> {
     pub fn new(deps: DepsMutC<'a>) -> Self {
         Self {
             deps: DepsContainer::new(deps),
             messages: VecContainer::new(),
         }
     }
-
-    pub fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> ContractResult<bool> {
+}
+impl<'a> AssetMetaRepository for AssetMetaService<'a> {
+    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> ContractResult<bool> {
         let scope_address_string: String = scope_address.into();
         // check for asset attribute existence
-        self.deps
-            .use_deps(|d| {
-                may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
-            })?
-            .is_some()
-            .to_ok()
+        self.use_deps(|d| {
+            may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
+        })?
+        .is_some()
+        .to_ok()
     }
 
-    pub fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         &self,
         identifier: &AssetIdentifier,
         asset_type: S1,
@@ -58,7 +60,6 @@ impl<'a> AssetMetaRepository<'a> {
     ) -> ContractResult<()> {
         // generate attribute -> scope bind message
         let contract_base_name = self
-            .deps
             .use_deps(|d| config_read(d.storage).load())?
             .base_contract_name;
         let attribute = AssetScopeAttribute::new(
@@ -76,35 +77,35 @@ impl<'a> AssetMetaRepository<'a> {
             }
             .to_err();
         }
-        self.messages.push(get_add_attribute_to_scope_msg(
+        self.add_message(get_add_attribute_to_scope_msg(
             &attribute,
             contract_base_name,
         )?);
         Ok(())
     }
 
-    pub fn get_asset<S1: Into<String>>(
+    fn get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
     ) -> ContractResult<AssetScopeAttribute> {
         let scope_address_string: String = scope_address.into();
         // try to fetch asset from attribute meta, if found also fetch scope attribute and reconstruct AssetMeta from relevant pieces
-        self.deps.use_deps(|d| {
+        self.use_deps(|d| {
             query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
         })
     }
 
-    pub fn try_get_asset<S1: Into<String>>(
+    fn try_get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
     ) -> ContractResult<Option<AssetScopeAttribute>> {
         let scope_address_string: String = scope_address.into();
-        self.deps.use_deps(|d| {
+        self.use_deps(|d| {
             may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
         })
     }
 
-    pub fn validate_asset<S1: Into<String>, S2: Into<String>>(
+    fn validate_asset<S1: Into<String>, S2: Into<String>>(
         &self,
         scope_address: S1,
         success: bool,
@@ -114,7 +115,6 @@ impl<'a> AssetMetaRepository<'a> {
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset(scope_address_str.clone())?;
         let contract_base_name = self
-            .deps
             .use_deps(|d| config_read(d.storage).load())?
             .base_contract_name;
         let attribute_name =
@@ -132,11 +132,40 @@ impl<'a> AssetMetaRepository<'a> {
         });
         attribute.latest_validator_detail = None;
         attribute.latest_validation_result = Some(AssetValidationResult { message, success });
-        self.messages.push(get_add_attribute_to_scope_msg(
+        self.add_message(get_add_attribute_to_scope_msg(
             &attribute,
             contract_base_name,
         )?);
         Ok(())
+    }
+}
+impl<'a> DepsManager<'a> for AssetMetaService<'a> {
+    fn use_deps<T, F>(&self, deps_fn: F) -> T
+    where
+        F: FnMut(&mut DepsMutC) -> T,
+    {
+        self.deps.use_deps(deps_fn)
+    }
+
+    fn into_deps(self) -> DepsMutC<'a> {
+        self.deps.get()
+    }
+}
+impl<'a> MessageGatheringService for AssetMetaService<'a> {
+    fn get_messages(&self) -> Vec<CosmosMsg<ProvenanceMsg>> {
+        self.messages.get_cloned()
+    }
+
+    fn add_message(&self, message: CosmosMsg<ProvenanceMsg>) {
+        self.messages.push(message);
+    }
+
+    fn append_messages(&self, messages: &[CosmosMsg<ProvenanceMsg>]) {
+        self.messages.append(&mut messages.to_vec());
+    }
+
+    fn clear_messages(&self) {
+        self.messages.clear();
     }
 }
 
@@ -151,9 +180,15 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult},
+            asset::{
+                AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+            },
             error::ContractError,
-            msg::AssetIdentifier,
+            state::config_read,
+        },
+        service::{
+            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+            deps_manager::DepsManager,
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
@@ -163,20 +198,17 @@ mod tests {
             },
             test_utilities::{
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
-                InstArgs,
+                test_instantiate_success, InstArgs,
             },
         },
-        util::{
-            asset_meta_repository::AssetMetaRepository, functions::generate_asset_attribute_name,
-            traits::OptionExtensions,
-        },
+        util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
 
     #[test]
     fn has_asset_returns_false_if_asset_does_not_have_the_attribute() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
         let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
         assert_eq!(
             false, result,
@@ -190,7 +222,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
 
@@ -206,7 +238,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
             .add_asset(
@@ -239,7 +271,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
 
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         repository
             .add_asset(
@@ -302,7 +334,7 @@ mod tests {
     fn get_asset_returns_error_if_asset_does_not_exist() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository.get_asset(DEFAULT_SCOPE_ADDRESS).unwrap_err();
 
@@ -326,7 +358,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let attribute = repository.get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
 
@@ -341,7 +373,7 @@ mod tests {
     fn try_get_asset_returns_none_if_asset_does_not_exist() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let result = repository.try_get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
 
@@ -356,7 +388,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let result = repository
             .try_get_asset(DEFAULT_SCOPE_ADDRESS)
@@ -374,7 +406,7 @@ mod tests {
     fn validate_asset_returns_error_if_asset_not_onboarded() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
             .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None)
@@ -418,11 +450,22 @@ mod tests {
         test_validation_result(None, false);
     }
 
+    #[test]
+    fn test_into_deps() {
+        let mut mock_deps = mock_dependencies(&[]);
+        test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
+        let service = AssetMetaService::new(mock_deps.as_mut());
+        let deps = service.into_deps();
+        config_read(deps.storage)
+            .load()
+            .expect("expected storage to load from relinquished deps");
+    }
+
     fn test_validation_result(message: Option<&str>, result: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        let repository = AssetMetaRepository::new(deps.as_mut());
+        let repository = AssetMetaService::new(deps.as_mut());
         repository
             .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message)
             .unwrap();

@@ -24,6 +24,10 @@ impl<T> VecContainer<T> {
         self.values.borrow_mut().append(msgs)
     }
 
+    pub fn clear(&self) {
+        self.values.borrow_mut().clear();
+    }
+
     /// Fetches the actual value inside the RefCell, moving the internalized value
     /// and disposing of this container in the process
     pub fn get(self) -> Vec<T> {
@@ -78,6 +82,22 @@ mod tests {
         assert_eq!(1, ints[0], "the first value should be 1");
         assert_eq!(2, ints[1], "the second value should be 2");
         assert_eq!(3, ints[2], "the third value should be 3");
+    }
+
+    #[test]
+    fn test_container_clear() {
+        let container = VecContainer::new();
+        container.append(&mut vec!["a", "b", "c"]);
+        assert_eq!(
+            3,
+            container.get_copied().len(),
+            "there should be three items in the vec"
+        );
+        container.clear();
+        assert!(
+            container.get_copied().is_empty(),
+            "after a clear, the container should be empty"
+        );
     }
 
     #[test]

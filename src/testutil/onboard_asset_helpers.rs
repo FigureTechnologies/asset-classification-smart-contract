@@ -1,10 +1,10 @@
-use crate::core::asset::AssetScopeAttribute;
-use crate::core::msg::AssetIdentifier;
+use crate::core::asset::{AssetIdentifier, AssetScopeAttribute};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
+use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_utilities::MockOwnedDeps;
 use crate::util::aliases::ContractResponse;
-use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, from_binary, CosmosMsg, Env, MessageInfo};
+use cosmwasm_std::testing::mock_info;
+use cosmwasm_std::{coin, from_binary, CosmosMsg, MessageInfo};
 use provwasm_std::ProvenanceMsg;
 use serde_json_wasm::to_string;
 
@@ -15,7 +15,6 @@ use super::test_constants::{
 };
 
 pub struct TestOnboardAsset {
-    pub env: Env,
     pub info: MessageInfo,
     pub contract_base_name: String,
     pub onboard_asset: OnboardAssetV1,
@@ -64,13 +63,16 @@ impl Default for TestOnboardAsset {
             ),
             contract_base_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
             onboard_asset: TestOnboardAsset::default_onboard_asset(),
-            env: mock_env(),
         }
     }
 }
 
 pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> ContractResponse {
-    let response = onboard_asset(deps.as_mut(), msg.env, msg.info, msg.onboard_asset);
+    let response = onboard_asset(
+        AssetMetaService::new(deps.as_mut()),
+        msg.info,
+        msg.onboard_asset,
+    );
     match response {
         Ok(ref res) => res.messages.iter().for_each(|m| match &m.msg {
             CosmosMsg::Custom(ProvenanceMsg {

@@ -53,9 +53,9 @@ pub fn init_contract(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
-    use crate::core::asset::{FeeDestination, ValidatorDetail};
+    use crate::core::asset::{AssetDefinitionInput, FeeDestination, ValidatorDetail};
     use crate::core::error::ContractError;
-    use crate::core::msg::{AssetDefinitionInput, InitMsg};
+    use crate::core::msg::InitMsg;
     use crate::core::state::load_asset_definition_by_type;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};

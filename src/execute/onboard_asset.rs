@@ -1,11 +1,14 @@
+use crate::core::asset::AssetIdentifier;
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetIdentifier, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::core::state::load_asset_definition_by_type;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,35 +38,34 @@ impl OnboardAssetV1 {
     }
 }
 
-pub fn onboard_asset(
-    deps: DepsMutC,
-    _env: Env,
+pub fn onboard_asset<'a, T>(
+    repository: T,
     info: MessageInfo,
     msg: OnboardAssetV1,
-) -> ContractResponse {
-    let repository = AssetMetaRepository::new(deps);
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
+{
     let asset_identifiers = msg.identifier.to_identifiers()?;
     // get asset state config for type, or error if not present
-    let asset_state = match repository
-        .deps
-        .use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type))
-    {
-        Ok(state) => {
-            if !state.enabled {
-                return ContractError::AssetTypeDisabled {
+    let asset_state =
+        match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
+            Ok(state) => {
+                if !state.enabled {
+                    return ContractError::AssetTypeDisabled {
+                        asset_type: msg.asset_type,
+                    }
+                    .to_err();
+                }
+                state
+            }
+            Err(_) => {
+                return ContractError::UnsupportedAssetType {
                     asset_type: msg.asset_type,
                 }
-                .to_err();
+                .to_err()
             }
-            state
-        }
-        Err(_) => {
-            return ContractError::UnsupportedAssetType {
-                asset_type: msg.asset_type,
-            }
-            .to_err()
-        }
-    };
+        };
 
     // verify perscribed validator is present as a validator in asset state
     let validator_config = match asset_state
@@ -107,7 +109,7 @@ pub fn onboard_asset(
     };
 
     // verify asset (scope) exists
-    let scope = match repository.deps.use_deps(|d| {
+    let scope = match repository.use_deps(|d| {
         ProvenanceQuerier::new(&d.querier).get_scope(&asset_identifiers.scope_address)
     }) {
         Err(..) => {
@@ -155,23 +157,23 @@ pub fn onboard_asset(
             )
             .set_validator(msg.validator_address),
         )
-        .add_messages(repository.messages.get()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, testing::mock_env, Coin, CosmosMsg, SubMsg, Uint128};
+    use cosmwasm_std::{from_binary, Coin, CosmosMsg, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
     use crate::{
         core::{
-            asset::{AssetOnboardingStatus, AssetScopeAttribute},
+            asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute},
             error::ContractError,
-            msg::AssetIdentifier,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -201,8 +203,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -237,8 +238,7 @@ mod tests {
         )
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -260,8 +260,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -295,8 +294,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -326,8 +324,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[
@@ -369,8 +366,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_funds(
                 DEFAULT_SENDER_ADDRESS,
                 &[Coin {
@@ -406,8 +402,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -444,8 +439,7 @@ mod tests {
         let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
@@ -477,8 +471,7 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let err = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -509,8 +502,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let result = onboard_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),

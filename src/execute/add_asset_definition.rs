@@ -1,6 +1,6 @@
-use crate::core::asset::AssetDefinition;
+use crate::core::asset::{AssetDefinition, AssetDefinitionInput};
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::core::state::{config_read, insert_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
@@ -72,9 +72,11 @@ pub fn add_asset_definition(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
-    use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::core::asset::{
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ValidatorDetail,
+    };
     use crate::core::error::ContractError;
-    use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
+    use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;

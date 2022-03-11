@@ -1,11 +1,13 @@
-use crate::core::asset::AssetOnboardingStatus;
+use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus};
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetIdentifier, ExecuteMsg};
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
-use crate::util::asset_meta_repository::AssetMetaRepository;
+use crate::core::msg::ExecuteMsg;
+use crate::service::asset_meta_repository::AssetMetaRepository;
+use crate::service::deps_manager::DepsManager;
+use crate::service::message_gathering_service::MessageGatheringService;
+use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{Env, MessageInfo, Response};
+use cosmwasm_std::{MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
 pub struct ValidateAssetV1 {
@@ -34,13 +36,14 @@ impl ValidateAssetV1 {
     }
 }
 
-pub fn validate_asset(
-    deps: DepsMutC,
-    _env: Env,
+pub fn validate_asset<'a, T>(
+    repository: T,
     info: MessageInfo,
     msg: ValidateAssetV1,
-) -> ContractResponse {
-    let repository = AssetMetaRepository::new(deps);
+) -> ContractResponse
+where
+    T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
+{
     let asset_identifiers = msg.identifier.to_identifiers()?;
     // look up asset in repository
     let meta = repository.get_asset(&asset_identifiers.scope_address)?;
@@ -74,17 +77,17 @@ pub fn validate_asset(
             )
             .set_validator(info.sender),
         )
-        .add_messages(repository.messages.get()))
+        .add_messages(repository.get_messages()))
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::{error::ContractError, msg::AssetIdentifier},
+        core::{asset::AssetIdentifier, error::ContractError},
+        service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -103,8 +106,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -144,8 +146,7 @@ mod tests {
             DEFAULT_ONBOARDING_COST,
         );
         let err = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             info.clone(),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -190,8 +191,7 @@ mod tests {
         let info = mock_info_with_nhash(DEFAULT_VALIDATOR_ADDRESS, DEFAULT_ONBOARDING_COST);
 
         let result = validate_asset(
-            deps.as_mut(),
-            mock_env(),
+            AssetMetaService::new(deps.as_mut()),
             info.clone(),
             ValidateAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),

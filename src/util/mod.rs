@@ -1,5 +1,4 @@
 pub mod aliases;
-pub mod asset_meta_repository;
 pub mod constants;
 pub mod contract_helpers;
 pub mod deps_container;

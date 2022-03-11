@@ -6,11 +6,10 @@ use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
 use serde_json_wasm::to_string;
 
-use crate::core::msg::AssetDefinitionInput;
 use crate::{
     contract::instantiate,
     core::{
-        asset::{AssetDefinition, AssetOnboardingStatus, ValidatorDetail},
+        asset::{AssetDefinition, AssetDefinitionInput, AssetOnboardingStatus, ValidatorDetail},
         msg::InitMsg,
     },
     util::functions::generate_asset_attribute_name,

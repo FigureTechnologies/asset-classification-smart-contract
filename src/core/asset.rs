@@ -202,7 +202,11 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
-        let access_defintiion = AccessDefinition::new_checked(&req_addr, access_routes)?;
+        let access_definitions = if access_routes.is_empty() {
+            vec![]
+        } else {
+            vec![AccessDefinition::new_checked(&req_addr, access_routes)?]
+        };
         AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,
@@ -212,7 +216,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_definitions: vec![access_defintiion],
+            access_definitions: access_definitions,
         }
         .to_ok()
     }

@@ -23,7 +23,7 @@ pub fn validate_init_msg(msg: &InitMsg) -> ContractResult<()> {
     let mut asset_messages = msg
         .asset_definitions
         .iter()
-        .flat_map(|asset| validate_asset_definition_input_internal(&asset))
+        .flat_map(validate_asset_definition_input_internal)
         .collect::<Vec<String>>();
     invalid_fields.append(&mut asset_messages);
     if !invalid_fields.is_empty() {

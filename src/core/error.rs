@@ -57,7 +57,7 @@ pub enum ContractError {
         asset_type: String,
     },
 
-    #[error("Asset {scope_address} already onboarded")]
+    #[error("Asset {scope_address} has already been fully onboarded")]
     AssetAlreadyOnboarded { scope_address: String },
 
     #[error(

@@ -151,6 +151,26 @@ pub struct AssetValidationResult {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct AccessDefinition {
+    pub owner_address: String,
+    pub access_routes: Vec<String>,
+}
+
+impl AccessDefinition {
+    pub fn new_checked<S1: Into<String>, S2: Into<String>>(
+        owner_address: S1,
+        access_routes: Vec<S2>,
+    ) -> ContractResult<Self> {
+        Self {
+            owner_address: bech32_string_to_addr(owner_address)?.into_string(),
+            access_routes: access_routes.into_iter().map(|s| s.into()).collect(),
+        }
+        .to_ok()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
     pub asset_uuid: String,
     pub scope_address: String,
@@ -160,7 +180,7 @@ pub struct AssetScopeAttribute {
     pub onboarding_status: AssetOnboardingStatus,
     pub latest_validator_detail: Option<ValidatorDetail>,
     pub latest_validation_result: Option<AssetValidationResult>,
-    pub access_routes: Vec<String>,
+    pub access_definitions: Vec<AccessDefinition>,
 }
 impl AssetScopeAttribute {
     /// Constructs a new instance of AssetScopeAttribute from the input params
@@ -174,6 +194,7 @@ impl AssetScopeAttribute {
         validator_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
+        access_routes: Vec<String>,
     ) -> ContractResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
@@ -181,6 +202,11 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
+        let access_definitions = if access_routes.is_empty() {
+            vec![]
+        } else {
+            vec![AccessDefinition::new_checked(&req_addr, access_routes)?]
+        };
         AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,
@@ -190,7 +216,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_routes: vec![],
+            access_definitions: access_definitions,
         }
         .to_ok()
     }

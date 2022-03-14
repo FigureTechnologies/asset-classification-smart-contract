@@ -26,6 +26,8 @@ pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 /// This is the default value that test_instantiate uses to create the contract's base name
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
+/// This is the default access route to be set for the onboarding address
+pub const DEFAULT_ACCESS_ROUTE: &str = "https://coolassets.co";
 /// This is the default value appended to mocked records
 pub const DEFAULT_RECORD_NAME: &str = "test-record";
 /// This is the default value used in the default record. The derived result was generated with Provenance's MetadataAddress using the DEFAULT_SCOPE_ADDRESS and a random session UUID

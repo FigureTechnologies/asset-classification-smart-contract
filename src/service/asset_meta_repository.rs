@@ -14,6 +14,7 @@ pub trait AssetMetaRepository {
         requestor_address: S3,
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
+        access_routes: Vec<String>,
     ) -> ContractResult<()>;
 
     fn update_asset(&self, attribute: &AssetScopeAttribute) -> ContractResult<()>;
@@ -31,5 +32,6 @@ pub trait AssetMetaRepository {
         scope_address: S1,
         success: bool,
         validation_message: Option<S2>,
+        access_routes: Vec<String>,
     ) -> ContractResult<()>;
 }

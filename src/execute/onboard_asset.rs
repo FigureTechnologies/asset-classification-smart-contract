@@ -595,7 +595,8 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(err, ContractError::InvalidScope { .. }),
-            "expected the error to indicate that the scope was invalid for records",
+            "expected the error to indicate that the scope was invalid for records, but got: {:?}",
+            err,
         );
     }
 

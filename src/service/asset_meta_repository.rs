@@ -16,6 +16,8 @@ pub trait AssetMetaRepository {
         validator_detail: ValidatorDetail,
     ) -> ContractResult<()>;
 
+    fn update_asset(&self, attribute: &AssetScopeAttribute) -> ContractResult<()>;
+
     fn get_asset<S1: Into<String>>(&self, scope_address: S1)
         -> ContractResult<AssetScopeAttribute>;
 

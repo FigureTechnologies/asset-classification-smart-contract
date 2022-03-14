@@ -1,4 +1,4 @@
-use crate::core::asset::AssetIdentifier;
+use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::load_asset_definition_by_type;
@@ -135,14 +135,6 @@ where
         .to_err();
     }
 
-    // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if repository.has_asset(&asset_identifiers.scope_address)? {
-        return ContractError::AssetAlreadyOnboarded {
-            scope_address: asset_identifiers.scope_address,
-        }
-        .to_err();
-    }
-
     // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
     let records = repository
         .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
@@ -155,6 +147,32 @@ where
                 "cannot onboard scope [{}]. scope must have at least one non-empty record",
                 scope.scope_id,
             ),
+        }
+        .to_err();
+    }
+
+    // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
+    let needs_re_onboard = if let Some(scope_attribute) = repository.try_get_asset(&asset_identifiers.scope_address)? {
+        match scope_attribute.onboarding_status {
+            AssetOnboardingStatus::Approved => {
+                return ContractError::AssetAlreadyOnboarded { scope_address: asset_identifiers.scope_address, }.to_err();
+            },
+            AssetOnboardingStatus::Pending => {
+                return if let Some(validator_detail) = scope_attribute.latest_validator_detail {
+                    ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
+                } else {
+                    ContractError::std_err(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!"))
+                }.to_err();
+            },
+            AssetOnboardingStatus::Denied => {
+
+            }
+        }
+    }
+    
+    if repository.has_asset(&asset_identifiers.scope_address)? {
+        return ContractError::AssetAlreadyOnboarded {
+            scope_address: asset_identifiers.scope_address,
         }
         .to_err();
     }

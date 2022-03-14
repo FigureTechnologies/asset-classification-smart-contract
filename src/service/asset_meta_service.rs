@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, CosmosMsg};
+use cosmwasm_std::CosmosMsg;
 use provwasm_std::{delete_attributes, ProvenanceMsg};
 
 use crate::{
@@ -15,10 +15,12 @@ use crate::{
     },
     util::aliases::{ContractResult, DepsMutC},
     util::deps_container::DepsContainer,
-    util::provenance_util::get_add_attribute_to_scope_msg,
     util::traits::{OptionExtensions, ResultExtensions},
     util::vec_container::VecContainer,
     util::{fees::calculate_validator_cost_messages, functions::generate_asset_attribute_name},
+    util::{
+        provenance_util::get_add_attribute_to_scope_msg, scope_address_utils::bech32_string_to_addr,
+    },
 };
 
 use super::{
@@ -84,6 +86,23 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
+    fn update_asset(&self, attribute: &AssetScopeAttribute) -> ContractResult<()> {
+        let contract_base_name = self
+            .use_deps(|d| config_read(d.storage).load())?
+            .base_contract_name;
+        let attribute_name =
+            generate_asset_attribute_name(&attribute.asset_type, &contract_base_name);
+        self.add_message(delete_attributes(
+            bech32_string_to_addr(&attribute.scope_address)?,
+            &attribute_name,
+        )?);
+        self.add_message(get_add_attribute_to_scope_msg(
+            attribute,
+            &contract_base_name,
+        )?);
+        Ok(())
+    }
+
     fn get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
@@ -114,15 +133,6 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // set validation result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset(scope_address_str.clone())?;
-        let contract_base_name = self
-            .use_deps(|d| config_read(d.storage).load())?
-            .base_contract_name;
-        let attribute_name =
-            generate_asset_attribute_name(attribute.asset_type.clone(), contract_base_name.clone());
-        self.add_message(delete_attributes(
-            Addr::unchecked(scope_address_str.clone()),
-            attribute_name,
-        )?);
         let message = validation_message.map(|m| m.into()).unwrap_or_else(|| {
             match success {
                 true => "validation successful",
@@ -133,11 +143,15 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         let existing_validator_detail = attribute.latest_validator_detail;
         attribute.latest_validator_detail = None;
         attribute.latest_validation_result = Some(AssetValidationResult { message, success });
-        self.add_message(get_add_attribute_to_scope_msg(
-            &attribute,
-            contract_base_name,
-        )?);
-
+        // change the onboarding status based on how the validator set the
+        attribute.onboarding_status = if success {
+            AssetOnboardingStatus::Approved
+        } else {
+            AssetOnboardingStatus::Denied
+        };
+        // Remove the old scope attribute and append a new one that overwrites existing data
+        // with the changes made to the attribute
+        self.update_asset(&attribute)?;
         // distribute fees now that validation has happened
         if let Some(validator_detail) = existing_validator_detail {
             self.append_messages(&calculate_validator_cost_messages(&validator_detail)?);
@@ -534,6 +548,13 @@ mod tests {
                     success: result,
                 }
                 .to_some();
+                // The onboarding status is based on whether or not the validator approved the asset
+                // Dynamically swap between expected statuses based on the input
+                value.onboarding_status = if result {
+                    AssetOnboardingStatus::Approved
+                } else {
+                    AssetOnboardingStatus::Denied
+                };
                 assert_eq!(
                     AttributeMsgParams::AddAttribute {
                         address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),

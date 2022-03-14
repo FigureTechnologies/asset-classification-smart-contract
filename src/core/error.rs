@@ -60,6 +60,14 @@ pub enum ContractError {
     #[error("Asset {scope_address} already onboarded")]
     AssetAlreadyOnboarded { scope_address: String },
 
+    #[error(
+        "Asset {scope_address} is currently awaiting validation for address {validator_address}"
+    )]
+    AssetPendingValidation {
+        scope_address: String,
+        validator_address: String,
+    },
+
     #[error("Asset {scope_address} not found")]
     AssetNotFound { scope_address: String },
 

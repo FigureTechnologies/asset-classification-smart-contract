@@ -1,13 +1,13 @@
-use crate::core::asset::ValidatorDetail;
+use crate::core::asset::{AssetIdentifier, ValidatorDetail};
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetIdentifier, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::util::aliases::ContractResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_validator_with_provided_errors,
 };
 
-pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
+pub fn validate_execute_msg(msg: &ExecuteMsg) -> ContractResult<()> {
     match msg {
         ExecuteMsg::OnboardAsset {
             identifier,
@@ -16,10 +16,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
         } => validate_onboard_asset(identifier, asset_type, validator_address),
         ExecuteMsg::ValidateAsset { identifier, .. } => validate_validate_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.into())
+            validate_asset_definition(&asset_definition.as_asset_definition()?)
         }
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.into())
+            validate_asset_definition(&asset_definition.as_asset_definition()?)
         }
         ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
@@ -126,7 +126,7 @@ fn validate_asset_validator_msg(
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{error::ContractError, msg::AssetIdentifier},
+        core::{asset::AssetIdentifier, error::ContractError},
         util::aliases::ContractResult,
     };
 

@@ -1,4 +1,4 @@
-use crate::core::msg::AssetQualifier;
+use crate::core::asset::AssetQualifier;
 use crate::core::state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type};
 use crate::util::aliases::{ContractResult, DepsC};
 use crate::util::traits::ResultExtensions;
@@ -19,9 +19,8 @@ pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> Contra
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use crate::core::asset::AssetDefinition;
+    use crate::core::asset::{AssetDefinition, AssetQualifier};
     use crate::core::error::ContractError::{self, Std};
-    use crate::core::msg::AssetQualifier;
     use crate::core::state::insert_asset_definition;
     use crate::query::query_asset_definition::query_asset_definition;
     use crate::testutil::test_utilities::{

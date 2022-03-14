@@ -1,6 +1,6 @@
 use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::core::state::{config_read, insert_asset_definition};
 use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
@@ -17,24 +17,15 @@ pub struct AddAssetDefinitionV1 {
 impl AddAssetDefinitionV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<Self> {
         match msg {
-            ExecuteMsg::AddAssetDefinition { asset_definition } => Ok(asset_definition.into()),
+            ExecuteMsg::AddAssetDefinition { asset_definition } => Self {
+                asset_definition: asset_definition.into_asset_definition()?,
+            }
+            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::AddAssetDefinition".to_string(),
             }
             .to_err(),
         }
-    }
-}
-impl From<AssetDefinitionInput> for AddAssetDefinitionV1 {
-    fn from(input: AssetDefinitionInput) -> Self {
-        AddAssetDefinitionV1 {
-            asset_definition: input.into(),
-        }
-    }
-}
-impl From<AssetDefinition> for AddAssetDefinitionV1 {
-    fn from(asset_definition: AssetDefinition) -> Self {
-        AddAssetDefinitionV1 { asset_definition }
     }
 }
 
@@ -72,9 +63,11 @@ pub fn add_asset_definition(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
-    use crate::core::asset::{AssetDefinition, FeeDestination, ValidatorDetail};
+    use crate::core::asset::{
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+    };
     use crate::core::error::ContractError;
-    use crate::core::msg::{AssetDefinitionInput, ExecuteMsg};
+    use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_by_type;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;
@@ -88,6 +81,7 @@ mod tests {
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
+    use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -95,7 +89,7 @@ mod tests {
 
     // These tests board a new asset type, so they need values other than the default to work with
     const TEST_ASSET_TYPE: &str = "add_asset_type";
-    const TEST_SCOPE_ADDRESS: &str = "scope1qqxqfltv5zfprm9xtp8aymnt9hfqxn7mtf";
+    const TEST_SCOPE_SPEC_ADDRESS: &str = "scopespec1q3ptevdt2x5yg5ycflqjsky8rz5q47e34p";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
@@ -157,7 +151,12 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
-            asset_definition: AssetDefinition::new("", DEFAULT_SCOPE_SPEC_ADDRESS, vec![]).into(),
+            asset_definition: AssetDefinitionInput::new(
+                "",
+                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+                vec![],
+                true.to_some(),
+            ),
         };
         let error = execute(
             deps.as_mut(),
@@ -232,7 +231,12 @@ mod tests {
     }
 
     fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInput, deps: &DepsC) {
-        test_asset_definition_was_added(&AssetDefinition::from(input), deps)
+        test_asset_definition_was_added(
+            &input
+                .as_asset_definition()
+                .expect("asset definition conversion should succeed"),
+            deps,
+        )
     }
 
     fn test_asset_definition_was_added(asset_definition: &AssetDefinition, deps: &DepsC) {
@@ -251,7 +255,7 @@ mod tests {
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             TEST_ASSET_TYPE,
-            TEST_SCOPE_ADDRESS,
+            ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS),
             // Defining the validator to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same validators
             vec![ValidatorDetail::new(
@@ -271,6 +275,10 @@ mod tests {
     }
 
     fn get_valid_add_asset_definition() -> AddAssetDefinitionV1 {
-        get_valid_asset_definition().into()
+        AddAssetDefinitionV1 {
+            asset_definition: get_valid_asset_definition()
+                .into_asset_definition()
+                .expect("asset definition conversion should succeed"),
+        }
     }
 }

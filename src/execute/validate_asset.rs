@@ -1,6 +1,6 @@
-use crate::core::asset::AssetOnboardingStatus;
+use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus};
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetIdentifier, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
@@ -44,7 +44,7 @@ pub fn validate_asset<'a, T>(
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
-    let asset_identifiers = msg.identifier.parse_identifiers()?;
+    let asset_identifiers = msg.identifier.to_identifiers()?;
     // look up asset in repository
     let meta = repository.get_asset(&asset_identifiers.scope_address)?;
 
@@ -86,7 +86,7 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::{error::ContractError, msg::AssetIdentifier},
+        core::{asset::AssetIdentifier, error::ContractError},
         service::asset_meta_service::AssetMetaService,
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},

@@ -4,10 +4,10 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 use crate::{
     core::{
         asset::{
-            AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult, ValidatorDetail,
+            AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+            ValidatorDetail,
         },
         error::ContractError,
-        msg::AssetIdentifier,
         state::config_read,
     },
     query::query_asset_scope_attribute::{
@@ -195,9 +195,10 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult},
+            asset::{
+                AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+            },
             error::ContractError,
-            msg::AssetIdentifier,
             state::config_read,
         },
         service::{

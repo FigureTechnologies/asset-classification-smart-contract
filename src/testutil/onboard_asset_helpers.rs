@@ -1,5 +1,4 @@
-use crate::core::asset::AssetScopeAttribute;
-use crate::core::msg::AssetIdentifier;
+use crate::core::asset::{AssetIdentifier, AssetScopeAttribute};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_utilities::MockOwnedDeps;

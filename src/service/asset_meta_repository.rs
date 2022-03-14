@@ -1,8 +1,5 @@
 use crate::{
-    core::{
-        asset::{AssetOnboardingStatus, AssetScopeAttribute, ValidatorDetail},
-        msg::AssetIdentifier,
-    },
+    core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, ValidatorDetail},
     util::aliases::ContractResult,
 };
 

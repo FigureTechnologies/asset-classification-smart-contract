@@ -125,11 +125,13 @@ pub enum ExecuteMsg {
         identifier: AssetIdentifier,
         asset_type: String,
         validator_address: String,
+        access_routes: Option<Vec<String>>,
     },
     ValidateAsset {
         identifier: AssetIdentifier,
         success: bool,
         message: Option<String>,
+        access_routes: Option<Vec<String>>,
     },
     AddAssetDefinition {
         asset_definition: AssetDefinitionInput,

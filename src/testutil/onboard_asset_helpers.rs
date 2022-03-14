@@ -10,7 +10,7 @@ use provwasm_std::ProvenanceMsg;
 use serde_json_wasm::to_string;
 
 use super::test_constants::{
-    DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+    DEFAULT_ACCESS_ROUTE, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
     DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
     DEFAULT_VALIDATOR_ADDRESS,
 };
@@ -26,6 +26,7 @@ impl TestOnboardAsset {
             identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
             asset_type: DEFAULT_ASSET_TYPE.to_string(),
             validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
         }
     }
 

@@ -14,6 +14,7 @@ pub struct ValidateAssetV1 {
     pub identifier: AssetIdentifier,
     pub success: bool,
     pub message: Option<String>,
+    pub access_routes: Vec<String>,
 }
 impl ValidateAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ValidateAssetV1> {
@@ -22,10 +23,12 @@ impl ValidateAssetV1 {
                 identifier,
                 success,
                 message,
+                access_routes,
             } => ValidateAssetV1 {
                 identifier,
                 success,
                 message,
+                access_routes: access_routes.unwrap_or(vec![]),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -65,7 +68,12 @@ where
         .to_err();
     }
 
-    repository.validate_asset(&asset_identifiers.scope_address, msg.success, msg.message)?;
+    repository.validate_asset(
+        &asset_identifiers.scope_address,
+        msg.success,
+        msg.message,
+        vec![],
+    )?;
 
     // construct/emit validation attribute
     Ok(Response::new()
@@ -112,6 +120,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: None,
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -152,6 +161,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: None,
+                access_routes: vec![],
             },
         )
         .unwrap_err();
@@ -197,6 +207,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 success: true,
                 message: "Your data sucks".to_string().to_some(),
+                access_routes: vec![],
             },
         )
         .unwrap();

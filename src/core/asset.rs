@@ -128,6 +128,13 @@ pub struct AssetValidationResult {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct AccessRoute {
+    pub owner_address: String,
+    pub access_routes: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
     pub asset_uuid: String,
     pub scope_address: String,
@@ -137,7 +144,7 @@ pub struct AssetScopeAttribute {
     pub onboarding_status: AssetOnboardingStatus,
     pub latest_validator_detail: Option<ValidatorDetail>,
     pub latest_validation_result: Option<AssetValidationResult>,
-    pub access_routes: Vec<String>,
+    pub access_routes: Vec<AccessRoute>,
 }
 impl AssetScopeAttribute {
     /// Constructs a new instance of AssetScopeAttribute from the input params
@@ -151,6 +158,7 @@ impl AssetScopeAttribute {
         validator_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
+        access_routes: Vec<String>,
     ) -> ContractResult<Self> {
         let identifiers = identifier.parse_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
@@ -162,12 +170,15 @@ impl AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,
             asset_type: asset_type.into(),
-            requestor_address: req_addr,
+            requestor_address: req_addr.clone(),
             validator_address: val_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_routes: vec![],
+            access_routes: vec![AccessRoute {
+                owner_address: req_addr.into_string(),
+                access_routes,
+            }],
         }
         .to_ok()
     }

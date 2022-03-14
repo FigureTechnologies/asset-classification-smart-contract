@@ -148,6 +148,7 @@ mod tests {
                 .first()
                 .expect("the default asset definition should have a single validator")
                 .to_owned(),
+            vec![],
         )
         .expect("expected asset attribute to be created properly");
         // Setup mocks

@@ -13,6 +13,7 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> Result<(), ContractError> {
             identifier,
             asset_type,
             validator_address,
+            ..
         } => validate_onboard_asset(identifier, asset_type, validator_address),
         ExecuteMsg::ValidateAsset { identifier, .. } => validate_validate_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {

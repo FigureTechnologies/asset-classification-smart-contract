@@ -173,7 +173,9 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AccessRoute, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute},
+            asset::{
+                AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+            },
             error::ContractError,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
@@ -566,15 +568,15 @@ mod tests {
                 );
                 assert_eq!(
                     1,
-                    deserialized.access_routes.len(),
+                    deserialized.access_definitions.len(),
                     "Provided access route should be set upon onboarding"
                 );
                 assert_eq!(
-                    &AccessRoute {
+                    &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                         access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()]
                     },
-                    deserialized.access_routes.first().unwrap(),
+                    deserialized.access_definitions.first().unwrap(),
                     "Proper access route should be set upon onboarding"
                 );
             }

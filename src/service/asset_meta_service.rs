@@ -6,7 +6,7 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 use crate::{
     core::{
         asset::{
-            AccessRoute, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+            AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
             AssetValidationResult, ValidatorDetail,
         },
         error::ContractError,
@@ -142,12 +142,12 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             let validator_address = validator_detail.address.clone();
 
             // check for existing validator-linked access route collection
-            if let Some(access_route) = attribute
-                .access_routes
+            if let Some(access_definition) = attribute
+                .access_definitions
                 .iter()
                 .find(|ar| ar.owner_address == validator_address)
             {
-                let distinct_routes = [&access_route.access_routes[..], &access_routes[..]]
+                let distinct_routes = [&access_definition.access_routes[..], &access_routes[..]]
                     .concat()
                     .iter()
                     .collect::<HashSet<_>>()
@@ -155,21 +155,21 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                     .cloned()
                     .collect();
 
-                let mut new_routes = attribute
-                    .access_routes
+                let mut new_access_definitions = attribute
+                    .access_definitions
                     .iter()
                     .filter(|ar| ar.owner_address != validator_address)
                     .cloned()
-                    .collect::<Vec<AccessRoute>>();
+                    .collect::<Vec<AccessDefinition>>();
 
-                new_routes.push(AccessRoute {
+                new_access_definitions.push(AccessDefinition {
                     access_routes: distinct_routes,
-                    ..access_route.to_owned()
+                    ..access_definition.to_owned()
                 });
 
-                attribute.access_routes = new_routes;
+                attribute.access_definitions = new_access_definitions;
             } else if !access_routes.is_empty() {
-                attribute.access_routes.push(AccessRoute {
+                attribute.access_definitions.push(AccessDefinition {
                     owner_address: validator_address,
                     access_routes,
                 });
@@ -238,7 +238,7 @@ mod tests {
     use crate::{
         core::{
             asset::{
-                AccessRoute, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+                AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
                 AssetValidationResult, ValidatorDetail,
             },
             error::ContractError,
@@ -548,12 +548,12 @@ mod tests {
                     }
                     .to_some(),
                     latest_validation_result: None,
-                    access_routes: vec![
-                        AccessRoute {
+                    access_definitions: vec![
+                        AccessDefinition {
                             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                             access_routes: vec!["ownerroute1".to_string()],
                         },
-                        AccessRoute {
+                        AccessDefinition {
                             owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
                             access_routes: vec!["existingroute".to_string()],
                         },
@@ -593,23 +593,23 @@ mod tests {
                 let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
                 assert_eq!(
                     2,
-                    deserialized.access_routes.len(),
+                    deserialized.access_definitions.len(),
                     "Modified scope attribute should only have 2 access route groups listed"
                 );
                 assert_eq!(
-                    &AccessRoute {
+                    &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                         access_routes: vec!["ownerroute1".to_string()]
                     },
                     deserialized
-                        .access_routes
+                        .access_definitions
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
                         .unwrap(),
                     "sender access route should be unchanged after validator routes updated"
                 );
                 let mut sorted_validator_routes = deserialized
-                    .access_routes
+                    .access_definitions
                     .iter()
                     .find(|r| r.owner_address == DEFAULT_VALIDATOR_ADDRESS)
                     .unwrap()

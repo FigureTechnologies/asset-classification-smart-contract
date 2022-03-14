@@ -151,7 +151,7 @@ pub struct AssetValidationResult {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct AccessRoute {
+pub struct AccessDefinition {
     pub owner_address: String,
     pub access_routes: Vec<String>,
 }
@@ -167,7 +167,7 @@ pub struct AssetScopeAttribute {
     pub onboarding_status: AssetOnboardingStatus,
     pub latest_validator_detail: Option<ValidatorDetail>,
     pub latest_validation_result: Option<AssetValidationResult>,
-    pub access_routes: Vec<AccessRoute>,
+    pub access_definitions: Vec<AccessDefinition>,
 }
 impl AssetScopeAttribute {
     /// Constructs a new instance of AssetScopeAttribute from the input params
@@ -198,7 +198,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_routes: vec![AccessRoute {
+            access_definitions: vec![AccessDefinition {
                 owner_address: req_addr.into_string(),
                 access_routes,
             }],

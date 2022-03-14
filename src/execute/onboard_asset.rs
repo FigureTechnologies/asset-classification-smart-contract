@@ -1,4 +1,4 @@
-use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus};
+use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::load_asset_definition_by_type;
@@ -7,7 +7,7 @@ use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::traits::ResultExtensions;
+use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
@@ -30,7 +30,7 @@ impl OnboardAssetV1 {
                 identifier,
                 asset_type,
                 validator_address,
-                access_routes: access_routes.unwrap_or(vec![]),
+                access_routes: access_routes.unwrap_or_default(),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -154,17 +154,29 @@ where
         .to_err();
     }
 
-    // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    let needs_re_onboard = if let Some(scope_attribute) =
+    let asset = AssetScopeAttribute::new(
+        &msg.identifier,
+        &msg.asset_type,
+        info.sender,
+        &msg.validator_address,
+        AssetOnboardingStatus::Pending.to_some(),
+        validator_config,
+        msg.access_routes,
+    )?;
+
+    // check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one
+    let is_retry = if let Some(scope_attribute) =
         repository.try_get_asset(&asset_identifiers.scope_address)?
     {
         match scope_attribute.onboarding_status {
+            // If the attribute indicates that the asset is approved, then it's already fully onboarded and validated
             AssetOnboardingStatus::Approved => {
                 return ContractError::AssetAlreadyOnboarded {
                     scope_address: asset_identifiers.scope_address,
                 }
                 .to_err();
             }
+            // If the attribute indicates that the asset is pending, then it's currently waiting for validation
             AssetOnboardingStatus::Pending => {
                 return if let Some(validator_detail) = scope_attribute.latest_validator_detail {
                     ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
@@ -172,29 +184,17 @@ where
                     ContractError::std_err(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
                 }.to_err();
             }
+            // If the attribute indicates that the asset is pending, then it's been denied by a validator, and this is a secondary
+            // attempt to onboard the asset
             AssetOnboardingStatus::Denied => true,
         }
     } else {
+        // If no scope attribute exists, it's safe to simply add the attribute to the scope
         false
     };
 
-    if repository.has_asset(&asset_identifiers.scope_address)? {
-        return ContractError::AssetAlreadyOnboarded {
-            scope_address: asset_identifiers.scope_address,
-        }
-        .to_err();
-    }
-
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
-    repository.add_asset(
-        &msg.identifier,
-        &msg.asset_type,
-        &msg.validator_address,
-        info.sender,
-        crate::core::asset::AssetOnboardingStatus::Pending,
-        validator_config,
-        msg.access_routes,
-    )?;
+    repository.onboard_asset(&asset, is_retry)?;
 
     Ok(Response::new()
         .add_attributes(
@@ -225,7 +225,9 @@ mod tests {
             error::ContractError,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
-        service::asset_meta_service::AssetMetaService,
+        service::{
+            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+        },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -757,6 +759,33 @@ mod tests {
                 (VALIDATOR_ADDRESS_KEY, DEFAULT_VALIDATOR_ADDRESS)
             ],
             result.attributes
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Validate the asset to denied status
+        test_validate_asset(&mut deps, TestValidateAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the validator marks the asset as success = false",
+        );
+        // Try to do a retry on onboarding
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+        .get_asset(DEFAULT_SCOPE_ADDRESS)
+        .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
         );
     }
 }

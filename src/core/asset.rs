@@ -216,7 +216,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_definitions: access_definitions,
+            access_definitions,
         }
         .to_ok()
     }

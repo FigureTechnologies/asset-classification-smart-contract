@@ -29,6 +29,16 @@ impl TestValidateAsset {
             access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
         }
     }
+
+    pub fn default_with_success(success: bool) -> Self {
+        TestValidateAsset {
+            validate_asset: ValidateAssetV1 {
+                success,
+                ..Self::default_validate_asset()
+            },
+            ..Self::default()
+        }
+    }
 }
 impl Default for TestValidateAsset {
     fn default() -> Self {

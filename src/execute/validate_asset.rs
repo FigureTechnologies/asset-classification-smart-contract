@@ -28,7 +28,7 @@ impl ValidateAssetV1 {
                 identifier,
                 success,
                 message,
-                access_routes: access_routes.unwrap_or(vec![]),
+                access_routes: access_routes.unwrap_or_default(),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -94,14 +94,20 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::{asset::AssetIdentifier, error::ContractError},
-        service::asset_meta_service::AssetMetaService,
+        core::{
+            asset::{AssetIdentifier, AssetOnboardingStatus},
+            error::ContractError,
+        },
+        service::{
+            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+        },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{mock_info_with_nhash, setup_test_suite, InstArgs},
+            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
         },
         util::traits::OptionExtensions,
     };
@@ -216,6 +222,38 @@ mod tests {
             3,
             result.messages.len(),
             "validate asset should produce three messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)"
+        );
+    }
+
+    #[test]
+    fn test_validate_asset_success_true_produces_correct_onboarding_status() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("after validating the asset, the scope attribute should be present");
+        assert_eq!(
+            AssetOnboardingStatus::Approved,
+            attribute.onboarding_status,
+            "the asset should be in approved status after onboarding with a status of success = true",
+        );
+    }
+
+    #[test]
+    fn test_validate_asset_success_false_produces_correct_onboarding_status() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("after validating the asset, the scope attribute should be present");
+        assert_eq!(
+            AssetOnboardingStatus::Denied,
+            attribute.onboarding_status,
+            "the asset should be in denied status after onboarding with a status of success = false",
         );
     }
 }

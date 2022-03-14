@@ -6,8 +6,7 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 use crate::{
     core::{
         asset::{
-            AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
-            AssetValidationResult, ValidatorDetail,
+            AccessDefinition, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
         },
         error::ContractError,
         state::config_read,
@@ -17,7 +16,7 @@ use crate::{
     },
     util::aliases::{ContractResult, DepsMutC},
     util::deps_container::DepsContainer,
-    util::traits::{OptionExtensions, ResultExtensions},
+    util::traits::ResultExtensions,
     util::vec_container::VecContainer,
     util::{fees::calculate_validator_cost_messages, functions::generate_asset_attribute_name},
     util::{
@@ -53,44 +52,39 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         .to_ok()
     }
 
-    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
-        &self,
-        identifier: &AssetIdentifier,
-        asset_type: S1,
-        validator_address: S2,
-        requestor_address: S3,
-        onboarding_status: AssetOnboardingStatus,
-        validator_detail: ValidatorDetail,
-        access_routes: Vec<String>,
-    ) -> ContractResult<()> {
-        // generate attribute -> scope bind message
-        let contract_base_name = self
-            .use_deps(|d| config_read(d.storage).load())?
-            .base_contract_name;
-        let attribute = AssetScopeAttribute::new(
-            identifier,
-            asset_type,
-            requestor_address,
-            validator_address,
-            onboarding_status.to_some(),
-            validator_detail,
-            access_routes,
-        )?;
-
-        if self.has_asset(&attribute.scope_address)? {
-            return ContractError::AssetAlreadyOnboarded {
-                scope_address: attribute.scope_address,
-            }
-            .to_err();
+    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> ContractResult<()> {
+        // Verify that the attribute does or does not exist.  This check verifies that the value equivalent to is_retry:
+        // If the asset exists, this should be a retry, because a subsequent onboard should only occur for that purpose
+        // If the asset does not exist, this should not be a retry, because this is the first time the attribute is being attempted
+        if self.has_asset(&attribute.scope_address)? != is_retry {
+            return if is_retry {
+                ContractError::std_err(format!("unexpected state! asset scope [{}] was processed as new onboard, but the scope was not populated with asset classification data", &attribute.scope_address))
+            } else {
+                ContractError::AssetAlreadyOnboarded {
+                    scope_address: attribute.scope_address.clone(),
+                }
+            }.to_err();
         }
-        self.add_message(get_add_attribute_to_scope_msg(
-            &attribute,
-            contract_base_name,
-        )?);
+
+        // generate attribute -> scope bind messages
+        // On a retry, update the existing attribute with the given values
+        if is_retry {
+            self.update_attribute(attribute)?;
+        } else {
+            // On a first time execution, simply add the attribute to the scope - it's already been
+            // verified that the attribute does not yet exist
+            let contract_base_name = self
+                .use_deps(|d| config_read(d.storage).load())?
+                .base_contract_name;
+            self.add_message(get_add_attribute_to_scope_msg(
+                attribute,
+                contract_base_name,
+            )?);
+        }
         Ok(())
     }
 
-    fn update_asset(&self, attribute: &AssetScopeAttribute) -> ContractResult<()> {
+    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> ContractResult<()> {
         let contract_base_name = self
             .use_deps(|d| config_read(d.storage).load())?
             .base_contract_name;
@@ -196,7 +190,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
             // Remove the old scope attribute and append a new one that overwrites existing data
             // with the changes made to the attribute
-            self.update_asset(&attribute)?;
+            self.update_attribute(&attribute)?;
 
             // distribute fees now that validation has happened
             self.append_messages(&calculate_validator_cost_messages(&validator_detail)?);
@@ -319,15 +313,7 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
-            .add_asset(
-                &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                DEFAULT_ASSET_TYPE,
-                DEFAULT_VALIDATOR_ADDRESS,
-                DEFAULT_SENDER_ADDRESS,
-                AssetOnboardingStatus::Pending,
-                get_default_validator_detail(),
-                Vec::<String>::new(),
-            )
+            .onboard_asset(&get_default_test_attribute(), false)
             .unwrap_err();
 
         match err {
@@ -353,15 +339,7 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         repository
-            .add_asset(
-                &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                DEFAULT_ASSET_TYPE,
-                DEFAULT_VALIDATOR_ADDRESS,
-                DEFAULT_SENDER_ADDRESS,
-                AssetOnboardingStatus::Pending,
-                get_default_validator_detail(),
-                vec![DEFAULT_ACCESS_ROUTE.to_string()],
-            )
+            .onboard_asset(&get_default_test_attribute(), false)
             .unwrap();
 
         let messages = repository.get_messages();
@@ -749,5 +727,18 @@ mod tests {
                 third_message
             ),
         }
+    }
+
+    fn get_default_test_attribute() -> AssetScopeAttribute {
+        AssetScopeAttribute::new(
+            &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            DEFAULT_ASSET_TYPE,
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VALIDATOR_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_validator_detail(),
+            vec![DEFAULT_ACCESS_ROUTE.to_string()],
+        )
+        .expect("failed to instantiate default asset scope attribute")
     }
 }

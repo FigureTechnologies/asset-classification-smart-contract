@@ -3,7 +3,10 @@ use cosmwasm_std::{
     Addr, Coin, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
 use provwasm_mocks::ProvenanceMockQuerier;
-use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
+use provwasm_std::{
+    Party, PartyType, Process, ProcessId, ProvenanceMsg, ProvenanceQuery, Record, RecordInput,
+    RecordInputSource, RecordInputStatus, RecordOutput, Records, ResultStatus, Scope,
+};
 use serde_json_wasm::to_string;
 
 use crate::{
@@ -24,8 +27,12 @@ use crate::{
 
 use super::test_constants::{
     DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
-    DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
-    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+    DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
+    DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME,
+    DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME,
+    DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
+    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
+    DEFAULT_VALIDATOR_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
@@ -116,7 +123,10 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
 
 pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) {
     test_instantiate_success(deps.as_mut(), args);
-    mock_default_scope(deps)
+    let default_scope = get_default_scope();
+    deps.querier.with_scope(default_scope.clone());
+    deps.querier
+        .with_records(default_scope, get_default_records());
 }
 
 pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
@@ -127,12 +137,19 @@ pub fn empty_mock_info<S: Into<String>>(sender: S) -> MessageInfo {
     mock_info(&sender.into(), &[])
 }
 
-pub fn mock_default_scope(deps: &mut MockOwnedDeps) {
-    mock_scope(
-        deps,
+pub fn get_default_scope() -> Scope {
+    get_duped_scope(
         DEFAULT_SCOPE_ADDRESS,
         DEFAULT_SCOPE_SPEC_ADDRESS,
         DEFAULT_SENDER_ADDRESS,
+    )
+}
+
+pub fn get_default_records() -> Records {
+    get_duped_records(
+        DEFAULT_RECORD_NAME,
+        DEFAULT_SESSION_ADDRESS,
+        DEFAULT_RECORD_SPEC_ADDRESS,
     )
 }
 
@@ -186,6 +203,44 @@ pub fn get_duped_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
     }
 }
 
+pub fn get_duped_records<S1, S2, S3>(
+    record_name: S1,
+    session_address: S2,
+    record_spec_address: S3,
+) -> Records
+where
+    S1: Into<String>,
+    S2: Into<String>,
+    S3: Into<String>,
+{
+    Records {
+        records: vec![Record {
+            name: record_name.into(),
+            session_id: session_address.into(),
+            specification_id: record_spec_address.into(),
+            process: Process {
+                process_id: ProcessId::Address {
+                    address: DEFAULT_PROCESS_ADDRESS.to_string(),
+                },
+                method: DEFAULT_PROCESS_METHOD.to_string(),
+                name: DEFAULT_PROCESS_NAME.to_string(),
+            },
+            inputs: vec![RecordInput {
+                name: DEFAULT_RECORD_INPUT_NAME.to_string(),
+                type_name: "string".to_string(),
+                source: RecordInputSource::Record {
+                    record_id: DEFAULT_RECORD_INPUT_SOURCE_ADDRESS.to_string(),
+                },
+                status: RecordInputStatus::Record,
+            }],
+            outputs: vec![RecordOutput {
+                hash: DEFAULT_RECORD_OUTPUT_HASH.to_string(),
+                status: ResultStatus::Pass,
+            }],
+        }],
+    }
+}
+
 pub fn mock_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
     deps: &mut MockOwnedDeps,
     scope_id: S1,
@@ -194,6 +249,23 @@ pub fn mock_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
 ) {
     deps.querier
         .with_scope(get_duped_scope(scope_id, spec_id, owner_address))
+}
+
+pub fn mock_record<S1, S2, S3>(
+    deps: &mut MockOwnedDeps,
+    scope: Scope,
+    record_name: S1,
+    session_address: S2,
+    scope_spec_address: S3,
+) where
+    S1: Into<String>,
+    S2: Into<String>,
+    S3: Into<String>,
+{
+    deps.querier.with_records(
+        scope,
+        get_duped_records(record_name, session_address, scope_spec_address),
+    )
 }
 
 pub fn mock_scope_attribute<S: Into<String>>(

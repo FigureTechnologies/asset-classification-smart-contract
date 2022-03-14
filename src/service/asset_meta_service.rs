@@ -119,7 +119,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             .base_contract_name;
         let attribute_name =
             generate_asset_attribute_name(attribute.asset_type.clone(), contract_base_name.clone());
-        self.messages.push(delete_attributes(
+        self.add_message(delete_attributes(
             Addr::unchecked(scope_address_str.clone()),
             attribute_name,
         )?);
@@ -203,7 +203,7 @@ mod tests {
         },
         service::{
             asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
-            deps_manager::DepsManager,
+            deps_manager::DepsManager, message_gathering_service::MessageGatheringService,
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
@@ -300,7 +300,7 @@ mod tests {
             )
             .unwrap();
 
-        let messages = repository.messages.get();
+        let messages = repository.get_messages();
 
         assert_eq!(
             1,
@@ -486,7 +486,7 @@ mod tests {
             .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message)
             .unwrap();
 
-        let messages = repository.messages.get();
+        let messages = repository.get_messages();
 
         assert_eq!(
             3,

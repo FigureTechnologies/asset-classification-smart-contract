@@ -156,6 +156,19 @@ pub struct AccessDefinition {
     pub access_routes: Vec<String>,
 }
 
+impl AccessDefinition {
+    pub fn new_checked<S1: Into<String>, S2: Into<String>>(
+        owner_address: S1,
+        access_routes: Vec<S2>,
+    ) -> ContractResult<Self> {
+        Self {
+            owner_address: bech32_string_to_addr(owner_address)?.into_string(),
+            access_routes: access_routes.into_iter().map(|s| s.into()).collect(),
+        }
+        .to_ok()
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
@@ -189,19 +202,17 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
+        let access_defintiion = AccessDefinition::new_checked(&req_addr, access_routes)?;
         AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,
             asset_type: asset_type.into(),
-            requestor_address: req_addr.clone(),
+            requestor_address: req_addr,
             validator_address: val_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_definitions: vec![AccessDefinition {
-                owner_address: req_addr.into_string(),
-                access_routes,
-            }],
+            access_definitions: vec![access_defintiion],
         }
         .to_ok()
     }

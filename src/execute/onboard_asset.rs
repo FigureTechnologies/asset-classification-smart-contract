@@ -47,8 +47,8 @@ where
     T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
     let asset_identifiers = msg.identifier.to_identifiers()?;
-    // get asset state config for type, or error if not present
-    let asset_state =
+    // get asset definition config for type, or error if not present
+    let asset_definition =
         match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
             Ok(state) => {
                 if !state.enabled {
@@ -67,8 +67,8 @@ where
             }
         };
 
-    // verify perscribed validator is present as a validator in asset state
-    let validator_config = match asset_state
+    // verify perscribed validator is present as a validator in asset definition
+    let validator_config = match asset_definition
         .validators
         .into_iter()
         .find(|validator| validator.address == msg.validator_address)
@@ -90,7 +90,8 @@ where
         )
         .to_err();
     }
-    let sent_fee = match info.funds.into_iter().find(|funds| funds.denom == "nhash") {
+
+    let sent_fee = match info.funds.iter().find(|funds| funds.denom == "nhash") {
         Some(funds) => funds,
         None => {
             return ContractError::InvalidFunds(format!(
@@ -100,6 +101,7 @@ where
             .to_err()
         }
     };
+
     if sent_fee.amount != validator_config.onboarding_cost {
         return ContractError::InvalidFunds(format!(
             "Improper fee of {}{} provided (expected {}nhash)",
@@ -122,8 +124,11 @@ where
     };
 
     // verify that the sender of this message is a scope owner
-    let sender = info.sender.clone();
-    if !scope.owners.iter().any(|owner| owner.address == sender) {
+    if !scope
+        .owners
+        .iter()
+        .any(|owner| owner.address == info.sender)
+    {
         return ContractError::Unauthorized {
             explanation: "sender address does not own the scope".to_string(),
         }
@@ -134,6 +139,22 @@ where
     if repository.has_asset(&asset_identifiers.scope_address)? {
         return ContractError::AssetAlreadyOnboarded {
             scope_address: asset_identifiers.scope_address,
+        }
+        .to_err();
+    }
+
+    // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
+    let records = repository
+        .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
+        .records;
+
+    // verify scope has at least one record that is not empty
+    if !records.into_iter().any(|record| !record.outputs.is_empty()) {
+        return ContractError::InvalidScope {
+            explanation: format!(
+                "cannot onboard scope [{}]. scope must have at least one non-empty record",
+                scope.scope_id,
+            ),
         }
         .to_err();
     }
@@ -163,9 +184,11 @@ where
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, Coin, CosmosMsg, SubMsg, Uint128};
+    use cosmwasm_std::{from_binary, Coin, CosmosMsg, StdError, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{AttributeMsgParams, ProvenanceMsg, ProvenanceMsgParams};
+    use provwasm_std::{
+        AttributeMsgParams, Process, ProcessId, ProvenanceMsg, ProvenanceMsgParams, Record, Records,
+    };
 
     use crate::{
         core::{
@@ -178,12 +201,12 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{
-                empty_mock_info, mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
-                InstArgs,
+                empty_mock_info, get_default_scope, mock_info_with_funds, mock_info_with_nhash,
+                setup_test_suite, test_instantiate_success, InstArgs,
             },
         },
         util::{
@@ -494,6 +517,87 @@ mod tests {
                 err
             ),
         }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_no_records() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        // Setup the default scope as the result value of a scope query, but don't establish any records
+        deps.querier.with_scope(get_default_scope());
+        let err = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+        match err {
+            ContractError::Std(e) => match e {
+                StdError::GenericErr { msg, .. } => {
+                    assert!(
+                        msg.contains("Querier system error"),
+                        "the message should denote that the querier failed",
+                    );
+                    assert!(
+                        msg.contains("metadata not found"),
+                        "the message should denote that the issue was related to metadata",
+                    );
+                    assert!(
+                        msg.contains("get_records"),
+                        "the message should denote that the issue was related to records",
+                    );
+                },
+                _ => panic!("unexpected StdError encountered when onboarding a scope with no records: {:?}", e),
+            },
+            _ => panic!("expected the provenance querier to return an error when no records are present for the scope, but got error: {:?}", err),
+        };
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_empty_records() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        // Setup the default scope and add a record, but make sure the record is not formed properly
+        let scope = get_default_scope();
+        deps.querier.with_scope(scope.clone());
+        deps.querier.with_records(
+            scope,
+            Records {
+                records: vec![Record {
+                    name: "record-name".to_string(),
+                    session_id: DEFAULT_SESSION_ADDRESS.to_string(),
+                    specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string(),
+                    process: Process {
+                        process_id: ProcessId::Address {
+                            address: String::new(),
+                        },
+                        method: String::new(),
+                        name: String::new(),
+                    },
+                    inputs: vec![],
+                    outputs: vec![],
+                }],
+            },
+        );
+        let err = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+            },
+        )
+        .unwrap_err();
+        assert!(
+            matches!(err, ContractError::InvalidScope { .. }),
+            "expected the error to indicate that the scope was invalid for records, but got: {:?}",
+            err,
+        );
     }
 
     #[test]

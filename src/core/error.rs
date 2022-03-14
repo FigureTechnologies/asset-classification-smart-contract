@@ -92,6 +92,9 @@ pub enum ContractError {
     #[error("Asset [{scope_address}] already validated")]
     AssetAlreadyValidated { scope_address: String },
 
+    #[error("Invalid scope: {explanation}")]
+    InvalidScope { explanation: String },
+
     #[error("Expected only a single asset attribute on scope {scope_address}, but found {attribute_amount}")]
     InvalidScopeAttribute {
         scope_address: String,

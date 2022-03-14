@@ -63,7 +63,7 @@ pub enum ContractError {
     AssetAlreadyOnboarded { scope_address: String },
 
     #[error(
-        "Asset {scope_address} is currently awaiting validation for address {validator_address}"
+        "Asset {scope_address} is currently awaiting validation from address {validator_address}"
     )]
     AssetPendingValidation {
         scope_address: String,
@@ -99,7 +99,7 @@ pub enum ContractError {
         expected_validator_address: String,
     },
 
-    #[error("Asset [{scope_address}] already validated and has status [{status}]")]
+    #[error("Asset [{scope_address}] was already validated and has status [{status}]")]
     AssetAlreadyValidated {
         scope_address: String,
         status: AssetOnboardingStatus,

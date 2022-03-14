@@ -154,7 +154,7 @@ where
         .to_err();
     }
 
-    let asset = AssetScopeAttribute::new(
+    let new_asset_attribute = AssetScopeAttribute::new(
         &msg.identifier,
         &msg.asset_type,
         info.sender,
@@ -178,9 +178,12 @@ where
             }
             // If the attribute indicates that the asset is pending, then it's currently waiting for validation
             AssetOnboardingStatus::Pending => {
+                // Attributes in pending status should always have a validator detail on them. Use it in the error message to show
+                // which validator may or may not be misbehaving
                 return if let Some(validator_detail) = scope_attribute.latest_validator_detail {
                     ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
                 } else {
+                    // If a validator detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
                     ContractError::std_err(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
                 }.to_err();
             }
@@ -194,7 +197,7 @@ where
     };
 
     // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
-    repository.onboard_asset(&asset, is_retry)?;
+    repository.onboard_asset(&new_asset_attribute, is_retry)?;
 
     Ok(Response::new()
         .add_attributes(
@@ -214,7 +217,8 @@ mod tests {
     use cosmwasm_std::{from_binary, Coin, CosmosMsg, StdError, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
-        AttributeMsgParams, Process, ProcessId, ProvenanceMsg, ProvenanceMsgParams, Record, Records,
+        AttributeMsgParams, AttributeValueType, Process, ProcessId, ProvenanceMsg,
+        ProvenanceMsgParams, Record, Records,
     };
 
     use crate::{
@@ -227,6 +231,7 @@ mod tests {
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         service::{
             asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+            message_gathering_service::MessageGatheringService,
         },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
@@ -787,5 +792,95 @@ mod tests {
             AssetOnboardingStatus::Pending,
             "the onboarding status should now be set to pending after retrying the onboard process",
         );
+    }
+
+    #[test]
+    fn test_update_attribute_generates_appropriate_messages() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        let service = AssetMetaService::new(deps.as_mut());
+        let mut attribute = service
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the attribute should be present after all default steps");
+        assert_eq!(AssetOnboardingStatus::Approved, attribute.onboarding_status, "sanity check: the onboarding status should be approved after all proper steps have been completed");
+        // Manually override the onboarding status to pending to test
+        attribute.onboarding_status = AssetOnboardingStatus::Pending;
+        service
+            .update_attribute(&attribute)
+            .expect("update attribute should work as intended");
+        let generated_messages = service.get_messages();
+        assert_eq!(
+            2,
+            generated_messages.len(),
+            "the service should generate two messages when updating an asset"
+        );
+        let target_attribute_name =
+            generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
+        match &generated_messages[0] {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::DeleteAttribute {
+                        address,
+                        name,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    address.as_str(),
+                    "expected the delete attribute message to target the default scope address",
+                );
+                assert_eq!(
+                    &target_attribute_name,
+                    name,
+                    "expected the default attribute name to be the target used when deleting the attribute",
+                );
+            }
+            msg => panic!(
+                "unexpected first message generated during update attribute: {:?}",
+                msg
+            ),
+        };
+        match &generated_messages[1] {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        address,
+                        name,
+                        value,
+                        value_type,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    address.as_str(),
+                    "expected the add attribute message to target the default scope address",
+                );
+                assert_eq!(
+                    &target_attribute_name,
+                    name,
+                    "expected the default attribute name to be the target used when adding the attribute",
+                );
+                let added_attribute = from_binary::<AssetScopeAttribute>(value)
+                    .expect("expected the attribute value to deserialize to a scope attribute");
+                assert_eq!(
+                    attribute,
+                    added_attribute,
+                    "expected the added attribute to directly equate to the value passed into the function",
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    value_type,
+                    "expected the value type used to be json",
+                );
+            }
+            msg => panic!(
+                "unexpected second message generated during update attribute; {:?}",
+                msg,
+            ),
+        };
     }
 }

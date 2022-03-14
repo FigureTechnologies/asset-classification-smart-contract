@@ -28,3 +28,26 @@ pub const DEFAULT_FEE_PERCENT: u64 = 0;
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
 /// This is the default access route to be set for the onboarding address
 pub const DEFAULT_ACCESS_ROUTE: &str = "https://coolassets.co";
+/// This is the default value appended to mocked records
+pub const DEFAULT_RECORD_NAME: &str = "test-record";
+/// This is the default value used in the default record. The derived result was generated with Provenance's MetadataAddress using the DEFAULT_SCOPE_ADDRESS and a random session UUID
+pub const DEFAULT_SESSION_ADDRESS: &str =
+    "session1q8z4elswnlk3rmypjy9etj9pyww0amaxfa4xwjj0s7x98k9jyf7a70ngln5";
+/// This is the default value used in the default record. The derived result was generated with Provenance's MetadataAddress using the DEFAULT_SCOPE_ADDRESS and the DEFAULT_RECORD_NAME
+pub const DEFAULT_RECORD_ADDRESS: &str =
+    "record1qtz4elswnlk3rmypjy9etj9pywwzvl7zztch3mmexw06cv32ql2yy93xpz4";
+/// This is the default value used in the default record
+pub const DEFAULT_RECORD_SPEC_ADDRESS: &str =
+    "recspec1qkvaw3xssfcyvmu3s7f4zak4khat2pz8wv2v08m8zgle43ws7u3dscx54v2";
+/// This is the default value used in the default record's process
+pub const DEFAULT_PROCESS_ADDRESS: &str = "test-process-id";
+/// This is the default value used in the default record's process
+pub const DEFAULT_PROCESS_METHOD: &str = "testProcess";
+/// This is the default value used in the default record's process
+pub const DEFAULT_PROCESS_NAME: &str = "test-process-name";
+/// This is the default value used in the default record input
+pub const DEFAULT_RECORD_INPUT_NAME: &str = "loanType";
+/// This is the default value used in the default record input source
+pub const DEFAULT_RECORD_INPUT_SOURCE_ADDRESS: &str = "tp1rk3qa624qe504mmvh2nv30zkrtdc5y2455uvew";
+/// This is the default value used in the default record output
+pub const DEFAULT_RECORD_OUTPUT_HASH: &str = "mock-hash-lkjsdfljsdoinfweounf";

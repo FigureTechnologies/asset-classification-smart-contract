@@ -143,7 +143,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             attribute.latest_validator_detail = None;
             attribute.latest_validation_result = Some(AssetValidationResult { message, success });
 
-            // change the onboarding status based on how the validator set the
+            // change the onboarding status based on how the validator specified the success status
             attribute.onboarding_status = if success {
                 AssetOnboardingStatus::Approved
             } else {

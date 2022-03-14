@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter};
+
 use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -140,6 +142,19 @@ pub enum AssetOnboardingStatus {
     Pending,
     Denied,
     Approved,
+}
+impl Display for AssetOnboardingStatus {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Pending => "pending",
+                Self::Denied => "denied",
+                Self::Approved => "approved",
+            }
+        )
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

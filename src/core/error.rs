@@ -1,6 +1,8 @@
 use cosmwasm_std::StdError;
 use thiserror::Error;
 
+use super::asset::AssetOnboardingStatus;
+
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
@@ -97,8 +99,11 @@ pub enum ContractError {
         expected_validator_address: String,
     },
 
-    #[error("Asset [{scope_address}] already validated")]
-    AssetAlreadyValidated { scope_address: String },
+    #[error("Asset [{scope_address}] already validated and has status [{status}]")]
+    AssetAlreadyValidated {
+        scope_address: String,
+        status: AssetOnboardingStatus,
+    },
 
     #[error("Invalid scope: {explanation}")]
     InvalidScope { explanation: String },

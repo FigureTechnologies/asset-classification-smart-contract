@@ -147,13 +147,15 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 .iter()
                 .find(|ar| ar.owner_address == validator_address)
             {
-                let distinct_routes = [&access_definition.access_routes[..], &access_routes[..]]
-                    .concat()
-                    .iter()
-                    .collect::<HashSet<_>>()
-                    .into_iter()
-                    .cloned()
-                    .collect();
+                let mut distinct_routes =
+                    [&access_definition.access_routes[..], &access_routes[..]]
+                        .concat()
+                        .iter()
+                        .collect::<HashSet<_>>()
+                        .into_iter()
+                        .cloned()
+                        .collect::<Vec<String>>();
+                distinct_routes.sort();
 
                 let mut new_access_definitions = attribute
                     .access_definitions
@@ -607,17 +609,16 @@ mod tests {
                         .unwrap(),
                     "sender access route should be unchanged after validator routes updated"
                 );
-                let mut sorted_validator_routes = deserialized
-                    .access_definitions
-                    .iter()
-                    .find(|r| r.owner_address == DEFAULT_VALIDATOR_ADDRESS)
-                    .unwrap()
-                    .access_routes
-                    .clone();
-                sorted_validator_routes.sort();
                 assert_eq!(
-                    vec!["existingroute".to_string(), "newroute".to_string()],
-                    sorted_validator_routes,
+                    &AccessDefinition {
+                        owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                        access_routes: vec!["existingroute".to_string(), "newroute".to_string()],
+                    },
+                    deserialized
+                        .access_definitions
+                        .iter()
+                        .find(|r| r.owner_address == DEFAULT_VALIDATOR_ADDRESS)
+                        .unwrap(),
                     "sender access route should be unchanged after validator routes updated"
                 );
             }

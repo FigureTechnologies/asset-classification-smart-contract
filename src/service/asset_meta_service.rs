@@ -566,7 +566,6 @@ mod tests {
         );
 
         setup_test_suite(&mut deps, InstArgs::default());
-        // test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
         repository

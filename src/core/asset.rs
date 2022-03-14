@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter};
+
 use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -141,6 +143,19 @@ pub enum AssetOnboardingStatus {
     Denied,
     Approved,
 }
+impl Display for AssetOnboardingStatus {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Pending => "pending",
+                Self::Denied => "denied",
+                Self::Approved => "approved",
+            }
+        )
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -216,7 +231,7 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_validator_detail: latest_validator_detail.to_some(),
             latest_validation_result: None,
-            access_definitions: access_definitions,
+            access_definitions,
         }
         .to_ok()
     }

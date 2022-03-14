@@ -16,6 +16,15 @@
             "validator_address"
           ],
           "properties": {
+            "access_routes": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
             "asset_type": {
               "type": "string"
             },
@@ -43,6 +52,15 @@
             "success"
           ],
           "properties": {
+            "access_routes": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
             "identifier": {
               "$ref": "#/definitions/AssetIdentifier"
             },

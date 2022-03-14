@@ -1,21 +1,11 @@
-use crate::{
-    core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, ValidatorDetail},
-    util::aliases::ContractResult,
-};
+use crate::{core::asset::AssetScopeAttribute, util::aliases::ContractResult};
 
 pub trait AssetMetaRepository {
     fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> ContractResult<bool>;
 
-    fn add_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
-        &self,
-        identifier: &AssetIdentifier,
-        asset_type: S1,
-        validator_address: S2,
-        requestor_address: S3,
-        onboarding_status: AssetOnboardingStatus,
-        validator_detail: ValidatorDetail,
-        access_routes: Vec<String>,
-    ) -> ContractResult<()>;
+    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> ContractResult<()>;
+
+    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> ContractResult<()>;
 
     fn get_asset<S1: Into<String>>(&self, scope_address: S1)
         -> ContractResult<AssetScopeAttribute>;

@@ -1,4 +1,4 @@
-use crate::core::asset::AssetIdentifier;
+use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::load_asset_definition_by_type;
@@ -7,7 +7,7 @@ use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{ContractResponse, ContractResult};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::traits::ResultExtensions;
+use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
@@ -30,7 +30,7 @@ impl OnboardAssetV1 {
                 identifier,
                 asset_type,
                 validator_address,
-                access_routes: access_routes.unwrap_or(vec![]),
+                access_routes: access_routes.unwrap_or_default(),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -138,14 +138,6 @@ where
         .to_err();
     }
 
-    // verify asset meta doesn't already contain this asset (i.e. it hasn't already been onboarded)
-    if repository.has_asset(&asset_identifiers.scope_address)? {
-        return ContractError::AssetAlreadyOnboarded {
-            scope_address: asset_identifiers.scope_address,
-        }
-        .to_err();
-    }
-
     // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
     let records = repository
         .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
@@ -162,16 +154,50 @@ where
         .to_err();
     }
 
-    // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
-    repository.add_asset(
+    let new_asset_attribute = AssetScopeAttribute::new(
         &msg.identifier,
         &msg.asset_type,
-        &msg.validator_address,
         info.sender,
-        crate::core::asset::AssetOnboardingStatus::Pending,
+        &msg.validator_address,
+        AssetOnboardingStatus::Pending.to_some(),
         validator_config,
         msg.access_routes,
     )?;
+
+    // check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one
+    let is_retry = if let Some(scope_attribute) =
+        repository.try_get_asset(&asset_identifiers.scope_address)?
+    {
+        match scope_attribute.onboarding_status {
+            // If the attribute indicates that the asset is approved, then it's already fully onboarded and validated
+            AssetOnboardingStatus::Approved => {
+                return ContractError::AssetAlreadyOnboarded {
+                    scope_address: asset_identifiers.scope_address,
+                }
+                .to_err();
+            }
+            // If the attribute indicates that the asset is pending, then it's currently waiting for validation
+            AssetOnboardingStatus::Pending => {
+                // Attributes in pending status should always have a validator detail on them. Use it in the error message to show
+                // which validator may or may not be misbehaving
+                return if let Some(validator_detail) = scope_attribute.latest_validator_detail {
+                    ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
+                } else {
+                    // If a validator detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
+                    ContractError::std_err(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
+                }.to_err();
+            }
+            // If the attribute indicates that the asset is pending, then it's been denied by a validator, and this is a secondary
+            // attempt to onboard the asset
+            AssetOnboardingStatus::Denied => true,
+        }
+    } else {
+        // If no scope attribute exists, it's safe to simply add the attribute to the scope
+        false
+    };
+
+    // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
+    repository.onboard_asset(&new_asset_attribute, is_retry)?;
 
     Ok(Response::new()
         .add_attributes(
@@ -191,7 +217,8 @@ mod tests {
     use cosmwasm_std::{from_binary, Coin, CosmosMsg, StdError, SubMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
-        AttributeMsgParams, Process, ProcessId, ProvenanceMsg, ProvenanceMsgParams, Record, Records,
+        AttributeMsgParams, AttributeValueType, Process, ProcessId, ProvenanceMsg,
+        ProvenanceMsgParams, Record, Records,
     };
 
     use crate::{
@@ -202,7 +229,10 @@ mod tests {
             error::ContractError,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
-        service::asset_meta_service::AssetMetaService,
+        service::{
+            asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
+            message_gathering_service::MessageGatheringService,
+        },
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
@@ -215,6 +245,7 @@ mod tests {
                 empty_mock_info, get_default_scope, mock_info_with_funds, mock_info_with_nhash,
                 setup_test_suite, test_instantiate_success, InstArgs,
             },
+            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
         },
         util::{
             constants::{
@@ -503,7 +534,7 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_already_onboarded_asset() {
+    fn test_onboard_asset_errors_on_asset_pending_status() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
@@ -521,11 +552,19 @@ mod tests {
         .unwrap_err();
 
         match err {
-            ContractError::AssetAlreadyOnboarded { scope_address } => {
+            ContractError::AssetPendingValidation {
+                scope_address,
+                validator_address,
+            } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     scope_address,
-                    "the asset already onboarded message should reflect that the asset uuid was already onboarded"
+                    "the asset pending validation message should reflect that the asset address is awaiting validation"
+                );
+                assert_eq!(
+                    DEFAULT_VALIDATOR_ADDRESS,
+                    validator_address,
+                    "the asset pending validation message should reflect that the asset is waiting to be validated by the default validator",
                 );
             }
             _ => panic!(
@@ -533,6 +572,33 @@ mod tests {
                 err
             ),
         }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_asset_approved_status() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        let err = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            TestOnboardAsset::default_onboard_asset(),
+        )
+        .unwrap_err();
+        match err {
+            ContractError::AssetAlreadyOnboarded { scope_address } => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    scope_address,
+                    "the asset already onboarded message should reflect that the asset address was already onboarded",
+                );
+            }
+            _ => panic!(
+                "unexpected error encountered when trying to board a validated asset: {:?}",
+                err
+            ),
+        };
     }
 
     #[test]
@@ -699,5 +765,122 @@ mod tests {
             ],
             result.attributes
         );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Validate the asset to denied status
+        test_validate_asset(&mut deps, TestValidateAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the validator marks the asset as success = false",
+        );
+        // Try to do a retry on onboarding
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+        .get_asset(DEFAULT_SCOPE_ADDRESS)
+        .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+    }
+
+    #[test]
+    fn test_update_attribute_generates_appropriate_messages() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        let service = AssetMetaService::new(deps.as_mut());
+        let mut attribute = service
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the attribute should be present after all default steps");
+        assert_eq!(AssetOnboardingStatus::Approved, attribute.onboarding_status, "sanity check: the onboarding status should be approved after all proper steps have been completed");
+        // Manually override the onboarding status to pending to test
+        attribute.onboarding_status = AssetOnboardingStatus::Pending;
+        service
+            .update_attribute(&attribute)
+            .expect("update attribute should work as intended");
+        let generated_messages = service.get_messages();
+        assert_eq!(
+            2,
+            generated_messages.len(),
+            "the service should generate two messages when updating an asset"
+        );
+        let target_attribute_name =
+            generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
+        match &generated_messages[0] {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::DeleteAttribute {
+                        address,
+                        name,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    address.as_str(),
+                    "expected the delete attribute message to target the default scope address",
+                );
+                assert_eq!(
+                    &target_attribute_name,
+                    name,
+                    "expected the default attribute name to be the target used when deleting the attribute",
+                );
+            }
+            msg => panic!(
+                "unexpected first message generated during update attribute: {:?}",
+                msg
+            ),
+        };
+        match &generated_messages[1] {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        address,
+                        name,
+                        value,
+                        value_type,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    address.as_str(),
+                    "expected the add attribute message to target the default scope address",
+                );
+                assert_eq!(
+                    &target_attribute_name,
+                    name,
+                    "expected the default attribute name to be the target used when adding the attribute",
+                );
+                let added_attribute = from_binary::<AssetScopeAttribute>(value)
+                    .expect("expected the attribute value to deserialize to a scope attribute");
+                assert_eq!(
+                    attribute,
+                    added_attribute,
+                    "expected the added attribute to directly equate to the value passed into the function",
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    value_type,
+                    "expected the value type used to be json",
+                );
+            }
+            msg => panic!(
+                "unexpected second message generated during update attribute; {:?}",
+                msg,
+            ),
+        };
     }
 }

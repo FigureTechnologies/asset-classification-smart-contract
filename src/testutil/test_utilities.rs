@@ -1,11 +1,13 @@
 use cosmwasm_std::{
+    from_binary,
     testing::{mock_env, mock_info, MockApi, MockStorage},
-    Addr, Coin, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
+    Addr, Coin, CosmosMsg, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
 use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{
-    Party, PartyType, Process, ProcessId, ProvenanceMsg, ProvenanceQuery, Record, RecordInput,
-    RecordInputSource, RecordInputStatus, RecordOutput, Records, ResultStatus, Scope,
+    AttributeMsgParams, Party, PartyType, Process, ProcessId, ProvenanceMsg, ProvenanceMsgParams,
+    ProvenanceQuery, Record, RecordInput, RecordInputSource, RecordInputStatus, RecordOutput,
+    Records, ResultStatus, Scope,
 };
 use serde_json_wasm::to_string;
 
@@ -285,4 +287,53 @@ pub fn mock_scope_attribute<S: Into<String>>(
             "json",
         )],
     );
+}
+
+/// Crawls the vector of messages contained in the provided response, and, if an add attribute message
+/// is contained therein, will set the attribute in the MockOwnedDeps' ProvenanceMockQuerier, which
+/// will cause downstream consumers in the rest of the test structure to see that attribute as the latest
+/// value for the given address.
+pub fn intercept_add_attribute<S: Into<String>>(
+    deps: &mut MockOwnedDeps,
+    response: &ContractResponse,
+    failure_description: S,
+) {
+    let failure_msg: String = failure_description.into();
+    match response {
+        Ok(ref res) => {
+            for m in res.messages.iter() {
+                match &m.msg {
+                    CosmosMsg::Custom(ProvenanceMsg {
+                        params:
+                            ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                                address,
+                                name,
+                                value,
+                                ..
+                            }),
+                        ..
+                    }) => {
+                        // inject bound name into provmock querier
+                        let deserialized = from_binary::<AssetScopeAttribute>(&value).unwrap();
+                        deps.querier.with_attributes(
+                            address.as_str(),
+                            &[(
+                                name.as_str(),
+                                to_string(&deserialized).unwrap().as_str(),
+                                "json",
+                            )],
+                        );
+                        // After finding the add attribute message, exit to avoid panics
+                        return;
+                    }
+                    _ => (),
+                };
+            }
+            panic!("{}: message provided did not contain an add attribute message. Full response: {:?}", failure_msg, response);
+        }
+        Err(e) => panic!(
+            "{}: expected onboard_asset call to succeed, but got error: {:?}",
+            failure_msg, e
+        ),
+    };
 }

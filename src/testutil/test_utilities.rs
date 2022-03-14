@@ -13,8 +13,8 @@ use crate::{
     contract::instantiate,
     core::{
         asset::{
-            AssetDefinition, AssetDefinitionInput, AssetOnboardingStatus, ScopeSpecIdentifier,
-            ValidatorDetail,
+            AccessDefinition, AssetDefinition, AssetDefinitionInput, AssetOnboardingStatus,
+            ScopeSpecIdentifier, ValidatorDetail,
         },
         msg::InitMsg,
     },
@@ -26,13 +26,13 @@ use crate::{
 };
 
 use super::test_constants::{
-    DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
-    DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
-    DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME,
-    DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME,
-    DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
-    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
-    DEFAULT_VALIDATOR_ADDRESS,
+    DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID,
+    DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
+    DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD,
+    DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS,
+    DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS,
+    DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
+    DEFAULT_SESSION_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
@@ -88,7 +88,10 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
         onboarding_status: AssetOnboardingStatus::Pending,
         latest_validator_detail: Some(get_default_validator_detail()),
         latest_validation_result: None,
-        access_routes: vec![], // todo: add access_routes schtuff
+        access_definitions: vec![AccessDefinition {
+            owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+            access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+        }],
     }
 }
 

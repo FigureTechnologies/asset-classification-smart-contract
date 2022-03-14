@@ -1,11 +1,13 @@
+use std::collections::HashSet;
+
 use cosmwasm_std::{Addr, CosmosMsg};
 use provwasm_std::{delete_attributes, ProvenanceMsg};
 
 use crate::{
     core::{
         asset::{
-            AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
-            ValidatorDetail,
+            AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+            AssetValidationResult, ValidatorDetail,
         },
         error::ContractError,
         state::config_read,
@@ -57,6 +59,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         requestor_address: S3,
         onboarding_status: AssetOnboardingStatus,
         validator_detail: ValidatorDetail,
+        access_routes: Vec<String>,
     ) -> ContractResult<()> {
         // generate attribute -> scope bind message
         let contract_base_name = self
@@ -69,6 +72,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             validator_address,
             onboarding_status.to_some(),
             validator_detail,
+            access_routes,
         )?;
 
         if self.has_asset(&attribute.scope_address)? {
@@ -110,6 +114,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         scope_address: S1,
         success: bool,
         validation_message: Option<S2>,
+        access_routes: Vec<String>,
     ) -> ContractResult<()> {
         // set validation result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
@@ -130,16 +135,54 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             }
             .to_string()
         });
-        let existing_validator_detail = attribute.latest_validator_detail;
-        attribute.latest_validator_detail = None;
-        attribute.latest_validation_result = Some(AssetValidationResult { message, success });
-        self.add_message(get_add_attribute_to_scope_msg(
-            &attribute,
-            contract_base_name,
-        )?);
+        if let Some(validator_detail) = attribute.latest_validator_detail {
+            attribute.latest_validator_detail = None;
+            attribute.latest_validation_result = Some(AssetValidationResult { message, success });
 
-        // distribute fees now that validation has happened
-        if let Some(validator_detail) = existing_validator_detail {
+            let validator_address = validator_detail.address.clone();
+
+            // check for existing validator-linked access route collection
+            if let Some(access_definition) = attribute
+                .access_definitions
+                .iter()
+                .find(|ar| ar.owner_address == validator_address)
+            {
+                let mut distinct_routes =
+                    [&access_definition.access_routes[..], &access_routes[..]]
+                        .concat()
+                        .iter()
+                        .collect::<HashSet<_>>()
+                        .into_iter()
+                        .cloned()
+                        .collect::<Vec<String>>();
+                distinct_routes.sort();
+
+                let mut new_access_definitions = attribute
+                    .access_definitions
+                    .iter()
+                    .filter(|ar| ar.owner_address != validator_address)
+                    .cloned()
+                    .collect::<Vec<AccessDefinition>>();
+
+                new_access_definitions.push(AccessDefinition {
+                    access_routes: distinct_routes,
+                    ..access_definition.to_owned()
+                });
+
+                attribute.access_definitions = new_access_definitions;
+            } else if !access_routes.is_empty() {
+                attribute.access_definitions.push(AccessDefinition {
+                    owner_address: validator_address,
+                    access_routes,
+                });
+            }
+
+            self.add_message(get_add_attribute_to_scope_msg(
+                &attribute,
+                contract_base_name,
+            )?);
+
+            // distribute fees now that validation has happened
             self.append_messages(&calculate_validator_cost_messages(&validator_detail)?);
         } else {
             return ContractError::UnexpectedState {
@@ -187,16 +230,18 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
+    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, ProvenanceMsg, ProvenanceMsgParams,
     };
+    use serde_json_wasm::to_string;
 
     use crate::{
         core::{
             asset::{
-                AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+                AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+                AssetValidationResult, ValidatorDetail,
             },
             error::ContractError,
             state::config_read,
@@ -208,7 +253,8 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
+                DEFAULT_ACCESS_ROUTE, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID,
+                DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
                 DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
                 DEFAULT_VALIDATOR_ADDRESS,
             },
@@ -264,6 +310,7 @@ mod tests {
                 DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
+                Vec::<String>::new(),
             )
             .unwrap_err();
 
@@ -297,6 +344,7 @@ mod tests {
                 DEFAULT_SENDER_ADDRESS,
                 AssetOnboardingStatus::Pending,
                 get_default_validator_detail(),
+                vec![DEFAULT_ACCESS_ROUTE.to_string()],
             )
             .unwrap();
 
@@ -425,7 +473,7 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
-            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None)
+            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None, vec![])
             .unwrap_err();
 
         match err {
@@ -477,13 +525,117 @@ mod tests {
             .expect("expected storage to load from relinquished deps");
     }
 
+    #[test]
+    fn test_existing_validator_detail_access_routes_merged() {
+        let mut deps = mock_dependencies(&[]);
+        // set up existing attribute with pre-existing access routes
+        deps.querier.with_attributes(
+            DEFAULT_SCOPE_ADDRESS,
+            &[(
+                generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME)
+                    .as_str(),
+                to_string(&AssetScopeAttribute {
+                    asset_uuid: DEFAULT_ASSET_UUID.to_string(),
+                    scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                    requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
+                    validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS),
+                    onboarding_status: AssetOnboardingStatus::Pending,
+                    latest_validator_detail: ValidatorDetail {
+                        address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                        onboarding_cost: Uint128::new(DEFAULT_ONBOARDING_COST),
+                        onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
+                        fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
+                        fee_destinations: vec![],
+                    }
+                    .to_some(),
+                    latest_validation_result: None,
+                    access_definitions: vec![
+                        AccessDefinition {
+                            owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                            access_routes: vec!["ownerroute1".to_string()],
+                        },
+                        AccessDefinition {
+                            owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                            access_routes: vec!["existingroute".to_string()],
+                        },
+                    ],
+                })
+                .unwrap()
+                .as_str(),
+                "json",
+            )],
+        );
+
+        setup_test_suite(&mut deps, InstArgs::default());
+        let repository = AssetMetaService::new(deps.as_mut());
+
+        repository
+            .validate_asset::<&str, &str>(
+                DEFAULT_SCOPE_ADDRESS,
+                true,
+                "Great jaerb there Hamstar".to_some(),
+                vec!["newroute".to_string()],
+            )
+            .unwrap();
+
+        let messages = repository.messages.get();
+
+        assert_eq!(3, messages.len(),
+        "validate asset should produce 3 messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)");
+
+        let second_message = &messages[1];
+        match second_message {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute { value, .. }),
+                ..
+            }) => {
+                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                assert_eq!(
+                    2,
+                    deserialized.access_definitions.len(),
+                    "Modified scope attribute should only have 2 access route groups listed"
+                );
+                assert_eq!(
+                    &AccessDefinition {
+                        owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                        access_routes: vec!["ownerroute1".to_string()]
+                    },
+                    deserialized
+                        .access_definitions
+                        .iter()
+                        .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
+                        .unwrap(),
+                    "sender access route should be unchanged after validator routes updated"
+                );
+                assert_eq!(
+                    &AccessDefinition {
+                        owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                        access_routes: vec!["existingroute".to_string(), "newroute".to_string()],
+                    },
+                    deserialized
+                        .access_definitions
+                        .iter()
+                        .find(|r| r.owner_address == DEFAULT_VALIDATOR_ADDRESS)
+                        .unwrap(),
+                    "sender access route should be unchanged after validator routes updated"
+                );
+            }
+            _ => panic!(
+                "Unexpected second message type for validate_asset: {:?}",
+                second_message
+            ),
+        }
+    }
+
     fn test_validation_result(message: Option<&str>, result: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
         repository
-            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message)
+            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
             .unwrap();
 
         let messages = repository.get_messages();

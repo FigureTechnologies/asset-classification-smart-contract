@@ -1,4 +1,4 @@
-use cosmwasm_std::MessageInfo;
+use cosmwasm_std::{testing::mock_info, MessageInfo};
 
 use crate::{
     core::asset::AssetIdentifier,
@@ -8,7 +8,10 @@ use crate::{
 };
 
 use super::{
-    test_constants::{DEFAULT_ACCESS_ROUTE, DEFAULT_SCOPE_ADDRESS},
+    test_constants::{
+        DEFAULT_ACCESS_ROUTE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
+        DEFAULT_VALIDATOR_ADDRESS,
+    },
     test_utilities::{intercept_add_attribute, MockOwnedDeps},
 };
 
@@ -24,6 +27,15 @@ impl TestValidateAsset {
             success: true,
             message: "Validated asset without errors".to_string().to_some(),
             access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+        }
+    }
+}
+impl Default for TestValidateAsset {
+    fn default() -> Self {
+        Self {
+            info: mock_info(DEFAULT_VALIDATOR_ADDRESS, &[]),
+            contract_base_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+            validate_asset: TestValidateAsset::default_validate_asset(),
         }
     }
 }

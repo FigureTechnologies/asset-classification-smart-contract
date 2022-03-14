@@ -238,6 +238,7 @@ mod tests {
                 empty_mock_info, get_default_scope, mock_info_with_funds, mock_info_with_nhash,
                 setup_test_suite, test_instantiate_success, InstArgs,
             },
+            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
         },
         util::{
             constants::{
@@ -526,7 +527,7 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_asset_pending_validation() {
+    fn test_onboard_asset_errors_on_asset_pending_status() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
@@ -551,7 +552,7 @@ mod tests {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     scope_address,
-                    "the asset pending validation message should reflect that the asset address was already onboarded"
+                    "the asset pending validation message should reflect that the asset address is awaiting validation"
                 );
                 assert_eq!(
                     DEFAULT_VALIDATOR_ADDRESS,
@@ -564,6 +565,33 @@ mod tests {
                 err
             ),
         }
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_asset_approved_status() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        let err = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            TestOnboardAsset::default_onboard_asset(),
+        )
+        .unwrap_err();
+        match err {
+            ContractError::AssetAlreadyOnboarded { scope_address } => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    scope_address,
+                    "the asset already onboarded message should reflect that the asset address was already onboarded",
+                );
+            }
+            _ => panic!(
+                "unexpected error encountered when trying to board a validated asset: {:?}",
+                err
+            ),
+        };
     }
 
     #[test]

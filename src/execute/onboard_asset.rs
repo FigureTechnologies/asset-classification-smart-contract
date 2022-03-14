@@ -1,5 +1,6 @@
+use crate::core::asset::AssetIdentifier;
 use crate::core::error::ContractError;
-use crate::core::msg::{AssetIdentifier, ExecuteMsg};
+use crate::core::msg::ExecuteMsg;
 use crate::core::state::load_asset_definition_by_type;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
@@ -48,7 +49,7 @@ pub fn onboard_asset<'a, T>(
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
-    let asset_identifiers = msg.identifier.parse_identifiers()?;
+    let asset_identifiers = msg.identifier.to_identifiers()?;
     // get asset state config for type, or error if not present
     let asset_state =
         match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
@@ -172,9 +173,8 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AccessRoute, AssetOnboardingStatus, AssetScopeAttribute},
+            asset::{AccessRoute, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute},
             error::ContractError,
-            msg::AssetIdentifier,
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         service::asset_meta_service::AssetMetaService,

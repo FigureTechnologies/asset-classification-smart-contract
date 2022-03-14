@@ -6,11 +6,13 @@ use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{Party, PartyType, ProvenanceMsg, ProvenanceQuery, Scope};
 use serde_json_wasm::to_string;
 
-use crate::core::{asset::AccessRoute, msg::AssetDefinitionInput};
 use crate::{
     contract::instantiate,
     core::{
-        asset::{AssetDefinition, AssetOnboardingStatus, ValidatorDetail},
+        asset::{
+            AccessRoute, AssetDefinition, AssetDefinitionInput, AssetOnboardingStatus,
+            ScopeSpecIdentifier, ValidatorDetail,
+        },
         msg::InitMsg,
     },
     util::functions::generate_asset_attribute_name,
@@ -32,7 +34,7 @@ pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, 
 pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        scope_spec_address: DEFAULT_SCOPE_SPEC_ADDRESS.into(),
+        scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
         validators: vec![get_default_validator_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
@@ -50,7 +52,9 @@ pub fn get_default_validator_detail() -> ValidatorDetail {
 }
 
 pub fn get_default_asset_definition() -> AssetDefinition {
-    get_default_asset_definition_input().into()
+    get_default_asset_definition_input()
+        .into_asset_definition()
+        .expect("the default asset definition input could not be parsed as an asset definition")
 }
 
 pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInput> {
@@ -60,7 +64,11 @@ pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInput> {
 pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
     get_default_asset_definition_inputs()
         .into_iter()
-        .map(|input| AssetDefinition::from(input))
+        .map(|input| {
+            input
+                .into_asset_definition()
+                .expect("failed to convert default asset definition input into an asset definition")
+        })
         .collect()
 }
 

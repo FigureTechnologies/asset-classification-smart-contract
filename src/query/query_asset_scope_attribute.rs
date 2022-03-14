@@ -3,7 +3,8 @@ use provwasm_std::ProvenanceQuerier;
 
 use crate::{
     core::{
-        asset::AssetScopeAttribute, error::ContractError, msg::AssetIdentifier,
+        asset::{AssetIdentifier, AssetScopeAttribute},
+        error::ContractError,
         state::load_asset_definition_by_scope_spec,
     },
     util::{
@@ -107,7 +108,8 @@ mod tests {
 
     use crate::{
         core::{
-            asset::AssetScopeAttribute, error::ContractError, msg::AssetIdentifier,
+            asset::{AssetIdentifier, AssetScopeAttribute},
+            error::ContractError,
             state::load_asset_definition_by_type,
         },
         testutil::{

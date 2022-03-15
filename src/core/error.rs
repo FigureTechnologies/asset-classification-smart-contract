@@ -89,6 +89,14 @@ pub enum ContractError {
         scope_address: String,
     },
 
+    #[error("Provided scope [address: {scope_address}, spec_address: {scope_spec_address}] does not conform to the spec configured for the provided asset_type [{asset_type}]. Expected a scope of spec [{expected_scope_spec_address}]")]
+    AssetSpecMismatch {
+        asset_type: String,
+        scope_address: String,
+        scope_spec_address: String,
+        expected_scope_spec_address: String,
+    },
+
     #[error("Asset type {asset_type} is currently disabled")]
     AssetTypeDisabled { asset_type: String },
 

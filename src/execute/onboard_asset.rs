@@ -126,6 +126,17 @@ where
         Ok(scope) => scope,
     };
 
+    // verify scope is of correct spec for provided asset_type
+    if scope.specification_id != asset_definition.scope_spec_address {
+        return ContractError::AssetSpecMismatch {
+            asset_type: msg.asset_type,
+            scope_address: asset_identifiers.scope_address,
+            scope_spec_address: scope.specification_id,
+            expected_scope_spec_address: asset_definition.scope_spec_address,
+        }
+        .to_err();
+    }
+
     // verify that the sender of this message is a scope owner
     if !scope
         .owners
@@ -238,12 +249,12 @@ mod tests {
             test_constants::{
                 DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
                 DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
+                DEFAULT_SESSION_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
             },
             test_utilities::{
-                empty_mock_info, get_default_scope, mock_info_with_funds, mock_info_with_nhash,
-                setup_test_suite, test_instantiate_success, InstArgs,
+                empty_mock_info, get_default_scope, get_duped_scope, mock_info_with_funds,
+                mock_info_with_nhash, setup_test_suite, test_instantiate_success, InstArgs,
             },
             validate_asset_helpers::{test_validate_asset, TestValidateAsset},
         },
@@ -682,6 +693,50 @@ mod tests {
             "expected the error to indicate that the scope was invalid for records, but got: {:?}",
             err,
         );
+    }
+
+    #[test]
+    fn test_onboard_asset_errors_on_scope_spec_message_type_configuration_mismatch() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let bogus_scope_spec_address = "specLolWhut".to_string();
+        // Setup the default scope and add a record, but make sure the record is not formed properly
+        let scope = get_duped_scope(
+            DEFAULT_SCOPE_ADDRESS,
+            &bogus_scope_spec_address, // not the spec you are looking for/was configured as an asset_type in test_instantate_success
+            DEFAULT_SENDER_ADDRESS,
+        );
+        deps.querier.with_scope(scope.clone());
+
+        let err = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                access_routes: vec![],
+            },
+        )
+        .unwrap_err();
+
+        match err {
+            ContractError::AssetSpecMismatch {
+                asset_type,
+                scope_address,
+                scope_spec_address,
+                expected_scope_spec_address,
+            } => {
+                assert_eq!(DEFAULT_ASSET_TYPE, asset_type);
+                assert_eq!(DEFAULT_SCOPE_ADDRESS, scope_address);
+                assert_eq!(bogus_scope_spec_address, scope_spec_address);
+                assert_eq!(DEFAULT_SCOPE_SPEC_ADDRESS, expected_scope_spec_address);
+            }
+            _ => panic!(
+                "expected the error to indicate the scope onboarding error, but got: {:?}",
+                err
+            ),
+        }
     }
 
     #[test]

@@ -129,7 +129,7 @@ mod tests {
                 );
             }
             _ => panic!(
-                "unepected error encountered when providing a bad validator: {:?}",
+                "unexpected error encountered when providing a bad validator: {:?}",
                 error
             ),
         }

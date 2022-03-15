@@ -1,7 +1,7 @@
 use crate::{
     core::msg::InitMsg,
     util::{
-        aliases::ContractResult,
+        aliases::AssetResult,
         traits::{OptionExtensions, ResultExtensions},
     },
 };
@@ -76,7 +76,7 @@ fn asset_definitions<'a>() -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDef
 pub fn insert_asset_definition(
     storage: &mut dyn Storage,
     definition: &AssetDefinition,
-) -> ContractResult<()> {
+) -> AssetResult<()> {
     let state = asset_definitions();
     let key = &definition.storage_key();
     if let Ok(existing_def) = state.load(storage, key) {
@@ -106,7 +106,7 @@ pub fn insert_asset_definition(
 pub fn replace_asset_definition(
     storage: &mut dyn Storage,
     definition: &AssetDefinition,
-) -> ContractResult<()> {
+) -> AssetResult<()> {
     let state = asset_definitions();
     let key = &definition.storage_key();
     if let Ok(existing_def) = state.load(storage, key) {
@@ -135,7 +135,7 @@ pub fn replace_asset_definition(
 pub fn load_asset_definition_by_type<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
-) -> ContractResult<AssetDefinition> {
+) -> AssetResult<AssetDefinition> {
     asset_definitions()
         // Coerce to lowercase to match how stored values are keyed
         .load(storage, asset_type.into().to_lowercase().as_bytes())
@@ -146,7 +146,7 @@ pub fn load_asset_definition_by_type<S: Into<String>>(
 pub fn load_asset_definition_by_scope_spec<S: Into<String>>(
     storage: &dyn Storage,
     scope_spec_address: S,
-) -> ContractResult<AssetDefinition> {
+) -> AssetResult<AssetDefinition> {
     // Coerce to lowercase to match how stored values are keyed
     let spec_addr = scope_spec_address.into().to_lowercase();
     if let Some((_, asset_definition)) = asset_definitions()

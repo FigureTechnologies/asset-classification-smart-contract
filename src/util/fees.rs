@@ -5,7 +5,7 @@ use provwasm_std::ProvenanceMsg;
 
 use crate::core::{asset::ValidatorDetail, error::ContractError};
 
-use super::{aliases::ContractResult, functions::bank_send, traits::ResultExtensions};
+use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions};
 
 /// This function distributes funds from the sender address to the targets defined by a ValidatorDetail.
 /// It breaks down all percentages defined in the validator detail's fee destinations and core onboarding
@@ -14,7 +14,7 @@ use super::{aliases::ContractResult, functions::bank_send, traits::ResultExtensi
 /// used for contract execution routes.
 pub fn calculate_validator_cost_messages(
     validator: &ValidatorDetail,
-) -> ContractResult<Vec<CosmosMsg<ProvenanceMsg>>> {
+) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
     let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // The total funds disbursed across fees are equal to the cost multiplied by the fee percent
     let fee_total = validator.onboarding_cost.mul(validator.fee_percent);
@@ -23,7 +23,7 @@ pub fn calculate_validator_cost_messages(
     // will result in an unhandled panic.  Detect this potentiality for a misconfigured validator and exit early to prevent
     // future head-scratching (panics are very difficult to debug due to redacted responses)
     if fee_total > validator.onboarding_cost {
-        return ContractError::std_err(
+        return ContractError::generic(
             format!("misconfigured validator data! calculated fee total ({}{}) was greater than the total cost of onboarding ({}{})", 
             fee_total,
              denom,
@@ -40,7 +40,7 @@ pub fn calculate_validator_cost_messages(
         .map(|d| fee_total.mul(d.fee_percent))
         .sum::<Uint128>();
     if validator.onboarding_cost != validator_cost + inner_fee_distribution_sum {
-        return ContractError::std_err(
+        return ContractError::generic(
             format!("misconfigured validator data! expected onboarding cost to total {}{}, but total costs were {}{} (validator) + {}{} (fee destination sum) = {}{}",
             validator.onboarding_cost,
             denom,
@@ -69,7 +69,7 @@ pub fn calculate_validator_cost_messages(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{BankMsg, CosmosMsg, Decimal, StdError, Uint128};
+    use cosmwasm_std::{BankMsg, CosmosMsg, Decimal, Uint128};
     use provwasm_std::ProvenanceMsg;
 
     use crate::{
@@ -94,19 +94,17 @@ mod tests {
         );
         let error = calculate_validator_cost_messages(&validator).unwrap_err();
         match error {
-            ContractError::Std(e) => match e {
-                StdError::GenericErr { msg, .. } => {
-                    assert_eq!(
-                            "misconfigured validator data! calculated fee total (150nhash) was greater than the total cost of onboarding (100nhash)",
-                            msg.as_str(),
-                            "unexpected error message generated",
-                        );
-                }
-                _ => panic!(
-                    "unexpected cosmwasm StdError encountered when providing an invalid validator: {:?}", e,
-                ),
-            },
-            _ => panic!("unexpected error encountered when providing a bad validator: {:?}", error),
+            ContractError::GenericError { msg } => {
+                assert_eq!(
+                    "misconfigured validator data! calculated fee total (150nhash) was greater than the total cost of onboarding (100nhash)",
+                    msg.as_str(),
+                    "unexpected error message generated",
+                );
+            }
+            _ => panic!(
+                "unexpected error encountered when providing a bad validator: {:?}",
+                error
+            ),
         }
     }
 
@@ -123,19 +121,17 @@ mod tests {
         );
         let error = calculate_validator_cost_messages(&validator).unwrap_err();
         match error {
-            ContractError::Std(e) => match e {
-                StdError::GenericErr { msg, .. } => {
-                    assert_eq!(
-                        "misconfigured validator data! expected onboarding cost to total 100nhash, but total costs were 50nhash (validator) + 25nhash (fee destination sum) = 75nhash",
-                        msg.as_str(),
-                        "unexpected error message generated",
-                    );
-                }
-                _ => panic!(
-                    "unexpected cosmwasm StdError encountered when providing an invalid validator: {:?}", e,
-                ),
-            },
-            _ => panic!("unepected error encountered when providing a bad validator: {:?}", error),
+            ContractError::GenericError { msg } => {
+                assert_eq!(
+                    "misconfigured validator data! expected onboarding cost to total 100nhash, but total costs were 50nhash (validator) + 25nhash (fee destination sum) = 75nhash",
+                    msg.as_str(),
+                    "unexpected error message generated",
+                );
+            }
+            _ => panic!(
+                "unepected error encountered when providing a bad validator: {:?}",
+                error
+            ),
         }
     }
 

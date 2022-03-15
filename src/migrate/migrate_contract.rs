@@ -4,7 +4,7 @@ use semver::Version;
 use crate::{
     core::error::ContractError,
     util::{
-        aliases::{ContractResponse, ContractResult, DepsMutC},
+        aliases::{AssetResult, DepsMutC, EntryPointResponse},
         event_attributes::{EventAttributes, EventType},
         traits::ResultExtensions,
     },
@@ -14,7 +14,7 @@ use super::version_info::{
     get_version_info, migrate_version_info, CONTRACT_NAME, CONTRACT_VERSION,
 };
 
-pub fn migrate_contract(deps: DepsMutC) -> ContractResponse {
+pub fn migrate_contract(deps: DepsMutC) -> EntryPointResponse {
     // Ensure the migration is not attempting to revert to an old version or something crazier
     check_valid_migration_versioning(deps.storage)?;
     // Store the new version info
@@ -28,7 +28,7 @@ pub fn migrate_contract(deps: DepsMutC) -> ContractResponse {
 }
 
 /// Verifies that the migration is going to a proper version and the contract name of the new wasm matches
-fn check_valid_migration_versioning(storage: &mut dyn Storage) -> ContractResult<()> {
+fn check_valid_migration_versioning(storage: &mut dyn Storage) -> AssetResult<()> {
     let stored_version_info = get_version_info(storage)?;
     // If the contract name has changed or another contract attempts to overwrite this one, this
     // check will reject the change

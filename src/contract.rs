@@ -11,14 +11,20 @@ use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
 use crate::query::query_state::query_state;
+use crate::query::query_version::query_version;
 use crate::service::asset_meta_service::AssetMetaService;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsC, DepsMutC};
+use crate::util::aliases::{AssetResult, DepsC, DepsMutC, EntryPointResponse};
 use crate::validation::validate_execute_msg::validate_execute_msg;
 use crate::validation::validate_init_msg::validate_init_msg;
 use cosmwasm_std::{entry_point, Binary, Env, MessageInfo};
 
 #[entry_point]
-pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) -> ContractResponse {
+pub fn instantiate(
+    deps: DepsMutC,
+    env: Env,
+    info: MessageInfo,
+    msg: InitMsg,
+) -> EntryPointResponse {
     // Ensure the init message is properly formatted before doing anything
     validate_init_msg(&msg)?;
     // Execute the core instantiation code
@@ -26,18 +32,19 @@ pub fn instantiate(deps: DepsMutC, env: Env, info: MessageInfo, msg: InitMsg) ->
 }
 
 #[entry_point]
-pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
         QueryMsg::QueryAssetDefinition { qualifier } => query_asset_definition(&deps, qualifier),
         QueryMsg::QueryAssetScopeAttribute { identifier } => {
             query_asset_scope_attribute(&deps, identifier)
         }
         QueryMsg::QueryState {} => query_state(&deps),
+        QueryMsg::QueryVersion {} => query_version(&deps),
     }
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> ContractResponse {
+pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> EntryPointResponse {
     // Ensure the execute message is properly formatted before doing anything
     validate_execute_msg(&msg)?;
     match msg {
@@ -73,6 +80,6 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 }
 
 #[entry_point]
-pub fn migrate(deps: DepsMutC, _env: Env, _msg: MigrateMsg) -> ContractResponse {
+pub fn migrate(deps: DepsMutC, _env: Env, _msg: MigrateMsg) -> EntryPointResponse {
     migrate_contract(deps)
 }

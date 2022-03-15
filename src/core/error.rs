@@ -139,9 +139,12 @@ pub enum ContractError {
 
     #[error("{0}")]
     UuidError(#[from] uuid::Error),
+
+    #[error("{msg}")]
+    GenericError { msg: String },
 }
 impl ContractError {
-    pub fn std_err<S: Into<String>>(msg: S) -> ContractError {
-        ContractError::Std(StdError::generic_err(msg))
+    pub fn generic<S: Into<String>>(msg: S) -> ContractError {
+        ContractError::GenericError { msg: msg.into() }
     }
 }

@@ -2,7 +2,7 @@ use crate::core::asset::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_utilities::MockOwnedDeps;
-use crate::util::aliases::ContractResponse;
+use crate::util::aliases::EntryPointResponse;
 use cosmwasm_std::testing::mock_info;
 use cosmwasm_std::{coin, MessageInfo};
 
@@ -67,7 +67,7 @@ impl Default for TestOnboardAsset {
     }
 }
 
-pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> ContractResponse {
+pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> EntryPointResponse {
     let response = onboard_asset(
         AssetMetaService::new(deps.as_mut()),
         msg.info,

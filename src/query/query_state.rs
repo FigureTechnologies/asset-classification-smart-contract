@@ -3,12 +3,12 @@ use cosmwasm_std::{to_binary, Binary};
 use crate::{
     core::state::config_read,
     util::{
-        aliases::{ContractResult, DepsC},
+        aliases::{AssetResult, DepsC},
         traits::ResultExtensions,
     },
 };
 
-pub fn query_state(deps: &DepsC) -> ContractResult<Binary> {
+pub fn query_state(deps: &DepsC) -> AssetResult<Binary> {
     let state = config_read(deps.storage).load()?;
     to_binary(&state)?.to_ok()
 }

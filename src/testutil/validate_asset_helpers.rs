@@ -4,7 +4,7 @@ use crate::{
     core::asset::AssetIdentifier,
     execute::validate_asset::{validate_asset, ValidateAssetV1},
     service::asset_meta_service::AssetMetaService,
-    util::{aliases::ContractResponse, traits::OptionExtensions},
+    util::{aliases::EntryPointResponse, traits::OptionExtensions},
 };
 
 use super::{
@@ -50,7 +50,7 @@ impl Default for TestValidateAsset {
     }
 }
 
-pub fn test_validate_asset(deps: &mut MockOwnedDeps, msg: TestValidateAsset) -> ContractResponse {
+pub fn test_validate_asset(deps: &mut MockOwnedDeps, msg: TestValidateAsset) -> EntryPointResponse {
     let response = validate_asset(
         AssetMetaService::new(deps.as_mut()),
         msg.info,

@@ -24,7 +24,7 @@ use crate::{
 };
 use crate::{
     core::asset::AssetScopeAttribute,
-    util::aliases::{ContractResponse, DepsMutC},
+    util::aliases::{DepsMutC, EntryPointResponse},
 };
 
 use super::test_constants::{
@@ -114,7 +114,7 @@ impl Default for InstArgs {
     }
 }
 
-pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
+pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
     instantiate(
         deps,
         args.env,
@@ -295,7 +295,7 @@ pub fn mock_scope_attribute<S: Into<String>>(
 /// value for the given address.
 pub fn intercept_add_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
-    response: &ContractResponse,
+    response: &EntryPointResponse,
     failure_description: S,
 ) {
     let failure_msg: String = failure_description.into();

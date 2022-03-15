@@ -52,6 +52,7 @@ pub enum QueryMsg {
     QueryAssetDefinition { qualifier: AssetQualifier },
     QueryAssetScopeAttribute { identifier: AssetIdentifier },
     QueryState {},
+    QueryVersion {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

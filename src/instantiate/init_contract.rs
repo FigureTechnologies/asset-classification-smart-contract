@@ -1,7 +1,7 @@
 use crate::core::msg::InitMsg;
 use crate::core::state::{config, insert_asset_definition, State};
 use crate::migrate::version_info::migrate_version_info;
-use crate::util::aliases::{ContractResponse, DepsMutC};
+use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::generate_asset_attribute_name;
@@ -14,7 +14,7 @@ pub fn init_contract(
     env: Env,
     info: MessageInfo,
     msg: InitMsg,
-) -> ContractResponse {
+) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
     // The contract needs to own its root name to be effective at preventing asset classification "neighbors"
     // that were never intended to be created from being reserved by external callers

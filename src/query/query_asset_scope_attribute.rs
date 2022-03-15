@@ -8,7 +8,7 @@ use crate::{
         state::load_asset_definition_by_scope_spec,
     },
     util::{
-        aliases::{ContractResult, DepsC},
+        aliases::{AssetResult, DepsC},
         scope_address_utils::asset_uuid_to_scope_address,
         traits::ResultExtensions,
     },
@@ -18,7 +18,7 @@ use crate::{
 pub fn query_asset_scope_attribute(
     deps: &DepsC,
     identifier: AssetIdentifier,
-) -> ContractResult<Binary> {
+) -> AssetResult<Binary> {
     let scope_attribute = match identifier {
         AssetIdentifier::AssetUuid(asset_uuid) => {
             query_scope_attribute_by_asset_uuid(deps, asset_uuid)
@@ -35,7 +35,7 @@ pub fn query_asset_scope_attribute(
 pub fn query_scope_attribute_by_asset_uuid<S: Into<String>>(
     deps: &DepsC,
     asset_uuid: S,
-) -> ContractResult<AssetScopeAttribute> {
+) -> AssetResult<AssetScopeAttribute> {
     query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)?)
 }
 
@@ -45,24 +45,24 @@ pub fn query_scope_attribute_by_asset_uuid<S: Into<String>>(
 pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,
-) -> ContractResult<AssetScopeAttribute> {
+) -> AssetResult<AssetScopeAttribute> {
     let scope_address_str = scope_address.into();
     let scope_attribute =
         may_query_scope_attribute_by_scope_address(deps, scope_address_str.clone())?;
     // This is a normal scenario, which just means the scope didn't have an attribute.  This can happen if a
     // scope was created with a scope spec that is attached to the contract via AssetDefinition, but the scope was
     // never registered by using onboard_asset.
-    if scope_attribute.is_none() {
-        return ContractError::NotFound {
+    if let Some(attr) = scope_attribute {
+        attr.to_ok()
+    } else {
+        ContractError::NotFound {
             explanation: format!(
                 "scope at address [{}] did not include an asset scope attribute",
                 scope_address_str
             ),
         }
-        .to_err();
+        .to_err()
     }
-
-    scope_attribute.unwrap().to_ok()
 }
 
 /// Fetches an AssetScopeAttribubte by the scope address value directly.  The most efficient version
@@ -71,7 +71,7 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
 pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,
-) -> ContractResult<Option<AssetScopeAttribute>> {
+) -> AssetResult<Option<AssetScopeAttribute>> {
     let querier = ProvenanceQuerier::new(&deps.querier);
     // First, query up the scope in order to find the asset definition's type
     let scope = querier.get_scope(scope_address.into())?;
@@ -90,7 +90,7 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     // the attribute name.  This should only ever happen in error, and would require a horrible cleanup process
     // that manually removed the bad attributes
     if scope_attributes.len() > 1 {
-        return ContractError::std_err(format!(
+        return ContractError::generic(format!(
             "more than one asset scope attribute exists at address [{}]. data repair needed",
             &scope.scope_id
         ))

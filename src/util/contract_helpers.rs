@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::state::config_read;
-use crate::util::aliases::{ContractResult, DepsC};
+use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::MessageInfo;
 
@@ -21,7 +21,7 @@ use cosmwasm_std::MessageInfo;
 /// let info = mock_info("admin-name", &[]);
 /// check_admin_only(&deps.as_ref(), &info).expect("admin-name was used as the admin and should return a success");
 /// ```
-pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> {
+pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> AssetResult<()> {
     let state = config_read(deps.storage).load()?;
     if info.sender != state.admin {
         ContractError::Unauthorized {
@@ -43,7 +43,7 @@ pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> ContractResult<()> 
 /// let info = mock_info("admin-nmae", &[]);
 /// check_funds_are_empty(&info).expect("no coin provided in info - should be success");
 /// ```
-pub fn check_funds_are_empty(info: &MessageInfo) -> ContractResult<()> {
+pub fn check_funds_are_empty(info: &MessageInfo) -> AssetResult<()> {
     if !info.funds.is_empty() {
         ContractError::InvalidFunds("route requires no funds be present".to_string()).to_err()
     } else {

@@ -101,6 +101,7 @@ pub struct InstArgs {
     pub env: Env,
     pub info: MessageInfo,
     pub base_contract_name: String,
+    pub bind_base_name: bool,
     pub asset_definitions: Vec<AssetDefinitionInput>,
 }
 impl Default for InstArgs {
@@ -109,6 +110,7 @@ impl Default for InstArgs {
             env: mock_env(),
             info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
+            bind_base_name: true,
             asset_definitions: get_default_asset_definition_inputs(),
         }
     }
@@ -121,6 +123,7 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
         args.info,
         InitMsg {
             base_contract_name: args.base_contract_name,
+            bind_base_name: args.bind_base_name,
             asset_definitions: args.asset_definitions,
         },
     )

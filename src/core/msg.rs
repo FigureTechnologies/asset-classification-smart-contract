@@ -8,6 +8,7 @@ use super::asset::{AssetDefinitionInput, AssetIdentifier, AssetQualifier};
 #[serde(rename_all = "snake_case")]
 pub struct InitMsg {
     pub base_contract_name: String,
+    pub bind_base_name: bool,
     pub asset_definitions: Vec<AssetDefinitionInput>,
 }
 

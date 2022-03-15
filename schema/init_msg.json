@@ -4,7 +4,8 @@
   "type": "object",
   "required": [
     "asset_definitions",
-    "base_contract_name"
+    "base_contract_name",
+    "bind_base_name"
   ],
   "properties": {
     "asset_definitions": {
@@ -15,6 +16,9 @@
     },
     "base_contract_name": {
       "type": "string"
+    },
+    "bind_base_name": {
+      "type": "boolean"
     }
   },
   "definitions": {

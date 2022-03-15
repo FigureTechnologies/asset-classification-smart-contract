@@ -16,13 +16,18 @@ pub fn init_contract(
     msg: InitMsg,
 ) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
-    // The contract needs to own its root name to be effective at preventing asset classification "neighbors"
-    // that were never intended to be created from being reserved by external callers
-    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![bind_name(
-        &msg.base_contract_name,
-        env.contract.address.clone(),
-        NameBinding::Restricted,
-    )?];
+
+    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
+    // If specified true, the contract needs to own its root name to be effective at preventing
+    // asset classification "neighbors" that were never intended to be created from being reserved
+    // by external callers
+    if msg.bind_base_name {
+        messages.push(bind_name(
+            &msg.base_contract_name,
+            env.contract.address.clone(),
+            NameBinding::Restricted,
+        )?);
+    }
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
@@ -204,6 +209,26 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_init_bind_base_name_false_skips_base_bind() {
+        let mut deps = mock_dependencies(&[]);
+        let response = test_instantiate(
+            deps.as_mut(),
+            InstArgs {
+                bind_base_name: false,
+                ..Default::default()
+            },
+        )
+        .expect("instantiation with defaults and bind_base_name = false should succeed");
+        assert_eq!(
+            1,
+            response.messages.len(),
+            "the correct number of messages should be emitted"
+        );
+        // The only message emitted should be a name bind for the default asset type to the base name
+        test_message_is_name_bind(&response.messages, DEFAULT_ASSET_TYPE);
+    }
+
+    #[test]
     fn test_invalid_init_contract_including_funds() {
         let mut deps = mock_dependencies(&[]);
         let error = test_instantiate(
@@ -238,6 +263,7 @@ mod tests {
             args.info,
             InitMsg {
                 base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: true,
                 asset_definitions: args.asset_definitions,
             },
         )

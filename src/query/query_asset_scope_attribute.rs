@@ -20,10 +20,10 @@ pub fn query_asset_scope_attribute(
     identifier: AssetIdentifier,
 ) -> ContractResult<Binary> {
     let scope_attribute = match identifier {
-        AssetIdentifier::AssetUuid { asset_uuid } => {
+        AssetIdentifier::AssetUuid(asset_uuid) => {
             query_scope_attribute_by_asset_uuid(deps, asset_uuid)
         }
-        AssetIdentifier::ScopeAddress { scope_address } => {
+        AssetIdentifier::ScopeAddress(scope_address) => {
             query_scope_attribute_by_scope_address(deps, scope_address)
         }
     }?;

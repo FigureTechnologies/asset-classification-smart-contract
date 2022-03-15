@@ -71,42 +71,38 @@
         {
           "type": "object",
           "required": [
-            "scope_spec_uuid"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_spec_uuid": {
-              "type": "object",
-              "required": [
-                "scope_spec_uuid"
-              ],
-              "properties": {
-                "scope_spec_uuid": {
-                  "type": "string"
-                }
-              }
+            "type": {
+              "type": "string",
+              "enum": [
+                "uuid"
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "scope_spec_address"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_spec_address": {
-              "type": "object",
-              "required": [
-                "scope_spec_address"
-              ],
-              "properties": {
-                "scope_spec_address": {
-                  "type": "string"
-                }
-              }
+            "type": {
+              "type": "string",
+              "enum": [
+                "address"
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },

@@ -53,6 +53,7 @@ impl AssetDefinition {
 /// Allows the user to optionally specify the enabled flag on an asset definition, versus forcing
 /// it to be added manually on every request, when it will likely always be specified as `true`.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct AssetDefinitionInput {
     pub asset_type: String,
     pub scope_spec_identifier: ScopeSpecIdentifier,
@@ -238,35 +239,31 @@ impl AssetScopeAttribute {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", tag = "type", content = "value")]
 pub enum AssetIdentifier {
-    AssetUuid { asset_uuid: String },
-    ScopeAddress { scope_address: String },
+    AssetUuid(String),
+    ScopeAddress(String),
 }
 impl AssetIdentifier {
     pub fn asset_uuid<S: Into<String>>(asset_uuid: S) -> Self {
-        Self::AssetUuid {
-            asset_uuid: asset_uuid.into(),
-        }
+        Self::AssetUuid(asset_uuid.into())
     }
 
     pub fn scope_address<S: Into<String>>(scope_address: S) -> Self {
-        Self::ScopeAddress {
-            scope_address: scope_address.into(),
-        }
+        Self::ScopeAddress(scope_address.into())
     }
 
     pub fn get_asset_uuid(&self) -> ContractResult<String> {
         match self {
-            Self::AssetUuid { asset_uuid } => (*asset_uuid).clone().to_ok(),
-            Self::ScopeAddress { scope_address } => scope_address_to_asset_uuid(scope_address),
+            Self::AssetUuid(asset_uuid) => (*asset_uuid).clone().to_ok(),
+            Self::ScopeAddress(scope_address) => scope_address_to_asset_uuid(scope_address),
         }
     }
 
     pub fn get_scope_address(&self) -> ContractResult<String> {
         match self {
-            Self::AssetUuid { asset_uuid } => asset_uuid_to_scope_address(asset_uuid),
-            Self::ScopeAddress { scope_address } => (*scope_address).clone().to_ok(),
+            Self::AssetUuid(asset_uuid) => asset_uuid_to_scope_address(asset_uuid),
+            Self::ScopeAddress(scope_address) => (*scope_address).clone().to_ok(),
         }
     }
 
@@ -292,48 +289,40 @@ impl AssetIdentifiers {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", tag = "type", content = "value")]
 pub enum AssetQualifier {
-    AssetType { asset_type: String },
-    ScopeSpecAddress { scope_spec_address: String },
+    AssetType(String),
+    ScopeSpecAddress(String),
 }
 impl AssetQualifier {
     pub fn asset_type<S: Into<String>>(asset_type: S) -> Self {
-        Self::AssetType {
-            asset_type: asset_type.into(),
-        }
+        Self::AssetType(asset_type.into())
     }
 
     pub fn scope_spec_address<S: Into<String>>(scope_spec_address: S) -> Self {
-        Self::ScopeSpecAddress {
-            scope_spec_address: scope_spec_address.into(),
-        }
+        Self::ScopeSpecAddress(scope_spec_address.into())
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", tag = "type", content = "value")]
 pub enum ScopeSpecIdentifier {
-    ScopeSpecUuid { scope_spec_uuid: String },
-    ScopeSpecAddress { scope_spec_address: String },
+    Uuid(String),
+    Address(String),
 }
 impl ScopeSpecIdentifier {
     pub fn uuid<S: Into<String>>(scope_spec_uuid: S) -> Self {
-        Self::ScopeSpecUuid {
-            scope_spec_uuid: scope_spec_uuid.into(),
-        }
+        Self::Uuid(scope_spec_uuid.into())
     }
 
     pub fn address<S: Into<String>>(scope_spec_address: S) -> Self {
-        Self::ScopeSpecAddress {
-            scope_spec_address: scope_spec_address.into(),
-        }
+        Self::Address(scope_spec_address.into())
     }
 
     pub fn get_scope_spec_uuid(&self) -> ContractResult<String> {
         match self {
-            Self::ScopeSpecUuid { scope_spec_uuid } => (*scope_spec_uuid).clone().to_ok(),
-            Self::ScopeSpecAddress { scope_spec_address } => {
+            Self::Uuid(scope_spec_uuid) => (*scope_spec_uuid).clone().to_ok(),
+            Self::Address(scope_spec_address) => {
                 scope_spec_address_to_scope_spec_uuid(scope_spec_address)
             }
         }
@@ -341,10 +330,8 @@ impl ScopeSpecIdentifier {
 
     pub fn get_scope_spec_address(&self) -> ContractResult<String> {
         match self {
-            Self::ScopeSpecUuid { scope_spec_uuid } => {
-                scope_spec_uuid_to_scope_spec_address(scope_spec_uuid)
-            }
-            Self::ScopeSpecAddress { scope_spec_address } => (*scope_spec_address).clone().to_ok(),
+            Self::Uuid(scope_spec_uuid) => scope_spec_uuid_to_scope_spec_address(scope_spec_uuid),
+            Self::Address(scope_spec_address) => (*scope_spec_address).clone().to_ok(),
         }
     }
 

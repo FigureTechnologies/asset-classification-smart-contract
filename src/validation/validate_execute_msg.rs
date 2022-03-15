@@ -43,12 +43,12 @@ fn validate_onboard_asset(
 ) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
-        AssetIdentifier::AssetUuid { asset_uuid } => {
+        AssetIdentifier::AssetUuid(asset_uuid) => {
             if asset_uuid.is_empty() {
                 invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
             }
         }
-        AssetIdentifier::ScopeAddress { scope_address } => {
+        AssetIdentifier::ScopeAddress(scope_address) => {
             if scope_address.is_empty() {
                 invalid_fields.push("identifier:scope_address: must not be blank".to_string());
             }
@@ -74,12 +74,12 @@ fn validate_onboard_asset(
 fn validate_validate_asset(identifier: &AssetIdentifier) -> ContractResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
-        AssetIdentifier::AssetUuid { asset_uuid } => {
+        AssetIdentifier::AssetUuid(asset_uuid) => {
             if asset_uuid.is_empty() {
                 invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
             }
         }
-        AssetIdentifier::ScopeAddress { scope_address } => {
+        AssetIdentifier::ScopeAddress(scope_address) => {
             if scope_address.is_empty() {
                 invalid_fields.push("identifier:scope_address: must not be blank".to_string());
             }

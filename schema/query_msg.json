@@ -61,42 +61,38 @@
         {
           "type": "object",
           "required": [
-            "asset_uuid"
+            "type",
+            "value"
           ],
           "properties": {
-            "asset_uuid": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "asset_uuid"
-              ],
-              "properties": {
-                "asset_uuid": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "scope_address"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_address": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "scope_address"
-              ],
-              "properties": {
-                "scope_address": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },
@@ -105,42 +101,38 @@
         {
           "type": "object",
           "required": [
-            "asset_type"
+            "type",
+            "value"
           ],
           "properties": {
-            "asset_type": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "asset_type"
-              ],
-              "properties": {
-                "asset_type": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "scope_spec_address"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_spec_address": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "scope_spec_address"
-              ],
-              "properties": {
-                "scope_spec_address": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     }

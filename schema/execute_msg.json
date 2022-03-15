@@ -226,42 +226,38 @@
         {
           "type": "object",
           "required": [
-            "asset_uuid"
+            "type",
+            "value"
           ],
           "properties": {
-            "asset_uuid": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "asset_uuid"
-              ],
-              "properties": {
-                "asset_uuid": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "scope_address"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_address": {
-              "type": "object",
-              "required": [
+            "type": {
+              "type": "string",
+              "enum": [
                 "scope_address"
-              ],
-              "properties": {
-                "scope_address": {
-                  "type": "string"
-                }
-              }
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },
@@ -289,42 +285,38 @@
         {
           "type": "object",
           "required": [
-            "scope_spec_uuid"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_spec_uuid": {
-              "type": "object",
-              "required": [
-                "scope_spec_uuid"
-              ],
-              "properties": {
-                "scope_spec_uuid": {
-                  "type": "string"
-                }
-              }
+            "type": {
+              "type": "string",
+              "enum": [
+                "uuid"
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "scope_spec_address"
+            "type",
+            "value"
           ],
           "properties": {
-            "scope_spec_address": {
-              "type": "object",
-              "required": [
-                "scope_spec_address"
-              ],
-              "properties": {
-                "scope_spec_address": {
-                  "type": "string"
-                }
-              }
+            "type": {
+              "type": "string",
+              "enum": [
+                "address"
+              ]
+            },
+            "value": {
+              "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },

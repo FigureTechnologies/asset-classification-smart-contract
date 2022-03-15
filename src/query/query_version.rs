@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Pulls the version info for the contract out of the version store.
-/// On a success, serializes the value to a cosmwasm Binary and responses Ok.
+/// On a success, serializes the value to a cosmwasm Binary and responds with Ok.
 pub fn query_version(deps: &DepsC) -> AssetResult<Binary> {
     to_binary(&get_version_info(deps.storage)?)?.to_ok()
 }

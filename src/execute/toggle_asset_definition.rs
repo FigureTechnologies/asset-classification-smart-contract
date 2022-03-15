@@ -7,7 +7,7 @@ use crate::{
         state::{load_asset_definition_by_type, replace_asset_definition},
     },
     util::{
-        aliases::{ContractResponse, ContractResult, DepsMutC},
+        aliases::{AssetResult, DepsMutC, EntryPointResponse},
         contract_helpers::{check_admin_only, check_funds_are_empty},
         event_attributes::{EventAttributes, EventType},
         traits::ResultExtensions,
@@ -27,7 +27,7 @@ impl ToggleAssetDefinitionV1 {
         }
     }
 
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ToggleAssetDefinitionV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<ToggleAssetDefinitionV1> {
         match msg {
             ExecuteMsg::ToggleAssetDefinition {
                 asset_type,
@@ -45,7 +45,7 @@ pub fn toggle_asset_definition(
     deps: DepsMutC,
     info: MessageInfo,
     msg: ToggleAssetDefinitionV1,
-) -> ContractResponse {
+) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;

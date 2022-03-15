@@ -5,7 +5,7 @@ use crate::core::state::load_asset_definition_by_type;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
-use crate::util::aliases::{ContractResponse, ContractResult};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{MessageInfo, Response};
@@ -19,7 +19,7 @@ pub struct OnboardAssetV1 {
     pub access_routes: Vec<String>,
 }
 impl OnboardAssetV1 {
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<OnboardAssetV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<OnboardAssetV1> {
         match msg {
             ExecuteMsg::OnboardAsset {
                 identifier,
@@ -45,7 +45,7 @@ pub fn onboard_asset<'a, T>(
     repository: T,
     info: MessageInfo,
     msg: OnboardAssetV1,
-) -> ContractResponse
+) -> EntryPointResponse
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {
@@ -195,7 +195,7 @@ where
                     ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
                 } else {
                     // If a validator detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
-                    ContractError::std_err(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
+                    ContractError::generic(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
                 }.to_err();
             }
             // If the attribute indicates that the asset is pending, then it's been denied by a validator, and this is a secondary

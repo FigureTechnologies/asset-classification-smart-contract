@@ -5,7 +5,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::util::{
-    aliases::{ContractResult, DepsC},
+    aliases::{AssetResult, DepsC},
     functions::generate_asset_attribute_name,
     scope_address_utils::{
         asset_uuid_to_scope_address, bech32_string_to_addr, scope_address_to_asset_uuid,
@@ -44,7 +44,7 @@ impl AssetDefinition {
         self.asset_type.to_lowercase().as_bytes().to_vec()
     }
 
-    pub fn attribute_name(&self, deps: &DepsC) -> ContractResult<String> {
+    pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
         let state = config_read(deps.storage).load()?;
         generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
     }
@@ -75,7 +75,7 @@ impl AssetDefinitionInput {
         }
     }
 
-    pub fn into_asset_definition(self) -> ContractResult<AssetDefinition> {
+    pub fn into_asset_definition(self) -> AssetResult<AssetDefinition> {
         AssetDefinition {
             asset_type: self.asset_type,
             scope_spec_address: self.scope_spec_identifier.get_scope_spec_address()?,
@@ -85,7 +85,7 @@ impl AssetDefinitionInput {
         .to_ok()
     }
 
-    pub fn as_asset_definition(&self) -> ContractResult<AssetDefinition> {
+    pub fn as_asset_definition(&self) -> AssetResult<AssetDefinition> {
         AssetDefinition::new(
             &self.asset_type,
             self.scope_spec_identifier.get_scope_spec_address()?,
@@ -176,7 +176,7 @@ impl AccessDefinition {
     pub fn new_checked<S1: Into<String>, S2: Into<String>>(
         owner_address: S1,
         access_routes: Vec<S2>,
-    ) -> ContractResult<Self> {
+    ) -> AssetResult<Self> {
         Self {
             owner_address: bech32_string_to_addr(owner_address)?.into_string(),
             access_routes: access_routes.into_iter().map(|s| s.into()).collect(),
@@ -211,12 +211,12 @@ impl AssetScopeAttribute {
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_validator_detail: ValidatorDetail,
         access_routes: Vec<String>,
-    ) -> ContractResult<Self> {
+    ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
         let val_addr = bech32_string_to_addr(validator_address)?;
         if val_addr != latest_validator_detail.address {
-            return ContractError::std_err(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
+            return ContractError::generic(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
         let access_definitions = if access_routes.is_empty() {
             vec![]
@@ -253,14 +253,14 @@ impl AssetIdentifier {
         Self::ScopeAddress(scope_address.into())
     }
 
-    pub fn get_asset_uuid(&self) -> ContractResult<String> {
+    pub fn get_asset_uuid(&self) -> AssetResult<String> {
         match self {
             Self::AssetUuid(asset_uuid) => (*asset_uuid).clone().to_ok(),
             Self::ScopeAddress(scope_address) => scope_address_to_asset_uuid(scope_address),
         }
     }
 
-    pub fn get_scope_address(&self) -> ContractResult<String> {
+    pub fn get_scope_address(&self) -> AssetResult<String> {
         match self {
             Self::AssetUuid(asset_uuid) => asset_uuid_to_scope_address(asset_uuid),
             Self::ScopeAddress(scope_address) => (*scope_address).clone().to_ok(),
@@ -269,7 +269,7 @@ impl AssetIdentifier {
 
     /// Takes the value provided and derives both values from it, where necessary,
     /// ensuring that both asset_uuid and scope_address are available to the user
-    pub fn to_identifiers(&self) -> ContractResult<AssetIdentifiers> {
+    pub fn to_identifiers(&self) -> AssetResult<AssetIdentifiers> {
         AssetIdentifiers::new(self.get_asset_uuid()?, self.get_scope_address()?).to_ok()
     }
 }
@@ -319,7 +319,7 @@ impl ScopeSpecIdentifier {
         Self::Address(scope_spec_address.into())
     }
 
-    pub fn get_scope_spec_uuid(&self) -> ContractResult<String> {
+    pub fn get_scope_spec_uuid(&self) -> AssetResult<String> {
         match self {
             Self::Uuid(scope_spec_uuid) => (*scope_spec_uuid).clone().to_ok(),
             Self::Address(scope_spec_address) => {
@@ -328,7 +328,7 @@ impl ScopeSpecIdentifier {
         }
     }
 
-    pub fn get_scope_spec_address(&self) -> ContractResult<String> {
+    pub fn get_scope_spec_address(&self) -> AssetResult<String> {
         match self {
             Self::Uuid(scope_spec_uuid) => scope_spec_uuid_to_scope_spec_address(scope_spec_uuid),
             Self::Address(scope_spec_address) => (*scope_spec_address).clone().to_ok(),
@@ -337,7 +337,7 @@ impl ScopeSpecIdentifier {
 
     /// Takes the value provided and dervies both values from it, where necessary,
     /// ensuring that both scope_spec_uuid and scope_spec_address are available to the user
-    pub fn to_identifiers(&self) -> ContractResult<ScopeSpecIdentifiers> {
+    pub fn to_identifiers(&self) -> AssetResult<ScopeSpecIdentifiers> {
         ScopeSpecIdentifiers::new(self.get_scope_spec_uuid()?, self.get_scope_spec_address()?)
             .to_ok()
     }

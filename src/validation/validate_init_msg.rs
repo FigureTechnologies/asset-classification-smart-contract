@@ -1,14 +1,14 @@
 use crate::core::asset::{AssetDefinition, AssetDefinitionInput, FeeDestination, ValidatorDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
-use crate::util::aliases::ContractResult;
+use crate::util::aliases::AssetResult;
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
 use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use std::ops::Mul;
 
-pub fn validate_init_msg(msg: &InitMsg) -> ContractResult<()> {
+pub fn validate_init_msg(msg: &InitMsg) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if msg.base_contract_name.is_empty() {
         invalid_fields.push("base_contract_name: must not be blank".to_string());
@@ -37,11 +37,11 @@ pub fn validate_init_msg(msg: &InitMsg) -> ContractResult<()> {
     }
 }
 
-pub fn validate_asset_definition_input(input: &AssetDefinitionInput) -> ContractResult<()> {
+pub fn validate_asset_definition_input(input: &AssetDefinitionInput) -> AssetResult<()> {
     validate_asset_definition(&input.as_asset_definition()?)
 }
 
-pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> ContractResult<()> {
+pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> AssetResult<()> {
     let invalid_fields = validate_asset_definition_internal(asset_definition);
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -54,14 +54,14 @@ pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> Contract
     }
 }
 
-pub fn validate_validator(validator: &ValidatorDetail) -> ContractResult<()> {
+pub fn validate_validator(validator: &ValidatorDetail) -> AssetResult<()> {
     validate_validator_with_provided_errors(validator, None)
 }
 
 pub fn validate_validator_with_provided_errors(
     validator: &ValidatorDetail,
     provided_errors: Option<Vec<String>>,
-) -> ContractResult<()> {
+) -> AssetResult<()> {
     let mut invalid_fields = validate_validator_internal(validator);
     if let Some(errors) = provided_errors {
         for error in errors {
@@ -215,6 +215,7 @@ pub mod tests {
     fn test_valid_init_msg_no_definitions() {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
+            bind_base_name: true,
             asset_definitions: vec![],
         });
     }
@@ -223,6 +224,7 @@ pub mod tests {
     fn test_valid_init_msg_single_definition() {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
+            bind_base_name: true,
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
                 ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
@@ -245,6 +247,7 @@ pub mod tests {
     fn test_valid_init_msg_multiple_definitions() {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
+            bind_base_name: true,
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
@@ -321,6 +324,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: String::new(),
+                bind_base_name: true,
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc",
                     ScopeSpecIdentifier::address("scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz"),
@@ -343,6 +347,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: String::new(),
+                bind_base_name: true,
                 asset_definitions: vec![
                     AssetDefinitionInput::new(
                         "heloc",
@@ -371,6 +376,7 @@ pub mod tests {
         test_invalid_init_msg(
             &InitMsg {
                 base_contract_name: "asset".to_string(),
+                bind_base_name: true,
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "",
                     ScopeSpecIdentifier::address("scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn"),

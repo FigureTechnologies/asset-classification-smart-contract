@@ -14,7 +14,7 @@ use crate::{
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
     },
-    util::aliases::{ContractResult, DepsMutC},
+    util::aliases::{AssetResult, DepsMutC},
     util::deps_container::DepsContainer,
     util::traits::ResultExtensions,
     util::vec_container::VecContainer,
@@ -42,7 +42,7 @@ impl<'a> AssetMetaService<'a> {
     }
 }
 impl<'a> AssetMetaRepository for AssetMetaService<'a> {
-    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> ContractResult<bool> {
+    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<bool> {
         let scope_address_string: String = scope_address.into();
         // check for asset attribute existence
         self.use_deps(|d| {
@@ -52,13 +52,13 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         .to_ok()
     }
 
-    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> ContractResult<()> {
+    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> AssetResult<()> {
         // Verify that the attribute does or does not exist.  This check verifies that the value equivalent to is_retry:
         // If the asset exists, this should be a retry, because a subsequent onboard should only occur for that purpose
         // If the asset does not exist, this should not be a retry, because this is the first time the attribute is being attempted
         if self.has_asset(&attribute.scope_address)? != is_retry {
             return if is_retry {
-                ContractError::std_err(format!("unexpected state! asset scope [{}] was processed as new onboard, but the scope was not populated with asset classification data", &attribute.scope_address))
+                ContractError::generic(format!("unexpected state! asset scope [{}] was processed as new onboard, but the scope was not populated with asset classification data", &attribute.scope_address))
             } else {
                 ContractError::AssetAlreadyOnboarded {
                     scope_address: attribute.scope_address.clone(),
@@ -84,7 +84,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> ContractResult<()> {
+    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> AssetResult<()> {
         let contract_base_name = self
             .use_deps(|d| config_read(d.storage).load())?
             .base_contract_name;
@@ -101,10 +101,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn get_asset<S1: Into<String>>(
-        &self,
-        scope_address: S1,
-    ) -> ContractResult<AssetScopeAttribute> {
+    fn get_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<AssetScopeAttribute> {
         let scope_address_string: String = scope_address.into();
         // try to fetch asset from attribute meta, if found also fetch scope attribute and reconstruct AssetMeta from relevant pieces
         self.use_deps(|d| {
@@ -115,7 +112,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
     fn try_get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
-    ) -> ContractResult<Option<AssetScopeAttribute>> {
+    ) -> AssetResult<Option<AssetScopeAttribute>> {
         let scope_address_string: String = scope_address.into();
         self.use_deps(|d| {
             may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
@@ -128,7 +125,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         success: bool,
         validation_message: Option<S2>,
         access_routes: Vec<String>,
-    ) -> ContractResult<()> {
+    ) -> AssetResult<()> {
         // set validation result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset(scope_address_str.clone())?;

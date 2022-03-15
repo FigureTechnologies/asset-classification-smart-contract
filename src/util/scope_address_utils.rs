@@ -1,6 +1,6 @@
 use std::{convert::TryInto, str::FromStr};
 
-use crate::{core::error::ContractError, util::aliases::ContractResult};
+use crate::{core::error::ContractError, util::aliases::AssetResult};
 use bech32::{FromBase32, ToBase32, Variant};
 use cosmwasm_std::Addr;
 use uuid::Uuid;
@@ -22,33 +22,33 @@ const SCOPE_SPEC_HRP: &str = "scopespec";
 const VALID_HRPS: [&str; 4] = [MAINNET_HRP, TESTNET_HRP, SCOPE_HRP, SCOPE_SPEC_HRP];
 
 /// Converts a string containing an asset uuid into a scope address.
-pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> ContractResult<String> {
+pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> AssetResult<String> {
     uuid_to_address(KEY_SCOPE, SCOPE_HRP, asset_uuid)
 }
 
 /// Converts a string containing a scope spec uuid into a scope spec address.
 pub fn scope_spec_uuid_to_scope_spec_address<S: Into<String>>(
     scope_spec_uuid: S,
-) -> ContractResult<String> {
+) -> AssetResult<String> {
     uuid_to_address(KEY_SCOPE_SPEC, SCOPE_SPEC_HRP, scope_spec_uuid)
 }
 
 /// Takes a string representation of a scope address and converts it into an asset uuid string.
 /// Note: This conversion can also be called scope_address_to_scope_uuid because asset uuid always
 /// matches the scope uuid, as a convention
-pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> ContractResult<String> {
+pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> AssetResult<String> {
     address_to_uuid(scope_address, SCOPE_HRP)
 }
 
 /// Takes a string representation of a scope spec address and converts it to the scope spec's uuid.
 pub fn scope_spec_address_to_scope_spec_uuid<S: Into<String>>(
     scope_spec_address: S,
-) -> ContractResult<String> {
+) -> AssetResult<String> {
     address_to_uuid(scope_spec_address, SCOPE_SPEC_HRP)
 }
 
 /// Validates that the address is valid by decoding to base 32, and then converts it to an Addr
-pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> ContractResult<Addr> {
+pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> AssetResult<Addr> {
     let address_string = address.into();
     // First, try to decode the string as Bech32.  If this fails, then the input is invalid and should not be converted to an Addr
     let (hrp, _, _) = bech32::decode(&address_string)?;
@@ -66,7 +66,7 @@ pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> ContractResult<Addr
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// big-endian bytes to a byte slice that also contains a prefix key (as defined in the provenance source).
-fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> ContractResult<String> {
+fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> AssetResult<String> {
     let mut buffer = vec![key_byte];
     buffer.append(&mut Uuid::from_str(&uuid.into())?.as_bytes().to_vec());
     bech32::encode(hrp, buffer.to_base32(), Variant::Bech32)?.to_ok()
@@ -77,7 +77,7 @@ fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> Contrac
 fn address_to_uuid<S1: Into<String>, S2: Into<String>>(
     address: S1,
     expected_hrp: S2,
-) -> ContractResult<String> {
+) -> AssetResult<String> {
     let target_address = address.into();
     let (hrp, base_32, _) = bech32::decode(&target_address)?;
     let expected_hrp_string = expected_hrp.into();
@@ -97,7 +97,7 @@ fn address_to_uuid<S1: Into<String>, S2: Into<String>>(
         .collect::<Vec<u8>>()
         .try_into()
         .map_err(|_| {
-            ContractError::std_err(format!(
+            ContractError::generic(format!(
                 "Failed deserializing base32 data for address {}",
                 &target_address,
             ))

@@ -4,7 +4,7 @@ use crate::core::msg::ExecuteMsg;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
-use crate::util::aliases::{ContractResponse, ContractResult};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
@@ -18,7 +18,7 @@ pub struct ValidateAssetV1 {
     pub access_routes: Vec<String>,
 }
 impl ValidateAssetV1 {
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<ValidateAssetV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<ValidateAssetV1> {
         match msg {
             ExecuteMsg::ValidateAsset {
                 identifier,
@@ -44,7 +44,7 @@ pub fn validate_asset<'a, T>(
     repository: T,
     info: MessageInfo,
     msg: ValidateAssetV1,
-) -> ContractResponse
+) -> EntryPointResponse
 where
     T: AssetMetaRepository + MessageGatheringService + DepsManager<'a>,
 {

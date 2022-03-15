@@ -2,7 +2,7 @@ use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::replace_asset_definition;
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
@@ -17,7 +17,7 @@ impl UpdateAssetDefinitionV1 {
         UpdateAssetDefinitionV1 { asset_definition }
     }
 
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<UpdateAssetDefinitionV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetDefinitionV1> {
         match msg {
             ExecuteMsg::UpdateAssetDefinition { asset_definition } => Self {
                 asset_definition: asset_definition.into_asset_definition()?,
@@ -35,7 +35,7 @@ pub fn update_asset_definition(
     deps: DepsMutC,
     info: MessageInfo,
     msg: UpdateAssetDefinitionV1,
-) -> ContractResponse {
+) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     // Overwrite the existing asset definition with the new one

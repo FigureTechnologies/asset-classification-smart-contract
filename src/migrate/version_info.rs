@@ -1,4 +1,4 @@
-use crate::{core::error::ContractError, util::aliases::ContractResult};
+use crate::{core::error::ContractError, util::aliases::AssetResult};
 use cosmwasm_std::Storage;
 use cw_storage_plus::Item;
 use schemars::JsonSchema;
@@ -32,19 +32,19 @@ impl VersionInfoV1 {
 pub fn set_version_info(
     storage: &mut dyn Storage,
     version_info: &VersionInfoV1,
-) -> ContractResult<()> {
+) -> AssetResult<()> {
     VERSION_INFO
         .save(storage, version_info)
         .map_err(ContractError::Std)
 }
 
 /// Fetches, if possible, the current version information for the contract.
-pub fn get_version_info(storage: &dyn Storage) -> ContractResult<VersionInfoV1> {
+pub fn get_version_info(storage: &dyn Storage) -> AssetResult<VersionInfoV1> {
     VERSION_INFO.load(storage).map_err(ContractError::Std)
 }
 
 /// Sets the version info for the given contract to the derived values from the Cargo.toml file
-pub fn migrate_version_info(storage: &mut dyn Storage) -> ContractResult<VersionInfoV1> {
+pub fn migrate_version_info(storage: &mut dyn Storage) -> AssetResult<VersionInfoV1> {
     let version_info = VersionInfoV1 {
         contract: CONTRACT_NAME.to_string(),
         version: CONTRACT_VERSION.to_string(),

@@ -24,7 +24,7 @@ use crate::{
 };
 use crate::{
     core::asset::AssetScopeAttribute,
-    util::aliases::{ContractResponse, DepsMutC},
+    util::aliases::{DepsMutC, EntryPointResponse},
 };
 
 use super::test_constants::{
@@ -101,6 +101,7 @@ pub struct InstArgs {
     pub env: Env,
     pub info: MessageInfo,
     pub base_contract_name: String,
+    pub bind_base_name: bool,
     pub asset_definitions: Vec<AssetDefinitionInput>,
 }
 impl Default for InstArgs {
@@ -109,18 +110,20 @@ impl Default for InstArgs {
             env: mock_env(),
             info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
+            bind_base_name: true,
             asset_definitions: get_default_asset_definition_inputs(),
         }
     }
 }
 
-pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> ContractResponse {
+pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
     instantiate(
         deps,
         args.env,
         args.info,
         InitMsg {
             base_contract_name: args.base_contract_name,
+            bind_base_name: args.bind_base_name,
             asset_definitions: args.asset_definitions,
         },
     )
@@ -295,7 +298,7 @@ pub fn mock_scope_attribute<S: Into<String>>(
 /// value for the given address.
 pub fn intercept_add_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
-    response: &ContractResponse,
+    response: &EntryPointResponse,
     failure_description: S,
 ) {
     let failure_msg: String = failure_description.into();

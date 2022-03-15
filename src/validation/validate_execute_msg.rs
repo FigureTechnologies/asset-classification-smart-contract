@@ -1,13 +1,13 @@
 use crate::core::asset::{AssetIdentifier, ValidatorDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::util::aliases::ContractResult;
+use crate::util::aliases::AssetResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_validator_with_provided_errors,
 };
 
-pub fn validate_execute_msg(msg: &ExecuteMsg) -> ContractResult<()> {
+pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
     match msg {
         ExecuteMsg::OnboardAsset {
             identifier,
@@ -40,7 +40,7 @@ fn validate_onboard_asset(
     identifier: &AssetIdentifier,
     asset_type: &str,
     validator_address: &str,
-) -> ContractResult<()> {
+) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
         AssetIdentifier::AssetUuid(asset_uuid) => {
@@ -71,7 +71,7 @@ fn validate_onboard_asset(
     }
 }
 
-fn validate_validate_asset(identifier: &AssetIdentifier) -> ContractResult<()> {
+fn validate_validate_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
         AssetIdentifier::AssetUuid(asset_uuid) => {
@@ -96,7 +96,7 @@ fn validate_validate_asset(identifier: &AssetIdentifier) -> ContractResult<()> {
     }
 }
 
-fn validate_toggle_asset_definition(asset_type: &str) -> ContractResult<()> {
+fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
@@ -112,10 +112,7 @@ fn validate_toggle_asset_definition(asset_type: &str) -> ContractResult<()> {
     }
 }
 
-fn validate_asset_validator_msg(
-    asset_type: &str,
-    validator: &ValidatorDetail,
-) -> ContractResult<()> {
+fn validate_asset_validator_msg(asset_type: &str, validator: &ValidatorDetail) -> AssetResult<()> {
     let errors = if asset_type.is_empty() {
         vec!["asset_type must not be empty".to_string()].to_some()
     } else {
@@ -128,7 +125,7 @@ fn validate_asset_validator_msg(
 mod tests {
     use crate::{
         core::{asset::AssetIdentifier, error::ContractError},
-        util::aliases::ContractResult,
+        util::aliases::AssetResult,
     };
 
     use super::{
@@ -295,7 +292,7 @@ mod tests {
     // Extracts the InvalidMessageFunds error data from a response from one of the functions
     // in this file, allowing a unit test to target the relevant information without as much
     // boilerplate nonsense.
-    fn test_invalid_message_fields<F>(result: ContractResult<()>, test_func: F)
+    fn test_invalid_message_fields<F>(result: AssetResult<()>, test_func: F)
     where
         F: Fn(String, Vec<String>) -> (),
     {

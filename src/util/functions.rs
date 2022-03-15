@@ -1,5 +1,5 @@
 use crate::core::error::ContractError;
-use crate::util::aliases::ContractResult;
+use crate::util::aliases::AssetResult;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{coin, BankMsg, CosmosMsg, Decimal, Uint128};
 use provwasm_std::ProvenanceMsg;
@@ -67,7 +67,7 @@ pub fn replace_single_matching_vec_element<T, F>(
     v: Vec<T>,
     new: T,
     predicate: F,
-) -> ContractResult<Vec<T>>
+) -> AssetResult<Vec<T>>
 where
     F: Fn(&T) -> bool,
 {
@@ -82,7 +82,7 @@ where
         resulting_values.push(new);
         Ok(resulting_values)
     } else {
-        ContractError::std_err(format!(
+        ContractError::generic(format!(
             "expected a single value to be replaced, but found {}",
             total_values_replaced
         ))
@@ -108,7 +108,7 @@ pub fn bank_send<R: Into<String>, D: Into<String>>(
 mod tests {
     use crate::core::error::ContractError;
     use crate::util::functions::replace_single_matching_vec_element;
-    use cosmwasm_std::{BankMsg, CosmosMsg, StdError};
+    use cosmwasm_std::{BankMsg, CosmosMsg};
 
     use super::bank_send;
 
@@ -133,15 +133,12 @@ mod tests {
         let error =
             replace_single_matching_vec_element(source, TestVal(99), |v| v.0 == 100).unwrap_err();
         match error {
-            ContractError::Std(e) => match e {
-                StdError::GenericErr { msg, .. } => {
-                    assert_eq!(
-                        "expected a single value to be replaced, but found 0", msg,
-                        "the StdError message was not the expected result for no values replaced",
-                    );
-                }
-                _ => panic!("unexpected StdError variant found: {:?}", e),
-            },
+            ContractError::GenericError { msg } => {
+                assert_eq!(
+                    "expected a single value to be replaced, but found 0", msg,
+                    "the StdError message was not the expected result for no values replaced",
+                );
+            }
             _ => panic!("unexpected error type encountered: {:?}", error),
         };
     }
@@ -152,15 +149,12 @@ mod tests {
         let error =
             replace_single_matching_vec_element(source, TestVal(10), |v| v.0 > 0).unwrap_err();
         match error {
-            ContractError::Std(e) => match e {
-                StdError::GenericErr { msg, .. } => {
-                    assert_eq!(
-                        "expected a single value to be replaced, but found 2", msg,
-                        "the StdError message was not the expected result for many values replaced",
-                    )
-                }
-                _ => panic!("unexpected StdError variant found: {:?}", e),
-            },
+            ContractError::GenericError { msg } => {
+                assert_eq!(
+                    "expected a single value to be replaced, but found 2", msg,
+                    "the StdError message was not the expected result for many values replaced",
+                );
+            }
             _ => panic!("unexpected error type encountered: {:?}", error),
         };
     }

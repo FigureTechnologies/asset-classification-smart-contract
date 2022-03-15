@@ -1,10 +1,10 @@
 use crate::core::asset::AssetQualifier;
 use crate::core::state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type};
-use crate::util::aliases::{ContractResult, DepsC};
+use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{to_binary, Binary};
 
-pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> ContractResult<Binary> {
+pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetResult<Binary> {
     let asset_definition = match qualifier {
         AssetQualifier::AssetType(asset_type) => {
             load_asset_definition_by_type(deps.storage, asset_type)

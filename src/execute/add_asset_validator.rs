@@ -2,7 +2,7 @@ use crate::core::asset::ValidatorDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
@@ -21,7 +21,7 @@ impl AddAssetValidatorV1 {
         }
     }
 
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<AddAssetValidatorV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<AddAssetValidatorV1> {
         match msg {
             ExecuteMsg::AddAssetValidator {
                 asset_type,
@@ -39,7 +39,7 @@ pub fn add_asset_validator(
     deps: DepsMutC,
     info: MessageInfo,
     msg: AddAssetValidatorV1,
-) -> ContractResponse {
+) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;

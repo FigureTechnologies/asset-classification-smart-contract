@@ -2,7 +2,7 @@ use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{config_read, insert_asset_definition};
-use crate::util::aliases::{ContractResponse, ContractResult, DepsMutC};
+use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::generate_asset_attribute_name;
@@ -15,7 +15,7 @@ pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
 }
 impl AddAssetDefinitionV1 {
-    pub fn from_execute_msg(msg: ExecuteMsg) -> ContractResult<Self> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<Self> {
         match msg {
             ExecuteMsg::AddAssetDefinition { asset_definition } => Self {
                 asset_definition: asset_definition.into_asset_definition()?,
@@ -34,7 +34,7 @@ pub fn add_asset_definition(
     env: Env,
     info: MessageInfo,
     msg: AddAssetDefinitionV1,
-) -> ContractResponse {
+) -> EntryPointResponse {
     // Verify that the admin is making this call and no funds are provided
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;

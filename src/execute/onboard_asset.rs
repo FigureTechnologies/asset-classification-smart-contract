@@ -700,7 +700,6 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let bogus_scope_spec_address = "specLolWhut".to_string();
-        // Setup the default scope and add a record, but make sure the record is not formed properly
         let scope = get_duped_scope(
             DEFAULT_SCOPE_ADDRESS,
             &bogus_scope_spec_address, // not the spec you are looking for/was configured as an asset_type in test_instantate_success

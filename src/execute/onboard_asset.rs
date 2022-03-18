@@ -235,7 +235,8 @@ mod tests {
     use crate::{
         core::{
             asset::{
-                AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
+                AccessDefinition, AccessDefinitionType, AssetIdentifier, AssetOnboardingStatus,
+                AssetScopeAttribute,
             },
             error::ContractError,
         },
@@ -801,7 +802,8 @@ mod tests {
                 assert_eq!(
                     &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()]
+                        access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+                        definition_type: AccessDefinitionType::Requestor,
                     },
                     deserialized.access_definitions.first().unwrap(),
                     "Proper access route should be set upon onboarding"

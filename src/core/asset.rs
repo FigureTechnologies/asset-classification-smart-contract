@@ -165,21 +165,34 @@ pub struct AssetValidationResult {
     pub success: bool,
 }
 
+/// Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum AccessDefinitionType {
+    /// Indicates that the access definition was created by the requestor that onboarded the scope
+    Requestor,
+    /// Indicates that the access definition was created by the validator for a scope
+    Validator,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AccessDefinition {
     pub owner_address: String,
     pub access_routes: Vec<String>,
+    pub definition_type: AccessDefinitionType,
 }
 
 impl AccessDefinition {
     pub fn new_checked<S1: Into<String>, S2: Into<String>>(
         owner_address: S1,
         access_routes: Vec<S2>,
+        definition_type: AccessDefinitionType,
     ) -> AssetResult<Self> {
         Self {
             owner_address: bech32_string_to_addr(owner_address)?.into_string(),
             access_routes: access_routes.into_iter().map(|s| s.into()).collect(),
+            definition_type,
         }
         .to_ok()
     }
@@ -218,11 +231,21 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::generic(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
-        let access_definitions = if access_routes.is_empty() {
-            vec![]
-        } else {
-            vec![AccessDefinition::new_checked(&req_addr, access_routes)?]
-        };
+        // If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
+        let access_definitions =
+            if access_routes.is_empty() || access_routes.iter().all(|r| r.trim().is_empty()) {
+                vec![]
+            } else {
+                vec![AccessDefinition::new_checked(
+                    &req_addr,
+                    access_routes
+                        .into_iter()
+                        .map(|r| r.trim().to_owned())
+                        .filter(|r| !r.is_empty())
+                        .collect(),
+                    AccessDefinitionType::Requestor,
+                )?]
+            };
         AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,
@@ -362,7 +385,17 @@ impl ScopeSpecIdentifiers {
 
 #[cfg(test)]
 mod tests {
-    use super::{AssetIdentifier, ScopeSpecIdentifier};
+    use crate::{
+        testutil::{
+            test_constants::{
+                DEFAULT_ASSET_UUID, DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+            },
+            test_utilities::get_default_validator_detail,
+        },
+        util::traits::OptionExtensions,
+    };
+
+    use super::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute, ScopeSpecIdentifier};
 
     #[test]
     fn test_asset_identifier_parse_for_asset_uuid() {
@@ -529,6 +562,77 @@ mod tests {
         assert_eq!(
             expected_scope_spec_uuid, scope_spec_uuid,
             "the scope spec uuid should be as expected",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_filters_bad_access_routes() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VALIDATOR_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_validator_detail(),
+            vec![
+                "    ".to_string(),
+                "  ".to_string(),
+                "".to_string(),
+                "good route".to_string(),
+            ],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        assert_eq!(
+            1,
+            attribute.access_definitions.len(),
+            "there should be one access definition created when at least one valid route is provided in the access routes",
+        );
+        let access_definition = attribute.access_definitions.first().unwrap();
+        assert_eq!(
+            1,
+            access_definition.access_routes.len(),
+            "only one access definition should be added because the rest were invalid strings",
+        );
+        assert_eq!(
+            "good route",
+            access_definition.access_routes.first().unwrap(),
+            "the only access route should be the route that contained a proper string",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_creates_no_definition_when_no_valid_routes_are_provided() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VALIDATOR_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_validator_detail(),
+            vec!["    ".to_string(), "  ".to_string(), "".to_string()],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        assert!(
+            attribute.access_definitions.is_empty(),
+            "there should not be any access definitions when no valid access routes are provided",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_creates_no_definition_when_no_routes_are_provided() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VALIDATOR_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_validator_detail(),
+            vec![],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        assert!(
+            attribute.access_definitions.is_empty(),
+            "there should not be any access definitions when no access routes are provided",
         );
     }
 }

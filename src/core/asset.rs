@@ -231,21 +231,22 @@ impl AssetScopeAttribute {
         if val_addr != latest_validator_detail.address {
             return ContractError::generic(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
         }
+        // Remove all access routes that are empty strings to prevent bad data from beign provided
+        let filtered_access_routes = access_routes
+            .into_iter()
+            .map(|r| r.trim().to_owned())
+            .filter(|r| !r.is_empty())
+            .collect::<Vec<String>>();
         // If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
-        let access_definitions =
-            if access_routes.is_empty() || access_routes.iter().all(|r| r.trim().is_empty()) {
-                vec![]
-            } else {
-                vec![AccessDefinition::new_checked(
-                    &req_addr,
-                    access_routes
-                        .into_iter()
-                        .map(|r| r.trim().to_owned())
-                        .filter(|r| !r.is_empty())
-                        .collect(),
-                    AccessDefinitionType::Requestor,
-                )?]
-            };
+        let access_definitions = if filtered_access_routes.is_empty() {
+            vec![]
+        } else {
+            vec![AccessDefinition::new_checked(
+                &req_addr,
+                filtered_access_routes,
+                AccessDefinitionType::Requestor,
+            )?]
+        };
         AssetScopeAttribute {
             asset_uuid: identifiers.asset_uuid,
             scope_address: identifiers.scope_address,

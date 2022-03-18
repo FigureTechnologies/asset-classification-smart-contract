@@ -6,7 +6,8 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 use crate::{
     core::{
         asset::{
-            AccessDefinition, AssetOnboardingStatus, AssetScopeAttribute, AssetValidationResult,
+            AccessDefinition, AccessDefinitionType, AssetOnboardingStatus, AssetScopeAttribute,
+            AssetValidationResult,
         },
         error::ContractError,
         state::config_read,
@@ -149,20 +150,28 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
             let validator_address = validator_detail.address.clone();
 
+            let filtered_access_routes = access_routes
+                .into_iter()
+                .map(|r| r.trim().to_owned())
+                .filter(|r| !r.is_empty())
+                .collect::<Vec<String>>();
+
             // check for existing validator-linked access route collection
             if let Some(access_definition) = attribute
                 .access_definitions
                 .iter()
                 .find(|ar| ar.owner_address == validator_address)
             {
-                let mut distinct_routes =
-                    [&access_definition.access_routes[..], &access_routes[..]]
-                        .concat()
-                        .iter()
-                        .collect::<HashSet<_>>()
-                        .into_iter()
-                        .cloned()
-                        .collect::<Vec<String>>();
+                let mut distinct_routes = [
+                    &access_definition.access_routes[..],
+                    &filtered_access_routes[..],
+                ]
+                .concat()
+                .iter()
+                .collect::<HashSet<_>>()
+                .into_iter()
+                .cloned()
+                .collect::<Vec<String>>();
                 distinct_routes.sort();
 
                 let mut new_access_definitions = attribute
@@ -178,10 +187,11 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 });
 
                 attribute.access_definitions = new_access_definitions;
-            } else if !access_routes.is_empty() {
+            } else if !filtered_access_routes.is_empty() {
                 attribute.access_definitions.push(AccessDefinition {
                     owner_address: validator_address,
-                    access_routes,
+                    access_routes: filtered_access_routes,
+                    definition_type: AccessDefinitionType::Validator,
                 });
             }
 
@@ -247,12 +257,13 @@ mod tests {
     use crate::{
         core::{
             asset::{
-                AccessDefinition, AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute,
-                AssetValidationResult, ValidatorDetail,
+                AccessDefinition, AccessDefinitionType, AssetIdentifier, AssetOnboardingStatus,
+                AssetScopeAttribute, AssetValidationResult, ValidatorDetail,
             },
             error::ContractError,
             state::config_read,
         },
+        execute::validate_asset::ValidateAssetV1,
         service::{
             asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
             deps_manager::DepsManager, message_gathering_service::MessageGatheringService,
@@ -269,6 +280,7 @@ mod tests {
                 get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
                 test_instantiate_success, InstArgs,
             },
+            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
         },
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
@@ -545,10 +557,12 @@ mod tests {
                         AccessDefinition {
                             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                             access_routes: vec!["ownerroute1".to_string()],
+                            definition_type: AccessDefinitionType::Requestor,
                         },
                         AccessDefinition {
                             owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
                             access_routes: vec!["existingroute".to_string()],
+                            definition_type: AccessDefinitionType::Validator,
                         },
                     ],
                 })
@@ -591,7 +605,8 @@ mod tests {
                 assert_eq!(
                     &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: vec!["ownerroute1".to_string()]
+                        access_routes: vec!["ownerroute1".to_string()],
+                        definition_type: AccessDefinitionType::Requestor,
                     },
                     deserialized
                         .access_definitions
@@ -604,6 +619,7 @@ mod tests {
                     &AccessDefinition {
                         owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
                         access_routes: vec!["existingroute".to_string(), "newroute".to_string()],
+                        definition_type: AccessDefinitionType::Validator,
                     },
                     deserialized
                         .access_definitions
@@ -618,6 +634,119 @@ mod tests {
                 second_message
             ),
         }
+    }
+
+    #[test]
+    fn test_validate_with_invalid_access_routes_filters_them_out() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
+        test_validate_asset(
+            &mut deps,
+            TestValidateAsset {
+                validate_asset: ValidateAssetV1 {
+                    // All invalid (empty or whitespace-only strings) access routes should be filtered from output
+                    access_routes: vec![
+                        "   ".to_string(),
+                        "       ".to_string(),
+                        "".to_string(),
+                        "real route".to_string(),
+                    ],
+                    ..TestValidateAsset::default_validate_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let validator_access_definitions = attribute
+            .access_definitions
+            .into_iter()
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .collect::<Vec<AccessDefinition>>();
+        assert_eq!(
+            1,
+            validator_access_definitions.len(),
+            "there should only be one entry for validator access definitions",
+        );
+        let validator_definition = validator_access_definitions.first().unwrap();
+        assert_eq!(
+            1,
+            validator_definition.access_routes.len(),
+            "only one access definition route should be added because the empty strings should be filtered out of the result",
+        );
+        assert_eq!(
+            "real route",
+            validator_definition.access_routes.first().unwrap(),
+            "the only route in the validator's access definition should be the non-blank string provided",
+        );
+    }
+
+    #[test]
+    fn test_validate_with_only_invalid_access_routes_adds_no_access_definition_for_the_validator() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
+        test_validate_asset(
+            &mut deps,
+            TestValidateAsset {
+                validate_asset: ValidateAssetV1 {
+                    // Only invalid access routes should yield no access definition for the validator
+                    access_routes: vec!["   ".to_string(), "       ".to_string(), "".to_string()],
+                    ..TestValidateAsset::default_validate_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let validator_access_definitions = attribute
+            .access_definitions
+            .into_iter()
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .collect::<Vec<AccessDefinition>>();
+        assert!(
+            validator_access_definitions.is_empty(),
+            "when no valid access routes for the validator are provided, no access definition record should be added",
+        );
+    }
+
+    #[test]
+    fn test_validate_with_no_access_routes_adds_no_access_definition_for_the_validator() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
+        test_validate_asset(
+            &mut deps,
+            TestValidateAsset {
+                validate_asset: ValidateAssetV1 {
+                    // Completely empty access routes should yield no access definition for the validator
+                    access_routes: vec![],
+                    ..TestValidateAsset::default_validate_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let validator_access_definitions = attribute
+            .access_definitions
+            .into_iter()
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .collect::<Vec<AccessDefinition>>();
+        assert!(
+            validator_access_definitions.is_empty(),
+            "when no access routes for the validator are provided, no access definition record should be added",
+        );
     }
 
     fn test_validation_result(message: Option<&str>, result: bool) {

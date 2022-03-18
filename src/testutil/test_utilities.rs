@@ -15,8 +15,8 @@ use crate::{
     contract::instantiate,
     core::{
         asset::{
-            AccessDefinition, AssetDefinition, AssetDefinitionInput, AssetOnboardingStatus,
-            ScopeSpecIdentifier, ValidatorDetail,
+            AccessDefinition, AccessDefinitionType, AssetDefinition, AssetDefinitionInput,
+            AssetOnboardingStatus, ScopeSpecIdentifier, ValidatorDetail,
         },
         msg::InitMsg,
     },
@@ -93,6 +93,7 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
         access_definitions: vec![AccessDefinition {
             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
             access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+            definition_type: AccessDefinitionType::Requestor,
         }],
     }
 }

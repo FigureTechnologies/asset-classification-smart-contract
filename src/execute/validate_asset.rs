@@ -81,7 +81,7 @@ where
         &asset_identifiers.scope_address,
         msg.success,
         msg.message,
-        vec![],
+        msg.access_routes,
     )?;
 
     // construct/emit validation attribute

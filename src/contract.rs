@@ -1,11 +1,11 @@
 use crate::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
-use crate::execute::add_asset_validator::{add_asset_validator, AddAssetValidatorV1};
+use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1};
 use crate::execute::update_asset_definition::{update_asset_definition, UpdateAssetDefinitionV1};
-use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
-use crate::execute::validate_asset::{validate_asset, ValidateAssetV1};
+use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVerifierV1};
+use crate::execute::verify_asset::{verify_asset, VerifyAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
@@ -53,10 +53,10 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             info,
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
-        ExecuteMsg::ValidateAsset { .. } => validate_asset(
+        ExecuteMsg::VerifyAsset { .. } => verify_asset(
             AssetMetaService::new(deps),
             info,
-            ValidateAssetV1::from_execute_msg(msg)?,
+            VerifyAssetV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::AddAssetDefinition { .. } => add_asset_definition(
             deps,
@@ -70,11 +70,11 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ExecuteMsg::ToggleAssetDefinition { .. } => {
             toggle_asset_definition(deps, info, ToggleAssetDefinitionV1::from_execute_msg(msg)?)
         }
-        ExecuteMsg::AddAssetValidator { .. } => {
-            add_asset_validator(deps, info, AddAssetValidatorV1::from_execute_msg(msg)?)
+        ExecuteMsg::AddAssetVerifier { .. } => {
+            add_asset_verifier(deps, info, AddAssetVerifierV1::from_execute_msg(msg)?)
         }
-        ExecuteMsg::UpdateAssetValidator { .. } => {
-            update_asset_validator(deps, info, UpdateAssetValidatorV1::from_execute_msg(msg)?)
+        ExecuteMsg::UpdateAssetVerifier { .. } => {
+            update_asset_verifier(deps, info, UpdateAssetVerifierV1::from_execute_msg(msg)?)
         }
     }
 }

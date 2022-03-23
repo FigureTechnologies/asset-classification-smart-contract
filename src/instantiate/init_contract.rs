@@ -58,7 +58,7 @@ pub fn init_contract(
 mod tests {
     use crate::contract::instantiate;
     use crate::core::asset::{
-        AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+        AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
     };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
@@ -67,7 +67,7 @@ mod tests {
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         get_default_asset_definition, single_attribute_for_key, test_instantiate, InstArgs,
@@ -108,8 +108,8 @@ mod tests {
         );
         assert_eq!(
             1,
-            asset_state.validators.len(),
-            "one validator should be properly stored",
+            asset_state.verifiers.len(),
+            "one verifier should be properly stored",
         );
         assert_eq!(
             asset_state,
@@ -134,8 +134,8 @@ mod tests {
         let first_asset_def = AssetDefinitionInput::new(
             "heloc",
             ScopeSpecIdentifier::address("scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn"),
-            vec![ValidatorDetail::new(
-                DEFAULT_VALIDATOR_ADDRESS,
+            vec![VerifierDetail::new(
+                DEFAULT_VERIFIER_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
                 DEFAULT_ONBOARDING_DENOM,
                 Decimal::percent(50),
@@ -149,7 +149,7 @@ mod tests {
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
             ScopeSpecIdentifier::address("scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3"),
-            vec![ValidatorDetail::new(
+            vec![VerifierDetail::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
                 NHASH,

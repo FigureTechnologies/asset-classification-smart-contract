@@ -115,7 +115,7 @@ mod tests {
         testutil::{
             test_constants::{
                 DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
                 mock_scope, mock_scope_attribute, test_instantiate_success, InstArgs,
@@ -143,12 +143,12 @@ mod tests {
             &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             DEFAULT_ASSET_TYPE,
             DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
             None, // No onboarding status will default to pending
             asset_def
-                .validators
+                .verifiers
                 .first()
-                .expect("the default asset definition should have a single validator")
+                .expect("the default asset definition should have a single verifier")
                 .to_owned(),
             vec![],
         )

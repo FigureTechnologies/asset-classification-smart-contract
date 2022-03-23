@@ -1,4 +1,4 @@
-use crate::core::asset::ValidatorDetail;
+use crate::core::asset::VerifierDetail;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -18,10 +18,10 @@ pub enum ExecuteMsg {
     OnboardAsset {
         identifier: AssetIdentifier,
         asset_type: String,
-        validator_address: String,
+        verifier_address: String,
         access_routes: Option<Vec<String>>,
     },
-    ValidateAsset {
+    VerifyAsset {
         identifier: AssetIdentifier,
         success: bool,
         message: Option<String>,
@@ -37,13 +37,13 @@ pub enum ExecuteMsg {
         asset_type: String,
         expected_result: bool,
     },
-    AddAssetValidator {
+    AddAssetVerifier {
         asset_type: String,
-        validator: ValidatorDetail,
+        verifier: VerifierDetail,
     },
-    UpdateAssetValidator {
+    UpdateAssetVerifier {
         asset_type: String,
-        validator: ValidatorDetail,
+        verifier: VerifierDetail,
     },
 }
 

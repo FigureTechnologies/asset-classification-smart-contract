@@ -53,7 +53,7 @@ pub fn update_asset_definition(
 mod tests {
     use crate::contract::execute;
     use crate::core::asset::{
-        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
     };
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
@@ -194,8 +194,8 @@ mod tests {
         let missing_asset_definition = AssetDefinition::new(
             "nonexistent-type",
             DEFAULT_SCOPE_SPEC_ADDRESS,
-            vec![ValidatorDetail::new(
-                "validator",
+            vec![VerifierDetail::new(
+                "verifier",
                 Uint128::new(100),
                 NHASH,
                 Decimal::percent(25),
@@ -240,7 +240,7 @@ mod tests {
         let def = AssetDefinitionInput::new(
             DEFAULT_ASSET_TYPE,
             ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
-            vec![ValidatorDetail::new(
+            vec![VerifierDetail::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),
                 NHASH,

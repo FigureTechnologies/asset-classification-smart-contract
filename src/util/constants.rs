@@ -20,8 +20,8 @@ pub const ASSET_EVENT_TYPE_KEY: &str = "asset_event_type";
 pub const ASSET_SCOPE_ADDRESS_KEY: &str = "asset_scope_address";
 /// Value = Asset Type (String)
 pub const ASSET_TYPE_KEY: &str = "asset_type";
-/// Value = The address of the validator associated with the asset (String)
-pub const VALIDATOR_ADDRESS_KEY: &str = "asset_validator_address";
+/// Value = The address of the verifier associated with the asset (String)
+pub const VERIFIER_ADDRESS_KEY: &str = "asset_verifier_address";
 /// Value = Any new value being changed that can be coerced to a string target. Dynamic to be used on various routes (String)
 pub const NEW_VALUE_KEY: &str = "new_value";
 

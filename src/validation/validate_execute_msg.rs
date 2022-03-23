@@ -1,10 +1,10 @@
-use crate::core::asset::{AssetIdentifier, ValidatorDetail};
+use crate::core::asset::{AssetIdentifier, VerifierDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::util::aliases::AssetResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
-    validate_asset_definition, validate_validator_with_provided_errors,
+    validate_asset_definition, validate_verifier_with_provided_errors,
 };
 
 pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
@@ -12,10 +12,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
         ExecuteMsg::OnboardAsset {
             identifier,
             asset_type,
-            validator_address,
+            verifier_address,
             ..
-        } => validate_onboard_asset(identifier, asset_type, validator_address),
-        ExecuteMsg::ValidateAsset { identifier, .. } => validate_validate_asset(identifier),
+        } => validate_onboard_asset(identifier, asset_type, verifier_address),
+        ExecuteMsg::VerifyAsset { identifier, .. } => validate_verify_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.as_asset_definition()?)
         }
@@ -25,21 +25,21 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
         ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
         }
-        ExecuteMsg::AddAssetValidator {
+        ExecuteMsg::AddAssetVerifier {
             asset_type,
-            validator,
-        } => validate_asset_validator_msg(asset_type, validator),
-        ExecuteMsg::UpdateAssetValidator {
+            verifier,
+        } => validate_asset_verifier_msg(asset_type, verifier),
+        ExecuteMsg::UpdateAssetVerifier {
             asset_type,
-            validator,
-        } => validate_asset_validator_msg(asset_type, validator),
+            verifier,
+        } => validate_asset_verifier_msg(asset_type, verifier),
     }
 }
 
 fn validate_onboard_asset(
     identifier: &AssetIdentifier,
     asset_type: &str,
-    validator_address: &str,
+    verifier_address: &str,
 ) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
@@ -57,8 +57,8 @@ fn validate_onboard_asset(
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
     }
-    if validator_address.is_empty() {
-        invalid_fields.push("validator_address: must not be blank".to_string());
+    if verifier_address.is_empty() {
+        invalid_fields.push("verifier_address: must not be blank".to_string());
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -71,7 +71,7 @@ fn validate_onboard_asset(
     }
 }
 
-fn validate_validate_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
+fn validate_verify_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     match identifier {
         AssetIdentifier::AssetUuid(asset_uuid) => {
@@ -87,7 +87,7 @@ fn validate_validate_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
-            message_type: "ExecuteMsg::ValidateAsset".to_string(),
+            message_type: "ExecuteMsg::VerifyAsset".to_string(),
             invalid_fields,
         }
         .to_err()
@@ -112,13 +112,13 @@ fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     }
 }
 
-fn validate_asset_validator_msg(asset_type: &str, validator: &ValidatorDetail) -> AssetResult<()> {
+fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> AssetResult<()> {
     let errors = if asset_type.is_empty() {
         vec!["asset_type must not be empty".to_string()].to_some()
     } else {
         None
     };
-    validate_validator_with_provided_errors(validator, errors)
+    validate_verifier_with_provided_errors(verifier, errors)
 }
 
 #[cfg(test)]
@@ -128,16 +128,14 @@ mod tests {
         util::aliases::AssetResult,
     };
 
-    use super::{
-        validate_onboard_asset, validate_toggle_asset_definition, validate_validate_asset,
-    };
+    use super::{validate_onboard_asset, validate_toggle_asset_definition, validate_verify_asset};
 
     #[test]
     fn test_validate_onboard_asset_success_for_asset_uuid() {
         validate_onboard_asset(
             &AssetIdentifier::asset_uuid("asset_uuid"),
             "asset_type",
-            "validator_address",
+            "verifier_address",
         )
         .expect("expected validation to pass when all arguments are properly supplied");
     }
@@ -147,7 +145,7 @@ mod tests {
         validate_onboard_asset(
             &AssetIdentifier::scope_address("scope_address"),
             "asset_type",
-            "validator_address",
+            "verifier_address",
         )
         .expect("expected validation to pass when all arguments are properly supplied");
     }
@@ -157,7 +155,7 @@ mod tests {
         let result = validate_onboard_asset(
             &AssetIdentifier::asset_uuid("asset_uuid"),
             "",
-            "validator_address",
+            "verifier_address",
         );
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
@@ -179,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_onboard_asset_invalid_validator_address() {
+    fn test_validate_onboard_asset_invalid_verifier_address() {
         let result =
             validate_onboard_asset(&AssetIdentifier::asset_uuid("asset_uuid"), "asset_type", "");
         test_invalid_message_fields(result, |message_type, invalid_fields| {
@@ -194,7 +192,7 @@ mod tests {
                 "expected only a single invalid field to be found"
             );
             assert_eq!(
-                "validator_address: must not be blank",
+                "verifier_address: must not be blank",
                 invalid_fields.first().unwrap().as_str(),
                 "expected the appropriate error message to be returned",
             );
@@ -203,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_success_for_asset_uuid() {
-        validate_validate_asset(&AssetIdentifier::asset_uuid(
+        validate_verify_asset(&AssetIdentifier::asset_uuid(
             "4b9601f4-a0ad-11ec-b214-2f7b0096dea6",
         ))
         .expect("expected the validation to pass when all fields are correctly supplied");
@@ -211,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_success_for_scope_address() {
-        validate_validate_asset(&AssetIdentifier::scope_address(
+        validate_verify_asset(&AssetIdentifier::scope_address(
             "scope1qps4rfeu5zk3rm9r2gp36dl9r3tq6rpyqd",
         ))
         .expect("expected the validation to pass when all fields are correctly supplied");
@@ -219,10 +217,10 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_invalid_asset_uuid() {
-        let result = validate_validate_asset(&AssetIdentifier::asset_uuid(""));
+        let result = validate_verify_asset(&AssetIdentifier::asset_uuid(""));
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
-                "ExecuteMsg::ValidateAsset",
+                "ExecuteMsg::VerifyAsset",
                 message_type.as_str(),
                 "incorrect message type for error",
             );
@@ -241,10 +239,10 @@ mod tests {
 
     #[test]
     fn test_validate_validate_asset_invalid_scope_address() {
-        let result = validate_validate_asset(&AssetIdentifier::scope_address(""));
+        let result = validate_verify_asset(&AssetIdentifier::scope_address(""));
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
-                "ExecuteMsg::ValidateAsset",
+                "ExecuteMsg::VerifyAsset",
                 message_type.as_str(),
                 "incorrect message type for error",
             );

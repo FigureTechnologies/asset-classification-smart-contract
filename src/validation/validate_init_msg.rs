@@ -1,4 +1,4 @@
-use crate::core::asset::{AssetDefinition, AssetDefinitionInput, FeeDestination, ValidatorDetail};
+use crate::core::asset::{AssetDefinition, AssetDefinitionInput, FeeDestination, VerifierDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
 use crate::util::aliases::AssetResult;
@@ -54,15 +54,15 @@ pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> AssetRes
     }
 }
 
-pub fn validate_validator(validator: &ValidatorDetail) -> AssetResult<()> {
-    validate_validator_with_provided_errors(validator, None)
+pub fn validate_verifier(verifier: &VerifierDetail) -> AssetResult<()> {
+    validate_verifier_with_provided_errors(verifier, None)
 }
 
-pub fn validate_validator_with_provided_errors(
-    validator: &ValidatorDetail,
+pub fn validate_verifier_with_provided_errors(
+    verifier: &VerifierDetail,
     provided_errors: Option<Vec<String>>,
 ) -> AssetResult<()> {
-    let mut invalid_fields = validate_validator_internal(validator);
+    let mut invalid_fields = validate_verifier_internal(verifier);
     if let Some(errors) = provided_errors {
         for error in errors {
             invalid_fields.push(error);
@@ -70,7 +70,7 @@ pub fn validate_validator_with_provided_errors(
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
-            message_type: "ValidatorDetail".to_string(),
+            message_type: "VerifierDetail".to_string(),
             invalid_fields,
         }
         .to_err()
@@ -96,64 +96,63 @@ fn validate_asset_definition_internal(asset_definition: &AssetDefinition) -> Vec
     if asset_definition.scope_spec_address.is_empty() {
         invalid_fields.push("asset_definition:scope_spec_address: must not be blank".to_string());
     }
-    if asset_definition.validators.is_empty() {
+    if asset_definition.verifiers.is_empty() {
         invalid_fields.push(
-            "asset_definition:validators: at least one validator must be supplied per asset type"
+            "asset_definition:verifiers: at least one verifier must be supplied per asset type"
                 .to_string(),
         );
     }
-    let mut validator_messages = asset_definition
-        .validators
+    let mut verifier_messages = asset_definition
+        .verifiers
         .iter()
-        .flat_map(validate_validator_internal)
+        .flat_map(validate_verifier_internal)
         .collect::<Vec<String>>();
-    invalid_fields.append(&mut validator_messages);
+    invalid_fields.append(&mut verifier_messages);
     invalid_fields
 }
 
-fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
+fn validate_verifier_internal(verifier: &VerifierDetail) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
-    if bech32_string_to_addr(&validator.address).is_err() {
-        invalid_fields.push("validator:address: must be a valid address".to_string());
+    if bech32_string_to_addr(&verifier.address).is_err() {
+        invalid_fields.push("verifier:address: must be a valid address".to_string());
     }
-    if validator.onboarding_denom.is_empty() {
-        invalid_fields.push("validator:onboarding_denom: must not be blank".to_string());
+    if verifier.onboarding_denom.is_empty() {
+        invalid_fields.push("verifier:onboarding_denom: must not be blank".to_string());
     }
-    if validator.fee_percent > Decimal::percent(100) {
-        invalid_fields
-            .push("validator:fee_percent: must be less than or equal to 100%".to_string());
+    if verifier.fee_percent > Decimal::percent(100) {
+        invalid_fields.push("verifier:fee_percent: must be less than or equal to 100%".to_string());
     }
-    let fee_total = validator.onboarding_cost.mul(validator.fee_percent);
-    if validator.fee_percent > Decimal::zero() && fee_total == Uint128::zero() {
+    let fee_total = verifier.onboarding_cost.mul(verifier.fee_percent);
+    if verifier.fee_percent > Decimal::zero() && fee_total == Uint128::zero() {
         invalid_fields.push(
             format!(
-                "validator:fee_percent: non-zero fee percent of {} must cleanly multiply against onboarding cost of {}nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
-                decimal_display_string(&validator.fee_percent),
-                validator.onboarding_cost,
+                "verifier:fee_percent: non-zero fee percent of {} must cleanly multiply against onboarding cost of {}nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
+                decimal_display_string(&verifier.fee_percent),
+                verifier.onboarding_cost,
             )
         );
     }
-    if validator.fee_destinations.is_empty() && validator.fee_percent != Decimal::zero() {
+    if verifier.fee_destinations.is_empty() && verifier.fee_percent != Decimal::zero() {
         invalid_fields.push(
-            "validator:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied"
+            "verifier:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied"
                 .to_string(),
         );
     }
-    if !validator.fee_destinations.is_empty() && validator.fee_percent == Decimal::zero() {
-        invalid_fields.push("validator:fee_destinations: fee destinations cannot be provided when the fee percent is zero".to_string());
+    if !verifier.fee_destinations.is_empty() && verifier.fee_percent == Decimal::zero() {
+        invalid_fields.push("verifier:fee_destinations: fee destinations cannot be provided when the fee percent is zero".to_string());
     }
-    if !validator.fee_destinations.is_empty()
-        && validator
+    if !verifier.fee_destinations.is_empty()
+        && verifier
             .fee_destinations
             .iter()
             .map(|d| d.fee_percent)
             .sum::<Decimal>()
             != Decimal::percent(100)
     {
-        invalid_fields.push("validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution".to_string());
+        invalid_fields.push("verifier:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution".to_string());
     }
-    if !validator.fee_destinations.is_empty() {
-        let destination_sum = validator
+    if !verifier.fee_destinations.is_empty() {
+        let destination_sum = verifier
             .fee_destinations
             .iter()
             .map(|d| fee_total.mul(d.fee_percent))
@@ -161,19 +160,19 @@ fn validate_validator_internal(validator: &ValidatorDetail) -> Vec<String> {
         if fee_total != Uint128::zero() && destination_sum != fee_total {
             invalid_fields.push(
                 format!(
-                    "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: {}nhash, Destination sum: {}nhash",
+                    "verifier:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: {}nhash, Destination sum: {}nhash",
                     fee_total,
                     destination_sum,
                 )
             )
         }
     }
-    if distinct_count_by_property(&validator.fee_destinations, |dest| &dest.address)
-        != validator.fee_destinations.len()
+    if distinct_count_by_property(&verifier.fee_destinations, |dest| &dest.address)
+        != verifier.fee_destinations.len()
     {
-        invalid_fields.push("validator:fee_destinations: all fee destinations within a validator must have unique addresses".to_string());
+        invalid_fields.push("verifier:fee_destinations: all fee destinations within a verifier must have unique addresses".to_string());
     }
-    let mut fee_destination_messages = validator
+    let mut fee_destination_messages = verifier
         .fee_destinations
         .iter()
         .flat_map(validate_destination_internal)
@@ -200,14 +199,14 @@ fn validate_destination_internal(destination: &FeeDestination) -> Vec<String> {
 #[cfg(test)]
 pub mod tests {
     use crate::core::asset::{
-        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
     };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
     use crate::util::constants::NHASH;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_input_internal, validate_asset_definition_internal,
-        validate_destination_internal, validate_init_msg, validate_validator_internal,
+        validate_destination_internal, validate_init_msg, validate_verifier_internal,
     };
     use cosmwasm_std::{Decimal, Uint128};
 
@@ -228,7 +227,7 @@ pub mod tests {
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
                 ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
-                vec![ValidatorDetail::new(
+                vec![VerifierDetail::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                     Uint128::new(100),
                     NHASH,
@@ -252,7 +251,7 @@ pub mod tests {
                 AssetDefinitionInput::new(
                     "heloc",
                     ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
-                    vec![ValidatorDetail::new(
+                    vec![VerifierDetail::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(100),
                         NHASH,
@@ -267,7 +266,7 @@ pub mod tests {
                 AssetDefinitionInput::new(
                     "mortgage",
                     ScopeSpecIdentifier::address("scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86"),
-                    vec![ValidatorDetail::new(
+                    vec![VerifierDetail::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(500),
                         NHASH,
@@ -289,14 +288,14 @@ pub mod tests {
                     "pl",
                     ScopeSpecIdentifier::address("scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084"),
                     vec![
-                        ValidatorDetail::new(
+                        VerifierDetail::new(
                             "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                             Uint128::new(0),
                             NHASH,
                             Decimal::percent(0),
                             vec![],
                         ),
-                        ValidatorDetail::new(
+                        VerifierDetail::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
                             Uint128::new(1000000),
                             NHASH,
@@ -328,7 +327,7 @@ pub mod tests {
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc",
                     ScopeSpecIdentifier::address("scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz"),
-                    vec![ValidatorDetail::new(
+                    vec![VerifierDetail::new(
                         "address",
                         Uint128::new(100),
                         NHASH,
@@ -393,7 +392,7 @@ pub mod tests {
         let definition = AssetDefinition::new(
             "heloc",
             "scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz",
-            vec![ValidatorDetail::new(
+            vec![VerifierDetail::new(
                 "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
                 Uint128::new(100),
                 NHASH,
@@ -418,7 +417,7 @@ pub mod tests {
             &AssetDefinition::new(
                 "",
                 "scope-spec-address",
-                vec![ValidatorDetail::new(
+                vec![VerifierDetail::new(
                     "address",
                     Uint128::new(100),
                     NHASH,
@@ -436,7 +435,7 @@ pub mod tests {
             &AssetDefinition::new(
                 "heloc",
                 "",
-                vec![ValidatorDetail::new(
+                vec![VerifierDetail::new(
                     "address",
                     Uint128::new(100),
                     NHASH,
@@ -449,20 +448,20 @@ pub mod tests {
     }
 
     #[test]
-    fn test_invalid_asset_definition_empty_validators() {
+    fn test_invalid_asset_definition_empty_verifiers() {
         test_invalid_asset_definition(
             &AssetDefinition::new("mortgage", "scope-spec-address", vec![]),
-            "asset_definition:validators: at least one validator must be supplied per asset type",
+            "asset_definition:verifiers: at least one verifier must be supplied per asset type",
         );
     }
 
     #[test]
-    fn test_invalid_asset_definition_picks_up_invalid_validator_scenarios() {
+    fn test_invalid_asset_definition_picks_up_invalid_verifier_scenarios() {
         test_invalid_asset_definition(
             &AssetDefinition::new(
                 "",
                 "scope-spec-address",
-                vec![ValidatorDetail::new(
+                vec![VerifierDetail::new(
                     "",
                     Uint128::new(100),
                     NHASH,
@@ -470,30 +469,30 @@ pub mod tests {
                     vec![FeeDestination::new("fee", Decimal::percent(100))],
                 )],
             ),
-            "validator:address: must be a valid address",
+            "verifier:address: must be a valid address",
         );
     }
 
     #[test]
-    fn test_valid_validator_with_no_fee_destinations() {
-        let validator = ValidatorDetail::new(
+    fn test_valid_verifier_with_no_fee_destinations() {
+        let verifier = VerifierDetail::new(
             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
             Uint128::new(100),
             NHASH,
             Decimal::percent(0),
             vec![],
         );
-        let response = validate_validator_internal(&validator);
+        let response = validate_verifier_internal(&verifier);
         assert!(
             response.is_empty(),
-            "a valid validator should pass validation and return no error messages, but got messages: {:?}",
+            "a valid verifier should pass validation and return no error messages, but got messages: {:?}",
             response,
         );
     }
 
     #[test]
-    fn test_valid_validator_with_single_fee_destination() {
-        let validator = ValidatorDetail::new(
+    fn test_valid_verifier_with_single_fee_destination() {
+        let verifier = VerifierDetail::new(
             "tp1z28j4v88vz3jyzz286a8627lfsclemk294essy",
             Uint128::new(1000),
             NHASH,
@@ -503,17 +502,17 @@ pub mod tests {
                 Decimal::percent(100),
             )],
         );
-        let response = validate_validator_internal(&validator);
+        let response = validate_verifier_internal(&verifier);
         assert!(
             response.is_empty(),
-            "a valid validator should pass validation and return no error messages, but got messages: {:?}",
+            "a valid verifier should pass validation and return no error messages, but got messages: {:?}",
             response,
         );
     }
 
     #[test]
-    fn test_valid_validator_with_multiple_fee_destinations() {
-        let validator = ValidatorDetail::new(
+    fn test_valid_verifier_with_multiple_fee_destinations() {
+        let verifier = VerifierDetail::new(
             "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
             Uint128::new(150000),
             NHASH,
@@ -541,49 +540,49 @@ pub mod tests {
                 ),
             ],
         );
-        let response = validate_validator_internal(&validator);
+        let response = validate_verifier_internal(&verifier);
         assert!(
             response.is_empty(),
-            "a valid validator should pass validation and return no error messages, but got messages: {:?}",
+            "a valid verifier should pass validation and return no error messages, but got messages: {:?}",
             response,
         );
     }
 
     #[test]
-    fn test_invalid_validator_address() {
-        test_invalid_validator(
-            &ValidatorDetail::new("", Uint128::new(150), NHASH, Decimal::zero(), vec![]),
-            "validator:address: must be a valid address",
+    fn test_invalid_verifier_address() {
+        test_invalid_verifier(
+            &VerifierDetail::new("", Uint128::new(150), NHASH, Decimal::zero(), vec![]),
+            "verifier:address: must be a valid address",
         );
     }
 
     #[test]
-    fn test_invalid_validator_onboarding_denom() {
-        test_invalid_validator(
-            &ValidatorDetail::new("address", Uint128::new(100), "", Decimal::zero(), vec![]),
-            "validator:onboarding_denom: must not be blank",
+    fn test_invalid_verifier_onboarding_denom() {
+        test_invalid_verifier(
+            &VerifierDetail::new("address", Uint128::new(100), "", Decimal::zero(), vec![]),
+            "verifier:onboarding_denom: must not be blank",
         );
     }
 
     #[test]
-    fn test_invalid_validator_fee_percent_too_high() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_fee_percent_too_high() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(1010),
                 NHASH,
                 Decimal::percent(101),
                 vec![FeeDestination::new("fee", Decimal::percent(100))],
             ),
-            "validator:fee_percent: must be less than or equal to 100%",
+            "verifier:fee_percent: must be less than or equal to 100%",
         );
     }
 
     #[test]
-    fn test_invalid_validator_fee_percent_results_in_zero_funds_allocated() {
+    fn test_invalid_verifier_fee_percent_results_in_zero_funds_allocated() {
         // Try to take 1% of 1 nhash, which should end up as zero after decimals are rounded
-        test_invalid_validator(
-            &ValidatorDetail::new(
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(1),
                 NHASH,
@@ -593,28 +592,28 @@ pub mod tests {
                     Decimal::percent(100),
                 )],
             ),
-            "validator:fee_percent: non-zero fee percent of 1% must cleanly multiply against onboarding cost of 1nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
+            "verifier:fee_percent: non-zero fee percent of 1% must cleanly multiply against onboarding cost of 1nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
         );
     }
 
     #[test]
-    fn test_invalid_validator_no_fee_destinations_but_fee_percent_provided() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_no_fee_destinations_but_fee_percent_provided() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(150),
                 NHASH,
                 Decimal::percent(100),
                 vec![],
             ),
-            "validator:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied",
+            "verifier:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied",
         );
     }
 
     #[test]
-    fn test_invalid_validator_provided_fee_destinations_but_fee_percent_zero() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_provided_fee_destinations_but_fee_percent_zero() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(150),
                 NHASH,
@@ -624,28 +623,28 @@ pub mod tests {
                     Decimal::percent(100),
                 )],
             ),
-            "validator:fee_destinations: fee destinations cannot be provided when the fee percent is zero",
+            "verifier:fee_destinations: fee destinations cannot be provided when the fee percent is zero",
         );
     }
 
     #[test]
-    fn test_invalid_validator_fee_destinations_do_not_sum_correctly_single_destination() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_fee_destinations_do_not_sum_correctly_single_destination() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(420),
                 NHASH,
                 Decimal::percent(50),
                 vec![FeeDestination::new("first", Decimal::percent(99))],
             ),
-            "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
+            "verifier:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
         );
     }
 
     #[test]
-    fn test_invalid_validator_fee_destinations_do_not_sum_correctly_multiple_destinations() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_fee_destinations_do_not_sum_correctly_multiple_destinations() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(55),
                 NHASH,
@@ -656,14 +655,14 @@ pub mod tests {
                     FeeDestination::new("third", Decimal::percent(33)),
                 ],
             ),
-            "validator:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
+            "verifier:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
         );
     }
 
     #[test]
-    fn test_invalid_validator_destination_fee_percents_do_not_sum_to_correct_number() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_destination_fee_percents_do_not_sum_to_correct_number() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(100),
                 NHASH,
@@ -675,14 +674,14 @@ pub mod tests {
                     FeeDestination::new("second", Decimal::percent(1)),
                 ],
             ),
-            "validator:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
+            "verifier:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
         );
     }
 
     #[test]
-    fn test_invalid_validator_destinations_contains_duplicate_address() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_destinations_contains_duplicate_address() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(100),
                 NHASH,
@@ -692,14 +691,14 @@ pub mod tests {
                     FeeDestination::new("fee-guy", Decimal::percent(50)),
                 ]
             ),
-            "validator:fee_destinations: all fee destinations within a validator must have unique addresses",
+            "verifier:fee_destinations: all fee destinations within a verifier must have unique addresses",
         );
     }
 
     #[test]
-    fn test_invalid_validator_picks_up_invalid_fee_destination_scenarios() {
-        test_invalid_validator(
-            &ValidatorDetail::new(
+    fn test_invalid_verifier_picks_up_invalid_fee_destination_scenarios() {
+        test_invalid_verifier(
+            &VerifierDetail::new(
                 "address",
                 Uint128::new(100),
                 NHASH,
@@ -816,8 +815,8 @@ pub mod tests {
         );
     }
 
-    fn test_invalid_validator(validator: &ValidatorDetail, expected_message: &str) {
-        let results = validate_validator_internal(&validator);
+    fn test_invalid_verifier(verifier: &VerifierDetail, expected_message: &str) {
+        let results = validate_verifier_internal(&verifier);
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",

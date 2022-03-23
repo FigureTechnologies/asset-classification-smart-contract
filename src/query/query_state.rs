@@ -1,7 +1,7 @@
 use cosmwasm_std::{to_binary, Binary};
 
 use crate::{
-    core::state::config_read,
+    core::state::config_read_v2,
     util::{
         aliases::{AssetResult, DepsC},
         traits::ResultExtensions,
@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn query_state(deps: &DepsC) -> AssetResult<Binary> {
-    let state = config_read(deps.storage).load()?;
+    let state = config_read_v2(deps.storage).load()?;
     to_binary(&state)?.to_ok()
 }
 
@@ -20,7 +20,7 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::state::State,
+        core::state::StateV2,
         testutil::{
             test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_CONTRACT_BASE_NAME},
             test_utilities::{test_instantiate_success, InstArgs},
@@ -35,7 +35,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let state_binary = query_state(&deps.as_ref()).expect("state query should return properly");
         let state =
-            from_binary::<State>(&state_binary).expect("state should deserialize correctly");
+            from_binary::<StateV2>(&state_binary).expect("state should deserialize correctly");
         assert_eq!(
             DEFAULT_CONTRACT_BASE_NAME,
             state.base_contract_name.as_str(),
@@ -46,5 +46,6 @@ mod tests {
             state.admin.as_str(),
             "the default info name should be tagged as the admin address after default instantiation",
         );
+        assert!(!state.is_test, "the default is_test value should be false");
     }
 }

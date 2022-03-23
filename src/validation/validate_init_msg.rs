@@ -204,6 +204,7 @@ pub mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
     use crate::util::constants::NHASH;
+    use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_input_internal, validate_asset_definition_internal,
         validate_destination_internal, validate_init_msg, validate_verifier_internal,
@@ -216,6 +217,7 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             bind_base_name: true,
             asset_definitions: vec![],
+            is_test: false.to_some(),
         });
     }
 
@@ -224,6 +226,7 @@ pub mod tests {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
             bind_base_name: true,
+            is_test: false.to_some(),
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
                 ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
@@ -247,6 +250,7 @@ pub mod tests {
         test_valid_init_msg(&InitMsg {
             base_contract_name: "asset".to_string(),
             bind_base_name: true,
+            is_test: false.to_some(),
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
@@ -324,6 +328,7 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 bind_base_name: true,
+                is_test: false.to_some(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc",
                     ScopeSpecIdentifier::address("scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz"),
@@ -347,6 +352,7 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: String::new(),
                 bind_base_name: true,
+                is_test: false.to_some(),
                 asset_definitions: vec![
                     AssetDefinitionInput::new(
                         "heloc",
@@ -376,6 +382,7 @@ pub mod tests {
             &InitMsg {
                 base_contract_name: "asset".to_string(),
                 bind_base_name: true,
+                is_test: false.to_some(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "",
                     ScopeSpecIdentifier::address("scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn"),

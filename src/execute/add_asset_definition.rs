@@ -1,7 +1,7 @@
 use crate::core::asset::AssetDefinition;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read, insert_asset_definition};
+use crate::core::state::{config_read_v2, insert_asset_definition};
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -45,7 +45,7 @@ pub fn add_asset_definition(
     let name_msg = bind_name(
         generate_asset_attribute_name(
             &msg.asset_definition.asset_type,
-            config_read(deps.storage).load()?.base_contract_name,
+            config_read_v2(deps.storage).load()?.base_contract_name,
         ),
         env.contract.address,
         NameBinding::Restricted,

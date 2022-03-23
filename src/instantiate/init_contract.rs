@@ -1,5 +1,5 @@
 use crate::core::msg::InitMsg;
-use crate::core::state::{config, insert_asset_definition, State};
+use crate::core::state::{config_v2, insert_asset_definition, StateV2};
 use crate::migrate::version_info::migrate_version_info;
 use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
@@ -42,9 +42,9 @@ pub fn init_contract(
         )?);
     }
     // Convert the init message into a state value that will drive the contract's future executions
-    let state = State::new(msg, info.sender);
+    let state = StateV2::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
-    config(deps.storage).save(&state)?;
+    config_v2(deps.storage).save(&state)?;
     // Set the version info to the default contract values on instantiation
     migrate_version_info(deps.storage)?;
     Response::new()
@@ -62,7 +62,7 @@ mod tests {
     };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
-    use crate::core::state::load_asset_definition_by_type;
+    use crate::core::state::{config_read_v2, load_asset_definition_by_type};
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{
@@ -70,11 +70,12 @@ mod tests {
         DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        get_default_asset_definition, single_attribute_for_key, test_instantiate, InstArgs,
+        get_default_asset_definition, get_default_asset_definition_inputs,
+        single_attribute_for_key, test_instantiate, InstArgs,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
-    use cosmwasm_std::testing::mock_info;
+    use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
 
@@ -229,6 +230,30 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_init_no_is_test_flag_supplied_defaults_to_false() {
+        let mut deps = mock_dependencies(&[]);
+        instantiate(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: true,
+                asset_definitions: get_default_asset_definition_inputs(),
+                is_test: None,
+            },
+        )
+        .expect("instantiation should complete successfully");
+        let state = config_read_v2(deps.as_ref().storage)
+            .load()
+            .expect("state v2 should be created by instantiation");
+        assert!(
+            !state.is_test,
+            "is_test should default to false when no value is provided by the caller",
+        );
+    }
+
+    #[test]
     fn test_invalid_init_contract_including_funds() {
         let mut deps = mock_dependencies(&[]);
         let error = test_instantiate(
@@ -265,6 +290,7 @@ mod tests {
                 base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
                 bind_base_name: true,
                 asset_definitions: args.asset_definitions,
+                is_test: None,
             },
         )
         .unwrap_err();

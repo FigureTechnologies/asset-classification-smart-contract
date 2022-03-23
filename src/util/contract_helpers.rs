@@ -1,5 +1,5 @@
 use crate::core::error::ContractError;
-use crate::core::state::config_read;
+use crate::core::state::config_read_v2;
 use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::MessageInfo;
@@ -13,16 +13,16 @@ use cosmwasm_std::MessageInfo;
 /// use cosmwasm_std::Addr;
 /// use cosmwasm_std::testing::mock_info;
 /// use provwasm_mocks::mock_dependencies;
-/// use asset_classification_smart_contract::core::state::{config, State};
+/// use asset_classification_smart_contract::core::state::{config_v2, StateV2};
 ///
 /// let mut deps = mock_dependencies(&[]);
-/// config(deps.as_mut().storage).save(&State { base_contract_name: "contract-name".to_string(), admin: Addr::unchecked("admin-name") })
+/// config_v2(deps.as_mut().storage).save(&StateV2 { base_contract_name: "contract-name".to_string(), admin: Addr::unchecked("admin-name"), is_test: false })
 ///     .expect("expected state to save successfully");
 /// let info = mock_info("admin-name", &[]);
 /// check_admin_only(&deps.as_ref(), &info).expect("admin-name was used as the admin and should return a success");
 /// ```
 pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> AssetResult<()> {
-    let state = config_read(deps.storage).load()?;
+    let state = config_read_v2(deps.storage).load()?;
     if info.sender != state.admin {
         ContractError::Unauthorized {
             explanation: "admin required".to_string(),

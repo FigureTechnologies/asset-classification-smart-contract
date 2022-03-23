@@ -103,6 +103,7 @@ pub struct InstArgs {
     pub info: MessageInfo,
     pub base_contract_name: String,
     pub bind_base_name: bool,
+    pub is_test: bool,
     pub asset_definitions: Vec<AssetDefinitionInput>,
 }
 impl Default for InstArgs {
@@ -112,6 +113,10 @@ impl Default for InstArgs {
             info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
             bind_base_name: true,
+            // Although this is literally a test framework, we use this to test real interactions.
+            // This value should be set to false by default to ensure all test interactions simulate
+            // realistic scenarios
+            is_test: false,
             asset_definitions: get_default_asset_definition_inputs(),
         }
     }
@@ -126,6 +131,7 @@ pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
             base_contract_name: args.base_contract_name,
             bind_base_name: args.bind_base_name,
             asset_definitions: args.asset_definitions,
+            is_test: Some(args.is_test),
         },
     )
 }

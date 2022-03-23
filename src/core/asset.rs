@@ -227,9 +227,9 @@ impl AssetScopeAttribute {
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
-        let val_addr = bech32_string_to_addr(verifier_address)?;
-        if val_addr != latest_verifier_detail.address {
-            return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", val_addr, latest_verifier_detail.address).as_str()).to_err();
+        let ver_addr = bech32_string_to_addr(verifier_address)?;
+        if ver_addr != latest_verifier_detail.address {
+            return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", ver_addr, latest_verifier_detail.address).as_str()).to_err();
         }
         // Remove all access routes that are empty strings to prevent bad data from beign provided
         let filtered_access_routes = access_routes
@@ -252,7 +252,7 @@ impl AssetScopeAttribute {
             scope_address: identifiers.scope_address,
             asset_type: asset_type.into(),
             requestor_address: req_addr,
-            verifier_address: val_addr,
+            verifier_address: ver_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_verifier_detail: latest_verifier_detail.to_some(),
             latest_verification_result: None,

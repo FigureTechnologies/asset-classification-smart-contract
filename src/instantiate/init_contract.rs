@@ -62,7 +62,7 @@ mod tests {
     };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
-    use crate::core::state::load_asset_definition_by_type;
+    use crate::core::state::{config_read_v2, load_asset_definition_by_type};
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{
@@ -70,11 +70,12 @@ mod tests {
         DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        get_default_asset_definition, single_attribute_for_key, test_instantiate, InstArgs,
+        get_default_asset_definition, get_default_asset_definition_inputs,
+        single_attribute_for_key, test_instantiate, InstArgs,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
-    use cosmwasm_std::testing::mock_info;
+    use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
 
@@ -226,6 +227,30 @@ mod tests {
         );
         // The only message emitted should be a name bind for the default asset type to the base name
         test_message_is_name_bind(&response.messages, DEFAULT_ASSET_TYPE);
+    }
+
+    #[test]
+    fn test_valid_init_no_is_test_flag_supplied_defaults_to_false() {
+        let mut deps = mock_dependencies(&[]);
+        instantiate(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: true,
+                asset_definitions: get_default_asset_definition_inputs(),
+                is_test: None,
+            },
+        )
+        .expect("instantiation should complete successfully");
+        let state = config_read_v2(deps.as_ref().storage)
+            .load()
+            .expect("state v2 should be created by instantiation");
+        assert!(
+            !state.is_test,
+            "is_test should default to false when no value is provided by the caller",
+        );
     }
 
     #[test]

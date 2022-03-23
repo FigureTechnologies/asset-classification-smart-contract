@@ -13,26 +13,6 @@
         }
       },
       "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "migrate_to_state_v2"
-      ],
-      "properties": {
-        "migrate_to_state_v2": {
-          "type": "object",
-          "properties": {
-            "is_test": {
-              "type": [
-                "boolean",
-                "null"
-              ]
-            }
-          }
-        }
-      },
-      "additionalProperties": false
     }
   ]
 }

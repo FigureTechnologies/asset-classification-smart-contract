@@ -61,6 +61,4 @@ pub enum QueryMsg {
 #[serde(rename_all = "snake_case")]
 pub enum MigrateMsg {
     ContractUpgrade {},
-    // TODO: Remove this migration path once all instances of State are replaced with StateV2
-    MigrateToStateV2 { is_test: Option<bool> },
 }

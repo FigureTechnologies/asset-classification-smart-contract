@@ -10,6 +10,7 @@ pub struct InitMsg {
     pub base_contract_name: String,
     pub bind_base_name: bool,
     pub asset_definitions: Vec<AssetDefinitionInput>,
+    pub is_test: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -58,4 +59,8 @@ pub enum QueryMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct MigrateMsg {}
+pub enum MigrateMsg {
+    ContractUpgrade {},
+    // TODO: Remove this migration path once all instances of State are replaced with StateV2
+    MigrateToStateV2 { is_test: Option<bool> },
+}

@@ -10,7 +10,7 @@ use crate::{
             AssetVerificationResult,
         },
         error::ContractError,
-        state::config_read,
+        state::config_read_v2,
     },
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
@@ -75,7 +75,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             // On a first time execution, simply add the attribute to the scope - it's already been
             // verified that the attribute does not yet exist
             let contract_base_name = self
-                .use_deps(|d| config_read(d.storage).load())?
+                .use_deps(|d| config_read_v2(d.storage).load())?
                 .base_contract_name;
             self.add_message(get_add_attribute_to_scope_msg(
                 attribute,
@@ -87,7 +87,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
     fn update_attribute(&self, attribute: &AssetScopeAttribute) -> AssetResult<()> {
         let contract_base_name = self
-            .use_deps(|d| config_read(d.storage).load())?
+            .use_deps(|d| config_read_v2(d.storage).load())?
             .base_contract_name;
         let attribute_name =
             generate_asset_attribute_name(&attribute.asset_type, &contract_base_name);
@@ -262,7 +262,7 @@ mod tests {
                 AssetScopeAttribute, AssetVerificationResult, VerifierDetail,
             },
             error::ContractError,
-            state::config_read,
+            state::config_read_v2,
         },
         execute::verify_asset::VerifyAssetV1,
         service::{
@@ -524,7 +524,7 @@ mod tests {
         test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
         let service = AssetMetaService::new(mock_deps.as_mut());
         let deps = service.into_deps();
-        config_read(deps.storage)
+        config_read_v2(deps.storage)
             .load()
             .expect("expected storage to load from relinquished deps");
     }

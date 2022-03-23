@@ -14,7 +14,7 @@ use crate::util::{
     traits::{OptionExtensions, ResultExtensions},
 };
 
-use super::{error::ContractError, state::config_read};
+use super::{error::ContractError, state::config_read_v2};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -45,7 +45,7 @@ impl AssetDefinition {
     }
 
     pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
-        let state = config_read(deps.storage).load()?;
+        let state = config_read_v2(deps.storage).load()?;
         generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
     }
 }

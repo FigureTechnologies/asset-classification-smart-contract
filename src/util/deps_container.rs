@@ -44,7 +44,7 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::{
-        core::state::{config, config_read},
+        core::state::{config_read_v2, config_v2},
         testutil::test_utilities::{test_instantiate_success, InstArgs},
         util::aliases::DepsMutC,
     };
@@ -57,11 +57,11 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let container = DepsContainer::new(deps.as_mut());
         let state_from_container = container.use_deps(|deps_mut| {
-            config_read(deps_mut.storage)
+            config_read_v2(deps_mut.storage)
                 .load()
                 .expect("expected config to load successfully")
         });
-        let state_from_mut = config_read(deps.as_mut().storage)
+        let state_from_mut = config_read_v2(deps.as_mut().storage)
             .load()
             .expect("self-owned deps should load state successfully");
         assert_eq!(
@@ -75,7 +75,7 @@ mod tests {
         let mut mock_deps = mock_dependencies(&[]);
         test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
         let deps_mut = test_deps_container_from_different_lifetime(mock_deps.as_mut());
-        config(deps_mut.storage)
+        config_v2(deps_mut.storage)
             .load()
             .expect("state should load from the moved deps");
     }

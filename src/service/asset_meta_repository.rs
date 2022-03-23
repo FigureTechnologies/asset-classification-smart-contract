@@ -14,11 +14,11 @@ pub trait AssetMetaRepository {
         scope_address: S1,
     ) -> AssetResult<Option<AssetScopeAttribute>>;
 
-    fn validate_asset<S1: Into<String>, S2: Into<String>>(
+    fn verify_asset<S1: Into<String>, S2: Into<String>>(
         &self,
         scope_address: S1,
         success: bool,
-        validation_message: Option<S2>,
+        verification_message: Option<S2>,
         access_routes: Vec<String>,
     ) -> AssetResult<()>;
 }

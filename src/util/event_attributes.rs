@@ -1,18 +1,18 @@
 use super::constants::{
     ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
-    VALIDATOR_ADDRESS_KEY,
+    VERIFIER_ADDRESS_KEY,
 };
 
 pub enum EventType {
     InstantiateContract,
     MigrateContract,
     OnboardAsset,
-    ValidateAsset,
+    VerifyAsset,
     AddAssetDefinition,
     UpdateAssetDefinition,
     ToggleAssetDefinition,
-    AddAssetValidator,
-    UpdateAssetValidator,
+    AddAssetVerifier,
+    UpdateAssetVerifier,
 }
 #[allow(clippy::from_over_into)]
 impl Into<String> for EventType {
@@ -21,12 +21,12 @@ impl Into<String> for EventType {
             EventType::InstantiateContract => "instantiate_contract",
             EventType::MigrateContract => "migrate_contract",
             EventType::OnboardAsset => "onboard_asset",
-            EventType::ValidateAsset => "validate_asset",
+            EventType::VerifyAsset => "verify_asset",
             EventType::AddAssetDefinition => "add_asset_definition",
             EventType::UpdateAssetDefinition => "update_asset_definition",
             EventType::ToggleAssetDefinition => "toggle_asset_definition",
-            EventType::AddAssetValidator => "add_asset_validator",
-            EventType::UpdateAssetValidator => "update_asset_validator",
+            EventType::AddAssetVerifier => "add_asset_verifier",
+            EventType::UpdateAssetVerifier => "update_asset_verifier",
         }
         .into()
     }
@@ -69,9 +69,9 @@ impl EventAttributes {
         self
     }
 
-    pub fn set_validator<T: Into<String>>(mut self, validator_address: T) -> Self {
+    pub fn set_verifier<T: Into<String>>(mut self, verifier_address: T) -> Self {
         self.attributes
-            .push((VALIDATOR_ADDRESS_KEY.into(), validator_address.into()));
+            .push((VERIFIER_ADDRESS_KEY.into(), verifier_address.into()));
         self
     }
 
@@ -101,7 +101,7 @@ mod tests {
         testutil::test_utilities::single_attribute_for_key,
         util::constants::{
             ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
-            VALIDATOR_ADDRESS_KEY,
+            VERIFIER_ADDRESS_KEY,
         },
     };
 
@@ -112,7 +112,7 @@ mod tests {
         let attributes = EventAttributes::new(EventType::OnboardAsset)
             .set_asset_type("asset type")
             .set_scope_address("scope address")
-            .set_validator("validator address")
+            .set_verifier("verifier address")
             .set_new_value("new value");
         let response: Response<String> = Response::new().add_attributes(attributes);
         assert_eq!(
@@ -131,9 +131,9 @@ mod tests {
             "the scope address attribute should be added correctly",
         );
         assert_eq!(
-            "validator address",
-            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
-            "the validator address attribute should be added correctly",
+            "verifier address",
+            single_attribute_for_key(&response, VERIFIER_ADDRESS_KEY),
+            "the verifier address attribute should be added correctly",
         );
         assert_eq!(
             "new value",

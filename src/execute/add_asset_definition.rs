@@ -64,7 +64,7 @@ pub fn add_asset_definition(
 mod tests {
     use crate::contract::execute;
     use crate::core::asset::{
-        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, ValidatorDetail,
+        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
     };
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
@@ -73,7 +73,7 @@ mod tests {
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_FEE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
@@ -256,10 +256,10 @@ mod tests {
         let def = AssetDefinitionInput::new(
             TEST_ASSET_TYPE,
             ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS),
-            // Defining the validator to be the same as the default values is fine, because
-            // it is realistic that different asset types might use the same validators
-            vec![ValidatorDetail::new(
-                DEFAULT_VALIDATOR_ADDRESS,
+            // Defining the verifier to be the same as the default values is fine, because
+            // it is realistic that different asset types might use the same verifiers
+            vec![VerifierDetail::new(
+                DEFAULT_VERIFIER_ADDRESS,
                 Uint128::new(1000),
                 NHASH,
                 Decimal::percent(50),

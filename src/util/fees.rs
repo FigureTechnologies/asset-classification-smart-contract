@@ -3,61 +3,61 @@ use std::ops::Mul;
 use cosmwasm_std::{CosmosMsg, Uint128};
 use provwasm_std::ProvenanceMsg;
 
-use crate::core::{asset::ValidatorDetail, error::ContractError};
+use crate::core::{asset::VerifierDetail, error::ContractError};
 
 use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions};
 
-/// This function distributes funds from the sender address to the targets defined by a ValidatorDetail.
-/// It breaks down all percentages defined in the validator detail's fee destinations and core onboarding
+/// This function distributes funds from the sender address to the targets defined by a VerifierDetail.
+/// It breaks down all percentages defined in the verifier detail's fee destinations and core onboarding
 /// cost to derive a variable sized vector of destination messages.
 /// Important: The response type is of ProvenanceMsg, which allows these bank send messages to match the type
 /// used for contract execution routes.
-pub fn calculate_validator_cost_messages(
-    validator: &ValidatorDetail,
+pub fn calculate_verifier_cost_messages(
+    verifier: &VerifierDetail,
 ) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
     let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // The total funds disbursed across fees are equal to the cost multiplied by the fee percent
-    let fee_total = validator.onboarding_cost.mul(validator.fee_percent);
-    let denom = &validator.onboarding_denom;
+    let fee_total = verifier.onboarding_cost.mul(verifier.fee_percent);
+    let denom = &verifier.onboarding_denom;
     // The onboarding_cost is a u128, so attempting to subtract the fee total from it when the fee total is a greater value
-    // will result in an unhandled panic.  Detect this potentiality for a misconfigured validator and exit early to prevent
+    // will result in an unhandled panic.  Detect this potentiality for a misconfigured verifier and exit early to prevent
     // future head-scratching (panics are very difficult to debug due to redacted responses)
-    if fee_total > validator.onboarding_cost {
+    if fee_total > verifier.onboarding_cost {
         return ContractError::generic(
-            format!("misconfigured validator data! calculated fee total ({}{}) was greater than the total cost of onboarding ({}{})", 
+            format!("misconfigured verifier data! calculated fee total ({}{}) was greater than the total cost of onboarding ({}{})", 
             fee_total,
              denom,
-             validator.onboarding_cost,
+             verifier.onboarding_cost,
              denom,
         )).to_err();
     }
-    // The total funds disbursed to the validator itself is the remainder from subtracting the fee cost from the onboarding cost
-    let validator_cost = validator.onboarding_cost - fee_total;
-    // If all the fee totals plus the validator cost do not equate to the onboarding cost, then the validator is misconfigured
-    let inner_fee_distribution_sum = validator
+    // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
+    let verifier_cost = verifier.onboarding_cost - fee_total;
+    // If all the fee totals plus the verifier cost do not equate to the onboarding cost, then the verifier is misconfigured
+    let inner_fee_distribution_sum = verifier
         .fee_destinations
         .iter()
         .map(|d| fee_total.mul(d.fee_percent))
         .sum::<Uint128>();
-    if validator.onboarding_cost != validator_cost + inner_fee_distribution_sum {
+    if verifier.onboarding_cost != verifier_cost + inner_fee_distribution_sum {
         return ContractError::generic(
-            format!("misconfigured validator data! expected onboarding cost to total {}{}, but total costs were {}{} (validator) + {}{} (fee destination sum) = {}{}",
-            validator.onboarding_cost,
+            format!("misconfigured verifier data! expected onboarding cost to total {}{}, but total costs were {}{} (verifier) + {}{} (fee destination sum) = {}{}",
+            verifier.onboarding_cost,
             denom,
-            validator_cost,
+            verifier_cost,
             denom,
             inner_fee_distribution_sum,
             denom,
-            validator_cost + inner_fee_distribution_sum,
+            verifier_cost + inner_fee_distribution_sum,
             denom,
         )).to_err();
     }
-    // Append a bank send message from the contract to the validator for the cost if the validator receives funds
-    if validator_cost > Uint128::zero() {
-        cost_messages.push(bank_send(&validator.address, validator_cost.u128(), denom));
+    // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
+    if verifier_cost > Uint128::zero() {
+        cost_messages.push(bank_send(&verifier.address, verifier_cost.u128(), denom));
     }
     // Append a message for each destination
-    validator.fee_destinations.iter().for_each(|destination| {
+    verifier.fee_destinations.iter().for_each(|destination| {
         cost_messages.push(bank_send(
             &destination.address,
             fee_total.mul(destination.fee_percent).u128(),
@@ -74,43 +74,43 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{FeeDestination, ValidatorDetail},
+            asset::{FeeDestination, VerifierDetail},
             error::ContractError,
         },
         util::constants::NHASH,
     };
 
-    use super::calculate_validator_cost_messages;
+    use super::calculate_verifier_cost_messages;
 
     #[test]
-    fn test_invalid_validator_greater_fee_than_onboarding_cost() {
-        // This validator tries to send 150% of the fee to the fee destination. NO BUENO!
-        let validator = ValidatorDetail::new(
+    fn test_invalid_verifier_greater_fee_than_onboarding_cost() {
+        // This verifier tries to send 150% of the fee to the fee destination. NO BUENO!
+        let verifier = VerifierDetail::new(
             "address",
             Uint128::new(100),
             NHASH,
             Decimal::percent(150),
             vec![FeeDestination::new("fee", Decimal::percent(100))],
         );
-        let error = calculate_validator_cost_messages(&validator).unwrap_err();
+        let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured validator data! calculated fee total (150nhash) was greater than the total cost of onboarding (100nhash)",
+                    "misconfigured verifier data! calculated fee total (150nhash) was greater than the total cost of onboarding (100nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
             }
             _ => panic!(
-                "unexpected error encountered when providing a bad validator: {:?}",
+                "unexpected error encountered when providing a bad verifier: {:?}",
                 error
             ),
         }
     }
 
     #[test]
-    fn test_invalid_validator_fee_destination_sum_mismatch() {
-        let validator = ValidatorDetail::new(
+    fn test_invalid_verifier_fee_destination_sum_mismatch() {
+        let verifier = VerifierDetail::new(
             "address",
             Uint128::new(100),
             NHASH,
@@ -119,32 +119,32 @@ mod tests {
             // All fee destinations should always add up to 100% (as enforced by validation)
             vec![FeeDestination::new("fee", Decimal::percent(50))],
         );
-        let error = calculate_validator_cost_messages(&validator).unwrap_err();
+        let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured validator data! expected onboarding cost to total 100nhash, but total costs were 50nhash (validator) + 25nhash (fee destination sum) = 75nhash",
+                    "misconfigured verifier data! expected onboarding cost to total 100nhash, but total costs were 50nhash (verifier) + 25nhash (fee destination sum) = 75nhash",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
             }
             _ => panic!(
-                "unexpected error encountered when providing a bad validator: {:?}",
+                "unexpected error encountered when providing a bad verifier: {:?}",
                 error
             ),
         }
     }
 
     #[test]
-    fn test_only_send_to_validator() {
-        let validator = ValidatorDetail::new(
-            "validator",
+    fn test_only_send_to_verifier() {
+        let verifier = VerifierDetail::new(
+            "verifier",
             Uint128::new(100),
             NHASH,
             Decimal::zero(),
             vec![],
         );
-        let messages = calculate_validator_cost_messages(&validator)
+        let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(
             1,
@@ -153,17 +153,17 @@ mod tests {
         );
         test_messages_contains_send_for_address(
             &messages,
-            "validator",
+            "verifier",
             100,
             NHASH,
-            "expected all funds to be sent to the validator",
+            "expected all funds to be sent to the verifier",
         );
     }
 
     #[test]
     fn test_only_send_to_single_fee_destination() {
-        let validator = ValidatorDetail::new(
-            "validator",
+        let verifier = VerifierDetail::new(
+            "verifier",
             Uint128::new(100),
             NHASH,
             Decimal::percent(100),
@@ -172,7 +172,7 @@ mod tests {
                 Decimal::percent(100),
             )],
         );
-        let messages = calculate_validator_cost_messages(&validator)
+        let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(
             1,
@@ -189,9 +189,9 @@ mod tests {
     }
 
     #[test]
-    fn test_even_split_between_validator_and_single_fee_destination() {
-        let validator = ValidatorDetail::new(
-            "validator",
+    fn test_even_split_between_verifier_and_single_fee_destination() {
+        let verifier = VerifierDetail::new(
+            "verifier",
             Uint128::new(100),
             NHASH,
             Decimal::percent(50),
@@ -200,15 +200,15 @@ mod tests {
                 Decimal::percent(100),
             )],
         );
-        let messages = calculate_validator_cost_messages(&validator)
+        let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(2, messages.len(), "expected two messages to be sent",);
         test_messages_contains_send_for_address(
             &messages,
-            "validator",
+            "verifier",
             50,
             NHASH,
-            "expected half of the funds to be sent to the validator",
+            "expected half of the funds to be sent to the verifier",
         );
         test_messages_contains_send_for_address(
             &messages,
@@ -220,9 +220,9 @@ mod tests {
     }
 
     #[test]
-    fn test_many_fee_destinations_and_some_to_validator() {
-        let validator = ValidatorDetail::new(
-            "validator",
+    fn test_many_fee_destinations_and_some_to_verifier() {
+        let verifier = VerifierDetail::new(
+            "verifier",
             Uint128::new(200),
             NHASH,
             Decimal::percent(50),
@@ -234,15 +234,15 @@ mod tests {
                 FeeDestination::new("fifth", Decimal::percent(15)),
             ],
         );
-        let messages = calculate_validator_cost_messages(&validator)
+        let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(6, messages.len(), "expected six messages to be sent");
         test_messages_contains_send_for_address(
             &messages,
-            "validator",
+            "verifier",
             100,
             NHASH,
-            "expected half of all funds to be sent to the validator",
+            "expected half of all funds to be sent to the verifier",
         );
         test_messages_contains_send_for_address(
             &messages,

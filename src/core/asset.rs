@@ -21,19 +21,19 @@ use super::{error::ContractError, state::config_read};
 pub struct AssetDefinition {
     pub asset_type: String,
     pub scope_spec_address: String,
-    pub validators: Vec<ValidatorDetail>,
+    pub verifiers: Vec<VerifierDetail>,
     pub enabled: bool,
 }
 impl AssetDefinition {
     pub fn new<S1: Into<String>, S2: Into<String>>(
         asset_type: S1,
         scope_spec_address: S2,
-        validators: Vec<ValidatorDetail>,
+        verifiers: Vec<VerifierDetail>,
     ) -> Self {
         AssetDefinition {
             asset_type: asset_type.into(),
             scope_spec_address: scope_spec_address.into(),
-            validators,
+            verifiers,
             enabled: true,
         }
     }
@@ -57,20 +57,20 @@ impl AssetDefinition {
 pub struct AssetDefinitionInput {
     pub asset_type: String,
     pub scope_spec_identifier: ScopeSpecIdentifier,
-    pub validators: Vec<ValidatorDetail>,
+    pub verifiers: Vec<VerifierDetail>,
     pub enabled: Option<bool>,
 }
 impl AssetDefinitionInput {
     pub fn new<S1: Into<String>>(
         asset_type: S1,
         scope_spec_identifier: ScopeSpecIdentifier,
-        validators: Vec<ValidatorDetail>,
+        verifiers: Vec<VerifierDetail>,
         enabled: Option<bool>,
     ) -> AssetDefinitionInput {
         AssetDefinitionInput {
             asset_type: asset_type.into(),
             scope_spec_identifier,
-            validators,
+            verifiers,
             enabled,
         }
     }
@@ -79,7 +79,7 @@ impl AssetDefinitionInput {
         AssetDefinition {
             asset_type: self.asset_type,
             scope_spec_address: self.scope_spec_identifier.get_scope_spec_address()?,
-            validators: self.validators,
+            verifiers: self.verifiers,
             enabled: self.enabled.unwrap_or(true),
         }
         .to_ok()
@@ -89,7 +89,7 @@ impl AssetDefinitionInput {
         AssetDefinition::new(
             &self.asset_type,
             self.scope_spec_identifier.get_scope_spec_address()?,
-            self.validators.clone(),
+            self.verifiers.clone(),
         )
         .to_ok()
     }
@@ -97,14 +97,14 @@ impl AssetDefinitionInput {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct ValidatorDetail {
+pub struct VerifierDetail {
     pub address: String,
     pub onboarding_cost: Uint128,
     pub onboarding_denom: String,
     pub fee_percent: Decimal,
     pub fee_destinations: Vec<FeeDestination>,
 }
-impl ValidatorDetail {
+impl VerifierDetail {
     pub fn new<S1: Into<String>, S2: Into<String>>(
         address: S1,
         onboarding_cost: Uint128,
@@ -112,7 +112,7 @@ impl ValidatorDetail {
         fee_percent: Decimal,
         fee_destinations: Vec<FeeDestination>,
     ) -> Self {
-        ValidatorDetail {
+        VerifierDetail {
             address: address.into(),
             onboarding_cost,
             onboarding_denom: onboarding_denom.into(),
@@ -160,7 +160,7 @@ impl Display for AssetOnboardingStatus {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct AssetValidationResult {
+pub struct AssetVerificationResult {
     pub message: String,
     pub success: bool,
 }
@@ -171,8 +171,8 @@ pub struct AssetValidationResult {
 pub enum AccessDefinitionType {
     /// Indicates that the access definition was created by the requestor that onboarded the scope
     Requestor,
-    /// Indicates that the access definition was created by the validator for a scope
-    Validator,
+    /// Indicates that the access definition was created by the verifier for a scope
+    Verifier,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -205,10 +205,10 @@ pub struct AssetScopeAttribute {
     pub scope_address: String,
     pub asset_type: String,
     pub requestor_address: Addr,
-    pub validator_address: Addr,
+    pub verifier_address: Addr,
     pub onboarding_status: AssetOnboardingStatus,
-    pub latest_validator_detail: Option<ValidatorDetail>,
-    pub latest_validation_result: Option<AssetValidationResult>,
+    pub latest_verifier_detail: Option<VerifierDetail>,
+    pub latest_verification_result: Option<AssetVerificationResult>,
     pub access_definitions: Vec<AccessDefinition>,
 }
 impl AssetScopeAttribute {
@@ -220,16 +220,16 @@ impl AssetScopeAttribute {
         identifier: &AssetIdentifier,
         asset_type: S1,
         requestor_address: S2,
-        validator_address: S3,
+        verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
-        latest_validator_detail: ValidatorDetail,
+        latest_verifier_detail: VerifierDetail,
         access_routes: Vec<String>,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
-        let val_addr = bech32_string_to_addr(validator_address)?;
-        if val_addr != latest_validator_detail.address {
-            return ContractError::generic(format!("provided validator address [{}] did not match the validator detail's address [{}]", val_addr, latest_validator_detail.address).as_str()).to_err();
+        let val_addr = bech32_string_to_addr(verifier_address)?;
+        if val_addr != latest_verifier_detail.address {
+            return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", val_addr, latest_verifier_detail.address).as_str()).to_err();
         }
         // Remove all access routes that are empty strings to prevent bad data from beign provided
         let filtered_access_routes = access_routes
@@ -252,10 +252,10 @@ impl AssetScopeAttribute {
             scope_address: identifiers.scope_address,
             asset_type: asset_type.into(),
             requestor_address: req_addr,
-            validator_address: val_addr,
+            verifier_address: val_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            latest_validator_detail: latest_validator_detail.to_some(),
-            latest_validation_result: None,
+            latest_verifier_detail: latest_verifier_detail.to_some(),
+            latest_verification_result: None,
             access_definitions,
         }
         .to_ok()
@@ -389,9 +389,9 @@ mod tests {
     use crate::{
         testutil::{
             test_constants::{
-                DEFAULT_ASSET_UUID, DEFAULT_SENDER_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_ASSET_UUID, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
-            test_utilities::get_default_validator_detail,
+            test_utilities::get_default_verifier_detail,
         },
         util::traits::OptionExtensions,
     };
@@ -572,9 +572,9 @@ mod tests {
             &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             "heloc",
             DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_validator_detail(),
+            get_default_verifier_detail(),
             vec![
                 "    ".to_string(),
                 "  ".to_string(),
@@ -607,9 +607,9 @@ mod tests {
             &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             "heloc",
             DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_validator_detail(),
+            get_default_verifier_detail(),
             vec!["    ".to_string(), "  ".to_string(), "".to_string()],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
@@ -625,9 +625,9 @@ mod tests {
             &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             "heloc",
             DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_validator_detail(),
+            get_default_verifier_detail(),
             vec![],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");

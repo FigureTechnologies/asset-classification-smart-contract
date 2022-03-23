@@ -15,7 +15,7 @@ use provwasm_std::ProvenanceQuerier;
 pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
     pub asset_type: String,
-    pub validator_address: String,
+    pub verifier_address: String,
     pub access_routes: Vec<String>,
 }
 impl OnboardAssetV1 {
@@ -24,12 +24,12 @@ impl OnboardAssetV1 {
             ExecuteMsg::OnboardAsset {
                 identifier,
                 asset_type,
-                validator_address,
+                verifier_address,
                 access_routes,
             } => OnboardAssetV1 {
                 identifier,
                 asset_type,
-                validator_address,
+                verifier_address,
                 access_routes: access_routes.unwrap_or_default(),
             }
             .to_ok(),
@@ -70,17 +70,17 @@ where
             }
         };
 
-    // verify perscribed validator is present as a validator in asset definition
-    let validator_config = match asset_definition
-        .validators
+    // verify perscribed verifier is present as a verifier in asset definition
+    let verifier_config = match asset_definition
+        .verifiers
         .into_iter()
-        .find(|validator| validator.address == msg.validator_address)
+        .find(|verifier| verifier.address == msg.verifier_address)
     {
-        Some(validator) => validator,
+        Some(verifier) => verifier,
         None => {
-            return ContractError::UnsupportedValidator {
+            return ContractError::UnsupportedVerifier {
                 asset_type: msg.asset_type,
-                validator_address: msg.validator_address,
+                verifier_address: msg.verifier_address,
             }
             .to_err()
         }
@@ -99,16 +99,16 @@ where
         None => {
             return ContractError::InvalidFunds(format!(
                 "Improper funds supplied for onboarding (expected {}nhash)",
-                validator_config.onboarding_cost
+                verifier_config.onboarding_cost
             ))
             .to_err()
         }
     };
 
-    if sent_fee.amount != validator_config.onboarding_cost {
+    if sent_fee.amount != verifier_config.onboarding_cost {
         return ContractError::InvalidFunds(format!(
             "Improper fee of {}{} provided (expected {}nhash)",
-            sent_fee.amount, sent_fee.denom, validator_config.onboarding_cost
+            sent_fee.amount, sent_fee.denom, verifier_config.onboarding_cost
         ))
         .to_err();
     };
@@ -169,9 +169,9 @@ where
         &msg.identifier,
         &msg.asset_type,
         info.sender,
-        &msg.validator_address,
+        &msg.verifier_address,
         AssetOnboardingStatus::Pending.to_some(),
-        validator_config,
+        verifier_config,
         msg.access_routes,
     )?;
 
@@ -180,25 +180,25 @@ where
         repository.try_get_asset(&asset_identifiers.scope_address)?
     {
         match scope_attribute.onboarding_status {
-            // If the attribute indicates that the asset is approved, then it's already fully onboarded and validated
+            // If the attribute indicates that the asset is approved, then it's already fully onboarded and verified
             AssetOnboardingStatus::Approved => {
                 return ContractError::AssetAlreadyOnboarded {
                     scope_address: asset_identifiers.scope_address,
                 }
                 .to_err();
             }
-            // If the attribute indicates that the asset is pending, then it's currently waiting for validation
+            // If the attribute indicates that the asset is pending, then it's currently waiting for verification
             AssetOnboardingStatus::Pending => {
-                // Attributes in pending status should always have a validator detail on them. Use it in the error message to show
-                // which validator may or may not be misbehaving
-                return if let Some(validator_detail) = scope_attribute.latest_validator_detail {
-                    ContractError::AssetPendingValidation { scope_address: scope_attribute.scope_address, validator_address: validator_detail.address }
+                // Attributes in pending status should always have a verifier detail on them. Use it in the error message to show
+                // which verifier may or may not be misbehaving
+                return if let Some(verifier_detail) = scope_attribute.latest_verifier_detail {
+                    ContractError::AssetPendingVerification { scope_address: scope_attribute.scope_address, verifier_address: verifier_detail.address }
                 } else {
-                    // If a validator detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
-                    ContractError::generic(format!("scope {} is pending validation, but has no validator information. this scope needs manual intervention!", scope_attribute.scope_address))
+                    // If a verifier detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
+                    ContractError::generic(format!("scope {} is pending verification, but has no verifier information. this scope needs manual intervention!", scope_attribute.scope_address))
                 }.to_err();
             }
-            // If the attribute indicates that the asset is pending, then it's been denied by a validator, and this is a secondary
+            // If the attribute indicates that the asset is pending, then it's been denied by a verifier, and this is a secondary
             // attempt to onboard the asset
             AssetOnboardingStatus::Denied => true,
         }
@@ -207,7 +207,7 @@ where
         false
     };
 
-    // store asset metadata in contract storage, with assigned validator and provided fee (in case fee changes between onboarding and validation)
+    // store asset metadata in contract storage, with assigned verifier and provided fee (in case fee changes between onboarding and verification)
     repository.onboard_asset(&new_asset_attribute, is_retry)?;
 
     Ok(Response::new()
@@ -217,7 +217,7 @@ where
                 &msg.asset_type,
                 &asset_identifiers.scope_address,
             )
-            .set_validator(msg.validator_address),
+            .set_verifier(msg.verifier_address),
         )
         .add_messages(repository.get_messages()))
 }
@@ -251,18 +251,17 @@ mod tests {
                 DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
                 DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS,
                 DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_SESSION_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
                 empty_mock_info, get_default_scope, get_duped_scope, mock_info_with_funds,
                 mock_info_with_nhash, setup_test_suite, test_instantiate_success, InstArgs,
             },
-            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
+            verify_asset_helpers::{test_verify_asset, TestVerifyAsset},
         },
         util::{
             constants::{
-                ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY,
-                VALIDATOR_ADDRESS_KEY,
+                ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VERIFIER_ADDRESS_KEY,
             },
             functions::generate_asset_attribute_name,
         },
@@ -281,7 +280,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: "bogus".into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
             },
         )
@@ -317,7 +316,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.into(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
             },
         )
@@ -330,7 +329,7 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_unsupported_validator() {
+    fn test_onboard_asset_errors_on_unsupported_verifier() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
 
@@ -340,25 +339,29 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string() + "bogus".into(),
                 access_routes: vec![],
             },
         )
         .unwrap_err();
 
         match err {
-            ContractError::UnsupportedValidator {
+            ContractError::UnsupportedVerifier {
                 asset_type,
-                validator_address,
+                verifier_address,
             } => {
                 assert_eq!(
                     DEFAULT_ASSET_TYPE, asset_type,
-                    "the unsupported validator message should reflect the asset type provided"
+                    "the unsupported verifier message should reflect the asset type provided"
                 );
-                assert_eq!(DEFAULT_VALIDATOR_ADDRESS.to_string() + "bogus".into(), validator_address, "the unsupported validator message should reflect the validator address provided");
+                assert_eq!(
+                    DEFAULT_VERIFIER_ADDRESS.to_string() + "bogus".into(),
+                    verifier_address,
+                    "the unsupported verifier message should reflect the verifier address provided"
+                );
             }
             _ => panic!(
-                "unexpected error when unsupported validator provided: {:?}",
+                "unexpected error when unsupported verifier provided: {:?}",
                 err
             ),
         }
@@ -375,7 +378,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -418,7 +421,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -455,7 +458,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -486,7 +489,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -524,7 +527,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -557,26 +560,26 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
         .unwrap_err();
 
         match err {
-            ContractError::AssetPendingValidation {
+            ContractError::AssetPendingVerification {
                 scope_address,
-                validator_address,
+                verifier_address,
             } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     scope_address,
-                    "the asset pending validation message should reflect that the asset address is awaiting validation"
+                    "the asset pending verification message should reflect that the asset address is awaiting verification"
                 );
                 assert_eq!(
-                    DEFAULT_VALIDATOR_ADDRESS,
-                    validator_address,
-                    "the asset pending validation message should reflect that the asset is waiting to be validated by the default validator",
+                    DEFAULT_VERIFIER_ADDRESS,
+                    verifier_address,
+                    "the asset pending verification message should reflect that the asset is waiting to be verified by the default verifier",
                 );
             }
             _ => panic!(
@@ -591,7 +594,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
@@ -607,7 +610,7 @@ mod tests {
                 );
             }
             _ => panic!(
-                "unexpected error encountered when trying to board a validated asset: {:?}",
+                "unexpected error encountered when trying to board a verified asset: {:?}",
                 err
             ),
         };
@@ -625,7 +628,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -684,7 +687,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -714,7 +717,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
             },
         )
@@ -750,7 +753,7 @@ mod tests {
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
-                validator_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
             },
         )
@@ -817,7 +820,7 @@ mod tests {
                 (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
                 (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
                 (ASSET_SCOPE_ADDRESS_KEY, DEFAULT_SCOPE_ADDRESS),
-                (VALIDATOR_ADDRESS_KEY, DEFAULT_VALIDATOR_ADDRESS)
+                (VERIFIER_ADDRESS_KEY, DEFAULT_VERIFIER_ADDRESS)
             ],
             result.attributes
         );
@@ -828,15 +831,15 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        // Validate the asset to denied status
-        test_validate_asset(&mut deps, TestValidateAsset::default_with_success(false)).unwrap();
+        // Verify the asset to denied status
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("the default scope address should have an attribute attached to it");
         assert_eq!(
             attribute.onboarding_status,
             AssetOnboardingStatus::Denied,
-            "sanity check: the onboarding status should be set to denied after the validator marks the asset as success = false",
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
         // Try to do a retry on onboarding
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
@@ -855,7 +858,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_validate_asset(&mut deps, TestValidateAsset::default()).unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let service = AssetMetaService::new(deps.as_mut());
         let mut attribute = service
             .get_asset(DEFAULT_SCOPE_ADDRESS)

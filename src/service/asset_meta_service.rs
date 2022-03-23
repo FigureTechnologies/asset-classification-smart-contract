@@ -7,7 +7,7 @@ use crate::{
     core::{
         asset::{
             AccessDefinition, AccessDefinitionType, AssetOnboardingStatus, AssetScopeAttribute,
-            AssetValidationResult,
+            AssetVerificationResult,
         },
         error::ContractError,
         state::config_read,
@@ -19,7 +19,7 @@ use crate::{
     util::deps_container::DepsContainer,
     util::traits::ResultExtensions,
     util::vec_container::VecContainer,
-    util::{fees::calculate_validator_cost_messages, functions::generate_asset_attribute_name},
+    util::{fees::calculate_verifier_cost_messages, functions::generate_asset_attribute_name},
     util::{
         provenance_util::get_add_attribute_to_scope_msg, scope_address_utils::bech32_string_to_addr,
     },
@@ -120,35 +120,36 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         })
     }
 
-    fn validate_asset<S1: Into<String>, S2: Into<String>>(
+    fn verify_asset<S1: Into<String>, S2: Into<String>>(
         &self,
         scope_address: S1,
         success: bool,
-        validation_message: Option<S2>,
+        verification_message: Option<S2>,
         access_routes: Vec<String>,
     ) -> AssetResult<()> {
-        // set validation result on asset (add messages to message service)
+        // set verification result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset(scope_address_str.clone())?;
-        let message = validation_message.map(|m| m.into()).unwrap_or_else(|| {
+        let message = verification_message.map(|m| m.into()).unwrap_or_else(|| {
             match success {
-                true => "validation successful",
-                false => "validation failure",
+                true => "verification successful",
+                false => "verification failure",
             }
             .to_string()
         });
-        if let Some(validator_detail) = attribute.latest_validator_detail {
-            attribute.latest_validator_detail = None;
-            attribute.latest_validation_result = Some(AssetValidationResult { message, success });
+        if let Some(verifier_detail) = attribute.latest_verifier_detail {
+            attribute.latest_verifier_detail = None;
+            attribute.latest_verification_result =
+                Some(AssetVerificationResult { message, success });
 
-            // change the onboarding status based on how the validator specified the success status
+            // change the onboarding status based on how the verifier specified the success status
             attribute.onboarding_status = if success {
                 AssetOnboardingStatus::Approved
             } else {
                 AssetOnboardingStatus::Denied
             };
 
-            let validator_address = validator_detail.address.clone();
+            let verifier_address = verifier_detail.address.clone();
 
             let filtered_access_routes = access_routes
                 .into_iter()
@@ -156,11 +157,11 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 .filter(|r| !r.is_empty())
                 .collect::<Vec<String>>();
 
-            // check for existing validator-linked access route collection
+            // check for existing verifier-linked access route collection
             if let Some(access_definition) = attribute
                 .access_definitions
                 .iter()
-                .find(|ar| ar.owner_address == validator_address)
+                .find(|ar| ar.owner_address == verifier_address)
             {
                 let mut distinct_routes = [
                     &access_definition.access_routes[..],
@@ -177,7 +178,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 let mut new_access_definitions = attribute
                     .access_definitions
                     .iter()
-                    .filter(|ar| ar.owner_address != validator_address)
+                    .filter(|ar| ar.owner_address != verifier_address)
                     .cloned()
                     .collect::<Vec<AccessDefinition>>();
 
@@ -189,9 +190,9 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 attribute.access_definitions = new_access_definitions;
             } else if !filtered_access_routes.is_empty() {
                 attribute.access_definitions.push(AccessDefinition {
-                    owner_address: validator_address,
+                    owner_address: verifier_address,
                     access_routes: filtered_access_routes,
-                    definition_type: AccessDefinitionType::Validator,
+                    definition_type: AccessDefinitionType::Verifier,
                 });
             }
 
@@ -199,12 +200,12 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             // with the changes made to the attribute
             self.update_attribute(&attribute)?;
 
-            // distribute fees now that validation has happened
-            self.append_messages(&calculate_validator_cost_messages(&validator_detail)?);
+            // distribute fees now that verification has happened
+            self.append_messages(&calculate_verifier_cost_messages(&verifier_detail)?);
         } else {
             return ContractError::UnexpectedState {
                 explanation: format!(
-                    "Validator detail not present on asset [{}] being validated",
+                    "Verifier detail not present on asset [{}] being verified",
                     scope_address_str
                 ),
             }
@@ -258,12 +259,12 @@ mod tests {
         core::{
             asset::{
                 AccessDefinition, AccessDefinitionType, AssetIdentifier, AssetOnboardingStatus,
-                AssetScopeAttribute, AssetValidationResult, ValidatorDetail,
+                AssetScopeAttribute, AssetVerificationResult, VerifierDetail,
             },
             error::ContractError,
             state::config_read,
         },
-        execute::validate_asset::ValidateAssetV1,
+        execute::verify_asset::VerifyAssetV1,
         service::{
             asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,
             deps_manager::DepsManager, message_gathering_service::MessageGatheringService,
@@ -274,13 +275,13 @@ mod tests {
                 DEFAULT_ACCESS_ROUTE, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID,
                 DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
                 DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VALIDATOR_ADDRESS,
+                DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
-                get_default_asset_scope_attribute, get_default_validator_detail, setup_test_suite,
+                get_default_asset_scope_attribute, get_default_verifier_detail, setup_test_suite,
                 test_instantiate_success, InstArgs,
             },
-            validate_asset_helpers::{test_validate_asset, TestValidateAsset},
+            verify_asset_helpers::{test_verify_asset, TestVerifyAsset},
         },
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
@@ -470,13 +471,13 @@ mod tests {
     }
 
     #[test]
-    fn validate_asset_returns_error_if_asset_not_onboarded() {
+    fn verify_asset_returns_error_if_asset_not_onboarded() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
-            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None, vec![])
+            .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None, vec![])
             .unwrap_err();
 
         match err {
@@ -488,33 +489,33 @@ mod tests {
                 )
             ),
             _ => panic!(
-                "Unexpected error type returned from validate_asset on non-existant asset {:?}",
+                "Unexpected error type returned from verify_asset on non-existant asset {:?}",
                 err
             ),
         }
     }
 
     #[test]
-    fn validate_asset_generates_attribute_update_message_sequence_successful_validation_with_message(
+    fn verify_asset_generates_attribute_update_message_sequence_successful_verification_with_message(
     ) {
-        test_validation_result("cool good job".to_some(), true);
+        test_verification_result("cool good job".to_some(), true);
     }
 
     #[test]
-    fn validate_asset_generates_attribute_update_message_sequence_successful_validation_no_message()
+    fn verify_asset_generates_attribute_update_message_sequence_successful_verification_no_message()
     {
-        test_validation_result(None, true);
+        test_verification_result(None, true);
     }
 
     #[test]
-    fn validate_asset_generates_attribute_update_message_sequence_negative_validation_with_message()
+    fn verify_asset_generates_attribute_update_message_sequence_negative_verification_with_message()
     {
-        test_validation_result("you suck".to_some(), false);
+        test_verification_result("you suck".to_some(), false);
     }
 
     #[test]
-    fn validate_asset_generates_attribute_update_message_sequence_negative_validation_no_message() {
-        test_validation_result(None, false);
+    fn verify_asset_generates_attribute_update_message_sequence_negative_verification_no_message() {
+        test_verification_result(None, false);
     }
 
     #[test]
@@ -529,7 +530,7 @@ mod tests {
     }
 
     #[test]
-    fn test_existing_validator_detail_access_routes_merged() {
+    fn test_existing_verifier_detail_access_routes_merged() {
         let mut deps = mock_dependencies(&[]);
         // set up existing attribute with pre-existing access routes
         deps.querier.with_attributes(
@@ -542,17 +543,17 @@ mod tests {
                     scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
                     asset_type: DEFAULT_ASSET_TYPE.to_string(),
                     requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
-                    validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS),
+                    verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
                     onboarding_status: AssetOnboardingStatus::Pending,
-                    latest_validator_detail: ValidatorDetail {
-                        address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                    latest_verifier_detail: VerifierDetail {
+                        address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                         onboarding_cost: Uint128::new(DEFAULT_ONBOARDING_COST),
                         onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
                         fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
                         fee_destinations: vec![],
                     }
                     .to_some(),
-                    latest_validation_result: None,
+                    latest_verification_result: None,
                     access_definitions: vec![
                         AccessDefinition {
                             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
@@ -560,9 +561,9 @@ mod tests {
                             definition_type: AccessDefinitionType::Requestor,
                         },
                         AccessDefinition {
-                            owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                            owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                             access_routes: vec!["existingroute".to_string()],
-                            definition_type: AccessDefinitionType::Validator,
+                            definition_type: AccessDefinitionType::Verifier,
                         },
                     ],
                 })
@@ -576,7 +577,7 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         repository
-            .validate_asset::<&str, &str>(
+            .verify_asset::<&str, &str>(
                 DEFAULT_SCOPE_ADDRESS,
                 true,
                 "Great jaerb there Hamstar".to_some(),
@@ -587,7 +588,7 @@ mod tests {
         let messages = repository.messages.get();
 
         assert_eq!(3, messages.len(),
-        "validate asset should produce 3 messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)");
+        "verify asset should produce 3 messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)");
 
         let second_message = &messages[1];
         match second_message {
@@ -613,39 +614,39 @@ mod tests {
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
                         .unwrap(),
-                    "sender access route should be unchanged after validator routes updated"
+                    "sender access route should be unchanged after verifier routes updated"
                 );
                 assert_eq!(
                     &AccessDefinition {
-                        owner_address: DEFAULT_VALIDATOR_ADDRESS.to_string(),
+                        owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                         access_routes: vec!["existingroute".to_string(), "newroute".to_string()],
-                        definition_type: AccessDefinitionType::Validator,
+                        definition_type: AccessDefinitionType::Verifier,
                     },
                     deserialized
                         .access_definitions
                         .iter()
-                        .find(|r| r.owner_address == DEFAULT_VALIDATOR_ADDRESS)
+                        .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
                         .unwrap(),
-                    "sender access route should be unchanged after validator routes updated"
+                    "sender access route should be unchanged after verifier routes updated"
                 );
             }
             _ => panic!(
-                "Unexpected second message type for validate_asset: {:?}",
+                "Unexpected second message type for verify_asset: {:?}",
                 second_message
             ),
         }
     }
 
     #[test]
-    fn test_validate_with_invalid_access_routes_filters_them_out() {
+    fn test_verify_with_invalid_access_routes_filters_them_out() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
-        test_validate_asset(
+        // Establish some access routes with blank strings to prove that they get filtered out in the verification process
+        test_verify_asset(
             &mut deps,
-            TestValidateAsset {
-                validate_asset: ValidateAssetV1 {
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
                     // All invalid (empty or whitespace-only strings) access routes should be filtered from output
                     access_routes: vec![
                         "   ".to_string(),
@@ -653,7 +654,7 @@ mod tests {
                         "".to_string(),
                         "real route".to_string(),
                     ],
-                    ..TestValidateAsset::default_validate_asset()
+                    ..TestVerifyAsset::default_verify_asset()
                 },
                 ..Default::default()
             },
@@ -662,42 +663,42 @@ mod tests {
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("the scope attribute should be fetched");
-        let validator_access_definitions = attribute
+        let verifier_access_definitions = attribute
             .access_definitions
             .into_iter()
-            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
             .collect::<Vec<AccessDefinition>>();
         assert_eq!(
             1,
-            validator_access_definitions.len(),
-            "there should only be one entry for validator access definitions",
+            verifier_access_definitions.len(),
+            "there should only be one entry for verifier access definitions",
         );
-        let validator_definition = validator_access_definitions.first().unwrap();
+        let verifier_definition = verifier_access_definitions.first().unwrap();
         assert_eq!(
             1,
-            validator_definition.access_routes.len(),
+            verifier_definition.access_routes.len(),
             "only one access definition route should be added because the empty strings should be filtered out of the result",
         );
         assert_eq!(
             "real route",
-            validator_definition.access_routes.first().unwrap(),
-            "the only route in the validator's access definition should be the non-blank string provided",
+            verifier_definition.access_routes.first().unwrap(),
+            "the only route in the verifier's access definition should be the non-blank string provided",
         );
     }
 
     #[test]
-    fn test_validate_with_only_invalid_access_routes_adds_no_access_definition_for_the_validator() {
+    fn test_verify_with_only_invalid_access_routes_adds_no_access_definition_for_the_verifier() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
-        test_validate_asset(
+        // Establish some access routes with blank strings to prove that they get filtered out in the verification process
+        test_verify_asset(
             &mut deps,
-            TestValidateAsset {
-                validate_asset: ValidateAssetV1 {
-                    // Only invalid access routes should yield no access definition for the validator
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Only invalid access routes should yield no access definition for the verifier
                     access_routes: vec!["   ".to_string(), "       ".to_string(), "".to_string()],
-                    ..TestValidateAsset::default_validate_asset()
+                    ..TestVerifyAsset::default_verify_asset()
                 },
                 ..Default::default()
             },
@@ -706,30 +707,30 @@ mod tests {
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("the scope attribute should be fetched");
-        let validator_access_definitions = attribute
+        let verifier_access_definitions = attribute
             .access_definitions
             .into_iter()
-            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
             .collect::<Vec<AccessDefinition>>();
         assert!(
-            validator_access_definitions.is_empty(),
-            "when no valid access routes for the validator are provided, no access definition record should be added",
+            verifier_access_definitions.is_empty(),
+            "when no valid access routes for the verifier are provided, no access definition record should be added",
         );
     }
 
     #[test]
-    fn test_validate_with_no_access_routes_adds_no_access_definition_for_the_validator() {
+    fn test_verify_with_no_access_routes_adds_no_access_definition_for_the_verifier() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        // Establish some access routes with blank strings to prove that they get filtered out in the validation process
-        test_validate_asset(
+        // Establish some access routes with blank strings to prove that they get filtered out in the verification process
+        test_verify_asset(
             &mut deps,
-            TestValidateAsset {
-                validate_asset: ValidateAssetV1 {
-                    // Completely empty access routes should yield no access definition for the validator
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Completely empty access routes should yield no access definition for the verifier
                     access_routes: vec![],
-                    ..TestValidateAsset::default_validate_asset()
+                    ..TestVerifyAsset::default_verify_asset()
                 },
                 ..Default::default()
             },
@@ -738,24 +739,24 @@ mod tests {
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("the scope attribute should be fetched");
-        let validator_access_definitions = attribute
+        let verifier_access_definitions = attribute
             .access_definitions
             .into_iter()
-            .filter(|d| d.owner_address.as_str() == DEFAULT_VALIDATOR_ADDRESS)
+            .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
             .collect::<Vec<AccessDefinition>>();
         assert!(
-            validator_access_definitions.is_empty(),
-            "when no access routes for the validator are provided, no access definition record should be added",
+            verifier_access_definitions.is_empty(),
+            "when no access routes for the verifier are provided, no access definition record should be added",
         );
     }
 
-    fn test_validation_result(message: Option<&str>, result: bool) {
+    fn test_verification_result(message: Option<&str>, result: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
         repository
-            .validate_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
+            .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
             .unwrap();
 
         let messages = repository.get_messages();
@@ -763,7 +764,7 @@ mod tests {
         assert_eq!(
             3,
             messages.len(),
-            "validate asset should produce three messages (attribute delete/update combo and fee distribution to default validator w/ no additional fee destinations)"
+            "verify asset should produce three messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)"
         );
         let first_message = &messages[0];
         match first_message {
@@ -784,7 +785,7 @@ mod tests {
                 );
             }
             _ => panic!(
-                "Unexpected first message type for validate_asset: {:?}",
+                "Unexpected first message type for verify_asset: {:?}",
                 first_message,
             ),
         }
@@ -795,18 +796,18 @@ mod tests {
                 ..
             }) => {
                 let mut value = get_default_asset_scope_attribute();
-                value.latest_validator_detail = None;
-                value.latest_validation_result = AssetValidationResult {
+                value.latest_verifier_detail = None;
+                value.latest_verification_result = AssetVerificationResult {
                     message: message
                         .unwrap_or_else(|| match result {
-                            true => "validation successful",
-                            false => "validation failure",
+                            true => "verification successful",
+                            false => "verification failure",
                         })
                         .to_string(),
                     success: result,
                 }
                 .to_some();
-                // The onboarding status is based on whether or not the validator approved the asset
+                // The onboarding status is based on whether or not the verifier approved the asset
                 // Dynamically swap between expected statuses based on the input
                 value.onboarding_status = if result {
                     AssetOnboardingStatus::Approved
@@ -828,7 +829,7 @@ mod tests {
                 );
             }
             _ => panic!(
-                "Unexpected second message type for validate_asset: {:?}",
+                "Unexpected second message type for verify_asset: {:?}",
                 second_message
             ),
         }
@@ -836,8 +837,8 @@ mod tests {
         match third_message {
             CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
                 assert_eq!(
-                    DEFAULT_VALIDATOR_ADDRESS, to_address,
-                    "validation fee message should send to default validator"
+                    DEFAULT_VERIFIER_ADDRESS, to_address,
+                    "verification fee message should send to default verifier"
                 );
                 assert_eq!(
                     &vec![Coin {
@@ -845,11 +846,11 @@ mod tests {
                         amount: Uint128::new(DEFAULT_ONBOARDING_COST)
                     }],
                     amount,
-                    "validation fee message should match what is configured"
+                    "verification fee message should match what is configured"
                 )
             }
             _ => panic!(
-                "Unexpected third message type for validate_asset: {:?}",
+                "Unexpected third message type for verify_asset: {:?}",
                 third_message
             ),
         }
@@ -860,9 +861,9 @@ mod tests {
             &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
             DEFAULT_ASSET_TYPE,
             DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VALIDATOR_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_validator_detail(),
+            get_default_verifier_detail(),
             vec![DEFAULT_ACCESS_ROUTE.to_string()],
         )
         .expect("failed to instantiate default asset scope attribute")

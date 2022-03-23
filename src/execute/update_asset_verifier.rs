@@ -1,4 +1,4 @@
-use crate::core::asset::ValidatorDetail;
+use crate::core::asset::VerifierDetail;
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
@@ -10,66 +10,66 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
 #[derive(Clone, PartialEq)]
-pub struct UpdateAssetValidatorV1 {
+pub struct UpdateAssetVerifierV1 {
     pub asset_type: String,
-    pub validator: ValidatorDetail,
+    pub verifier: VerifierDetail,
 }
-impl UpdateAssetValidatorV1 {
-    pub fn new<S: Into<String>>(asset_type: S, validator: ValidatorDetail) -> Self {
-        UpdateAssetValidatorV1 {
+impl UpdateAssetVerifierV1 {
+    pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetail) -> Self {
+        UpdateAssetVerifierV1 {
             asset_type: asset_type.into(),
-            validator,
+            verifier,
         }
     }
 
-    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetValidatorV1> {
+    pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetVerifierV1> {
         match msg {
-            ExecuteMsg::UpdateAssetValidator {
+            ExecuteMsg::UpdateAssetVerifier {
                 asset_type,
-                validator,
-            } => UpdateAssetValidatorV1::new(asset_type, validator).to_ok(),
+                verifier,
+            } => UpdateAssetVerifierV1::new(asset_type, verifier).to_ok(),
             _ => ContractError::InvalidMessageType {
-                expected_message_type: "ExecuteMsg::UpdateAssetValidator".to_string(),
+                expected_message_type: "ExecuteMsg::UpdateAssetVerifier".to_string(),
             }
             .to_err(),
         }
     }
 }
 
-pub fn update_asset_validator(
+pub fn update_asset_verifier(
     deps: DepsMutC,
     info: MessageInfo,
-    msg: UpdateAssetValidatorV1,
+    msg: UpdateAssetVerifierV1,
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
-    let validator_address = msg.validator.address.clone();
-    // If a single validator for the given address cannot be found, data is either corrupt, or the
-    // validator does not exist.  Given validation upfront prevents multiple validators with the
+    let verifier_address = msg.verifier.address.clone();
+    // If a single verifier for the given address cannot be found, data is either corrupt, or the
+    // verifier does not exist.  Given validation upfront prevents multiple verifiers with the
     // same address from existing on an asset definition, this generally will indicate that the
-    // validator is outright missing
+    // verifier is outright missing
     if !asset_definition
-        .validators
+        .verifiers
         .iter()
-        .any(|v| v.address == validator_address)
+        .any(|v| v.address == verifier_address)
     {
         return ContractError::NotFound {
             explanation: format!(
-                "validator with address {} not found for asset definition for type {}. Trying adding this validator instead",
-                msg.validator.address, asset_definition.asset_type
+                "verifier with address {} not found for asset definition for type {}. Trying adding this verifier instead",
+                msg.verifier.address, asset_definition.asset_type
             ),
         }
         .to_err();
     }
     // Declare the attributes up-front before values are moved
-    let attributes = EventAttributes::new(EventType::UpdateAssetValidator)
+    let attributes = EventAttributes::new(EventType::UpdateAssetVerifier)
         .set_asset_type(&asset_definition.asset_type)
-        .set_validator(&msg.validator.address);
-    // Replace the existing validator and save the result to the state
-    asset_definition.validators =
-        replace_single_matching_vec_element(asset_definition.validators, msg.validator, |v| {
-            v.address == validator_address
+        .set_verifier(&msg.verifier.address);
+    // Replace the existing verifier and save the result to the state
+    asset_definition.verifiers =
+        replace_single_matching_vec_element(asset_definition.verifiers, msg.verifier, |v| {
+            v.address == verifier_address
         })?;
     replace_asset_definition(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
@@ -80,45 +80,45 @@ pub fn update_asset_validator(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
-    use crate::core::asset::{FeeDestination, ValidatorDetail};
+    use crate::core::asset::{FeeDestination, VerifierDetail};
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_by_type;
-    use crate::execute::update_asset_validator::{update_asset_validator, UpdateAssetValidatorV1};
+    use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVerifierV1};
     use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VALIDATOR_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
-        ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VALIDATOR_ADDRESS_KEY,
+        ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VERIFIER_ADDRESS_KEY,
     };
     use crate::util::event_attributes::EventType;
-    use crate::validation::validate_init_msg::validate_validator;
+    use crate::validation::validate_init_msg::validate_verifier;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     #[test]
-    fn test_valid_update_asset_validator_via_execute() {
+    fn test_valid_update_asset_verifier_via_execute() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let validator = get_valid_update_validator();
+        let verifier = get_valid_update_verifier();
         let response = execute(
             deps.as_mut(),
             mock_env(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            ExecuteMsg::UpdateAssetValidator {
+            ExecuteMsg::UpdateAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                validator: validator.clone(),
+                verifier: verifier.clone(),
             },
         )
-        .expect("expected the update validator checks to work correctly");
+        .expect("expected the update verifier checks to work correctly");
         assert!(
             response.messages.is_empty(),
-            "updating an asset validator should not require messages",
+            "updating an asset verifier should not require messages",
         );
         assert_eq!(
             3,
@@ -126,49 +126,49 @@ mod tests {
             "the correct number of attributes should be produced",
         );
         assert_eq!(
-            EventType::UpdateAssetValidator.event_name().as_str(),
+            EventType::UpdateAssetVerifier.event_name().as_str(),
             single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
             "expected the proper event type to be emitted",
         );
         assert_eq!(
             DEFAULT_ASSET_TYPE,
             single_attribute_for_key(&response, ASSET_TYPE_KEY),
-            "expected the update asset validator main key to include the asset type",
+            "expected the update asset verifier main key to include the asset type",
         );
         assert_eq!(
-            &validator.address,
-            single_attribute_for_key(&response, VALIDATOR_ADDRESS_KEY),
-            "expected the validator's address to be the value for the address key",
+            &verifier.address,
+            single_attribute_for_key(&response, VERIFIER_ADDRESS_KEY),
+            "expected the verifier's address to be the value for the address key",
         );
-        test_default_validator_was_updated(&validator, &deps.as_ref());
+        test_default_verifier_was_updated(&verifier, &deps.as_ref());
     }
 
     #[test]
-    fn test_valid_update_asset_validator_via_internal() {
+    fn test_valid_update_asset_verifier_via_internal() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let msg = get_valid_update_validator_msg();
-        update_asset_validator(
+        let msg = get_valid_update_verifier_msg();
+        update_asset_verifier(
             deps.as_mut(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             msg.clone(),
         )
-        .expect("expected the update validator function to return properly");
-        test_default_validator_was_updated(&msg.validator, &deps.as_ref());
+        .expect("expected the update verifier function to return properly");
+        test_default_verifier_was_updated(&msg.verifier, &deps.as_ref());
     }
 
     #[test]
-    fn test_invalid_update_asset_validator_for_invalid_asset_type() {
+    fn test_invalid_update_asset_verifier_for_invalid_asset_type() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
-            ExecuteMsg::UpdateAssetValidator {
+            ExecuteMsg::UpdateAssetVerifier {
                 // Invalid because the asset type is missing
                 asset_type: String::new(),
-                validator: get_valid_update_validator(),
+                verifier: get_valid_update_verifier(),
             },
         )
         .unwrap_err();
@@ -180,16 +180,16 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_update_asset_validator_for_invalid_msg() {
+    fn test_invalid_update_asset_verifier_for_invalid_msg() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
-            ExecuteMsg::UpdateAssetValidator {
+            ExecuteMsg::UpdateAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                validator: ValidatorDetail::new(
+                verifier: VerifierDetail::new(
                     // Invalid because the address is blank
                     "",
                     Uint128::new(0),
@@ -202,19 +202,19 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::InvalidMessageFields { .. }),
-            "when an invalid validator is provided to execute, the invalid message fields error should be returned, but got: {:?}",
+            "when an invalid verifier is provided to execute, the invalid message fields error should be returned, but got: {:?}",
             error,
         );
     }
 
     #[test]
-    fn test_invalid_update_asset_validator_for_invalid_sender() {
+    fn test_invalid_update_asset_verifier_for_invalid_sender() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let error = update_asset_validator(
+        let error = update_asset_verifier(
             deps.as_mut(),
             mock_info("bad-guy", &[]),
-            get_valid_update_validator_msg(),
+            get_valid_update_verifier_msg(),
         )
         .unwrap_err();
         assert!(
@@ -225,13 +225,13 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_update_asset_validator_for_provided_funds() {
+    fn test_invalid_update_asset_verifier_for_provided_funds() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let error = update_asset_validator(
+        let error = update_asset_verifier(
             deps.as_mut(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(93849382, "dopehash")]),
-            get_valid_update_validator_msg(),
+            get_valid_update_verifier_msg(),
         )
         .unwrap_err();
         assert!(
@@ -242,15 +242,15 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_update_asset_validator_for_missing_validator() {
+    fn test_invalid_update_asset_verifier_for_missing_verifier() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let error = update_asset_validator(
+        let error = update_asset_verifier(
             deps.as_mut(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
-            UpdateAssetValidatorV1::new(
+            UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                ValidatorDetail::new(
+                VerifierDetail::new(
                     "unknown-address-guy",
                     Uint128::new(100),
                     NHASH,
@@ -262,27 +262,27 @@ mod tests {
         .unwrap_err();
         assert!(
             matches!(error, ContractError::NotFound { .. }),
-            "the not found error should be returned when the provided update validator cannot be located in the asset definition, but got: {:?}",
+            "the not found error should be returned when the provided update verifier cannot be located in the asset definition, but got: {:?}",
             error,
         );
     }
 
-    fn test_default_validator_was_updated(validator: &ValidatorDetail, deps: &DepsC) {
+    fn test_default_verifier_was_updated(verifier: &VerifierDetail, deps: &DepsC) {
         let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
-        let target_validator = state_def.validators.into_iter().find(|v| v.address == validator.address)
-            .expect("expected a single validator to be produced when searching for the updated validator's address");
+        let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)
+            .expect("expected a single verifier to be produced when searching for the updated verifier's address");
         assert_eq!(
-            validator, &target_validator,
-            "expected the validator stored in state to equate to the updated validator",
+            verifier, &target_verifier,
+            "expected the verifier stored in state to equate to the updated verifier",
         );
     }
 
-    // This builds off of the existing default asset validator in test_utilities and adds/tweaks
+    // This builds off of the existing default asset verifier in test_utilities and adds/tweaks
     // details.  The fee addresses are randomly-generated bech32 provenance testnet addresses
-    fn get_valid_update_validator() -> ValidatorDetail {
-        let validator = ValidatorDetail::new(
-            DEFAULT_VALIDATOR_ADDRESS,
+    fn get_valid_update_verifier() -> VerifierDetail {
+        let verifier = VerifierDetail::new(
+            DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(420),
             NHASH,
             Decimal::percent(100),
@@ -297,11 +297,11 @@ mod tests {
                 ),
             ],
         );
-        validate_validator(&validator).expect("expected the validator to pass validation");
-        validator
+        validate_verifier(&verifier).expect("expected the verifier to pass validation");
+        verifier
     }
 
-    fn get_valid_update_validator_msg() -> UpdateAssetValidatorV1 {
-        UpdateAssetValidatorV1::new(DEFAULT_ASSET_TYPE, get_valid_update_validator())
+    fn get_valid_update_verifier_msg() -> UpdateAssetVerifierV1 {
+        UpdateAssetVerifierV1::new(DEFAULT_ASSET_TYPE, get_valid_update_verifier())
     }
 }

@@ -14,8 +14,8 @@ pub enum ContractError {
     #[error("Semver parsing error: {0}")]
     SemVer(#[from] semver::Error),
 
-    #[error("duplicate/existing validator address provided as input")]
-    DuplicateValidatorProvided,
+    #[error("duplicate/existing verifier address provided as input")]
+    DuplicateVerifierProvided,
 
     #[error("Invalid address provided [{address}]: {explanation}")]
     InvalidAddress {
@@ -53,9 +53,9 @@ pub enum ContractError {
     #[error("Unsupported asset type [{asset_type}]")]
     UnsupportedAssetType { asset_type: String },
 
-    #[error("Unsupported validator [{validator_address}] for asset type [{asset_type}]")]
-    UnsupportedValidator {
-        validator_address: String,
+    #[error("Unsupported verifier [{verifier_address}] for asset type [{asset_type}]")]
+    UnsupportedVerifier {
+        verifier_address: String,
         asset_type: String,
     },
 
@@ -63,11 +63,11 @@ pub enum ContractError {
     AssetAlreadyOnboarded { scope_address: String },
 
     #[error(
-        "Asset {scope_address} is currently awaiting validation from address {validator_address}"
+        "Asset {scope_address} is currently awaiting verification from address {verifier_address}"
     )]
-    AssetPendingValidation {
+    AssetPendingVerification {
         scope_address: String,
-        validator_address: String,
+        verifier_address: String,
     },
 
     #[error("Asset {scope_address} not found")]
@@ -100,15 +100,15 @@ pub enum ContractError {
     #[error("Asset type {asset_type} is currently disabled")]
     AssetTypeDisabled { asset_type: String },
 
-    #[error("Unauthorized validator [{validator_address}] for scope [{scope_address}], expected validator [{expected_validator_address}]")]
-    UnathorizedAssetValidator {
+    #[error("Unauthorized verifier [{verifier_address}] for scope [{scope_address}], expected verifier [{expected_verifier_address}]")]
+    UnathorizedAssetVerifier {
         scope_address: String,
-        validator_address: String,
-        expected_validator_address: String,
+        verifier_address: String,
+        expected_verifier_address: String,
     },
 
-    #[error("Asset [{scope_address}] was already validated and has status [{status}]")]
-    AssetAlreadyValidated {
+    #[error("Asset [{scope_address}] was already verified and has status [{status}]")]
+    AssetAlreadyVerified {
         scope_address: String,
         status: AssetOnboardingStatus,
     },

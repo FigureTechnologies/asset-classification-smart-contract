@@ -16,7 +16,7 @@ use crate::{
     core::{
         asset::{
             AccessDefinition, AccessDefinitionType, AssetDefinition, AssetDefinitionInput,
-            AssetOnboardingStatus, ScopeSpecIdentifier, ValidatorDetail,
+            AssetOnboardingStatus, ScopeSpecIdentifier, VerifierDetail,
         },
         msg::InitMsg,
     },
@@ -34,7 +34,7 @@ use super::test_constants::{
     DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS,
     DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS,
     DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
-    DEFAULT_SESSION_ADDRESS, DEFAULT_VALIDATOR_ADDRESS,
+    DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
@@ -43,15 +43,15 @@ pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
         scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
-        validators: vec![get_default_validator_detail()],
+        verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
     }
 }
 
-pub fn get_default_validator_detail() -> ValidatorDetail {
-    ValidatorDetail {
-        address: DEFAULT_VALIDATOR_ADDRESS.into(),
+pub fn get_default_verifier_detail() -> VerifierDetail {
+    VerifierDetail {
+        address: DEFAULT_VERIFIER_ADDRESS.into(),
         onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
         onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
         fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
@@ -86,10 +86,10 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
         scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
         asset_type: DEFAULT_ASSET_TYPE.to_string(),
         requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS.to_string()),
-        validator_address: Addr::unchecked(DEFAULT_VALIDATOR_ADDRESS.to_string()),
+        verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS.to_string()),
         onboarding_status: AssetOnboardingStatus::Pending,
-        latest_validator_detail: Some(get_default_validator_detail()),
-        latest_validation_result: None,
+        latest_verifier_detail: Some(get_default_verifier_detail()),
+        latest_verification_result: None,
         access_definitions: vec![AccessDefinition {
             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
             access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],

@@ -1,5 +1,38 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MigrateMsg",
-  "type": "object"
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "contract_upgrade"
+      ],
+      "properties": {
+        "contract_upgrade": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "migrate_to_state_v2"
+      ],
+      "properties": {
+        "migrate_to_state_v2": {
+          "type": "object",
+          "properties": {
+            "is_test": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
 }

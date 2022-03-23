@@ -19,6 +19,12 @@
     },
     "bind_base_name": {
       "type": "boolean"
+    },
+    "is_test": {
+      "type": [
+        "boolean",
+        "null"
+      ]
     }
   },
   "definitions": {

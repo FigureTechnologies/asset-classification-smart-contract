@@ -8,6 +8,7 @@ use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVe
 use crate::execute::verify_asset::{verify_asset, VerifyAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
+use crate::migrate::migrate_to_state_v2::migrate_to_state_v2;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
 use crate::query::query_state::query_state;
@@ -80,6 +81,9 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 }
 
 #[entry_point]
-pub fn migrate(deps: DepsMutC, _env: Env, _msg: MigrateMsg) -> EntryPointResponse {
-    migrate_contract(deps)
+pub fn migrate(deps: DepsMutC, _env: Env, msg: MigrateMsg) -> EntryPointResponse {
+    match msg {
+        MigrateMsg::ContractUpgrade {} => migrate_contract(deps),
+        MigrateMsg::MigrateToStateV2 { is_test } => migrate_to_state_v2(deps, is_test),
+    }
 }

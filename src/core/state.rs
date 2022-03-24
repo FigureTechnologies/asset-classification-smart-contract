@@ -13,25 +13,8 @@ use serde::{Deserialize, Serialize};
 
 use super::{asset::AssetDefinition, error::ContractError};
 
-// TODO: Remove STATE_KEY once all instances of State are replaced with StateV2
-pub static STATE_KEY: &[u8] = b"state";
 pub static STATE_V2_KEY: &[u8] = b"state_v2";
 pub static ASSET_META_KEY: &[u8] = b"asset_meta";
-
-// TODO: Remove State once all instances of State are replaced with StateV2
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct State {
-    pub base_contract_name: String,
-    pub admin: Addr,
-}
-impl State {
-    pub fn new(msg: InitMsg, admin: Addr) -> State {
-        State {
-            base_contract_name: msg.base_contract_name,
-            admin,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StateV2 {
@@ -47,16 +30,6 @@ impl StateV2 {
             is_test: msg.is_test.unwrap_or(false),
         }
     }
-}
-
-// TODO: Remove this function once all instances of State are replaced with StateV2
-pub fn config(storage: &mut dyn Storage) -> Singleton<State> {
-    singleton(storage, STATE_KEY)
-}
-
-// TODO: Remove this function once all instances of State are replaced with StateV2
-pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
-    singleton_read(storage, STATE_KEY)
 }
 
 pub fn config_v2(storage: &mut dyn Storage) -> Singleton<StateV2> {

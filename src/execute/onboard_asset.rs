@@ -1,7 +1,7 @@
 use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::load_asset_definition_by_type;
+use crate::core::state::{config_read_v2, load_asset_definition_by_type};
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
@@ -126,6 +126,8 @@ where
         Ok(scope) => scope,
     };
 
+    let state = repository.use_deps(|deps| config_read_v2(deps.storage).load())?;
+
     // verify scope is of correct spec for provided asset_type
     if scope.specification_id != asset_definition.scope_spec_address {
         return ContractError::AssetSpecMismatch {
@@ -149,20 +151,23 @@ where
         .to_err();
     }
 
-    // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
-    let records = repository
-        .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
-        .records;
+    // no need to verify records during a test run - this check makes testing the contract a pretty lengthy process
+    if !state.is_test {
+        // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
+        let records = repository
+            .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
+            .records;
 
-    // verify scope has at least one record that is not empty
-    if !records.into_iter().any(|record| !record.outputs.is_empty()) {
-        return ContractError::InvalidScope {
-            explanation: format!(
-                "cannot onboard scope [{}]. scope must have at least one non-empty record",
-                scope.scope_id,
-            ),
+        // verify scope has at least one record that is not empty
+        if !records.into_iter().any(|record| !record.outputs.is_empty()) {
+            return ContractError::InvalidScope {
+                explanation: format!(
+                    "cannot onboard scope [{}]. scope must have at least one non-empty record",
+                    scope.scope_id,
+                ),
+            }
+            .to_err();
         }
-        .to_err();
     }
 
     let new_asset_attribute = AssetScopeAttribute::new(
@@ -656,6 +661,31 @@ mod tests {
     }
 
     #[test]
+    fn test_onboard_asset_succeeds_on_no_records_in_test_mode() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(
+            deps.as_mut(),
+            InstArgs {
+                is_test: true,
+                ..Default::default()
+            },
+        );
+        // Setup the default scope as the result value of a scope query, but don't establish any records
+        deps.querier.with_scope(get_default_scope());
+        onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                access_routes: vec![],
+            },
+        )
+        .expect("onboarding should succeed due to test mode being enabled");
+    }
+
+    #[test]
     fn test_onboard_asset_errors_on_empty_records() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
@@ -697,6 +727,51 @@ mod tests {
             "expected the error to indicate that the scope was invalid for records, but got: {:?}",
             err,
         );
+    }
+
+    #[test]
+    fn test_onboard_asset_succeeds_for_empty_records_in_test_mode() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(
+            deps.as_mut(),
+            InstArgs {
+                is_test: true,
+                ..Default::default()
+            },
+        );
+        // Setup the default scope and add a record, but make sure the record is not formed properly
+        let scope = get_default_scope();
+        deps.querier.with_scope(scope.clone());
+        deps.querier.with_records(
+            scope,
+            Records {
+                records: vec![Record {
+                    name: "record-name".to_string(),
+                    session_id: DEFAULT_SESSION_ADDRESS.to_string(),
+                    specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string(),
+                    process: Process {
+                        process_id: ProcessId::Address {
+                            address: String::new(),
+                        },
+                        method: String::new(),
+                        name: String::new(),
+                    },
+                    inputs: vec![],
+                    outputs: vec![],
+                }],
+            },
+        );
+        onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
+                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                access_routes: vec![],
+            },
+        )
+        .expect("onboarding should succeed due to test mode being enabled");
     }
 
     #[test]

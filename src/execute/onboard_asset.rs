@@ -173,7 +173,7 @@ where
     let new_asset_attribute = AssetScopeAttribute::new(
         &msg.identifier,
         &msg.asset_type,
-        info.sender,
+        &info.sender,
         &msg.verifier_address,
         AssetOnboardingStatus::Pending.to_some(),
         verifier_config,
@@ -222,7 +222,8 @@ where
                 &msg.asset_type,
                 &asset_identifiers.scope_address,
             )
-            .set_verifier(msg.verifier_address),
+            .set_verifier(msg.verifier_address)
+            .set_scope_owner(info.sender),
         )
         .add_messages(repository.get_messages()))
 }
@@ -266,7 +267,8 @@ mod tests {
         },
         util::{
             constants::{
-                ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VERIFIER_ADDRESS_KEY,
+                ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, SCOPE_OWNER_KEY,
+                VERIFIER_ADDRESS_KEY,
             },
             functions::generate_asset_attribute_name,
         },
@@ -895,7 +897,8 @@ mod tests {
                 (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
                 (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
                 (ASSET_SCOPE_ADDRESS_KEY, DEFAULT_SCOPE_ADDRESS),
-                (VERIFIER_ADDRESS_KEY, DEFAULT_VERIFIER_ADDRESS)
+                (VERIFIER_ADDRESS_KEY, DEFAULT_VERIFIER_ADDRESS),
+                (SCOPE_OWNER_KEY, DEFAULT_SENDER_ADDRESS)
             ],
             result.attributes
         );

@@ -1,5 +1,5 @@
 use super::constants::{
-    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
+    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY, SCOPE_OWNER_KEY,
     VERIFIER_ADDRESS_KEY,
 };
 
@@ -78,6 +78,12 @@ impl EventAttributes {
     pub fn set_new_value<T: ToString>(mut self, new_value: T) -> Self {
         self.attributes
             .push((NEW_VALUE_KEY.into(), new_value.to_string()));
+        self
+    }
+
+    pub fn set_scope_owner<T: ToString>(mut self, scope_owner: T) -> Self {
+        self.attributes
+            .push((SCOPE_OWNER_KEY.into(), scope_owner.to_string()));
         self
     }
 }

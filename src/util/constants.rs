@@ -9,6 +9,8 @@
 pub const ASSET_REGISTERED_KEY: &str = "asset_registered";
 /// Value = Scope ID Tied to the Asset (String)
 pub const SCOPE_ID_KEY: &str = "asset_related_scope_id";
+/// Value = The scope owner that sent the onboarding message
+pub const SCOPE_OWNER_KEY: &str = "scope_owner";
 
 //////////////////////////////
 // Shared output attributes //

@@ -1,6 +1,7 @@
-use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
+use crate::core::types::asset_identifier::AssetIdentifier;
+use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
@@ -104,8 +105,10 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AssetIdentifier, AssetOnboardingStatus},
             error::ContractError,
+            types::{
+                asset_identifier::AssetIdentifier, asset_onboarding_status::AssetOnboardingStatus,
+            },
         },
         service::{
             asset_meta_repository::AssetMetaRepository, asset_meta_service::AssetMetaService,

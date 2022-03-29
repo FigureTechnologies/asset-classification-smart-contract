@@ -3,7 +3,7 @@ use std::ops::Mul;
 use cosmwasm_std::{CosmosMsg, Uint128};
 use provwasm_std::ProvenanceMsg;
 
-use crate::core::{asset::VerifierDetail, error::ContractError};
+use crate::core::{error::ContractError, types::verifier_detail::VerifierDetail};
 
 use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions};
 
@@ -74,8 +74,8 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{FeeDestination, VerifierDetail},
             error::ContractError,
+            types::{fee_destination::FeeDestination, verifier_detail::VerifierDetail},
         },
         util::constants::NHASH,
     };

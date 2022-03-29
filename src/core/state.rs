@@ -11,7 +11,7 @@ use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::{asset::AssetDefinition, error::ContractError};
+use super::{error::ContractError, types::asset_definition::AssetDefinition};
 
 pub static STATE_V2_KEY: &[u8] = b"state_v2";
 pub static ASSET_META_KEY: &[u8] = b"asset_meta";
@@ -46,7 +46,7 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
 /// If it becomes a requirement in the future that we have duplicate scope specs,
 /// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
 /// will fall apart
-struct AssetDefinitionIndexes<'a> {
+pub struct AssetDefinitionIndexes<'a> {
     scope_spec: UniqueIndex<'a, String, AssetDefinition>,
 }
 impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
@@ -59,8 +59,8 @@ impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
 /// The main entrypoint access for AssetDefinition state.  Establishes an index map for all definitions,
 /// allowing the standard save(), load() and iterator functionality. Private access to ensure only
 /// helper functions below are used
-fn asset_definitions<'a>() -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>>
-{
+pub fn asset_definitions<'a>(
+) -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>> {
     let indexes = AssetDefinitionIndexes {
         scope_spec: UniqueIndex::new(
             |d: &AssetDefinition| d.scope_spec_address.clone().to_lowercase(),
@@ -173,9 +173,9 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::core::{
-        asset::AssetDefinition,
         error::ContractError,
         state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type},
+        types::asset_definition::AssetDefinition,
     };
 
     use super::{insert_asset_definition, replace_asset_definition};

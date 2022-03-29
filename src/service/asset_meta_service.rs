@@ -5,12 +5,14 @@ use provwasm_std::{delete_attributes, ProvenanceMsg};
 
 use crate::{
     core::{
-        asset::{
-            AccessDefinition, AccessDefinitionType, AssetOnboardingStatus, AssetScopeAttribute,
-            AssetVerificationResult,
-        },
         error::ContractError,
         state::config_read_v2,
+        types::{
+            access_definition::{AccessDefinition, AccessDefinitionType},
+            asset_onboarding_status::AssetOnboardingStatus,
+            asset_scope_attribute::AssetScopeAttribute,
+            asset_verification_result::AssetVerificationResult,
+        },
     },
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
@@ -257,12 +259,16 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{
-                AccessDefinition, AccessDefinitionType, AssetIdentifier, AssetOnboardingStatus,
-                AssetScopeAttribute, AssetVerificationResult, VerifierDetail,
-            },
             error::ContractError,
             state::config_read_v2,
+            types::{
+                access_definition::{AccessDefinition, AccessDefinitionType},
+                asset_identifier::AssetIdentifier,
+                asset_onboarding_status::AssetOnboardingStatus,
+                asset_scope_attribute::AssetScopeAttribute,
+                asset_verification_result::AssetVerificationResult,
+                verifier_detail::VerifierDetail,
+            },
         },
         execute::verify_asset::VerifyAssetV1,
         service::{

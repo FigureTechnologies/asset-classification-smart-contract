@@ -1,8 +1,10 @@
-use crate::core::asset::VerifierDetail;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::asset::{AssetDefinitionInput, AssetIdentifier, AssetQualifier};
+use super::types::{
+    asset_definition::AssetDefinitionInput, asset_identifier::AssetIdentifier,
+    asset_qualifier::AssetQualifier, verifier_detail::VerifierDetail,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -52,6 +54,7 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     QueryAssetDefinition { qualifier: AssetQualifier },
+    QueryAssetDefinitions {},
     QueryAssetScopeAttribute { identifier: AssetIdentifier },
     QueryState {},
     QueryVersion {},

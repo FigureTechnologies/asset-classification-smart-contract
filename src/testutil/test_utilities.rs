@@ -11,20 +11,21 @@ use provwasm_std::{
 };
 use serde_json_wasm::to_string;
 
+use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::{
     contract::instantiate,
     core::{
-        asset::{
-            AccessDefinition, AccessDefinitionType, AssetDefinition, AssetDefinitionInput,
-            AssetOnboardingStatus, ScopeSpecIdentifier, VerifierDetail,
-        },
         msg::InitMsg,
+        types::{
+            access_definition::{AccessDefinition, AccessDefinitionType},
+            asset_definition::{AssetDefinition, AssetDefinitionInput},
+            asset_onboarding_status::AssetOnboardingStatus,
+            asset_scope_attribute::AssetScopeAttribute,
+            scope_spec_identifier::ScopeSpecIdentifier,
+            verifier_detail::VerifierDetail,
+        },
     },
     util::functions::generate_asset_attribute_name,
-};
-use crate::{
-    core::asset::AssetScopeAttribute,
-    util::aliases::{DepsMutC, EntryPointResponse},
 };
 
 use super::test_constants::{

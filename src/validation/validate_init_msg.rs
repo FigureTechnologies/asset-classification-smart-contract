@@ -1,6 +1,8 @@
-use crate::core::asset::{AssetDefinition, AssetDefinitionInput, FeeDestination, VerifierDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
+use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionInput};
+use crate::core::types::fee_destination::FeeDestination;
+use crate::core::types::verifier_detail::VerifierDetail;
 use crate::util::aliases::AssetResult;
 use crate::util::functions::{decimal_display_string, distinct_count_by_property};
 use crate::util::scope_address_utils::bech32_string_to_addr;
@@ -198,11 +200,12 @@ fn validate_destination_internal(destination: &FeeDestination) -> Vec<String> {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::core::asset::{
-        AssetDefinition, AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
-    };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
+    use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionInput};
+    use crate::core::types::fee_destination::FeeDestination;
+    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
+    use crate::core::types::verifier_detail::VerifierDetail;
     use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::{

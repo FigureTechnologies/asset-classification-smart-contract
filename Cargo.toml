@@ -1,7 +1,10 @@
 [package]
 name = "asset-classification-smart-contract"
-version = "0.0.7"
-authors = ["Jake Schwartz <jschwartz@figure.com>", "Pierce Trey <ptrey@figure.com>"]
+version = "0.0.8"
+authors = [
+  "Jake Schwartz <jschwartz@figure.com>",
+  "Pierce Trey <ptrey@figure.com>",
+]
 edition = "2018"
 
 exclude = [
@@ -28,7 +31,7 @@ overflow-checks = true
 backtraces = ["cosmwasm-std/backtraces"]
 library = []
 # enable-test-utils allows the test classes to expose shared code amongst each other
-enable-test-utils = []
+enable-test-utils = ["uuid/v4"]
 
 [package.metadata.scripts]
 optimize = """docker run --rm -v "$(pwd)":/code \

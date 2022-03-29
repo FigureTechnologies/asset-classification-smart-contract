@@ -1,7 +1,9 @@
-use crate::core::asset::{AssetIdentifier, AssetOnboardingStatus, AssetScopeAttribute};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{config_read_v2, load_asset_definition_by_type};
+use crate::core::types::asset_identifier::AssetIdentifier;
+use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
+use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
 use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
@@ -240,11 +242,13 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{
-                AccessDefinition, AccessDefinitionType, AssetIdentifier, AssetOnboardingStatus,
-                AssetScopeAttribute,
-            },
             error::ContractError,
+            types::{
+                access_definition::{AccessDefinition, AccessDefinitionType},
+                asset_identifier::AssetIdentifier,
+                asset_onboarding_status::AssetOnboardingStatus,
+                asset_scope_attribute::AssetScopeAttribute,
+            },
         },
         execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1},
         service::{

@@ -1,7 +1,7 @@
 use cosmwasm_std::StdError;
 use thiserror::Error;
 
-use super::asset::AssetOnboardingStatus;
+use super::types::asset_onboarding_status::AssetOnboardingStatus;
 
 #[derive(Error, Debug)]
 pub enum ContractError {

@@ -11,7 +11,7 @@ use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::{asset::AssetDefinition, error::ContractError};
+use super::{error::ContractError, types::asset_definition::AssetDefinition};
 
 pub static STATE_V2_KEY: &[u8] = b"state_v2";
 pub static ASSET_META_KEY: &[u8] = b"asset_meta";
@@ -173,9 +173,9 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
 
     use crate::core::{
-        asset::AssetDefinition,
         error::ContractError,
         state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type},
+        types::asset_definition::AssetDefinition,
     };
 
     use super::{insert_asset_definition, replace_asset_definition};

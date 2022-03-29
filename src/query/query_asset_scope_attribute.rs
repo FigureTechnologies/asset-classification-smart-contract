@@ -3,9 +3,9 @@ use provwasm_std::ProvenanceQuerier;
 
 use crate::{
     core::{
-        asset::{AssetIdentifier, AssetScopeAttribute},
         error::ContractError,
         state::load_asset_definition_by_scope_spec,
+        types::{asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute},
     },
     util::{
         aliases::{AssetResult, DepsC},
@@ -108,9 +108,11 @@ mod tests {
 
     use crate::{
         core::{
-            asset::{AssetIdentifier, AssetScopeAttribute},
             error::ContractError,
             state::load_asset_definition_by_type,
+            types::{
+                asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute,
+            },
         },
         testutil::{
             test_constants::{

@@ -1,6 +1,7 @@
-use crate::core::asset::{AssetIdentifier, VerifierDetail};
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
+use crate::core::types::asset_identifier::AssetIdentifier;
+use crate::core::types::verifier_detail::VerifierDetail;
 use crate::util::aliases::AssetResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
@@ -124,7 +125,7 @@ fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> A
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{asset::AssetIdentifier, error::ContractError},
+        core::{error::ContractError, types::asset_identifier::AssetIdentifier},
         util::aliases::AssetResult,
     };
 

@@ -1,5 +1,5 @@
-use crate::core::asset::AssetQualifier;
 use crate::core::state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type};
+use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{to_binary, Binary};
@@ -19,9 +19,10 @@ pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetR
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use crate::core::asset::{AssetDefinition, AssetQualifier};
     use crate::core::error::ContractError::{self, Std};
     use crate::core::state::insert_asset_definition;
+    use crate::core::types::asset_definition::AssetDefinition;
+    use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::query::query_asset_definition::query_asset_definition;
     use crate::testutil::test_utilities::{
         get_default_asset_definition, test_instantiate_success, InstArgs,

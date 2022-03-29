@@ -57,12 +57,13 @@ pub fn init_contract(
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
-    use crate::core::asset::{
-        AssetDefinitionInput, FeeDestination, ScopeSpecIdentifier, VerifierDetail,
-    };
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
     use crate::core::state::{config_read_v2, load_asset_definition_by_type};
+    use crate::core::types::asset_definition::AssetDefinitionInput;
+    use crate::core::types::fee_destination::FeeDestination;
+    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
+    use crate::core::types::verifier_detail::VerifierDetail;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{

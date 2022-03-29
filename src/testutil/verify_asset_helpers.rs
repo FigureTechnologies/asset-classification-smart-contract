@@ -1,7 +1,7 @@
 use cosmwasm_std::{testing::mock_info, MessageInfo};
 
 use crate::{
-    core::asset::AssetIdentifier,
+    core::types::asset_identifier::AssetIdentifier,
     execute::verify_asset::{verify_asset, VerifyAssetV1},
     service::asset_meta_service::AssetMetaService,
     util::{aliases::EntryPointResponse, traits::OptionExtensions},

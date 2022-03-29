@@ -9,6 +9,7 @@ use crate::execute::verify_asset::{verify_asset, VerifyAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
+use crate::query::query_asset_definitions::query_asset_definitions;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
 use crate::query::query_state::query_state;
 use crate::query::query_version::query_version;
@@ -35,6 +36,7 @@ pub fn instantiate(
 pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
         QueryMsg::QueryAssetDefinition { qualifier } => query_asset_definition(&deps, qualifier),
+        QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
         QueryMsg::QueryAssetScopeAttribute { identifier } => {
             query_asset_scope_attribute(&deps, identifier)
         }

@@ -46,7 +46,7 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
 /// If it becomes a requirement in the future that we have duplicate scope specs,
 /// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
 /// will fall apart
-struct AssetDefinitionIndexes<'a> {
+pub struct AssetDefinitionIndexes<'a> {
     scope_spec: UniqueIndex<'a, String, AssetDefinition>,
 }
 impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
@@ -59,8 +59,8 @@ impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
 /// The main entrypoint access for AssetDefinition state.  Establishes an index map for all definitions,
 /// allowing the standard save(), load() and iterator functionality. Private access to ensure only
 /// helper functions below are used
-fn asset_definitions<'a>() -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>>
-{
+pub fn asset_definitions<'a>(
+) -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>> {
     let indexes = AssetDefinitionIndexes {
         scope_spec: UniqueIndex::new(
             |d: &AssetDefinition| d.scope_spec_address.clone().to_lowercase(),

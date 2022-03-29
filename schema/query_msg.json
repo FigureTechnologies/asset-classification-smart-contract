@@ -25,6 +25,18 @@
     {
       "type": "object",
       "required": [
+        "query_asset_definitions"
+      ],
+      "properties": {
+        "query_asset_definitions": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "query_asset_scope_attribute"
       ],
       "properties": {

@@ -20,9 +20,9 @@ use crate::{
     },
     util::aliases::{AssetResult, DepsMutC},
     util::deps_container::DepsContainer,
-    util::traits::ResultExtensions,
     util::vec_container::VecContainer,
     util::{fees::calculate_verifier_cost_messages, functions::generate_asset_attribute_name},
+    util::{functions::filter_valid_access_routes, traits::ResultExtensions},
     util::{
         provenance_util::get_add_attribute_to_scope_msg, scope_address_utils::bech32_string_to_addr,
     },
@@ -154,11 +154,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
             let verifier_address = verifier_detail.address.clone();
 
-            let filtered_access_routes = access_routes
-                .into_iter()
-                .map(|r| r.trim_values())
-                .filter(|r| !r.route.is_empty())
-                .collect::<Vec<AccessRoute>>();
+            let filtered_access_routes = filter_valid_access_routes(access_routes);
 
             // check for existing verifier-linked access route collection
             if let Some(access_definition) = attribute
@@ -733,6 +729,51 @@ mod tests {
     }
 
     #[test]
+    fn test_verify_new_access_routes_are_trimmed() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Establish some access routes with blank strings to prove that they get filtered out in the verification process
+        test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Only invalid access routes should yield no access definition for the verifier
+                    access_routes: vec![AccessRoute::route_and_name("route       ", "   name   ")],
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let access_routes = assert_single_item(
+            &attribute
+                .access_definitions
+                .into_iter()
+                .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
+                .collect::<Vec<AccessDefinition>>(),
+            "expected only a single access definition to be provided for the verifier",
+        )
+        .access_routes;
+        let access_route = assert_single_item(
+            &access_routes,
+            "expected only a sigle access route to exist for the verifier",
+        );
+        assert_eq!(
+            "route", access_route.route,
+            "the route value should be trimmed of all whitespace",
+        );
+        assert_eq!(
+            "name",
+            access_route.name.expect("the name value should be set"),
+            "the name value should be trimmed of all whitespice",
+        );
+    }
+
+    #[test]
     fn test_verify_with_duplicate_access_routes_and_different_names_keeps_all_routes() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
@@ -774,6 +815,103 @@ mod tests {
             access_routes.iter().any(|r| r.route == "test-route"
                 && r.to_owned().name.expect("all names should be Some") == "name2"),
             "the second name route should be included in the access routes",
+        );
+    }
+
+    #[test]
+    fn test_verify_with_duplicate_routes_one_some_name_one_none_name() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Use two AccessRoutes with the same route but different names
+        test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Only invalid access routes should yield no access definition for the verifier
+                    access_routes: vec![
+                        AccessRoute::route_and_name("test-route", "name"),
+                        AccessRoute::route_only("test-route"),
+                    ],
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let access_routes = assert_single_item(
+            &attribute
+                .access_definitions
+                .into_iter()
+                .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
+                .collect::<Vec<AccessDefinition>>(),
+            "expected only a single access definition to be provided for the verifier",
+        )
+        .access_routes;
+        assert!(
+            access_routes.iter().any(|r| r.route == "test-route"
+                && r.to_owned()
+                    .name
+                    .unwrap_or("not the right name".to_string())
+                    == "name"),
+            "the named route should be kept",
+        );
+        assert!(
+            access_routes
+                .iter()
+                .any(|r| r.route == "test-route" && r.name.is_none()),
+            "the unnamed route should be kept",
+        );
+    }
+
+    #[test]
+    fn test_verify_skips_duplicates_after_trimming() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Use two AccessRoutes with the same route but different names
+        test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Only invalid access routes should yield no access definition for the verifier
+                    access_routes: vec![
+                        AccessRoute::route_and_name("test-route            ", "name       "),
+                        AccessRoute::route_and_name("      test-route", "          name"),
+                    ],
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let access_routes = assert_single_item(
+            &attribute
+                .access_definitions
+                .into_iter()
+                .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
+                .collect::<Vec<AccessDefinition>>(),
+            "expected only a single access definition to be provided for the verifier",
+        )
+        .access_routes;
+        let access_route = assert_single_item(
+            &access_routes,
+            format!("only a single access route should remain due to them being duplicates after trimming, but found {access_routes:?}"),
+        );
+        assert_eq!(
+            "test-route", access_route.route,
+            "the access route should have the trimmed route",
+        );
+        assert_eq!(
+            "name",
+            access_route.name.expect("the route's name should be set"),
+            "the access route should have the trimmed name",
         );
     }
 

@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use cosmwasm_std::Addr;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -8,6 +6,7 @@ use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
         aliases::AssetResult,
+        functions::filter_valid_access_routes,
         scope_address_utils::bech32_string_to_addr,
         traits::{OptionExtensions, ResultExtensions},
     },
@@ -53,16 +52,7 @@ impl AssetScopeAttribute {
             return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", ver_addr, latest_verifier_detail.address).as_str()).to_err();
         }
         // Remove all access routes that are empty strings to prevent bad data from being provided
-        let filtered_access_routes = access_routes
-            .into_iter()
-            // Ensure all whitespace values are removed from both routes and names to ensure duplicate detection works as intended
-            .map(|r| r.trim_values())
-            // Drop all proposed entries that contain empty routes. These definitions are not useful to downstream consumers
-            .filter(|r| !r.route.is_empty())
-            // Temp swap to a HashSet to filter duplicates automagically
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect::<Vec<AccessRoute>>();
+        let filtered_access_routes = filter_valid_access_routes(access_routes);
         // If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
         let access_definitions = if filtered_access_routes.is_empty() {
             vec![]

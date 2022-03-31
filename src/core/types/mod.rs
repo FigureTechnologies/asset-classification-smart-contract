@@ -1,4 +1,5 @@
 pub mod access_definition;
+pub mod access_route;
 pub mod asset_definition;
 pub mod asset_identifier;
 pub mod asset_onboarding_status;

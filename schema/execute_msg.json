@@ -22,7 +22,7 @@
                 "null"
               ],
               "items": {
-                "type": "string"
+                "$ref": "#/definitions/AccessRoute"
               }
             },
             "asset_type": {
@@ -58,7 +58,7 @@
                 "null"
               ],
               "items": {
-                "type": "string"
+                "$ref": "#/definitions/AccessRoute"
               }
             },
             "identifier": {
@@ -192,6 +192,23 @@
     }
   ],
   "definitions": {
+    "AccessRoute": {
+      "type": "object",
+      "required": [
+        "route"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "route": {
+          "type": "string"
+        }
+      }
+    },
     "AssetDefinitionInput": {
       "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
       "type": "object",

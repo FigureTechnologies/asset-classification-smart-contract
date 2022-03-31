@@ -11,7 +11,6 @@ use provwasm_std::{
 };
 use serde_json_wasm::to_string;
 
-use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::{
     contract::instantiate,
     core::{
@@ -27,15 +26,19 @@ use crate::{
     },
     util::functions::generate_asset_attribute_name,
 };
+use crate::{
+    core::types::access_route::AccessRoute,
+    util::aliases::{DepsMutC, EntryPointResponse},
+};
 
 use super::test_constants::{
-    DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID,
-    DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
-    DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD,
-    DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS,
-    DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS,
-    DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
-    DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+    DEFAULT_ACCESS_ROUTE_NAME, DEFAULT_ACCESS_ROUTE_ROUTE, DEFAULT_ADMIN_ADDRESS,
+    DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT,
+    DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS,
+    DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME,
+    DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH,
+    DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+    DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
@@ -81,6 +84,14 @@ pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
         .collect()
 }
 
+pub fn get_default_access_route() -> AccessRoute {
+    AccessRoute::route_and_name(DEFAULT_ACCESS_ROUTE_ROUTE, DEFAULT_ACCESS_ROUTE_NAME)
+}
+
+pub fn get_default_access_routes() -> Vec<AccessRoute> {
+    vec![get_default_access_route()]
+}
+
 pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
     AssetScopeAttribute {
         asset_uuid: DEFAULT_ASSET_UUID.to_string(),
@@ -93,7 +104,7 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
         latest_verification_result: None,
         access_definitions: vec![AccessDefinition {
             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-            access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+            access_routes: get_default_access_routes(),
             definition_type: AccessDefinitionType::Requestor,
         }],
     }
@@ -298,6 +309,11 @@ pub fn mock_scope_attribute<S: Into<String>>(
             "json",
         )],
     );
+}
+
+pub fn assert_single_item<T: Clone, S: Into<String>>(slice: &[T], message: S) -> T {
+    assert_eq!(1, slice.len(), "{}", message.into());
+    slice.first().unwrap().clone()
 }
 
 /// Crawls the vector of messages contained in the provided response, and, if an add attribute message

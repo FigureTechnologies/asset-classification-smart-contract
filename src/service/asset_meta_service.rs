@@ -9,6 +9,7 @@ use crate::{
         state::config_read_v2,
         types::{
             access_definition::{AccessDefinition, AccessDefinitionType},
+            access_route::AccessRoute,
             asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
             asset_verification_result::AssetVerificationResult,
@@ -127,7 +128,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         scope_address: S1,
         success: bool,
         verification_message: Option<S2>,
-        access_routes: Vec<String>,
+        access_routes: Vec<AccessRoute>,
     ) -> AssetResult<()> {
         // set verification result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
@@ -155,9 +156,9 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
             let filtered_access_routes = access_routes
                 .into_iter()
-                .map(|r| r.trim().to_owned())
-                .filter(|r| !r.is_empty())
-                .collect::<Vec<String>>();
+                .map(|r| r.trim_values())
+                .filter(|r| !r.route.is_empty())
+                .collect::<Vec<AccessRoute>>();
 
             // check for existing verifier-linked access route collection
             if let Some(access_definition) = attribute
@@ -174,7 +175,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 .collect::<HashSet<_>>()
                 .into_iter()
                 .cloned()
-                .collect::<Vec<String>>();
+                .collect::<Vec<AccessRoute>>();
                 distinct_routes.sort();
 
                 let mut new_access_definitions = attribute
@@ -263,6 +264,7 @@ mod tests {
             state::config_read_v2,
             types::{
                 access_definition::{AccessDefinition, AccessDefinitionType},
+                access_route::AccessRoute,
                 asset_identifier::AssetIdentifier,
                 asset_onboarding_status::AssetOnboardingStatus,
                 asset_scope_attribute::AssetScopeAttribute,
@@ -278,14 +280,13 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ACCESS_ROUTE, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID,
-                DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
-                DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
+                DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
+                DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
-                get_default_asset_scope_attribute, get_default_verifier_detail, setup_test_suite,
-                test_instantiate_success, InstArgs,
+                assert_single_item, get_default_access_routes, get_default_asset_scope_attribute,
+                get_default_verifier_detail, setup_test_suite, test_instantiate_success, InstArgs,
             },
             verify_asset_helpers::{test_verify_asset, TestVerifyAsset},
         },
@@ -563,12 +564,12 @@ mod tests {
                     access_definitions: vec![
                         AccessDefinition {
                             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                            access_routes: vec!["ownerroute1".to_string()],
+                            access_routes: vec![AccessRoute::route_only("ownerroute1")],
                             definition_type: AccessDefinitionType::Requestor,
                         },
                         AccessDefinition {
                             owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                            access_routes: vec!["existingroute".to_string()],
+                            access_routes: vec![AccessRoute::route_only("existingroute")],
                             definition_type: AccessDefinitionType::Verifier,
                         },
                     ],
@@ -587,7 +588,7 @@ mod tests {
                 DEFAULT_SCOPE_ADDRESS,
                 true,
                 "Great jaerb there Hamstar".to_some(),
-                vec!["newroute".to_string()],
+                vec![AccessRoute::route_only("newroute")],
             )
             .unwrap();
 
@@ -612,7 +613,7 @@ mod tests {
                 assert_eq!(
                     &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: vec!["ownerroute1".to_string()],
+                        access_routes: vec![AccessRoute::route_only("ownerroute1")],
                         definition_type: AccessDefinitionType::Requestor,
                     },
                     deserialized
@@ -625,7 +626,10 @@ mod tests {
                 assert_eq!(
                     &AccessDefinition {
                         owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                        access_routes: vec!["existingroute".to_string(), "newroute".to_string()],
+                        access_routes: vec![
+                            AccessRoute::route_only("existingroute"),
+                            AccessRoute::route_only("newroute")
+                        ],
                         definition_type: AccessDefinitionType::Verifier,
                     },
                     deserialized
@@ -655,10 +659,10 @@ mod tests {
                 verify_asset: VerifyAssetV1 {
                     // All invalid (empty or whitespace-only strings) access routes should be filtered from output
                     access_routes: vec![
-                        "   ".to_string(),
-                        "       ".to_string(),
-                        "".to_string(),
-                        "real route".to_string(),
+                        AccessRoute::route_only("   "),
+                        AccessRoute::route_only("       "),
+                        AccessRoute::route_only(""),
+                        AccessRoute::route_only("real route"),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -687,7 +691,7 @@ mod tests {
         );
         assert_eq!(
             "real route",
-            verifier_definition.access_routes.first().unwrap(),
+            verifier_definition.access_routes.first().unwrap().route,
             "the only route in the verifier's access definition should be the non-blank string provided",
         );
     }
@@ -703,7 +707,11 @@ mod tests {
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
-                    access_routes: vec!["   ".to_string(), "       ".to_string(), "".to_string()],
+                    access_routes: vec![
+                        AccessRoute::route_only("   "),
+                        AccessRoute::route_only("       "),
+                        AccessRoute::route_only(""),
+                    ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
                 ..Default::default()
@@ -721,6 +729,51 @@ mod tests {
         assert!(
             verifier_access_definitions.is_empty(),
             "when no valid access routes for the verifier are provided, no access definition record should be added",
+        );
+    }
+
+    #[test]
+    fn test_verify_with_duplicate_access_routes_and_different_names_keeps_all_routes() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Use two AccessRoutes with the same route but different names
+        test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    // Only invalid access routes should yield no access definition for the verifier
+                    access_routes: vec![
+                        AccessRoute::route_and_name("test-route", "name1"),
+                        AccessRoute::route_and_name("test-route", "name2"),
+                    ],
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the scope attribute should be fetched");
+        let access_routes = assert_single_item(
+            &attribute
+                .access_definitions
+                .into_iter()
+                .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
+                .collect::<Vec<AccessDefinition>>(),
+            "expected only a single access definition to be provided for the verifier",
+        )
+        .access_routes;
+        assert!(
+            access_routes.iter().any(|r| r.route == "test-route"
+                && r.to_owned().name.expect("all names should be Some") == "name1"),
+            "the first name route should be included in the access routes",
+        );
+        assert!(
+            access_routes.iter().any(|r| r.route == "test-route"
+                && r.to_owned().name.expect("all names should be Some") == "name2"),
+            "the second name route should be included in the access routes",
         );
     }
 
@@ -870,7 +923,7 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             get_default_verifier_detail(),
-            vec![DEFAULT_ACCESS_ROUTE.to_string()],
+            get_default_access_routes(),
         )
         .expect("failed to instantiate default asset scope attribute")
     }

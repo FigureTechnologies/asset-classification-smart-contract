@@ -311,6 +311,7 @@ pub mod tests {
                                 "Freebies",
                                 "We validate fo free!",
                                 "http://www.yahoo.com/",
+                                "https://github.com/kelseyhightower/nocode",
                             )
                             .to_some(),
                         ),

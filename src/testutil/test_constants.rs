@@ -53,9 +53,11 @@ pub const DEFAULT_RECORD_INPUT_NAME: &str = "loanType";
 pub const DEFAULT_RECORD_INPUT_SOURCE_ADDRESS: &str = "tp1rk3qa624qe504mmvh2nv30zkrtdc5y2455uvew";
 /// This is the default value used in the default record output
 pub const DEFAULT_RECORD_OUTPUT_HASH: &str = "mock-hash-lkjsdfljsdoinfweounf";
-/// This is the default value used in the default verifier detail's entity detail
+/// This is a default value used in the default verifier detail's entity detail
 pub const DEFAULT_ENTITY_DETAIL_NAME: &str = "Provenance Verifier";
-/// This is the default value used in the default verifier detail's entity detail
+/// This is a default value used in the default verifier detail's entity detail
 pub const DEFAULT_ENTITY_DETAIL_DESCRIPTION: &str = "Provenance approved verifier";
-/// This is the default value used in the default verifier detail's entity detail
-pub const DEFAULT_ENTITY_DETAIL_WEBSITE: &str = "http://www.provenance.io/";
+/// This is a default value used in the default verifier detail's entity detail
+pub const DEFAULT_ENTITY_DETAIL_HOME_URL: &str = "http://www.provenance.io/";
+/// This is a default value used in the default verifier detail's entity detail (as of writing this, this link is 100 real. Enter if you dare)
+pub const DEFAULT_ENTITY_DETAIL_SOURCE_URL: &str = "https://github.com/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";

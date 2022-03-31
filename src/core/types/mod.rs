@@ -6,6 +6,7 @@ pub mod asset_onboarding_status;
 pub mod asset_qualifier;
 pub mod asset_scope_attribute;
 pub mod asset_verification_result;
+pub mod entity_detail;
 pub mod fee_destination;
 pub mod scope_spec_identifier;
 pub mod verifier_detail;

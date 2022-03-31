@@ -104,6 +104,7 @@ mod tests {
                         "nhash",
                         Decimal::zero(),
                         vec![],
+                        None,
                     )],
                     Some(true),
                 )

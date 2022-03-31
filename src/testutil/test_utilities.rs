@@ -20,11 +20,12 @@ use crate::{
             asset_definition::{AssetDefinition, AssetDefinitionInput},
             asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
+            entity_detail::EntityDetail,
             scope_spec_identifier::ScopeSpecIdentifier,
             verifier_detail::VerifierDetail,
         },
     },
-    util::functions::generate_asset_attribute_name,
+    util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
 };
 use crate::{
     core::types::access_route::AccessRoute,
@@ -33,12 +34,14 @@ use crate::{
 
 use super::test_constants::{
     DEFAULT_ACCESS_ROUTE_NAME, DEFAULT_ACCESS_ROUTE_ROUTE, DEFAULT_ADMIN_ADDRESS,
-    DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_FEE_PERCENT,
-    DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS,
-    DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME,
-    DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH,
-    DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
-    DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+    DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
+    DEFAULT_ENTITY_DETAIL_DESCRIPTION, DEFAULT_ENTITY_DETAIL_NAME, DEFAULT_ENTITY_DETAIL_WEBSITE,
+    DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
+    DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME,
+    DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME,
+    DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
+    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
+    DEFAULT_VERIFIER_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
@@ -53,6 +56,14 @@ pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     }
 }
 
+pub fn get_default_entity_detail() -> EntityDetail {
+    EntityDetail::new(
+        DEFAULT_ENTITY_DETAIL_NAME,
+        DEFAULT_ENTITY_DETAIL_DESCRIPTION,
+        DEFAULT_ENTITY_DETAIL_WEBSITE,
+    )
+}
+
 pub fn get_default_verifier_detail() -> VerifierDetail {
     VerifierDetail {
         address: DEFAULT_VERIFIER_ADDRESS.into(),
@@ -60,6 +71,7 @@ pub fn get_default_verifier_detail() -> VerifierDetail {
         onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
         fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
         fee_destinations: vec![],
+        entity_detail: get_default_entity_detail().to_some(),
     }
 }
 

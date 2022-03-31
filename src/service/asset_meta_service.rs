@@ -282,7 +282,8 @@ mod tests {
             },
             test_utilities::{
                 assert_single_item, get_default_access_routes, get_default_asset_scope_attribute,
-                get_default_verifier_detail, setup_test_suite, test_instantiate_success, InstArgs,
+                get_default_entity_detail, get_default_verifier_detail, setup_test_suite,
+                test_instantiate_success, InstArgs,
             },
             verify_asset_helpers::{test_verify_asset, TestVerifyAsset},
         },
@@ -554,6 +555,7 @@ mod tests {
                         onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
                         fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
                         fee_destinations: vec![],
+                        entity_detail: get_default_entity_detail().to_some(),
                     }
                     .to_some(),
                     latest_verification_result: None,

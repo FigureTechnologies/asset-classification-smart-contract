@@ -72,10 +72,11 @@ mod tests {
     };
     use crate::testutil::test_utilities::{
         get_default_asset_definition, get_default_asset_definition_inputs,
-        single_attribute_for_key, test_instantiate, InstArgs,
+        get_default_entity_detail, single_attribute_for_key, test_instantiate, InstArgs,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
+    use crate::util::traits::OptionExtensions;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
     use provwasm_mocks::mock_dependencies;
@@ -145,6 +146,7 @@ mod tests {
                     "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
                     Decimal::percent(100),
                 )],
+                get_default_entity_detail().to_some(),
             )],
             None,
         );
@@ -166,6 +168,7 @@ mod tests {
                         Decimal::percent(50),
                     ),
                 ],
+                get_default_entity_detail().to_some(),
             )],
             None,
         );

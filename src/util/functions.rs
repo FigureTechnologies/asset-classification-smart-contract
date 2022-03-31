@@ -123,12 +123,14 @@ pub fn filter_valid_access_routes(routes: Vec<AccessRoute>) -> Vec<AccessRoute> 
                     None => true,
                 }
         })
+        // Temp swap to a HashSet to filter duplicates automagically
         .collect::<HashSet<_>>()
         .into_iter()
         .collect::<Vec<AccessRoute>>()
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::{error::ContractError, types::access_route::AccessRoute};
     use crate::testutil::test_utilities::assert_single_item;

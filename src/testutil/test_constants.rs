@@ -59,5 +59,5 @@ pub const DEFAULT_ENTITY_DETAIL_NAME: &str = "Provenance Verifier";
 pub const DEFAULT_ENTITY_DETAIL_DESCRIPTION: &str = "Provenance approved verifier";
 /// This is a default value used in the default verifier detail's entity detail
 pub const DEFAULT_ENTITY_DETAIL_HOME_URL: &str = "http://www.provenance.io/";
-/// This is a default value used in the default verifier detail's entity detail (as of writing this, this link is 100 real. Enter if you dare)
+/// This is a default value used in the default verifier detail's entity detail (as of writing this, this link is 100% real. Enter if you dare)
 pub const DEFAULT_ENTITY_DETAIL_SOURCE_URL: &str = "https://github.com/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";

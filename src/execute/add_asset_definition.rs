@@ -77,7 +77,8 @@ mod tests {
         DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
+        empty_mock_info, get_default_entity_detail, single_attribute_for_key,
+        test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
@@ -268,6 +269,7 @@ mod tests {
                     DEFAULT_FEE_ADDRESS,
                     Decimal::percent(100),
                 )],
+                get_default_entity_detail().to_some(),
             )],
             None,
         );

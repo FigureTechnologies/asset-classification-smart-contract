@@ -1,6 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{config_read_v2, load_asset_definition_by_type};
+use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
 use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
@@ -18,7 +19,7 @@ pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
     pub asset_type: String,
     pub verifier_address: String,
-    pub access_routes: Vec<String>,
+    pub access_routes: Vec<AccessRoute>,
 }
 impl OnboardAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<OnboardAssetV1> {
@@ -258,14 +259,15 @@ mod tests {
         testutil::{
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
-                DEFAULT_ACCESS_ROUTE, DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE,
-                DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
-                DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+                DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
+                DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
-                empty_mock_info, get_default_scope, get_duped_scope, mock_info_with_funds,
-                mock_info_with_nhash, setup_test_suite, test_instantiate_success, InstArgs,
+                empty_mock_info, get_default_access_routes, get_default_scope, get_duped_scope,
+                mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
+                test_instantiate_success, InstArgs,
             },
             verify_asset_helpers::{test_verify_asset, TestVerifyAsset},
         },
@@ -835,7 +837,7 @@ mod tests {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+                access_routes: get_default_access_routes(),
             },
         )
         .unwrap();
@@ -886,7 +888,7 @@ mod tests {
                 assert_eq!(
                     &AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: vec![DEFAULT_ACCESS_ROUTE.to_string()],
+                        access_routes: get_default_access_routes(),
                         definition_type: AccessDefinitionType::Requestor,
                     },
                     deserialized.access_definitions.first().unwrap(),

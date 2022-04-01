@@ -199,13 +199,16 @@ fn validate_destination_internal(destination: &FeeDestination) -> Vec<String> {
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 pub mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
     use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionInput};
+    use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestination;
     use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetail;
+    use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::{
@@ -242,6 +245,7 @@ pub mod tests {
                         "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
                         Decimal::percent(100),
                     )],
+                    get_default_entity_detail().to_some(),
                 )],
                 None,
             )],
@@ -267,6 +271,7 @@ pub mod tests {
                             "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
                             Decimal::percent(100),
                         )],
+                        get_default_entity_detail().to_some(),
                     )],
                     None,
                 ),
@@ -288,6 +293,7 @@ pub mod tests {
                                 Decimal::percent(50),
                             ),
                         ],
+                        get_default_entity_detail().to_some(),
                     )],
                     None,
                 ),
@@ -301,6 +307,13 @@ pub mod tests {
                             NHASH,
                             Decimal::percent(0),
                             vec![],
+                            EntityDetail::new(
+                                "Freebies",
+                                "We validate fo free!",
+                                "http://www.yahoo.com/",
+                                "https://github.com/kelseyhightower/nocode",
+                            )
+                            .to_some(),
                         ),
                         VerifierDetail::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
@@ -317,6 +330,7 @@ pub mod tests {
                                     Decimal::percent(75),
                                 ),
                             ],
+                            get_default_entity_detail().to_some(),
                         ),
                     ],
                     None,
@@ -341,6 +355,7 @@ pub mod tests {
                         NHASH,
                         Decimal::percent(100),
                         vec![FeeDestination::new("fee", Decimal::percent(100))],
+                        get_default_entity_detail().to_some(),
                     )],
                     None,
                 )],
@@ -411,6 +426,7 @@ pub mod tests {
                     "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
                     Decimal::percent(100),
                 )],
+                get_default_entity_detail().to_some(),
             )],
         );
         let response = validate_asset_definition_internal(&definition);
@@ -433,6 +449,7 @@ pub mod tests {
                     NHASH,
                     Decimal::percent(100),
                     vec![FeeDestination::new("fee", Decimal::percent(100))],
+                    get_default_entity_detail().to_some(),
                 )],
             ),
             "asset_definition:asset_type: must not be blank",
@@ -451,6 +468,7 @@ pub mod tests {
                     NHASH,
                     Decimal::percent(100),
                     vec![FeeDestination::new("fee", Decimal::percent(100))],
+                    get_default_entity_detail().to_some(),
                 )],
             ),
             "asset_definition:scope_spec_address: must not be blank",
@@ -477,6 +495,7 @@ pub mod tests {
                     NHASH,
                     Decimal::percent(100),
                     vec![FeeDestination::new("fee", Decimal::percent(100))],
+                    get_default_entity_detail().to_some(),
                 )],
             ),
             "verifier:address: must be a valid address",
@@ -491,6 +510,7 @@ pub mod tests {
             NHASH,
             Decimal::percent(0),
             vec![],
+            get_default_entity_detail().to_some(),
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -511,6 +531,7 @@ pub mod tests {
                 "tp143p2m575fqre9rmaf9tpqwp9ux0mrzv83tdfh6",
                 Decimal::percent(100),
             )],
+            get_default_entity_detail().to_some(),
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -549,6 +570,7 @@ pub mod tests {
                     Decimal::percent(5),
                 ),
             ],
+            get_default_entity_detail().to_some(),
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -561,7 +583,14 @@ pub mod tests {
     #[test]
     fn test_invalid_verifier_address() {
         test_invalid_verifier(
-            &VerifierDetail::new("", Uint128::new(150), NHASH, Decimal::zero(), vec![]),
+            &VerifierDetail::new(
+                "",
+                Uint128::new(150),
+                NHASH,
+                Decimal::zero(),
+                vec![],
+                get_default_entity_detail().to_some(),
+            ),
             "verifier:address: must be a valid address",
         );
     }
@@ -569,7 +598,14 @@ pub mod tests {
     #[test]
     fn test_invalid_verifier_onboarding_denom() {
         test_invalid_verifier(
-            &VerifierDetail::new("address", Uint128::new(100), "", Decimal::zero(), vec![]),
+            &VerifierDetail::new(
+                "address",
+                Uint128::new(100),
+                "",
+                Decimal::zero(),
+                vec![],
+                get_default_entity_detail().to_some(),
+            ),
             "verifier:onboarding_denom: must not be blank",
         );
     }
@@ -583,6 +619,7 @@ pub mod tests {
                 NHASH,
                 Decimal::percent(101),
                 vec![FeeDestination::new("fee", Decimal::percent(100))],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_percent: must be less than or equal to 100%",
         );
@@ -601,6 +638,7 @@ pub mod tests {
                     "fee",
                     Decimal::percent(100),
                 )],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_percent: non-zero fee percent of 1% must cleanly multiply against onboarding cost of 1nhash to produce a non-zero result, but produced zero. Try increasing cost or fee percent",
         );
@@ -615,6 +653,7 @@ pub mod tests {
                 NHASH,
                 Decimal::percent(100),
                 vec![],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_percent: cannot specify a non-zero fee percent if no fee destinations are supplied",
         );
@@ -632,6 +671,7 @@ pub mod tests {
                     "fee",
                     Decimal::percent(100),
                 )],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations: fee destinations cannot be provided when the fee percent is zero",
         );
@@ -646,6 +686,7 @@ pub mod tests {
                 NHASH,
                 Decimal::percent(50),
                 vec![FeeDestination::new("first", Decimal::percent(99))],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
         );
@@ -664,6 +705,7 @@ pub mod tests {
                     FeeDestination::new("second", Decimal::percent(33)),
                     FeeDestination::new("third", Decimal::percent(33)),
                 ],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations: fee destinations' fee_percents must always sum to a 100% distribution",
         );
@@ -683,6 +725,7 @@ pub mod tests {
                     FeeDestination::new("first", Decimal::percent(99)),
                     FeeDestination::new("second", Decimal::percent(1)),
                 ],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations: fee destinations' fee percents must cleanly sum to the fee_total. Fee total: 20nhash, Destination sum: 19nhash",
         );
@@ -699,7 +742,8 @@ pub mod tests {
                 vec![
                     FeeDestination::new("fee-guy", Decimal::percent(50)),
                     FeeDestination::new("fee-guy", Decimal::percent(50)),
-                ]
+                ],
+                get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations: all fee destinations within a verifier must have unique addresses",
         );
@@ -714,6 +758,7 @@ pub mod tests {
                 NHASH,
                 Decimal::percent(100),
                 vec![FeeDestination::new("", Decimal::percent(100))],
+                get_default_entity_detail().to_some(),
             ),
             "fee_destination:address: must be a valid address",
         );

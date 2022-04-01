@@ -2,8 +2,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::types::{
-    asset_definition::AssetDefinitionInput, asset_identifier::AssetIdentifier,
-    asset_qualifier::AssetQualifier, verifier_detail::VerifierDetail,
+    access_route::AccessRoute, asset_definition::AssetDefinitionInput,
+    asset_identifier::AssetIdentifier, asset_qualifier::AssetQualifier,
+    verifier_detail::VerifierDetail,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -22,13 +23,13 @@ pub enum ExecuteMsg {
         identifier: AssetIdentifier,
         asset_type: String,
         verifier_address: String,
-        access_routes: Option<Vec<String>>,
+        access_routes: Option<Vec<AccessRoute>>,
     },
     VerifyAsset {
         identifier: AssetIdentifier,
         success: bool,
         message: Option<String>,
-        access_routes: Option<Vec<String>>,
+        access_routes: Option<Vec<AccessRoute>>,
     },
     AddAssetDefinition {
         asset_definition: AssetDefinitionInput,

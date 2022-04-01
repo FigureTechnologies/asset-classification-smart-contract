@@ -61,6 +61,38 @@
       "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
       "type": "string"
     },
+    "EntityDetail": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "A short description of the entity's purpose",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "home_url": {
+          "description": "A web link that can send observers to the organization that the verifier belongs to",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "A short name describing the entity",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "FeeDestination": {
       "type": "object",
       "required": [
@@ -132,6 +164,16 @@
       "properties": {
         "address": {
           "type": "string"
+        },
+        "entity_detail": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EntityDetail"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "fee_destinations": {
           "type": "array",

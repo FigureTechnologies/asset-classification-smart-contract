@@ -1,4 +1,7 @@
-use crate::{core::types::asset_scope_attribute::AssetScopeAttribute, util::aliases::AssetResult};
+use crate::{
+    core::types::{access_route::AccessRoute, asset_scope_attribute::AssetScopeAttribute},
+    util::aliases::AssetResult,
+};
 
 pub trait AssetMetaRepository {
     fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<bool>;
@@ -19,6 +22,6 @@ pub trait AssetMetaRepository {
         scope_address: S1,
         success: bool,
         verification_message: Option<S2>,
-        access_routes: Vec<String>,
+        access_routes: Vec<AccessRoute>,
     ) -> AssetResult<()>;
 }

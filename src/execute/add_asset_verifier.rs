@@ -77,13 +77,14 @@ mod tests {
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        single_attribute_for_key, test_instantiate_success, InstArgs,
+        get_default_entity_detail, single_attribute_for_key, test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{
         ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VERIFIER_ADDRESS_KEY,
     };
     use crate::util::event_attributes::EventType;
+    use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_verifier;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -188,6 +189,7 @@ mod tests {
                     NHASH,
                     Decimal::percent(0),
                     vec![],
+                    None,
                 ),
             },
         )
@@ -248,6 +250,7 @@ mod tests {
                     NHASH,
                     Decimal::percent(0),
                     vec![],
+                    None,
                 ),
             ),
         )
@@ -278,6 +281,7 @@ mod tests {
             NHASH,
             Decimal::percent(10),
             vec![FeeDestination::new(TEST_FEE_ADDRESS, Decimal::percent(100))],
+            get_default_entity_detail().to_some(),
         );
         validate_verifier(&verifier).expect("expected the new verifier to pass validation");
         verifier

@@ -6,14 +6,15 @@ use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
         aliases::AssetResult,
+        functions::filter_valid_access_routes,
         scope_address_utils::bech32_string_to_addr,
         traits::{OptionExtensions, ResultExtensions},
     },
 };
 
 use super::{
-    access_definition::AccessDefinition, asset_identifier::AssetIdentifier,
-    asset_onboarding_status::AssetOnboardingStatus,
+    access_definition::AccessDefinition, access_route::AccessRoute,
+    asset_identifier::AssetIdentifier, asset_onboarding_status::AssetOnboardingStatus,
     asset_verification_result::AssetVerificationResult, verifier_detail::VerifierDetail,
 };
 
@@ -42,7 +43,7 @@ impl AssetScopeAttribute {
         verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         latest_verifier_detail: VerifierDetail,
-        access_routes: Vec<String>,
+        access_routes: Vec<AccessRoute>,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
@@ -50,12 +51,8 @@ impl AssetScopeAttribute {
         if ver_addr != latest_verifier_detail.address {
             return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", ver_addr, latest_verifier_detail.address).as_str()).to_err();
         }
-        // Remove all access routes that are empty strings to prevent bad data from beign provided
-        let filtered_access_routes = access_routes
-            .into_iter()
-            .map(|r| r.trim().to_owned())
-            .filter(|r| !r.is_empty())
-            .collect::<Vec<String>>();
+        // Remove all access routes that are empty strings to prevent bad data from being provided
+        let filtered_access_routes = filter_valid_access_routes(access_routes);
         // If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
         let access_definitions = if filtered_access_routes.is_empty() {
             vec![]
@@ -86,14 +83,15 @@ impl AssetScopeAttribute {
 mod tests {
     use crate::{
         core::types::{
-            asset_identifier::AssetIdentifier, asset_onboarding_status::AssetOnboardingStatus,
+            access_route::AccessRoute, asset_identifier::AssetIdentifier,
+            asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
         },
         testutil::{
             test_constants::{
                 DEFAULT_ASSET_UUID, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
-            test_utilities::get_default_verifier_detail,
+            test_utilities::{assert_single_item, get_default_verifier_detail},
         },
         util::traits::OptionExtensions,
     };
@@ -108,27 +106,23 @@ mod tests {
             AssetOnboardingStatus::Pending.to_some(),
             get_default_verifier_detail(),
             vec![
-                "    ".to_string(),
-                "  ".to_string(),
-                "".to_string(),
-                "good route".to_string(),
+                AccessRoute::route_only("    "),
+                AccessRoute::route_only("  "),
+                AccessRoute::route_only(""),
+                AccessRoute::route_only("good route"),
             ],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
-        assert_eq!(
-            1,
-            attribute.access_definitions.len(),
+        let access_definition = assert_single_item(
+            &attribute.access_definitions,
             "there should be one access definition created when at least one valid route is provided in the access routes",
         );
-        let access_definition = attribute.access_definitions.first().unwrap();
-        assert_eq!(
-            1,
-            access_definition.access_routes.len(),
+        let access_route = assert_single_item(
+            &access_definition.access_routes,
             "only one access definition should be added because the rest were invalid strings",
         );
         assert_eq!(
-            "good route",
-            access_definition.access_routes.first().unwrap(),
+            "good route", access_route.route,
             "the only access route should be the route that contained a proper string",
         );
     }
@@ -142,7 +136,11 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             get_default_verifier_detail(),
-            vec!["    ".to_string(), "  ".to_string(), "".to_string()],
+            vec![
+                AccessRoute::route_only("    "),
+                AccessRoute::route_only("  "),
+                AccessRoute::route_only(""),
+            ],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         assert!(
@@ -166,6 +164,170 @@ mod tests {
         assert!(
             attribute.access_definitions.is_empty(),
             "there should not be any access definitions when no access routes are provided",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_trims_access_routes() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_verifier_detail(),
+            vec![AccessRoute::route_and_name(
+                "   test-route   ",
+                "my cool name                 ",
+            )],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        let access_definition = assert_single_item(
+            &attribute.access_definitions,
+            "a single access definition should be kept because an access route was defined",
+        );
+        let access_route = assert_single_item(
+            &access_definition.access_routes,
+            "only one access route should be present in the access definition",
+        );
+        assert_eq!(
+            "test-route", access_route.route,
+            "the access route's route property should be trimmed",
+        );
+        assert_eq!(
+            "my cool name",
+            access_route
+                .name
+                .expect("the access route should have a valid name"),
+            "the access route's name property should be properly trimmed",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_keeps_duplicate_routes_with_different_names() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_verifier_detail(),
+            vec![
+                AccessRoute::route_and_name("test-route", "name1"),
+                AccessRoute::route_and_name("test-route", "name2"),
+            ],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        assert_eq!(
+            1,
+            attribute.access_definitions.len(),
+            "an access definition should be kept because access routes were defined",
+        );
+        let routes = attribute
+            .access_definitions
+            .first()
+            .unwrap()
+            .access_routes
+            .clone();
+        assert_eq!(
+            2,
+            routes.len(),
+            "both access routes should be kept because they have different names",
+        );
+        assert!(
+            routes.iter().any(
+                |r| r.to_owned().name.expect("all names should be Some") == "name1"
+                    && r.route == "test-route"
+            ),
+            "expected the name1 access route to be included in the vector and keep its proper name",
+        );
+        assert!(
+            routes.iter().any(
+                |r| r.to_owned().name.expect("name should be Some") == "name2"
+                    && r.route == "test-route"
+            ),
+            "expected the name2 access route to be included in the vector and keep its proper name",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_keeps_duplicate_routes_with_some_and_none_names() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_verifier_detail(),
+            vec![
+                AccessRoute::route_and_name("test-route", "hey look at my name right here"),
+                AccessRoute::route_only("test-route"),
+            ],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        assert_eq!(
+            1,
+            attribute.access_definitions.len(),
+            "an access definition should be kept because access routes were defined",
+        );
+        let routes = attribute
+            .access_definitions
+            .first()
+            .unwrap()
+            .access_routes
+            .clone();
+        assert_eq!(
+            2,
+            routes.len(),
+            "both access routes should be kept because they have different names",
+        );
+        assert!(
+            routes
+                .iter()
+                .any(|r| r.to_owned().name.unwrap_or("not the expected name".to_string())
+                    == "hey look at my name right here"
+                    && r.route == "test-route"),
+            "expected the populated name access route to be included in the vector and keep its proper name",
+        );
+        assert!(
+            routes
+                .iter()
+                .any(|r| r.to_owned().name.is_none() && r.route == "test-route"),
+            "expected the name2 access route to be included in the vector and keep its proper name",
+        );
+    }
+
+    #[test]
+    fn test_new_asset_scope_attribute_skips_duplicate_routes_after_trimming_them() {
+        let attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "heloc",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Pending.to_some(),
+            get_default_verifier_detail(),
+            vec![
+                AccessRoute::route_and_name("test-route     ", "myname"),
+                AccessRoute::route_and_name("test-route", "myname    "),
+            ],
+        )
+        .expect("validation should succeed for a properly-formatted asset scope attribute");
+        let access_definition = assert_single_item(
+            &attribute.access_definitions,
+            "a single access definition should be kept because an access route should be added",
+        );
+        let access_route = assert_single_item(
+            &access_definition.access_routes,
+            "only one access route should be present in the access definition due to them being identical after trimming",
+        );
+        assert_eq!(
+            "test-route", access_route.route,
+            "the trimmed route name should be produced correctly",
+        );
+        assert_eq!(
+            "myname",
+            access_route.name.expect("the name should be set"),
+            "the trimmed name should be produced correctly",
         );
     }
 }

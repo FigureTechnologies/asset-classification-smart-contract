@@ -67,11 +67,13 @@ mod tests {
         DEFAULT_SENDER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        empty_mock_info, single_attribute_for_key, test_instantiate_success, InstArgs,
+        empty_mock_info, get_default_entity_detail, single_attribute_for_key,
+        test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
+    use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
     use cosmwasm_std::{coin, Decimal, Uint128};
@@ -201,6 +203,7 @@ mod tests {
                 NHASH,
                 Decimal::percent(25),
                 vec![FeeDestination::new("fee-guy", Decimal::percent(100))],
+                get_default_entity_detail().to_some(),
             )],
         );
         let error = update_asset_definition(
@@ -256,6 +259,7 @@ mod tests {
                         Decimal::percent(30),
                     ),
                 ],
+                get_default_entity_detail().to_some(),
             )],
             None,
         );

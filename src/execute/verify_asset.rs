@@ -1,5 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
+use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
 use crate::service::asset_meta_repository::AssetMetaRepository;
@@ -16,7 +17,7 @@ pub struct VerifyAssetV1 {
     pub identifier: AssetIdentifier,
     pub success: bool,
     pub message: Option<String>,
-    pub access_routes: Vec<String>,
+    pub access_routes: Vec<AccessRoute>,
 }
 impl VerifyAssetV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<VerifyAssetV1> {

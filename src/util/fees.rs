@@ -68,6 +68,7 @@ pub fn calculate_verifier_cost_messages(
 }
 
 #[cfg(test)]
+#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{BankMsg, CosmosMsg, Decimal, Uint128};
     use provwasm_std::ProvenanceMsg;
@@ -77,7 +78,8 @@ mod tests {
             error::ContractError,
             types::{fee_destination::FeeDestination, verifier_detail::VerifierDetail},
         },
-        util::constants::NHASH,
+        testutil::test_utilities::get_default_entity_detail,
+        util::{constants::NHASH, traits::OptionExtensions},
     };
 
     use super::calculate_verifier_cost_messages;
@@ -91,6 +93,7 @@ mod tests {
             NHASH,
             Decimal::percent(150),
             vec![FeeDestination::new("fee", Decimal::percent(100))],
+            get_default_entity_detail().to_some(),
         );
         let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
@@ -118,6 +121,7 @@ mod tests {
             Decimal::percent(50),
             // All fee destinations should always add up to 100% (as enforced by validation)
             vec![FeeDestination::new("fee", Decimal::percent(50))],
+            None,
         );
         let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
@@ -143,6 +147,7 @@ mod tests {
             NHASH,
             Decimal::zero(),
             vec![],
+            None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
@@ -171,6 +176,7 @@ mod tests {
                 "fee-destination",
                 Decimal::percent(100),
             )],
+            None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
@@ -199,6 +205,7 @@ mod tests {
                 "fee-destination",
                 Decimal::percent(100),
             )],
+            None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
@@ -233,6 +240,7 @@ mod tests {
                 FeeDestination::new("fourth", Decimal::percent(5)),
                 FeeDestination::new("fifth", Decimal::percent(15)),
             ],
+            None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");

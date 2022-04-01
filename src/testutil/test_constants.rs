@@ -26,8 +26,10 @@ pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 pub const DEFAULT_FEE_PERCENT: u64 = 0;
 /// This is the default value that test_instantiate uses to create the contract's base name
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
+/// This is the default access route name to be set for the onboarding address
+pub const DEFAULT_ACCESS_ROUTE_NAME: &str = "gateway";
 /// This is the default access route to be set for the onboarding address
-pub const DEFAULT_ACCESS_ROUTE: &str = "https://coolassets.co";
+pub const DEFAULT_ACCESS_ROUTE_ROUTE: &str = "https://coolassets.co";
 /// This is the default value appended to mocked records
 pub const DEFAULT_RECORD_NAME: &str = "test-record";
 /// This is the default value used in the default record. The derived result was generated with Provenance's MetadataAddress using the DEFAULT_SCOPE_ADDRESS and a random session UUID
@@ -51,3 +53,11 @@ pub const DEFAULT_RECORD_INPUT_NAME: &str = "loanType";
 pub const DEFAULT_RECORD_INPUT_SOURCE_ADDRESS: &str = "tp1rk3qa624qe504mmvh2nv30zkrtdc5y2455uvew";
 /// This is the default value used in the default record output
 pub const DEFAULT_RECORD_OUTPUT_HASH: &str = "mock-hash-lkjsdfljsdoinfweounf";
+/// This is a default value used in the default verifier detail's entity detail
+pub const DEFAULT_ENTITY_DETAIL_NAME: &str = "Provenance Verifier";
+/// This is a default value used in the default verifier detail's entity detail
+pub const DEFAULT_ENTITY_DETAIL_DESCRIPTION: &str = "Provenance approved verifier";
+/// This is a default value used in the default verifier detail's entity detail
+pub const DEFAULT_ENTITY_DETAIL_HOME_URL: &str = "http://www.provenance.io/";
+/// This is a default value used in the default verifier detail's entity detail (as of writing this, this link is 100% real. Enter if you dare)
+pub const DEFAULT_ENTITY_DETAIL_SOURCE_URL: &str = "https://github.com/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";

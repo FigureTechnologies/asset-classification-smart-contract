@@ -1,4 +1,6 @@
-use crate::core::state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type};
+use crate::core::state::{
+    may_load_asset_definition_by_scope_spec, may_load_asset_definition_by_type,
+};
 use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
@@ -7,10 +9,10 @@ use cosmwasm_std::{to_binary, Binary};
 pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetResult<Binary> {
     let asset_definition = match qualifier {
         AssetQualifier::AssetType(asset_type) => {
-            load_asset_definition_by_type(deps.storage, asset_type)
+            may_load_asset_definition_by_type(deps.storage, asset_type)
         }
         AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
-            load_asset_definition_by_scope_spec(deps.storage, scope_spec_address)
+            may_load_asset_definition_by_scope_spec(deps.storage, scope_spec_address)
         }
     }?;
     to_binary(&asset_definition)?.to_ok()
@@ -19,7 +21,6 @@ pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetR
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use crate::core::error::ContractError::{self, Std};
     use crate::core::state::insert_asset_definition;
     use crate::core::types::asset_definition::AssetDefinition;
     use crate::core::types::asset_qualifier::AssetQualifier;
@@ -28,7 +29,7 @@ mod tests {
         get_default_asset_definition, test_instantiate_success, InstArgs,
     };
     use crate::util::aliases::DepsC;
-    use cosmwasm_std::{from_binary, StdError};
+    use cosmwasm_std::from_binary;
     use provwasm_mocks::mock_dependencies;
 
     #[test]
@@ -91,30 +92,32 @@ mod tests {
     }
 
     #[test]
-    fn test_error_is_returned_when_asset_definition_is_not_found_by_asset_type() {
-        let error = query_asset_definition(
+    fn test_none_is_returned_when_asset_definition_is_not_found_by_asset_type() {
+        let binary = query_asset_definition(
             &mock_dependencies(&[]).as_ref(),
             AssetQualifier::asset_type("fakeloan"),
         )
-        .unwrap_err();
+        .expect("the query should execute without error");
+        let result = from_binary::<Option<AssetDefinition>>(&binary)
+            .expect("expected the binary to deserialize appropriately");
         assert!(
-            matches!(error, Std(StdError::NotFound { .. })),
-            "a not found error should be returned when the asset type is not registered, but got: {:?}",
-            error,
+            result.is_none(),
+            "the resulting binary should be an empty Option",
         );
     }
 
     #[test]
-    fn test_error_is_returned_when_asset_definition_is_not_found_by_scope_spec() {
-        let error = query_asset_definition(
+    fn test_none_is_returned_when_asset_definition_is_not_found_by_scope_spec() {
+        let binary = query_asset_definition(
             &mock_dependencies(&[]).as_ref(),
             AssetQualifier::scope_spec_address("fakescopespec"),
         )
-        .unwrap_err();
+        .expect("the query should execute without error");
+        let result = from_binary::<Option<AssetDefinition>>(&binary)
+            .expect("expected the binary to deserialize appropriately");
         assert!(
-            matches!(error, ContractError::RecordNotFound { .. }),
-            "a record not found error should be returned when the scope spec is not registered, but got: {:?}",
-            error,
+            result.is_none(),
+            "the resulting binary should be an empty Option",
         );
     }
 
@@ -122,18 +125,27 @@ mod tests {
         deps: &DepsC,
         asset_type: S,
     ) -> AssetDefinition {
-        let bin = query_asset_definition(deps, AssetQualifier::asset_type(asset_type))
-            .expect("the query should successfully serialize the value in storage as binary");
-        from_binary::<AssetDefinition>(&bin).expect("binary deserialization should succeed")
+        let bin = query_asset_definition(deps, AssetQualifier::asset_type(asset_type)).expect(
+            "the query should successfully serialize the value in storage as binary without error",
+        );
+        from_binary::<Option<AssetDefinition>>(&bin)
+            .expect("binary deserialization should succeed")
+            .expect("expected the deserialized option to be populated")
     }
 
     fn get_asset_from_query_by_scope_spec<S: Into<String>>(
         deps: &DepsC,
         scope_spec_address: S,
     ) -> AssetDefinition {
-        let bin =
-            query_asset_definition(deps, AssetQualifier::scope_spec_address(scope_spec_address))
-                .expect("the query should successfully serialize the value in storage as binary");
-        from_binary::<AssetDefinition>(&bin).expect("binary deserialization should succeed")
+        let bin = query_asset_definition(
+            deps,
+            AssetQualifier::scope_spec_address(scope_spec_address),
+        )
+        .expect(
+            "the query should successfully serialize the value in storage as binary without error",
+        );
+        from_binary::<Option<AssetDefinition>>(&bin)
+            .expect("binary deserialization should succeed")
+            .expect("expected the deserialized option to be populated")
     }
 }

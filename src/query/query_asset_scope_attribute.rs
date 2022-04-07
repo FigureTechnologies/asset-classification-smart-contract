@@ -21,10 +21,10 @@ pub fn query_asset_scope_attribute(
 ) -> AssetResult<Binary> {
     let scope_attribute = match identifier {
         AssetIdentifier::AssetUuid(asset_uuid) => {
-            query_scope_attribute_by_asset_uuid(deps, asset_uuid)
+            may_query_scope_attribute_by_asset_uuid(deps, asset_uuid)
         }
         AssetIdentifier::ScopeAddress(scope_address) => {
-            query_scope_attribute_by_scope_address(deps, scope_address)
+            may_query_scope_attribute_by_scope_address(deps, scope_address)
         }
     }?;
     to_binary(&scope_attribute)?.to_ok()
@@ -65,9 +65,18 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
     }
 }
 
+/// Fetches an AssetScopeAttribubte by the scope address value, derived from the asset uuid.
+pub fn may_query_scope_attribute_by_asset_uuid<S: Into<String>>(
+    deps: &DepsC,
+    asset_uuid: S,
+) -> AssetResult<Option<AssetScopeAttribute>> {
+    may_query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)?)
+}
+
 /// Fetches an AssetScopeAttribubte by the scope address value directly.  The most efficient version
 /// of these functions, but still has to do quite a few lookups.  This functionality should only be used
-/// on a once-per-transaction basis, if possible. Returns ContractResult<None> in the case of
+/// on a once-per-transaction basis, if possible. Returns ContractResult<None> in the case of no attribute
+/// being associated with the scope.
 pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,
@@ -168,10 +177,12 @@ mod tests {
         let binary_from_asset_uuid =
             query_asset_scope_attribute(&deps.as_ref(), AssetIdentifier::asset_uuid(&asset_uuid))
                 .expect("expected the scope attribute to be fetched as binary by asset uuid");
-        let scope_attribute_from_asset_uuid = from_binary::<AssetScopeAttribute>(
-            &binary_from_asset_uuid,
-        )
-        .expect("expected the asset attribute fetched by asset uuid to deserialize properly");
+        let scope_attribute_from_asset_uuid =
+            from_binary::<Option<AssetScopeAttribute>>(&binary_from_asset_uuid)
+                .expect(
+                    "expected the asset attribute fetched by asset uuid to deserialize properly",
+                )
+                .expect("expected the asset attribute to be present in the resulting Option");
         assert_eq!(
             asset_attribute, scope_attribute_from_asset_uuid,
             "expected the value fetched by asset uuid to equate to the original value appended to the scope",
@@ -181,10 +192,11 @@ mod tests {
             AssetIdentifier::scope_address(&scope_address),
         )
         .expect("expected the scope attribute to be fetched as binary by scope address");
-        let scope_attribute_from_scope_address = from_binary::<AssetScopeAttribute>(
+        let scope_attribute_from_scope_address = from_binary::<Option<AssetScopeAttribute>>(
             &binary_from_scope_address,
         )
-        .expect("expected the asset attribute fetched by scope address to deserialize properly");
+        .expect("expected the asset attribute fetched by scope address to deserialize properly")
+        .expect("expected the asset attribute fetched by scope address to be present in the resulting Option");
         assert_eq!(
             asset_attribute, scope_attribute_from_scope_address,
             "expected the value fetched by scope address to equate to the original value appeneded to the scope",
@@ -263,20 +275,16 @@ mod tests {
             DEFAULT_SCOPE_SPEC_ADDRESS,
             "test-owner",
         );
-        let error = query_asset_scope_attribute(
+        let binary = query_asset_scope_attribute(
             &deps.as_ref(),
             AssetIdentifier::scope_address(&scope_address),
         )
-        .unwrap_err();
-        match error {
-            ContractError::NotFound { explanation } => {
-                assert_eq!(
-                    "scope at address [scope-address] did not include an asset scope attribute",
-                    explanation,
-                    "incorrect not found message encountered",
-                );
-            }
-            _ => panic!("unexpected error encountered: {:?}", error),
-        };
+        .expect("the query should execute without error");
+        let result = from_binary::<Option<AssetScopeAttribute>>(&binary)
+            .expect("expected the result to deserialize correctly");
+        assert!(
+            result.is_none(),
+            "expected the result from the query to be missing because no scope attribute existed at the scope address",
+        );
     }
 }

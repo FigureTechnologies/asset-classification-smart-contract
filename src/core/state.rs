@@ -133,35 +133,65 @@ pub fn replace_asset_definition(
     }
 }
 
-/// Finds an existing asset definition in state by checking against the provided asset type.
+/// Finds an existing asset definition in state by checking against the provided asset type,
+/// returning an Option that reflects whether or not the definition exists
+pub fn may_load_asset_definition_by_type<S: Into<String>>(
+    storage: &dyn Storage,
+    asset_type: S,
+) -> AssetResult<Option<AssetDefinition>> {
+    asset_definitions()
+        // Coerce to lowercase to match how stored values are keyed
+        .may_load(storage, asset_type.into().to_lowercase().as_bytes())
+        .map_err(ContractError::Std)
+}
+
+/// Finds an existing asset definition by asset type, or returns an error if no definition is found.
 pub fn load_asset_definition_by_type<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
 ) -> AssetResult<AssetDefinition> {
+    let asset_type = asset_type.into();
+    if let Some(asset_definition) = may_load_asset_definition_by_type(storage, &asset_type)? {
+        asset_definition.to_ok()
+    } else {
+        ContractError::RecordNotFound {
+            explanation: format!("no asset definition existed for asset type {}", asset_type,),
+        }
+        .to_err()
+    }
+}
+
+/// Finds an existing asset definition in state by checking against the provided scope spec address,
+/// returning an Option that reflects whether or not the definition exists.
+pub fn may_load_asset_definition_by_scope_spec<S: Into<String>>(
+    storage: &dyn Storage,
+    scope_spec_address: S,
+) -> AssetResult<Option<AssetDefinition>> {
+    // Coerce to lowercase to match how stored values are keyed
+    let spec_addr = scope_spec_address.into().to_lowercase();
     asset_definitions()
-        // Coerce to lowercase to match how stored values are keyed
-        .load(storage, asset_type.into().to_lowercase().as_bytes())
+        .idx
+        .scope_spec
+        .item(storage, spec_addr)
+        .map(|option| option.map(|(_, def)| def))
         .map_err(ContractError::Std)
 }
 
-/// Finds an existing asset definition in state by checking against the provided scope spec address.
+/// Finds an existing asset definition by scope spec address, or returns an error if no definition is found.
 pub fn load_asset_definition_by_scope_spec<S: Into<String>>(
     storage: &dyn Storage,
     scope_spec_address: S,
 ) -> AssetResult<AssetDefinition> {
-    // Coerce to lowercase to match how stored values are keyed
-    let spec_addr = scope_spec_address.into().to_lowercase();
-    if let Some((_, asset_definition)) = asset_definitions()
-        .idx
-        .scope_spec
-        .item(storage, spec_addr.clone())?
+    let scope_spec_address = scope_spec_address.into();
+    if let Some(asset_definition) =
+        may_load_asset_definition_by_scope_spec(storage, &scope_spec_address)?
     {
         asset_definition.to_ok()
     } else {
         ContractError::RecordNotFound {
             explanation: format!(
                 "no asset definition existed for scope spec address {}",
-                spec_addr
+                scope_spec_address
             ),
         }
         .to_err()
@@ -174,7 +204,10 @@ mod tests {
 
     use crate::core::{
         error::ContractError,
-        state::{load_asset_definition_by_scope_spec, load_asset_definition_by_type},
+        state::{
+            load_asset_definition_by_scope_spec, load_asset_definition_by_type,
+            may_load_asset_definition_by_scope_spec, may_load_asset_definition_by_type,
+        },
         types::asset_definition::AssetDefinition,
     };
 
@@ -206,7 +239,7 @@ mod tests {
         );
         let loaded_asset_definition =
             load_asset_definition_by_type(deps.as_ref().storage, &def.asset_type)
-                .expect("asset definition should load correctly");
+                .expect("asset definition should load without error");
         assert_eq!(
             loaded_asset_definition, def,
             "the asset definition should be inserted correctly"
@@ -233,10 +266,31 @@ mod tests {
             .expect("update should work correctly");
         let loaded_asset_definition =
             load_asset_definition_by_type(deps.as_ref().storage, &def.asset_type)
-                .expect("asset definition should load correctly");
+                .expect("asset definition should load without error");
         assert_eq!(
             loaded_asset_definition, def,
             "the asset definition should be updated appropriately"
+        );
+    }
+
+    #[test]
+    fn test_may_load_asset_definition_by_type() {
+        let mut deps = mock_dependencies(&[]);
+        let heloc = AssetDefinition::new("heloc", "heloc-scope-spec", vec![]);
+        insert_asset_definition(deps.as_mut().storage, &heloc)
+            .expect("the heloc definition should insert without error");
+        assert!(
+            may_load_asset_definition_by_type(deps.as_ref().storage, "not-heloc")
+                .expect("may load asset definition by type should execute without error")
+                .is_none(),
+            "expected the missing asset definition to return an empty Option",
+        );
+        assert_eq!(
+            may_load_asset_definition_by_type(deps.as_ref().storage, &heloc.asset_type)
+            .expect("may load asset definition by type should execute without error")
+            .expect("expected the asset definition loaded by a populated type to be present"),
+            heloc,
+            "expected the loaded asset definition to equate to the original value that was inserted",
         );
     }
 
@@ -251,10 +305,10 @@ mod tests {
             .expect("the mortgage definition should insert appropriately");
         let heloc_from_storage =
             load_asset_definition_by_type(deps.as_ref().storage, &heloc.asset_type)
-                .expect("the heloc definition should load appropriately");
+                .expect("the heloc definition should load without error");
         let mortgage_from_storage =
             load_asset_definition_by_type(deps.as_ref().storage, &mortgage.asset_type)
-                .expect("the mortgage definition should load appropriately");
+                .expect("the mortgage definition should load without error");
         assert_eq!(
             heloc, heloc_from_storage,
             "the heloc definition should be the same after loading from storage"
@@ -262,6 +316,27 @@ mod tests {
         assert_eq!(
             mortgage, mortgage_from_storage,
             "the mortgage definition should be the same after loading from storage"
+        );
+    }
+
+    #[test]
+    fn test_may_load_asset_definition_by_scope_spec_address() {
+        let mut deps = mock_dependencies(&[]);
+        let heloc = AssetDefinition::new("heloc", "heloc-scope-spec", vec![]);
+        insert_asset_definition(deps.as_mut().storage, &heloc)
+            .expect("the heloc definition should insert without error");
+        assert!(
+            may_load_asset_definition_by_scope_spec(deps.as_ref().storage, "not-heloc-scope-spec")
+                .expect("may load asset definition by scope spec should execute without error")
+                .is_none(),
+            "expected the missing asset definition to return an empty Option",
+        );
+        assert_eq!(
+            may_load_asset_definition_by_scope_spec(deps.as_ref().storage, &heloc.scope_spec_address)
+            .expect("may load asset definition by scope spec should execute without error")
+            .expect("expected the asset definition loaded by a populated scope spec address to be present"),
+            heloc,
+            "expected the loaded asset definition to equate to the original value that was inserted",
         );
     }
 
@@ -276,12 +351,12 @@ mod tests {
             .expect("the mortgage definition should insert appropriately");
         let heloc_from_storage =
             load_asset_definition_by_scope_spec(deps.as_ref().storage, &heloc.scope_spec_address)
-                .expect("the heloc definition should load appropriately");
+                .expect("the heloc definition should load without error");
         let mortgage_from_storage = load_asset_definition_by_scope_spec(
             deps.as_ref().storage,
             &mortgage.scope_spec_address,
         )
-        .expect("the mortgage definition should load appropriately");
+        .expect("the mortgage definition should load without error");
         assert_eq!(
             heloc, heloc_from_storage,
             "the heloc definition should be the same after loading from storage"

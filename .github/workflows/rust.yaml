@@ -88,12 +88,12 @@ jobs:
           echo "Using application version v$APP_VERSION for release"
           echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
 
-      # - name: release
-      #   uses: softprops/action-gh-release@v1
-      #   env: 
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     name: ${{ env.RELEASE_VERSION }}
-      #     files: |
-      #       artifacts/asset_classification_smart_contract.wasm
-      #       artifacts/checksums.txt
+      - name: release
+        uses: softprops/action-gh-release@v1
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.RELEASE_VERSION }}
+          files: |
+            artifacts/asset_classification_smart_contract.wasm
+            artifacts/checksums.txt

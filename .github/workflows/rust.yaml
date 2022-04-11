@@ -74,22 +74,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
-      - name: Optimize
-        run: |
-          # Update cargo first to ensure locks are good to go
-          cargo update
-          # Build the WASM output in the artifacts directory
-          make optimize
-
+    
       - name: Get release version
         run: | 
           APP_VERSION=$(cargo metadata | jq -r '.packages[] | select(.name == "asset-classification-smart-contract") | .version')
           echo "Using application version v$APP_VERSION for release"
           echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
 
+      - name: Check release is new version
+        uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        with:
+          tag: ${{ env.RELEASE_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release Skip Explanation
+        if: ${{ steps.checkTag.outputs.exists }}
+        run: echo "Release tag [$RELEASE_VERSION] already exists. Skipping release."
+
+      - name: Optimize
+        # No need to create the release WASM if the version hasn't changed and no new release will be made
+        if: ${{ !steps.checkTag.outputs.exists }}
+        run: |
+          # Update cargo first to ensure locks are good to go
+          cargo update
+          # Build the WASM output in the artifacts directory
+          make optimize
+
       - name: Release
         uses: softprops/action-gh-release@v1
+        # Only upload a new release if the attempted tag does not yet exist
+        if: ${{ !steps.checkTag.outputs.exists }}
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

@@ -77,10 +77,10 @@ jobs:
       
       - name: Optimize
         run: |
-        # Update cargo first to ensure locks are good to go
-        cargo update
-        # Build the WASM output in the artifacts directory
-        make optimize
+          # Update cargo first to ensure locks are good to go
+          cargo update
+          # Build the WASM output in the artifacts directory
+          make optimize
 
       - name: Get release version
         run: | 

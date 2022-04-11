@@ -83,7 +83,7 @@ jobs:
 
       - name: Check release is new version
         run: |
-          TAG_EXISTS=$((git show-ref --tags "$RELEASE_VERSION") || false)
+          TAG_EXISTS=$((git show-ref --tags "$RELEASE_VERSION") || echo "")
           if [ $TAG_EXISTS ]; then 
             echo "Found existing Github tag [$RELEASE_VERSION]. Skipping release.";
           else 

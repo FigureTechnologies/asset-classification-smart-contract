@@ -82,20 +82,18 @@ jobs:
           echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
 
       - name: Check release is new version
-        uses: mukunku/tag-exists-action@v1.0.0
-        id: checkTag
-        with:
-          tag: ${{ env.RELEASE_VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release Skip Explanation
-        if: ${{ steps.checkTag.outputs.exists }}
-        run: echo "Release tag [$RELEASE_VERSION] already exists. Skipping release."
+        run: |
+          TAG_EXISTS=$(git show-ref --tags "$RELEASE_VERSION")
+          if [ $TAG_EXISTS ]; then 
+            echo "Found existing Github tag [$RELEASE_VERSION]. Skipping release.";
+          else 
+            echo "Tag [$RELEASE_VERSION] has not yet been used. Continuing with release";
+          fi
+          echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
 
       - name: Optimize
         # No need to create the release WASM if the version hasn't changed and no new release will be made
-        if: ${{ !steps.checkTag.outputs.exists }}
+        if: ${{ !env.TAG_EXISTS }}
         run: |
           # Update cargo first to ensure locks are good to go
           cargo update
@@ -105,7 +103,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         # Only upload a new release if the attempted tag does not yet exist
-        if: ${{ !steps.checkTag.outputs.exists }}
+        if: ${{ !env.TAG_EXISTS }}
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

@@ -1,10 +1,8 @@
-name: asset-classification-smart-contract
+name: Build and Release
 
 on: 
   push: 
     branches: [ main ]
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches: [ main ]
 
@@ -15,25 +13,25 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: toolchain
+      - name: Toolchain
         uses: actions-rs/toolchain@v1
         with: 
           toolchain: 1.51.0-x86_64-unknown-linux-gnu
           default: true
           components: clippy, rustfmt
-      - name: cargo format
+      - name: Cargo format
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-      - name: cargo clippy
+      - name: Cargo clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --package asset-classification-smart-contract
-      - name: cargo tarpaulin xml report
+      - name: Cargo tarpaulin xml report
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.19.1'
@@ -46,7 +44,7 @@ jobs:
       #     files: cobertura.xml
       #     fail_ci_if_error: false
       #     verbose: true
-      - name: archive code coverage results
+      - name: Archive code coverage results
         uses: actions/upload-artifact@v1
         with:
           name: code-coverage-report
@@ -69,3 +67,30 @@ jobs:
   #         files: |
   #           artifacts/asset_classification_smart_contract.wasm
   #           artifacts/checksums.txt
+
+  release:
+    needs: check
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Optimize
+        run: make optimize
+
+      - name: Get release version
+        run: | 
+          APP_VERSION=$(cargo metadata | jq -r '.packages[] | select(.name == "asset-classification-smart-contract") | .version')
+          echo "Using application version v$APP_VERSION for release"
+          echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
+
+      # - name: release
+      #   uses: softprops/action-gh-release@v1
+      #   env: 
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     name: ${{ env.RELEASE_VERSION }}
+      #     files: |
+      #       artifacts/asset_classification_smart_contract.wasm
+      #       artifacts/checksums.txt

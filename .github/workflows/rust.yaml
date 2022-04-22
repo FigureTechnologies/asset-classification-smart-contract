@@ -1,7 +1,7 @@
 name: Build and Release
 
-on: 
-  push: 
+on:
+  push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Toolchain
         uses: actions-rs/toolchain@v1
-        with: 
+        with:
           toolchain: stable
           default: true
           components: clippy, rustfmt
@@ -36,36 +36,11 @@ jobs:
           version: '0.19.1'
           out-type: Xml
           args: '--ignore-config --ignore-tests --features enable-test-utils'
-      # TODO: Enable when we move this to public-facing
-      # - name: upload to codecov.io
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     files: cobertura.xml
-      #     fail_ci_if_error: false
-      #     verbose: true
       - name: Archive code coverage results
         uses: actions/upload-artifact@v1
         with:
           name: code-coverage-report
           path: cobertura.xml
-  # TODO: Enable when we move this to be public-facing
-  # release:
-  #   needs: check
-  #   runs-on: ubuntu-latest
-  #   if: startsWith(github.ref, 'refs/tags/v')
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-  #     - name: optimize
-  #       run: make optimize
-  #     - name: release
-  #       uses: softprops/action-gh-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with: 
-  #         files: |
-  #           artifacts/asset_classification_smart_contract.wasm
-  #           artifacts/checksums.txt
 
   release:
     needs: check
@@ -74,9 +49,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-    
+
       - name: Get release version
-        run: | 
+        run: |
           APP_VERSION=$(cargo metadata | jq -r '.packages[] | select(.name == "asset-classification-smart-contract") | .version')
           echo "Using application version v$APP_VERSION for release"
           echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
@@ -84,9 +59,9 @@ jobs:
       - name: Check release is new version
         run: |
           TAG_EXISTS=$((git show-ref --tags "$RELEASE_VERSION") || echo "")
-          if [ $TAG_EXISTS ]; then 
+          if [ $TAG_EXISTS ]; then
             echo "Found existing Github tag [$RELEASE_VERSION]. Skipping release.";
-          else 
+          else
             echo "Tag [$RELEASE_VERSION] has not yet been used. Continuing with release";
           fi
           echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
@@ -104,7 +79,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         # Only upload a new release if the attempted tag does not yet exist
         if: ${{ !env.TAG_EXISTS }}
-        env: 
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: ${{ env.RELEASE_VERSION }}

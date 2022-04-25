@@ -248,6 +248,7 @@ pub mod tests {
                     get_default_entity_detail().to_some(),
                 )],
                 None,
+                None,
             )],
         });
     }
@@ -274,6 +275,7 @@ pub mod tests {
                         get_default_entity_detail().to_some(),
                     )],
                     None,
+                    None,
                 ),
                 AssetDefinitionInput::new(
                     "mortgage",
@@ -295,6 +297,7 @@ pub mod tests {
                         ],
                         get_default_entity_detail().to_some(),
                     )],
+                    None,
                     None,
                 ),
                 AssetDefinitionInput::new(
@@ -334,6 +337,7 @@ pub mod tests {
                         ),
                     ],
                     None,
+                    None,
                 ),
             ],
         });
@@ -358,6 +362,7 @@ pub mod tests {
                         get_default_entity_detail().to_some(),
                     )],
                     None,
+                    None,
                 )],
             },
             "base_contract_name: must not be blank",
@@ -379,6 +384,7 @@ pub mod tests {
                         ),
                         vec![],
                         None,
+                        None,
                     ),
                     AssetDefinitionInput::new(
                         "heloc",
@@ -386,6 +392,7 @@ pub mod tests {
                             "scopespec1q35x472s9tp54t4dcrygrdwdyl0qagw7y2",
                         ),
                         vec![],
+                        None,
                         None,
                     ),
                 ],
@@ -405,6 +412,7 @@ pub mod tests {
                     "",
                     ScopeSpecIdentifier::address("scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn"),
                     vec![],
+                    None,
                     None,
                 )],
             },
@@ -806,6 +814,7 @@ pub mod tests {
             "heloc",
             ScopeSpecIdentifier::uuid("not even a real uuid at all"),
             vec![],
+            None,
             None,
         ));
         assert_eq!(

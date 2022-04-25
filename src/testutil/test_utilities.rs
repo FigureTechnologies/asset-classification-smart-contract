@@ -53,6 +53,8 @@ pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
         verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
+        // Specifying None will cause the underlying code to always choose bind_name: true
+        bind_name: None,
     }
 }
 

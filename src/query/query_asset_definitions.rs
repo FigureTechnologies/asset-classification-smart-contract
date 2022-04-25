@@ -38,6 +38,7 @@ mod tests {
     use provwasm_mocks::mock_dependencies;
     use uuid::Uuid;
 
+    use crate::util::traits::OptionExtensions;
     use crate::{
         core::types::{
             asset_definition::AssetDefinitionInput, scope_spec_identifier::ScopeSpecIdentifier,
@@ -106,7 +107,8 @@ mod tests {
                         vec![],
                         None,
                     )],
-                    Some(true),
+                    true.to_some(),
+                    true.to_some(),
                 )
             })
             .collect::<Vec<AssetDefinitionInput>>();

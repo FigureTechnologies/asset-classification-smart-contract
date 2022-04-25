@@ -55,6 +55,7 @@ pub struct AssetDefinitionInput {
     pub scope_spec_identifier: ScopeSpecIdentifier,
     pub verifiers: Vec<VerifierDetail>,
     pub enabled: Option<bool>,
+    pub bind_name: Option<bool>,
 }
 impl AssetDefinitionInput {
     pub fn new<S1: Into<String>>(
@@ -62,12 +63,14 @@ impl AssetDefinitionInput {
         scope_spec_identifier: ScopeSpecIdentifier,
         verifiers: Vec<VerifierDetail>,
         enabled: Option<bool>,
+        bind_name: Option<bool>,
     ) -> AssetDefinitionInput {
         AssetDefinitionInput {
             asset_type: asset_type.into(),
             scope_spec_identifier,
             verifiers,
             enabled,
+            bind_name,
         }
     }
 

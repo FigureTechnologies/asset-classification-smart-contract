@@ -35,11 +35,17 @@ pub fn init_contract(
         let asset_definition = input.as_asset_definition()?;
         // Create a new state storage for the provided asset definition
         insert_asset_definition(deps.storage, &asset_definition)?;
-        messages.push(bind_name(
-            generate_asset_attribute_name(&asset_definition.asset_type, &msg.base_contract_name),
-            env.contract.address.clone(),
-            NameBinding::Restricted,
-        )?);
+        // Default to true for name bind if no value is specified.
+        if input.bind_name.unwrap_or(true) {
+            messages.push(bind_name(
+                generate_asset_attribute_name(
+                    &asset_definition.asset_type,
+                    &msg.base_contract_name,
+                ),
+                env.contract.address.clone(),
+                NameBinding::Restricted,
+            )?);
+        }
     }
     // Convert the init message into a state value that will drive the contract's future executions
     let state = StateV2::new(msg, info.sender);
@@ -68,11 +74,13 @@ mod tests {
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         get_default_asset_definition, get_default_asset_definition_inputs,
-        get_default_entity_detail, single_attribute_for_key, test_instantiate, InstArgs,
+        get_default_entity_detail, get_default_verifier_detail, single_attribute_for_key,
+        test_instantiate, InstArgs,
     };
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
@@ -149,6 +157,7 @@ mod tests {
                 get_default_entity_detail().to_some(),
             )],
             None,
+            None,
         );
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
@@ -170,6 +179,7 @@ mod tests {
                 ],
                 get_default_entity_detail().to_some(),
             )],
+            None,
             None,
         );
         let response = test_instantiate(
@@ -258,6 +268,36 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_init_with_false_name_bind_on_added_definition() {
+        let mut deps = mock_dependencies(&[]);
+        let response = instantiate(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: false,
+                asset_definitions: vec![AssetDefinitionInput::new(
+                    DEFAULT_ASSET_TYPE,
+                    ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+                    vec![get_default_verifier_detail()],
+                    true.to_some(),
+                    // bind_name == false
+                    false.to_some(),
+                )],
+                is_test: None,
+            },
+        )
+        .expect("expected instantiation to succeed with no name binding on the added definition");
+        assert!(
+            response.messages.is_empty(),
+            "no messages should be added when no bindings are added"
+        );
+        load_asset_definition_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+            .expect("the asset definition should be added, regardless of name binding");
+    }
+
+    #[test]
     fn test_invalid_init_contract_including_funds() {
         let mut deps = mock_dependencies(&[]);
         let error = test_instantiate(
@@ -282,6 +322,7 @@ mod tests {
                 "",
                 ScopeSpecIdentifier::address(""),
                 vec![],
+                None,
                 None,
             )],
             ..Default::default()

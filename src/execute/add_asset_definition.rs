@@ -13,11 +13,13 @@ use provwasm_std::{bind_name, NameBinding};
 #[derive(Clone, PartialEq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
+    pub bind_name: Option<bool>,
 }
 impl AddAssetDefinitionV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<Self> {
         match msg {
             ExecuteMsg::AddAssetDefinition { asset_definition } => Self {
+                bind_name: asset_definition.bind_name,
                 asset_definition: asset_definition.into_asset_definition()?,
             }
             .to_ok(),
@@ -41,17 +43,22 @@ pub fn add_asset_definition(
     // The insert function includes its own checking to verify that the asset definition does not yet exist, and an error
     // will be returned if a duplicate is attempted
     insert_asset_definition(deps.storage, &msg.asset_definition)?;
-    // Bind the new asset type's name the contract in order to be able to write new attributes for onboarded scopes
-    let name_msg = bind_name(
-        generate_asset_attribute_name(
-            &msg.asset_definition.asset_type,
-            config_read_v2(deps.storage).load()?.base_contract_name,
-        ),
-        env.contract.address,
-        NameBinding::Restricted,
-    )?;
+    let mut messages = vec![];
+    // If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
+    // to write new attributes for onboarded scopes
+    if msg.bind_name.unwrap_or(true) {
+        messages.push(bind_name(
+            generate_asset_attribute_name(
+                &msg.asset_definition.asset_type,
+                config_read_v2(deps.storage).load()?.base_contract_name,
+            ),
+            env.contract.address,
+            NameBinding::Restricted,
+        )?);
+    }
+
     Response::new()
-        .add_message(name_msg)
+        .add_messages(messages)
         .add_attributes(
             EventAttributes::new(EventType::AddAssetDefinition)
                 .set_asset_type(&msg.asset_definition.asset_type),
@@ -135,7 +142,7 @@ mod tests {
     fn test_valid_add_asset_definition_via_internal() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let msg = get_valid_add_asset_definition();
+        let msg = get_valid_add_asset_definition(true);
         let messages = add_asset_definition(
             deps.as_mut(),
             mock_env(),
@@ -149,6 +156,26 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_add_asset_definition_skip_name_binding() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let msg = get_valid_add_asset_definition(false);
+        let messages = add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            msg.clone(),
+        )
+        .expect("expected the add asset definition function to return properly")
+        .messages;
+        assert!(
+            messages.is_empty(),
+            "when no name binding is requested, no messages should be emitted"
+        );
+        test_asset_definition_was_added(&msg.asset_definition, &deps.as_ref());
+    }
+
+    #[test]
     fn test_invalid_add_asset_definition_for_invalid_msg() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
@@ -157,6 +184,7 @@ mod tests {
                 "",
                 ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
                 vec![],
+                true.to_some(),
                 true.to_some(),
             ),
         };
@@ -183,7 +211,7 @@ mod tests {
             mock_env(),
             // Mock info defines the sender with this string - simply use something other than DEFAULT_INFO_NAME to cause the error
             mock_info("not-the-admin", &[]),
-            get_valid_add_asset_definition(),
+            get_valid_add_asset_definition(true),
         )
         .unwrap_err();
         assert!(
@@ -201,7 +229,7 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(150, "nhash")]),
-            get_valid_add_asset_definition(),
+            get_valid_add_asset_definition(true),
         )
         .unwrap_err();
         assert!(
@@ -220,7 +248,7 @@ mod tests {
                 deps.as_mut(),
                 mock_env(),
                 empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-                get_valid_add_asset_definition(),
+                get_valid_add_asset_definition(true),
             )
         };
         add_asset().expect("expected the first asset definition to be added successfully");
@@ -272,16 +300,18 @@ mod tests {
                 get_default_entity_detail().to_some(),
             )],
             None,
+            None,
         );
         validate_asset_definition_input(&def).expect("expected the asset definition to be valid");
         def
     }
 
-    fn get_valid_add_asset_definition() -> AddAssetDefinitionV1 {
+    fn get_valid_add_asset_definition(bind_name: bool) -> AddAssetDefinitionV1 {
         AddAssetDefinitionV1 {
             asset_definition: get_valid_asset_definition()
                 .into_asset_definition()
                 .expect("asset definition conversion should succeed"),
+            bind_name: bind_name.to_some(),
         }
     }
 }

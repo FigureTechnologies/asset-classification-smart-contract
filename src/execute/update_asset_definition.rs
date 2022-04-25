@@ -139,6 +139,7 @@ mod tests {
                 ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
                 vec![],
                 None,
+                None,
             ),
         };
         let error = execute(
@@ -261,6 +262,7 @@ mod tests {
                 ],
                 get_default_entity_detail().to_some(),
             )],
+            None,
             None,
         );
         validate_asset_definition_input(&def).expect("expected the asset definition to be valid");

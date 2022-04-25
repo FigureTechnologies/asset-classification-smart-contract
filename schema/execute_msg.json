@@ -221,6 +221,12 @@
         "asset_type": {
           "type": "string"
         },
+        "bind_name": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "enabled": {
           "type": [
             "boolean",

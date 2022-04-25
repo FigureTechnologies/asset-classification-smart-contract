@@ -156,7 +156,34 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_add_asset_definition_skip_name_binding() {
+    fn test_valid_add_asset_definition_skip_name_binding_from_execute() {
+        let mut deps = mock_dependencies(&[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut asset_definition = get_valid_asset_definition();
+        asset_definition.bind_name = false.to_some();
+        let response = execute(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            ExecuteMsg::AddAssetDefinition {
+                asset_definition: asset_definition.clone(),
+            },
+        )
+        .expect("expected the add asset definition function to return properly");
+        assert!(
+            response.messages.is_empty(),
+            "when no name binding is requested, no messages should be emitted"
+        );
+        test_asset_definition_was_added(
+            &asset_definition
+                .into_asset_definition()
+                .expect("expected the input to properly convert to an asset definition"),
+            &deps.as_ref(),
+        );
+    }
+
+    #[test]
+    fn test_valid_add_asset_definition_skip_name_binding_from_direct() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = get_valid_add_asset_definition(false);

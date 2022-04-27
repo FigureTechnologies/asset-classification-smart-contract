@@ -13,6 +13,7 @@ pub enum EventType {
     ToggleAssetDefinition,
     AddAssetVerifier,
     UpdateAssetVerifier,
+    UpdateAccessRoutes,
 }
 #[allow(clippy::from_over_into)]
 impl Into<String> for EventType {
@@ -27,6 +28,7 @@ impl Into<String> for EventType {
             EventType::ToggleAssetDefinition => "toggle_asset_definition",
             EventType::AddAssetVerifier => "add_asset_verifier",
             EventType::UpdateAssetVerifier => "update_asset_verifier",
+            EventType::UpdateAccessRoutes => "update_access_routes",
         }
         .into()
     }

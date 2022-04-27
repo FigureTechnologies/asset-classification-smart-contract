@@ -1,5 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
+use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::verifier_detail::VerifierDetail;
 use crate::util::aliases::AssetResult;
@@ -34,6 +35,11 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
             asset_type,
             verifier,
         } => validate_asset_verifier_msg(asset_type, verifier),
+        ExecuteMsg::UpdateAccessRoutes {
+            identifier,
+            owner_address,
+            access_routes,
+        } => validate_update_access_routes(identifier, owner_address, access_routes),
     }
 }
 
@@ -120,6 +126,14 @@ fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> A
         None
     };
     validate_verifier_with_provided_errors(verifier, errors)
+}
+
+fn validate_update_access_routes(
+    identifier: &AssetIdentifier,
+    owner_address: &str,
+    access_routes: &[AccessRoute],
+) -> AssetResult<()> {
+    Ok(())
 }
 
 #[cfg(test)]

@@ -3,6 +3,7 @@ use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinit
 use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1};
+use crate::execute::update_access_routes::{update_access_routes, UpdateAccessRoutesV1};
 use crate::execute::update_asset_definition::{update_asset_definition, UpdateAssetDefinitionV1};
 use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVerifierV1};
 use crate::execute::verify_asset::{verify_asset, VerifyAssetV1};
@@ -78,6 +79,11 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ExecuteMsg::UpdateAssetVerifier { .. } => {
             update_asset_verifier(deps, info, UpdateAssetVerifierV1::from_execute_msg(msg)?)
         }
+        ExecuteMsg::UpdateAccessRoutes { .. } => update_access_routes(
+            AssetMetaService::new(deps),
+            info,
+            UpdateAccessRoutesV1::from_execute_msg(msg)?,
+        ),
     }
 }
 

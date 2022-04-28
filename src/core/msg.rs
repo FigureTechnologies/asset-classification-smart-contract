@@ -49,6 +49,11 @@ pub enum ExecuteMsg {
         asset_type: String,
         verifier: VerifierDetail,
     },
+    UpdateAccessRoutes {
+        identifier: AssetIdentifier,
+        owner_address: String,
+        access_routes: Vec<AccessRoute>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

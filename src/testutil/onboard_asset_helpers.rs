@@ -7,15 +7,13 @@ use cosmwasm_std::testing::mock_info;
 use cosmwasm_std::{coin, MessageInfo};
 
 use super::test_constants::{
-    DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ONBOARDING_COST,
-    DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-    DEFAULT_VERIFIER_ADDRESS,
+    DEFAULT_ASSET_TYPE, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
+    DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
 use super::test_utilities::{get_default_access_routes, intercept_add_attribute};
 
 pub struct TestOnboardAsset {
     pub info: MessageInfo,
-    pub contract_base_name: String,
     pub onboard_asset: OnboardAssetV1,
 }
 impl TestOnboardAsset {
@@ -61,7 +59,6 @@ impl Default for TestOnboardAsset {
                     DEFAULT_ONBOARDING_DENOM.to_string(),
                 )],
             ),
-            contract_base_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
             onboard_asset: TestOnboardAsset::default_onboard_asset(),
         }
     }

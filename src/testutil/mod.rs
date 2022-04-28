@@ -7,4 +7,6 @@ pub mod test_constants;
 #[cfg(feature = "enable-test-utils")]
 pub mod test_utilities;
 #[cfg(feature = "enable-test-utils")]
+pub mod update_access_routes_helpers;
+#[cfg(feature = "enable-test-utils")]
 pub mod verify_asset_helpers;

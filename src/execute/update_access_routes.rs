@@ -84,7 +84,6 @@ where
     {
         let mut new_access_definitions = scope_attribute
             .access_definitions
-            .clone()
             .into_iter()
             .filter(|def| def != &target_access_definition)
             .collect::<Vec<AccessDefinition>>();
@@ -94,7 +93,7 @@ where
             .append(&mut access_routes);
         new_access_definitions.push(target_access_definition);
         scope_attribute.access_definitions = new_access_definitions;
-        repository.update_attribute(&scope_attribute);
+        repository.update_attribute(&scope_attribute)?;
     } else {
         // If no access definitions are established for the given owner address, then the request is
         // invalid and should be rejected

@@ -1,6 +1,5 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::verifier_detail::VerifierDetail;
 use crate::util::aliases::AssetResult;
@@ -38,8 +37,8 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
         ExecuteMsg::UpdateAccessRoutes {
             identifier,
             owner_address,
-            access_routes,
-        } => validate_update_access_routes(identifier, owner_address, access_routes),
+            ..
+        } => validate_update_access_routes(identifier, owner_address),
     }
 }
 
@@ -49,17 +48,8 @@ fn validate_onboard_asset(
     verifier_address: &str,
 ) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    match identifier {
-        AssetIdentifier::AssetUuid(asset_uuid) => {
-            if asset_uuid.is_empty() {
-                invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
-            }
-        }
-        AssetIdentifier::ScopeAddress(scope_address) => {
-            if scope_address.is_empty() {
-                invalid_fields.push("identifier:scope_address: must not be blank".to_string());
-            }
-        }
+    if let Some(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
     }
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
@@ -80,17 +70,8 @@ fn validate_onboard_asset(
 
 fn validate_verify_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    match identifier {
-        AssetIdentifier::AssetUuid(asset_uuid) => {
-            if asset_uuid.is_empty() {
-                invalid_fields.push("identifier:asset_uuid: must not be blank".to_string());
-            }
-        }
-        AssetIdentifier::ScopeAddress(scope_address) => {
-            if scope_address.is_empty() {
-                invalid_fields.push("identifier:scope_address: must not be blank".to_string());
-            }
-        }
+    if let Some(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
     }
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -131,13 +112,51 @@ fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> A
 fn validate_update_access_routes(
     identifier: &AssetIdentifier,
     owner_address: &str,
-    access_routes: &[AccessRoute],
 ) -> AssetResult<()> {
-    Ok(())
+    let mut invalid_fields: Vec<String> = vec![];
+    if let Some(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
+    }
+    if owner_address.is_empty() {
+        invalid_fields.push("owner_address: must not be blank".to_string());
+    }
+    if !invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: "ExecuteMsg::UpdateAccessRoutes".to_string(),
+            invalid_fields,
+        }
+        .to_err()
+    } else {
+        Ok(())
+    }
+}
+
+fn get_asset_identifier_invalid_message(identifier: &AssetIdentifier) -> Option<String> {
+    match identifier {
+        AssetIdentifier::AssetUuid(asset_uuid) => {
+            if asset_uuid.is_empty() {
+                "identifier:asset_uuid: must not be blank"
+                    .to_string()
+                    .to_some()
+            } else {
+                None
+            }
+        }
+        AssetIdentifier::ScopeAddress(scope_address) => {
+            if scope_address.is_empty() {
+                "identifier:scope_address: must not be blank"
+                    .to_string()
+                    .to_some()
+            } else {
+                None
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::validation::validate_execute_msg::validate_update_access_routes;
     use crate::{
         core::{error::ContractError, types::asset_identifier::AssetIdentifier},
         util::aliases::AssetResult,
@@ -298,6 +317,72 @@ mod tests {
                 "asset_type: must not be blank",
                 invalid_fields.first().unwrap().as_str(),
                 "expected the appropriate error message to be returned"
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_update_access_routes_invalid_identifier_asset_uuid() {
+        let result =
+            validate_update_access_routes(&AssetIdentifier::asset_uuid(""), "owner address");
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::UpdateAccessRoutes", message_type,
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier:asset_uuid: must not be blank",
+                invalid_fields.first().unwrap(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_update_access_routes_invalid_identifier_scope_address() {
+        let result =
+            validate_update_access_routes(&AssetIdentifier::scope_address(""), "owner address");
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::UpdateAccessRoutes", message_type,
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier:scope_address: must not be blank",
+                invalid_fields.first().unwrap(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_update_access_routes_invalid_owner_address() {
+        let result =
+            validate_update_access_routes(&AssetIdentifier::scope_address("scope address"), "");
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::UpdateAccessRoutes", message_type,
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "owner_address: must not be blank",
+                invalid_fields.first().unwrap(),
+                "expected the appropriate error message to be returned",
             );
         });
     }

@@ -8,7 +8,6 @@ use crate::testutil::test_constants::{
 use crate::testutil::test_utilities::{empty_mock_info, intercept_add_attribute, MockOwnedDeps};
 use crate::util::aliases::EntryPointResponse;
 use crate::util::traits::OptionExtensions;
-use cosmwasm_std::testing::mock_info;
 use cosmwasm_std::MessageInfo;
 
 pub struct TestUpdateAccessRoutes {

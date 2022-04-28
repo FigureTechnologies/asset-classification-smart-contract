@@ -189,6 +189,37 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_access_routes"
+      ],
+      "properties": {
+        "update_access_routes": {
+          "type": "object",
+          "required": [
+            "access_routes",
+            "identifier",
+            "owner_address"
+          ],
+          "properties": {
+            "access_routes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AccessRoute"
+              }
+            },
+            "identifier": {
+              "$ref": "#/definitions/AssetIdentifier"
+            },
+            "owner_address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

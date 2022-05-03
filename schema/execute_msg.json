@@ -220,6 +220,26 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "bind_contract_alias"
+      ],
+      "properties": {
+        "bind_contract_alias": {
+          "type": "object",
+          "required": [
+            "alias_name"
+          ],
+          "properties": {
+            "alias_name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

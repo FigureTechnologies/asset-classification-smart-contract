@@ -39,6 +39,7 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
             owner_address,
             ..
         } => validate_update_access_routes(identifier, owner_address),
+        ExecuteMsg::BindContractAlias { alias_name } => validate_bind_contract_alias(alias_name),
     }
 }
 
@@ -57,15 +58,7 @@ fn validate_onboard_asset(
     if verifier_address.is_empty() {
         invalid_fields.push("verifier_address: must not be blank".to_string());
     }
-    if !invalid_fields.is_empty() {
-        ContractError::InvalidMessageFields {
-            message_type: "ExecuteMsg::OnboardAsset".to_string(),
-            invalid_fields,
-        }
-        .to_err()
-    } else {
-        Ok(())
-    }
+    gen_validation_response("ExecuteMsg::OnboardAsset", invalid_fields)
 }
 
 fn validate_verify_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
@@ -73,15 +66,7 @@ fn validate_verify_asset(identifier: &AssetIdentifier) -> AssetResult<()> {
     if let Some(message) = get_asset_identifier_invalid_message(identifier) {
         invalid_fields.push(message);
     }
-    if !invalid_fields.is_empty() {
-        ContractError::InvalidMessageFields {
-            message_type: "ExecuteMsg::VerifyAsset".to_string(),
-            invalid_fields,
-        }
-        .to_err()
-    } else {
-        Ok(())
-    }
+    gen_validation_response("ExecuteMsg::VerifyAsset", invalid_fields)
 }
 
 fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
@@ -89,15 +74,7 @@ fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
     }
-    if !invalid_fields.is_empty() {
-        ContractError::InvalidMessageFields {
-            message_type: "ExecuteMsg::ToggleAssetDefinition".to_string(),
-            invalid_fields,
-        }
-        .to_err()
-    } else {
-        Ok(())
-    }
+    gen_validation_response("ExecuteMsg::ToggleAssetDefinition", invalid_fields)
 }
 
 fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> AssetResult<()> {
@@ -120,15 +97,15 @@ fn validate_update_access_routes(
     if owner_address.is_empty() {
         invalid_fields.push("owner_address: must not be blank".to_string());
     }
-    if !invalid_fields.is_empty() {
-        ContractError::InvalidMessageFields {
-            message_type: "ExecuteMsg::UpdateAccessRoutes".to_string(),
-            invalid_fields,
-        }
-        .to_err()
-    } else {
-        Ok(())
+    gen_validation_response("ExecuteMsg::UpdateAccessRoutes", invalid_fields)
+}
+
+fn validate_bind_contract_alias(alias_name: &str) -> AssetResult<()> {
+    let mut invalid_fields: Vec<String> = vec![];
+    if alias_name.is_empty() {
+        invalid_fields.push("alias_name: must not be blank".to_string());
     }
+    gen_validation_response("ExecuteMsg::BindContractAlias", invalid_fields)
 }
 
 fn get_asset_identifier_invalid_message(identifier: &AssetIdentifier) -> Option<String> {
@@ -154,9 +131,26 @@ fn get_asset_identifier_invalid_message(identifier: &AssetIdentifier) -> Option<
     }
 }
 
+fn gen_validation_response<S: Into<String>>(
+    message_type: S,
+    invalid_fields: Vec<String>,
+) -> AssetResult<()> {
+    if !invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: message_type.into(),
+            invalid_fields,
+        }
+        .to_err()
+    } else {
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::validation::validate_execute_msg::validate_update_access_routes;
+    use crate::validation::validate_execute_msg::{
+        validate_bind_contract_alias, validate_update_access_routes,
+    };
     use crate::{
         core::{error::ContractError, types::asset_identifier::AssetIdentifier},
         util::aliases::AssetResult,
@@ -381,6 +375,27 @@ mod tests {
             );
             assert_eq!(
                 "owner_address: must not be blank",
+                invalid_fields.first().unwrap(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_bind_contract_alias_invalid_alias_name() {
+        let result = validate_bind_contract_alias("");
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::BindContractAlias", message_type,
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "alias_name: must not be blank",
                 invalid_fields.first().unwrap(),
                 "expected the appropriate error message to be returned",
             );

@@ -54,6 +54,9 @@ pub enum ExecuteMsg {
         owner_address: String,
         access_routes: Vec<AccessRoute>,
     },
+    BindContractAlias {
+        alias_name: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

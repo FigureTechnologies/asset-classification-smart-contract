@@ -70,7 +70,7 @@ pub fn asset_definitions<'a>(
     IndexedMap::new("asset_definitions", indexes)
 }
 
-/// Inserts a new asset definition into storage.  
+/// Inserts a new asset definition into storage.
 /// If a value already exists, an error will be returned.
 /// Note: Asset definitions must contain a unique asset_type value,
 /// as well as a unique scope_spec_address.  Either unique constraint being

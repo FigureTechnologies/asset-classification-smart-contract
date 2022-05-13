@@ -4,7 +4,18 @@ This contract analyzes Provenance Blockchain [scope](https://docs.provenance.io/
 metadata to verify that basic portions of newly-generated asset structures are correct, and then allows third parties
 to verify the contents of the asset by granting permission to them.
 
+## Status
+[![Latest Release][release-badge]][release-latest]
+[![Apache 2.0 License][license-badge]][license-url]
+[![LOC][loc-badge]][loc-report]
+
 ## Build
+[license-badge]: https://img.shields.io/github/license/provenance-io/asset-classification-smart-contract.svg
+[license-url]: https://github.com/provenance-io/asset-classification-smart-contract/blob/main/LICENSE
+[release-badge]: https://img.shields.io/github/tag/provenance-io/asset-classification-smart-contract.svg
+[release-latest]: https://github.com/provenance-io/asset-classification-smart-contract/releases/latest
+[loc-badge]: https://tokei.rs/b1/github/provenance-io/asset-classification-smart-contract
+[loc-report]: https://github.com/provenance-io/asset-classification-smart-contract
 
 To build the smart contract, simply run the following:
 ```shell

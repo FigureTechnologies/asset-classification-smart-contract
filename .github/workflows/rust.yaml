@@ -70,8 +70,6 @@ jobs:
         # No need to create the release WASM if the version hasn't changed and no new release will be made
         if: ${{ !env.TAG_EXISTS }}
         run: |
-          # Update cargo first to ensure locks are good to go
-          cargo update
           # Build the WASM output in the artifacts directory
           make optimize
 

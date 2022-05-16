@@ -113,4 +113,4 @@ provenanced tx wasm instantiate 1 \
 --yes | jq
 ```
 
-Success!  The contract is now deployed locally.
+Success!  The contract is now deployed locally!!

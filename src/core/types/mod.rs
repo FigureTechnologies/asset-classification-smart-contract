@@ -9,4 +9,5 @@ pub mod asset_verification_result;
 pub mod entity_detail;
 pub mod fee_destination;
 pub mod scope_spec_identifier;
+pub mod serialized_enum;
 pub mod verifier_detail;

@@ -142,6 +142,12 @@ pub enum ContractError {
 
     #[error("{msg}")]
     GenericError { msg: String },
+
+    #[error("Unexpected enum value received. Got type [{received_type}]. {explanation}")]
+    UnexpectedSerializedEnum {
+        received_type: String,
+        explanation: String,
+    },
 }
 impl ContractError {
     pub fn generic<S: Into<String>>(msg: S) -> ContractError {

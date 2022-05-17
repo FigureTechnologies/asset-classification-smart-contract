@@ -209,7 +209,7 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInput::new(
                 "",
-                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                 vec![],
                 true.to_some(),
                 true.to_some(),
@@ -312,7 +312,7 @@ mod tests {
     fn get_valid_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             TEST_ASSET_TYPE,
-            ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS),
+            ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
             // Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers
             vec![VerifierDetail::new(

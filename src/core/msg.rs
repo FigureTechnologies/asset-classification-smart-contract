@@ -1,9 +1,9 @@
+use crate::core::types::serialized_enum::SerializedEnum;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::types::{
     access_route::AccessRoute, asset_definition::AssetDefinitionInput,
-    asset_identifier::AssetIdentifier, asset_qualifier::AssetQualifier,
     verifier_detail::VerifierDetail,
 };
 
@@ -20,13 +20,15 @@ pub struct InitMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     OnboardAsset {
-        identifier: AssetIdentifier,
+        /// Expects an AssetIdentifier-compatible SerializedEnum
+        identifier: SerializedEnum,
         asset_type: String,
         verifier_address: String,
         access_routes: Option<Vec<AccessRoute>>,
     },
     VerifyAsset {
-        identifier: AssetIdentifier,
+        /// Expects an AssetIdentifier-compatible SerializedEnum
+        identifier: SerializedEnum,
         success: bool,
         message: Option<String>,
         access_routes: Option<Vec<AccessRoute>>,
@@ -50,7 +52,8 @@ pub enum ExecuteMsg {
         verifier: VerifierDetail,
     },
     UpdateAccessRoutes {
-        identifier: AssetIdentifier,
+        /// Expects an AssetIdentifier-compatible SerializedEnum
+        identifier: SerializedEnum,
         owner_address: String,
         access_routes: Vec<AccessRoute>,
     },
@@ -62,9 +65,15 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    QueryAssetDefinition { qualifier: AssetQualifier },
+    QueryAssetDefinition {
+        /// Expects an AssetQualifier-compatible SerializedEnum
+        qualifier: SerializedEnum,
+    },
     QueryAssetDefinitions {},
-    QueryAssetScopeAttribute { identifier: AssetIdentifier },
+    QueryAssetScopeAttribute {
+        /// Expects an AssetIdentifier-compatible SerializedEnum
+        identifier: SerializedEnum,
+    },
     QueryState {},
     QueryVersion {},
 }

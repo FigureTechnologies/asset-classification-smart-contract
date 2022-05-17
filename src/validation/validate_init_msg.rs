@@ -235,7 +235,8 @@ pub mod tests {
             is_test: false.to_some(),
             asset_definitions: vec![AssetDefinitionInput::new(
                 "heloc",
-                ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
+                ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt")
+                    .to_serialized_enum(),
                 vec![VerifierDetail::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                     Uint128::new(100),
@@ -262,7 +263,8 @@ pub mod tests {
             asset_definitions: vec![
                 AssetDefinitionInput::new(
                     "heloc",
-                    ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt"),
+                    ScopeSpecIdentifier::address("scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt")
+                        .to_serialized_enum(),
                     vec![VerifierDetail::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(100),
@@ -279,7 +281,8 @@ pub mod tests {
                 ),
                 AssetDefinitionInput::new(
                     "mortgage",
-                    ScopeSpecIdentifier::address("scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86"),
+                    ScopeSpecIdentifier::address("scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86")
+                        .to_serialized_enum(),
                     vec![VerifierDetail::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(500),
@@ -302,7 +305,8 @@ pub mod tests {
                 ),
                 AssetDefinitionInput::new(
                     "pl",
-                    ScopeSpecIdentifier::address("scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084"),
+                    ScopeSpecIdentifier::address("scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084")
+                        .to_serialized_enum(),
                     vec![
                         VerifierDetail::new(
                             "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
@@ -352,7 +356,8 @@ pub mod tests {
                 is_test: false.to_some(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "heloc",
-                    ScopeSpecIdentifier::address("scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz"),
+                    ScopeSpecIdentifier::address("scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz")
+                        .to_serialized_enum(),
                     vec![VerifierDetail::new(
                         "address",
                         Uint128::new(100),
@@ -381,7 +386,8 @@ pub mod tests {
                         "heloc",
                         ScopeSpecIdentifier::address(
                             "scopespec1qsk66j3kgkjyk4985ll8xmx68z9q4xfkjk",
-                        ),
+                        )
+                        .to_serialized_enum(),
                         vec![],
                         None,
                         None,
@@ -390,7 +396,8 @@ pub mod tests {
                         "heloc",
                         ScopeSpecIdentifier::address(
                             "scopespec1q35x472s9tp54t4dcrygrdwdyl0qagw7y2",
-                        ),
+                        )
+                        .to_serialized_enum(),
                         vec![],
                         None,
                         None,
@@ -410,7 +417,8 @@ pub mod tests {
                 is_test: false.to_some(),
                 asset_definitions: vec![AssetDefinitionInput::new(
                     "",
-                    ScopeSpecIdentifier::address("scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn"),
+                    ScopeSpecIdentifier::address("scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn")
+                        .to_serialized_enum(),
                     vec![],
                     None,
                     None,
@@ -812,7 +820,7 @@ pub mod tests {
     fn test_validate_asset_definition_input_internal_bad_scope_spec_identifier() {
         let error_strings = validate_asset_definition_input_internal(&AssetDefinitionInput::new(
             "heloc",
-            ScopeSpecIdentifier::uuid("not even a real uuid at all"),
+            ScopeSpecIdentifier::uuid("not even a real uuid at all").to_serialized_enum(),
             vec![],
             None,
             None,

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SerializedEnum",
+  "description": "There is a bug in cosmwasm 1.0.0's interaction with serde-json-wasm that causes floating point operations to be added into the compiled wasm, so the previous solution of using things like AssetIdentifier directly and specifying them with a tag and content param in their serde annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain identical, but not generate floating point errors.  It makes the schema less useful, but it's a hack to fix a bug, so...\n\nIt's also worth noting that this solution can only create enum switches that have Strings as their values.  Anything different will not work for this solution and will require further adaptation and hackery.",
+  "type": "object",
+  "required": [
+    "type",
+    "value"
+  ],
+  "properties": {
+    "type": {
+      "description": "Specifies the type of enum to deserialize into. Maps into one of the values specified in the impl for this struct.",
+      "type": "string"
+    },
+    "value": {
+      "description": "Specifies the string value to be used for the type.",
+      "type": "string"
+    }
+  }
+}

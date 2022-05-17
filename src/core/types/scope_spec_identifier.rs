@@ -1,3 +1,5 @@
+use crate::core::error::ContractError;
+use crate::core::types::serialized_enum::SerializedEnum;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,13 +11,37 @@ use crate::util::{
     traits::ResultExtensions,
 };
 
+const UUID_NAME: &str = "uuid";
+const ADDRESS_NAME: &str = "address";
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case", tag = "type", content = "value")]
+#[serde(rename_all = "snake_case")]
 pub enum ScopeSpecIdentifier {
     Uuid(String),
     Address(String),
 }
 impl ScopeSpecIdentifier {
+    pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
+        match e.r#type.as_str() {
+            UUID_NAME => Self::uuid(&e.value).to_ok(),
+            ADDRESS_NAME => Self::address(&e.value).to_ok(),
+            _ => ContractError::UnexpectedSerializedEnum {
+                received_type: e.r#type.clone(),
+                explanation: format!(
+                    "Invalid ScopeSpecIdentifier. Expected one of [{UUID_NAME}, {ADDRESS_NAME}]"
+                ),
+            }
+            .to_err(),
+        }
+    }
+
+    pub fn to_serialized_enum(&self) -> SerializedEnum {
+        match self {
+            Self::Uuid(uuid) => SerializedEnum::new(UUID_NAME, uuid),
+            Self::Address(address) => SerializedEnum::new(ADDRESS_NAME, address),
+        }
+    }
+
     pub fn uuid<S: Into<String>>(scope_spec_uuid: S) -> Self {
         Self::Uuid(scope_spec_uuid.into())
     }
@@ -67,7 +93,10 @@ impl ScopeSpecIdentifiers {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
+    use crate::core::error::ContractError;
+    use crate::core::types::scope_spec_identifier::{ScopeSpecIdentifier, ADDRESS_NAME, UUID_NAME};
+    use crate::core::types::serialized_enum::SerializedEnum;
+    use uuid::Uuid;
 
     #[test]
     fn test_scope_spec_identifier_parse_for_scope_spec_uuid() {
@@ -150,6 +179,95 @@ mod tests {
         assert_eq!(
             expected_scope_spec_uuid, scope_spec_uuid,
             "the scope spec uuid should be as expected",
+        );
+    }
+
+    #[test]
+    fn test_from_serialized_enum_to_uuid() {
+        let uuid = Uuid::new_v4().to_string();
+        let ser_enum = SerializedEnum::new(UUID_NAME, &uuid);
+        let identifier = ScopeSpecIdentifier::from_serialized_enum(&ser_enum)
+            .expect("expected serialized enum to identifier to succeed");
+        match identifier {
+            ScopeSpecIdentifier::Uuid(spec_uuid) => {
+                assert_eq!(
+                    uuid, spec_uuid,
+                    "expected the spec uuid to be properly derived",
+                );
+            }
+            _ => panic!("unexpected identifier derived from type {:?}", identifier),
+        };
+    }
+
+    #[test]
+    fn test_from_serialized_enum_to_address() {
+        let ser_enum = SerializedEnum::new(ADDRESS_NAME, "my-address");
+        let identifier = ScopeSpecIdentifier::from_serialized_enum(&ser_enum)
+            .expect("expected serialized enum to identifier to succeed");
+        match identifier {
+            ScopeSpecIdentifier::Address(address) => {
+                assert_eq!(
+                    "my-address", address,
+                    "expected the address to be properly derived",
+                );
+            }
+            _ => panic!("unexpected identifier derived from type {:?}", identifier),
+        };
+    }
+
+    #[test]
+    fn test_from_serialized_enum_wrong_type_error() {
+        let ser_enum = SerializedEnum::new("bad_type", "some_value");
+        let err = ScopeSpecIdentifier::from_serialized_enum(&ser_enum)
+            .expect_err("expected an incompatible type to cause an error");
+        match err {
+            ContractError::UnexpectedSerializedEnum {
+                received_type,
+                explanation,
+            } => {
+                assert_eq!(
+                    "bad_type", received_type,
+                    "expected the unexpected type to be provided in the error message",
+                );
+                assert_eq!(
+                    format!("Invalid ScopeSpecIdentifier. Expected one of [{UUID_NAME}, {ADDRESS_NAME}]"),
+                    explanation,
+                    "expected the explanation to list the type of the enum and the expected values",
+                );
+            }
+            _ => panic!(
+                "unexpected error encountered on bad type provided: {:?}",
+                err
+            ),
+        };
+    }
+
+    #[test]
+    fn test_to_serialized_enum_uuid() {
+        let uuid = Uuid::new_v4().to_string();
+        let spec_uuid = ScopeSpecIdentifier::uuid(&uuid);
+        let ser_enum = spec_uuid.to_serialized_enum();
+        assert_eq!(
+            UUID_NAME, ser_enum.r#type,
+            "expected the proper enum type to be derived",
+        );
+        assert_eq!(
+            uuid, ser_enum.value,
+            "expected the proper value to be derived",
+        );
+    }
+
+    #[test]
+    fn test_to_serialized_enum_address() {
+        let address = ScopeSpecIdentifier::address("my-address");
+        let ser_enum = address.to_serialized_enum();
+        assert_eq!(
+            ADDRESS_NAME, ser_enum.r#type,
+            "expected the proper enum type to be derived",
+        );
+        assert_eq!(
+            "my-address", ser_enum.value,
+            "expected the proper value to be derived",
         );
     }
 }

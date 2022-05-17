@@ -37,10 +37,12 @@ pub fn instantiate(
 #[entry_point]
 pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
-        QueryMsg::QueryAssetDefinition { qualifier } => query_asset_definition(&deps, qualifier),
+        QueryMsg::QueryAssetDefinition { qualifier } => {
+            query_asset_definition(&deps, qualifier.to_asset_qualifier()?)
+        }
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
         QueryMsg::QueryAssetScopeAttribute { identifier } => {
-            query_asset_scope_attribute(&deps, identifier)
+            query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)
         }
         QueryMsg::QueryState {} => query_state(&deps),
         QueryMsg::QueryVersion {} => query_version(&deps),

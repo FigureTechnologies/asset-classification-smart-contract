@@ -136,7 +136,7 @@ mod tests {
         let msg = ExecuteMsg::UpdateAssetDefinition {
             asset_definition: AssetDefinitionInput::new(
                 DEFAULT_ASSET_TYPE,
-                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                 vec![],
                 None,
                 None,
@@ -244,7 +244,7 @@ mod tests {
     fn get_update_asset_definition() -> AssetDefinitionInput {
         let def = AssetDefinitionInput::new(
             DEFAULT_ASSET_TYPE,
-            ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+            ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
             vec![VerifierDetail::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),

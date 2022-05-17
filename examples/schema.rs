@@ -8,6 +8,7 @@ use asset_classification_smart_contract::core::types::asset_definition::AssetDef
 use asset_classification_smart_contract::core::types::asset_identifier::AssetIdentifier;
 use asset_classification_smart_contract::core::types::asset_qualifier::AssetQualifier;
 use asset_classification_smart_contract::core::types::asset_scope_attribute::AssetScopeAttribute;
+use asset_classification_smart_contract::core::types::serialized_enum::SerializedEnum;
 use asset_classification_smart_contract::core::types::verifier_detail::VerifierDetail;
 
 fn main() {
@@ -25,4 +26,5 @@ fn main() {
     export_schema(&schema_for!(VerifierDetail), &out_dir);
     export_schema(&schema_for!(AssetIdentifier), &out_dir);
     export_schema(&schema_for!(AssetQualifier), &out_dir);
+    export_schema(&schema_for!(SerializedEnum), &out_dir);
 }

@@ -98,7 +98,7 @@ mod tests {
             .map(|id| {
                 AssetDefinitionInput::new(
                     format!("asset_type_{}", id),
-                    ScopeSpecIdentifier::Uuid(Uuid::new_v4().to_string()),
+                    ScopeSpecIdentifier::Uuid(Uuid::new_v4().to_string()).to_serialized_enum(),
                     vec![VerifierDetail::new(
                         DEFAULT_VERIFIER_ADDRESS,
                         Uint128::new(150),

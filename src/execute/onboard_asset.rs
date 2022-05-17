@@ -30,7 +30,7 @@ impl OnboardAssetV1 {
                 verifier_address,
                 access_routes,
             } => OnboardAssetV1 {
-                identifier,
+                identifier: identifier.to_asset_identifier()?,
                 asset_type,
                 verifier_address,
                 access_routes: access_routes.unwrap_or_default(),

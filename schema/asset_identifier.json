@@ -1,42 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AssetIdentifier",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "object",
       "required": [
-        "type",
-        "value"
+        "asset_uuid"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "asset_uuid"
-          ]
-        },
-        "value": {
+        "asset_uuid": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     {
       "type": "object",
       "required": [
-        "type",
-        "value"
+        "scope_address"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "scope_address"
-          ]
-        },
-        "value": {
+        "scope_address": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   ]
 }

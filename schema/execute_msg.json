@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "object",
       "required": [
@@ -29,7 +29,12 @@
               "type": "string"
             },
             "identifier": {
-              "$ref": "#/definitions/AssetIdentifier"
+              "description": "Expects an AssetIdentifier-compatible SerializedEnum",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
             },
             "verifier_address": {
               "type": "string"
@@ -62,7 +67,12 @@
               }
             },
             "identifier": {
-              "$ref": "#/definitions/AssetIdentifier"
+              "description": "Expects an AssetIdentifier-compatible SerializedEnum",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
             },
             "message": {
               "type": [
@@ -211,7 +221,12 @@
               }
             },
             "identifier": {
-              "$ref": "#/definitions/AssetIdentifier"
+              "description": "Expects an AssetIdentifier-compatible SerializedEnum",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
             },
             "owner_address": {
               "type": "string"
@@ -285,7 +300,7 @@
           ]
         },
         "scope_spec_identifier": {
-          "$ref": "#/definitions/ScopeSpecIdentifier"
+          "$ref": "#/definitions/SerializedEnum"
         },
         "verifiers": {
           "type": "array",
@@ -294,46 +309,6 @@
           }
         }
       }
-    },
-    "AssetIdentifier": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "asset_uuid"
-              ]
-            },
-            "value": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "scope_address"
-              ]
-            },
-            "value": {
-              "type": "string"
-            }
-          }
-        }
-      ]
     },
     "Decimal": {
       "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
@@ -386,45 +361,23 @@
         }
       }
     },
-    "ScopeSpecIdentifier": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "uuid"
-              ]
-            },
-            "value": {
-              "type": "string"
-            }
-          }
+    "SerializedEnum": {
+      "description": "There is a bug in cosmwasm 1.0.0's interaction with serde-json-wasm that causes floating point operations to be added into the compiled wasm, so the previous solution of using things like AssetIdentifier directly and specifying them with a tag and content param in their serde annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain identical, but not generate floating point errors.  It makes the schema less useful, but it's a hack to fix a bug, so...\n\nIt's also worth noting that this solution can only create enum switches that have Strings as their values.  Anything different will not work for this solution and will require further adaptation and hackery.",
+      "type": "object",
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "description": "Specifies the type of enum to deserialize into.\n\nThe word \"type\" is a reserved keyword in Rust. Need to use serde to interpret this field correctly as the desired value of \"type\"",
+          "type": "string"
         },
-        {
-          "type": "object",
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "address"
-              ]
-            },
-            "value": {
-              "type": "string"
-            }
-          }
+        "value": {
+          "description": "Specifies the string value to be used for the type.",
+          "type": "string"
         }
-      ]
+      }
     },
     "Uint128": {
       "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",

@@ -33,13 +33,6 @@ library = []
 # enable-test-utils allows the test classes to expose shared code amongst each other
 enable-test-utils = ["uuid/v4"]
 
-[package.metadata.scripts]
-optimize = """docker run --rm -v "$(pwd)":/code \
-  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
-  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/rust-optimizer:0.12.5
-"""
-
 [dependencies]
 bech32 = "0.8.1"
 provwasm-std = { version = "=1.0.0-rc.0" }

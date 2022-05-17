@@ -161,6 +161,7 @@ fn gen_validation_response<S: Into<String>>(
 
 #[cfg(test)]
 mod tests {
+    use crate::core::types::serialized_enum::SerializedEnum;
     use crate::validation::validate_execute_msg::{
         validate_bind_contract_alias, validate_update_access_routes,
     };
@@ -244,7 +245,33 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_validate_asset_success_for_asset_uuid() {
+    fn test_validate_onboard_asset_invalid_identifier() {
+        let result = validate_onboard_asset(
+            &SerializedEnum::new("incorrect_variant", "value"),
+            "asset_type",
+            "verifier_address",
+        );
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::OnboardAsset",
+                message_type.as_str(),
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier: received type [incorrect_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]",
+                invalid_fields.first().unwrap().as_str(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_verify_asset_success_for_asset_uuid() {
         validate_verify_asset(
             &AssetIdentifier::asset_uuid("4b9601f4-a0ad-11ec-b214-2f7b0096dea6")
                 .to_serialized_enum(),
@@ -253,7 +280,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_validate_asset_success_for_scope_address() {
+    fn test_validate_verify_asset_success_for_scope_address() {
         validate_verify_asset(
             &AssetIdentifier::scope_address("scope1qps4rfeu5zk3rm9r2gp36dl9r3tq6rpyqd")
                 .to_serialized_enum(),
@@ -262,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_validate_asset_invalid_asset_uuid() {
+    fn test_validate_verify_asset_invalid_asset_uuid() {
         let result = validate_verify_asset(&AssetIdentifier::asset_uuid("").to_serialized_enum());
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
@@ -284,7 +311,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_validate_asset_invalid_scope_address() {
+    fn test_validate_verify_asset_invalid_scope_address() {
         let result =
             validate_verify_asset(&AssetIdentifier::scope_address("").to_serialized_enum());
         test_invalid_message_fields(result, |message_type, invalid_fields| {
@@ -300,6 +327,28 @@ mod tests {
             );
             assert_eq!(
                 "identifier:scope_address: must not be blank",
+                invalid_fields.first().unwrap().as_str(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_verify_asset_invalid_identifier() {
+        let result = validate_verify_asset(&SerializedEnum::new("incompatible_variant", "value"));
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::VerifyAsset",
+                message_type.as_str(),
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier: received type [incompatible_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]",
                 invalid_fields.first().unwrap().as_str(),
                 "expected the appropriate error message to be returned",
             );
@@ -401,6 +450,31 @@ mod tests {
             assert_eq!(
                 "owner_address: must not be blank",
                 invalid_fields.first().unwrap(),
+                "expected the appropriate error message to be returned",
+            );
+        });
+    }
+
+    #[test]
+    fn test_validate_update_access_routes_invalid_identifier() {
+        let result = validate_update_access_routes(
+            &SerializedEnum::new("weird_variant", "value"),
+            "owner_address",
+        );
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
+            assert_eq!(
+                "ExecuteMsg::UpdateAccessRoutes",
+                message_type.as_str(),
+                "incorrect message type for error",
+            );
+            assert_eq!(
+                1,
+                invalid_fields.len(),
+                "expected only a single invalid field to be found",
+            );
+            assert_eq!(
+                "identifier: received type [weird_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]",
+                invalid_fields.first().unwrap().as_str(),
                 "expected the appropriate error message to be returned",
             );
         });

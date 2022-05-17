@@ -144,7 +144,8 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInput::new(
             "heloc",
-            ScopeSpecIdentifier::address("scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn"),
+            ScopeSpecIdentifier::address("scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn")
+                .to_serialized_enum(),
             vec![VerifierDetail::new(
                 DEFAULT_VERIFIER_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
@@ -161,7 +162,8 @@ mod tests {
         );
         let second_asset_def = AssetDefinitionInput::new(
             "mortgage",
-            ScopeSpecIdentifier::address("scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3"),
+            ScopeSpecIdentifier::address("scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3")
+                .to_serialized_enum(),
             vec![VerifierDetail::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
@@ -279,7 +281,7 @@ mod tests {
                 bind_base_name: false,
                 asset_definitions: vec![AssetDefinitionInput::new(
                     DEFAULT_ASSET_TYPE,
-                    ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+                    ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                     vec![get_default_verifier_detail()],
                     true.to_some(),
                     // bind_name == false
@@ -320,7 +322,7 @@ mod tests {
         let args = InstArgs {
             asset_definitions: vec![AssetDefinitionInput::new(
                 "",
-                ScopeSpecIdentifier::address(""),
+                ScopeSpecIdentifier::address("").to_serialized_enum(),
                 vec![],
                 None,
                 None,

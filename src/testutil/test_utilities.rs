@@ -49,7 +49,8 @@ pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, 
 pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
     AssetDefinitionInput {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS),
+        scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS)
+            .to_serialized_enum(),
         verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,

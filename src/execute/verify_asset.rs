@@ -28,7 +28,7 @@ impl VerifyAssetV1 {
                 message,
                 access_routes,
             } => VerifyAssetV1 {
-                identifier,
+                identifier: identifier.to_asset_identifier()?,
                 success,
                 message,
                 access_routes: access_routes.unwrap_or_default(),

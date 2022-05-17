@@ -1,3 +1,5 @@
+use crate::core::error::ContractError;
+use crate::core::types::serialized_enum::SerializedEnum;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -7,13 +9,35 @@ use crate::util::{
     traits::ResultExtensions,
 };
 
+const ASSET_UUID_NAME: &str = "asset_uuid";
+const SCOPE_ADDRESS_NAME: &str = "scope_address";
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case", tag = "type", content = "value")]
+#[serde(rename_all = "snake_case")]
 pub enum AssetIdentifier {
     AssetUuid(String),
     ScopeAddress(String),
 }
 impl AssetIdentifier {
+    pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
+        match e.enum_type.as_str() {
+            ASSET_UUID_NAME => Self::asset_uuid(&e.value).to_ok(),
+            SCOPE_ADDRESS_NAME => Self::scope_address(&e.value).to_ok(),
+            _ => ContractError::UnexpectedSerializedEnum {
+                received_type: e.enum_type.clone(),
+                explanation: format!("Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]"),
+            }
+            .to_err(),
+        }
+    }
+
+    pub fn to_serialized_enum(&self) -> SerializedEnum {
+        match self {
+            Self::AssetUuid(uuid) => SerializedEnum::new(ASSET_UUID_NAME, uuid),
+            Self::ScopeAddress(address) => SerializedEnum::new(SCOPE_ADDRESS_NAME, address),
+        }
+    }
+
     pub fn asset_uuid<S: Into<String>>(asset_uuid: S) -> Self {
         Self::AssetUuid(asset_uuid.into())
     }
@@ -59,7 +83,12 @@ impl AssetIdentifiers {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::types::asset_identifier::AssetIdentifier;
+    use crate::core::error::ContractError;
+    use crate::core::types::asset_identifier::{
+        AssetIdentifier, ASSET_UUID_NAME, SCOPE_ADDRESS_NAME,
+    };
+    use crate::core::types::serialized_enum::SerializedEnum;
+    use uuid::Uuid;
 
     #[test]
     fn test_asset_identifier_parse_for_asset_uuid() {
@@ -142,6 +171,95 @@ mod tests {
         assert_eq!(
             expected_asset_uuid, asset_uuid,
             "the asset uuid output should be as expected"
+        );
+    }
+
+    #[test]
+    fn test_from_serialized_enum_asset_uuid() {
+        let uuid = Uuid::new_v4().to_string();
+        let ser_enum = SerializedEnum::new(ASSET_UUID_NAME, &uuid);
+        let identifier = AssetIdentifier::from_serialized_enum(&ser_enum)
+            .expect("expected serialized enum to identifier to succeed");
+        match identifier {
+            AssetIdentifier::AssetUuid(asset_uuid) => {
+                assert_eq!(
+                    uuid, asset_uuid,
+                    "expected the asset uuid to be properly derived",
+                );
+            }
+            _ => panic!("unexpected identifier derived from type {:?}", identifier),
+        };
+    }
+
+    #[test]
+    fn test_from_serialized_enum_to_scope_address() {
+        let ser_enum = SerializedEnum::new(SCOPE_ADDRESS_NAME, "my-address");
+        let identifier = AssetIdentifier::from_serialized_enum(&ser_enum)
+            .expect("expected serialized enum to identifier to succeed");
+        match identifier {
+            AssetIdentifier::ScopeAddress(scope_address) => {
+                assert_eq!(
+                    "my-address", scope_address,
+                    "expected the scope address to be properly derived",
+                );
+            }
+            _ => panic!("unexpected identifier derived from type {:?}", identifier),
+        };
+    }
+
+    #[test]
+    fn test_from_serialized_enum_wrong_type_error() {
+        let ser_enum = SerializedEnum::new("bad_type", "some_value");
+        let err = AssetIdentifier::from_serialized_enum(&ser_enum)
+            .expect_err("expected an incompatible type to cause an error");
+        match err {
+            ContractError::UnexpectedSerializedEnum {
+                received_type,
+                explanation,
+            } => {
+                assert_eq!(
+                    "bad_type", received_type,
+                    "expected the unexpected type to be provided in the error message",
+                );
+                assert_eq!(
+                    format!("Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]"),
+                    explanation,
+                    "expected the explanation to list the type of the enum and the expected values",
+                );
+            }
+            _ => panic!(
+                "unexpected error encountered on bad type provided: {:?}",
+                err
+            ),
+        };
+    }
+
+    #[test]
+    fn test_to_serialized_enum_asset_uuid() {
+        let uuid = Uuid::new_v4().to_string();
+        let asset_uuid = AssetIdentifier::asset_uuid(&uuid);
+        let ser_enum = asset_uuid.to_serialized_enum();
+        assert_eq!(
+            ASSET_UUID_NAME, ser_enum.enum_type,
+            "expected the proper enum type to be derived",
+        );
+        assert_eq!(
+            uuid, ser_enum.value,
+            "expected the proper value to be derived",
+        );
+    }
+
+    #[test]
+    fn test_to_serialized_enum_scope_address() {
+        let scope_address = AssetIdentifier::scope_address("my-address");
+        let ser_enum = scope_address.to_serialized_enum();
+        assert_eq!(
+            SCOPE_ADDRESS_NAME, ser_enum.enum_type,
+            "expected the proper enum type to be derived",
+        );
+        assert_eq!(
+            "my-address", ser_enum.value,
+            "expected the proper value to be derived",
         );
     }
 }

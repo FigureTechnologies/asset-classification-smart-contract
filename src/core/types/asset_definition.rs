@@ -1,6 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::core::types::serialized_enum::SerializedEnum;
 use crate::{
     core::state::config_read_v2,
     util::{
@@ -10,7 +11,7 @@ use crate::{
     },
 };
 
-use super::{scope_spec_identifier::ScopeSpecIdentifier, verifier_detail::VerifierDetail};
+use super::verifier_detail::VerifierDetail;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -52,7 +53,7 @@ impl AssetDefinition {
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinitionInput {
     pub asset_type: String,
-    pub scope_spec_identifier: ScopeSpecIdentifier,
+    pub scope_spec_identifier: SerializedEnum,
     pub verifiers: Vec<VerifierDetail>,
     pub enabled: Option<bool>,
     pub bind_name: Option<bool>,
@@ -60,7 +61,7 @@ pub struct AssetDefinitionInput {
 impl AssetDefinitionInput {
     pub fn new<S1: Into<String>>(
         asset_type: S1,
-        scope_spec_identifier: ScopeSpecIdentifier,
+        scope_spec_identifier: SerializedEnum,
         verifiers: Vec<VerifierDetail>,
         enabled: Option<bool>,
         bind_name: Option<bool>,
@@ -77,7 +78,10 @@ impl AssetDefinitionInput {
     pub fn into_asset_definition(self) -> AssetResult<AssetDefinition> {
         AssetDefinition {
             asset_type: self.asset_type,
-            scope_spec_address: self.scope_spec_identifier.get_scope_spec_address()?,
+            scope_spec_address: self
+                .scope_spec_identifier
+                .to_scope_spec_identifier()?
+                .get_scope_spec_address()?,
             verifiers: self.verifiers,
             enabled: self.enabled.unwrap_or(true),
         }
@@ -87,7 +91,9 @@ impl AssetDefinitionInput {
     pub fn as_asset_definition(&self) -> AssetResult<AssetDefinition> {
         AssetDefinition::new(
             &self.asset_type,
-            self.scope_spec_identifier.get_scope_spec_address()?,
+            self.scope_spec_identifier
+                .to_scope_spec_identifier()?
+                .get_scope_spec_address()?,
             self.verifiers.clone(),
         )
         .to_ok()

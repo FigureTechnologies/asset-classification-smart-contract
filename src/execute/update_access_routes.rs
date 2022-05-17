@@ -39,7 +39,12 @@ impl UpdateAccessRoutesV1 {
                 identifier,
                 owner_address,
                 access_routes,
-            } => Self::new(identifier, owner_address, access_routes).to_ok(),
+            } => Self::new(
+                identifier.to_asset_identifier()?,
+                owner_address,
+                access_routes,
+            )
+            .to_ok(),
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::UpdateAccessRoutes".to_string(),
             }
@@ -526,7 +531,8 @@ mod tests {
             mock_env(),
             empty_mock_info(DEFAULT_SENDER_ADDRESS),
             ExecuteMsg::UpdateAccessRoutes {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS)
+                    .to_serialized_enum(),
                 owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                 access_routes: vec![AccessRoute::new("grpcs://no.u:4433", "some_name".to_some())],
             },

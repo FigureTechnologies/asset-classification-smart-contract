@@ -20,11 +20,11 @@ pub enum AssetIdentifier {
 }
 impl AssetIdentifier {
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
-        match e.enum_type.as_str() {
+        match e.r#type.as_str() {
             ASSET_UUID_NAME => Self::asset_uuid(&e.value).to_ok(),
             SCOPE_ADDRESS_NAME => Self::scope_address(&e.value).to_ok(),
             _ => ContractError::UnexpectedSerializedEnum {
-                received_type: e.enum_type.clone(),
+                received_type: e.r#type.clone(),
                 explanation: format!("Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]"),
             }
             .to_err(),
@@ -240,7 +240,7 @@ mod tests {
         let asset_uuid = AssetIdentifier::asset_uuid(&uuid);
         let ser_enum = asset_uuid.to_serialized_enum();
         assert_eq!(
-            ASSET_UUID_NAME, ser_enum.enum_type,
+            ASSET_UUID_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(
@@ -254,7 +254,7 @@ mod tests {
         let scope_address = AssetIdentifier::scope_address("my-address");
         let ser_enum = scope_address.to_serialized_enum();
         assert_eq!(
-            SCOPE_ADDRESS_NAME, ser_enum.enum_type,
+            SCOPE_ADDRESS_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(

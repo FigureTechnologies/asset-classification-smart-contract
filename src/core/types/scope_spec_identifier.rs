@@ -15,18 +15,18 @@ const UUID_NAME: &str = "uuid";
 const ADDRESS_NAME: &str = "address";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case", tag = "type", content = "value")]
+#[serde(rename_all = "snake_case")]
 pub enum ScopeSpecIdentifier {
     Uuid(String),
     Address(String),
 }
 impl ScopeSpecIdentifier {
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
-        match e.enum_type.as_str() {
+        match e.r#type.as_str() {
             UUID_NAME => Self::uuid(&e.value).to_ok(),
             ADDRESS_NAME => Self::address(&e.value).to_ok(),
             _ => ContractError::UnexpectedSerializedEnum {
-                received_type: e.enum_type.clone(),
+                received_type: e.r#type.clone(),
                 explanation: format!(
                     "Invalid ScopeSpecIdentifier. Expected one of [{UUID_NAME}, {ADDRESS_NAME}]"
                 ),
@@ -248,7 +248,7 @@ mod tests {
         let spec_uuid = ScopeSpecIdentifier::uuid(&uuid);
         let ser_enum = spec_uuid.to_serialized_enum();
         assert_eq!(
-            UUID_NAME, ser_enum.enum_type,
+            UUID_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(
@@ -262,7 +262,7 @@ mod tests {
         let address = ScopeSpecIdentifier::address("my-address");
         let ser_enum = address.to_serialized_enum();
         assert_eq!(
-            ADDRESS_NAME, ser_enum.enum_type,
+            ADDRESS_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(

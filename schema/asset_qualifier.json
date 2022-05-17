@@ -5,38 +5,26 @@
     {
       "type": "object",
       "required": [
-        "type",
-        "value"
+        "asset_type"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "asset_type"
-          ]
-        },
-        "value": {
+        "asset_type": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     {
       "type": "object",
       "required": [
-        "type",
-        "value"
+        "scope_spec_address"
       ],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "scope_spec_address"
-          ]
-        },
-        "value": {
+        "scope_spec_address": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   ]
 }

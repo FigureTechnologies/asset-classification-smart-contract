@@ -9,18 +9,18 @@ const ASSET_TYPE_NAME: &str = "asset_type";
 const SCOPE_SPEC_ADDRESS_NAME: &str = "scope_spec_address";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case", tag = "type", content = "value")]
+#[serde(rename_all = "snake_case")]
 pub enum AssetQualifier {
     AssetType(String),
     ScopeSpecAddress(String),
 }
 impl AssetQualifier {
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
-        match e.enum_type.as_str() {
+        match e.r#type.as_str() {
             ASSET_TYPE_NAME => Self::asset_type(&e.value).to_ok(),
             SCOPE_SPEC_ADDRESS_NAME => Self::scope_spec_address(&e.value).to_ok(),
             _ => ContractError::UnexpectedSerializedEnum {
-                received_type: e.enum_type.clone(),
+                received_type: e.r#type.clone(),
                 explanation: format!(
                     "Invalid AssetQualifier. Expected one of [{ASSET_TYPE_NAME}, {SCOPE_SPEC_ADDRESS_NAME}]"
                 ),
@@ -121,7 +121,7 @@ mod tests {
         let asset_type = AssetQualifier::asset_type("heloc");
         let ser_enum = asset_type.to_serialized_enum();
         assert_eq!(
-            ASSET_TYPE_NAME, ser_enum.enum_type,
+            ASSET_TYPE_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(
@@ -135,7 +135,7 @@ mod tests {
         let scope_spec_address = AssetQualifier::scope_spec_address("my-address");
         let ser_enum = scope_spec_address.to_serialized_enum();
         assert_eq!(
-            SCOPE_SPEC_ADDRESS_NAME, ser_enum.enum_type,
+            SCOPE_SPEC_ADDRESS_NAME, ser_enum.r#type,
             "expected the proper enum type to be derived",
         );
         assert_eq!(

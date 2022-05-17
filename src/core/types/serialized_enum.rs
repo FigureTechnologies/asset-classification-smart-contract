@@ -18,19 +18,16 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct SerializedEnum {
-    /// Specifies the type of enum to deserialize into.
-    ///
-    /// The word "type" is a reserved keyword in Rust. Need to use serde to interpret this field
-    /// correctly as the desired value of "type"
-    #[serde(rename(serialize = "type", deserialize = "type"))]
-    pub enum_type: String,
+    /// Specifies the type of enum to deserialize into. Maps into one of the values specified in
+    /// the impl for this struct.
+    pub r#type: String,
     /// Specifies the string value to be used for the type.
     pub value: String,
 }
 impl SerializedEnum {
     pub fn new<S1: Into<String>, S2: Into<String>>(enum_type: S1, value: S2) -> Self {
         Self {
-            enum_type: enum_type.into(),
+            r#type: enum_type.into(),
             value: value.into(),
         }
     }

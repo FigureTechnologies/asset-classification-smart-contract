@@ -9,7 +9,7 @@
   ],
   "properties": {
     "type": {
-      "description": "Specifies the type of enum to deserialize into.\n\nThe word \"type\" is a reserved keyword in Rust. Need to use serde to interpret this field correctly as the desired value of \"type\"",
+      "description": "Specifies the type of enum to deserialize into. Maps into one of the values specified in the impl for this struct.",
       "type": "string"
     },
     "value": {

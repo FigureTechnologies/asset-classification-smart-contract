@@ -81,5 +81,19 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum MigrateMsg {
-    ContractUpgrade {},
+    ContractUpgrade { options: Option<MigrationOptions> },
+}
+
+/// Sub-level struct that defines optional changes that can occur during the migration process.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct MigrationOptions {
+    /// Sets the contract admin to a new address
+    pub new_admin_address: Option<String>,
+}
+impl MigrationOptions {
+    /// Notes whether or not any options have been specified
+    pub fn has_changes(&self) -> bool {
+        self.new_admin_address.is_some()
+    }
 }

@@ -2,6 +2,8 @@ use super::constants::{
     ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY, SCOPE_OWNER_KEY,
     VERIFIER_ADDRESS_KEY,
 };
+use crate::util::constants::ADDITIONAL_METADATA_KEY;
+use std::collections::HashMap;
 
 pub enum EventType {
     InstantiateContract,
@@ -90,6 +92,20 @@ impl EventAttributes {
             .push((SCOPE_OWNER_KEY.into(), scope_owner.to_string()));
         self
     }
+
+    pub fn set_additional_metadata(
+        mut self,
+        additional_metadata: &EventAdditionalMetadata,
+    ) -> Self {
+        // Only append additional metadata if it actually has keys
+        if additional_metadata.has_metadata() {
+            self.attributes.push((
+                ADDITIONAL_METADATA_KEY.into(),
+                additional_metadata.get_meta_string(),
+            ));
+        }
+        self
+    }
 }
 
 impl IntoIterator for EventAttributes {
@@ -102,11 +118,49 @@ impl IntoIterator for EventAttributes {
     }
 }
 
+/// A helper collection that allows underlying processes to specify dynamic key values for processes
+/// that don't necessarily need to specify a large amount of new event keys.
+pub struct EventAdditionalMetadata {
+    fields: HashMap<String, String>,
+}
+impl EventAdditionalMetadata {
+    pub fn new() -> Self {
+        Self {
+            fields: HashMap::new(),
+        }
+    }
+
+    pub fn has_metadata(&self) -> bool {
+        !self.fields.is_empty()
+    }
+
+    pub fn add_metadata<S1: Into<String>, S2: Into<String>>(&mut self, key: S1, value: S2) {
+        self.fields.insert(key.into(), value.into());
+    }
+
+    pub fn get_meta_string(&self) -> String {
+        let mut map_displays = self
+            .fields
+            .iter()
+            .map(|(key, value)| format!("[{key}={value}]"))
+            .collect::<Vec<_>>();
+        // Keep the collection sorted to ensure that output is deterministic
+        map_displays.sort();
+        map_displays.join(", ")
+    }
+}
+impl Default for EventAdditionalMetadata {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::Response;
 
+    use crate::util::event_attributes::EventAdditionalMetadata;
     use crate::{
         testutil::test_utilities::single_attribute_for_key,
         util::constants::{
@@ -149,6 +203,34 @@ mod tests {
             "new value",
             single_attribute_for_key(&response, NEW_VALUE_KEY),
             "the new value attribute should be added correctly",
+        );
+    }
+
+    #[test]
+    fn test_additional_metadata_string_output() {
+        let mut metadata = EventAdditionalMetadata::new();
+        assert_eq!(
+            "",
+            metadata.get_meta_string(),
+            "expected no output to be derived when no metadata has been added",
+        );
+        metadata.add_metadata("b", "b_value");
+        assert_eq!(
+            "[b=b_value]",
+            metadata.get_meta_string(),
+            "expected the key/value addition to display properly",
+        );
+        metadata.add_metadata("a", "a_value");
+        assert_eq!(
+            "[a=a_value], [b=b_value]",
+            metadata.get_meta_string(),
+            "expected the second key/value addition to also display alongside the first, alphabetically sorted",
+        );
+        metadata.add_metadata("c", "c_value");
+        assert_eq!(
+            "[a=a_value], [b=b_value], [c=c_value]",
+            metadata.get_meta_string(),
+            "expected the third key/value addition to also display alongside the first two, alphabetically sorted",
         );
     }
 }

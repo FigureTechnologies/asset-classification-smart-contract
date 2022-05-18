@@ -25,6 +25,7 @@ pub fn migrate_contract(deps: DepsMutC, options: Option<MigrationOptions>) -> En
     let new_version_info = migrate_version_info(deps.storage)?;
     let mut additional_metadata = EventAdditionalMetadata::new();
     if let Some(options) = options {
+        // Only load and update the state if any options have actually been specified
         if options.has_changes() {
             let mut state_storage = config_v2(deps.storage);
             let mut state = state_storage.load()?;

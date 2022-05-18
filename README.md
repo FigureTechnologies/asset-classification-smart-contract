@@ -144,6 +144,47 @@ __Full Request Sample__:
 }
 ```
 
+### [Migration](src/migrate/migrate_contract.rs)
+
+The contract maintains a very basic migration strategy.  Migrating the asset classification smart contract utilizes a
+standard [MigrationMsg](src/core/msg.rs) enum to determine the processes executed.  This allows for a flexible design
+structure if nonstandard migrations need to be added in the future.  This section will cover the basic migration pathway.
+When a contract migration is run, the following actions are taken:
+
+* The version of the existing instance of the contract is checked against the new contract code's version using a semver
+comparison to ensure that the migration will only run if the new code has a version equal to or greater than the existing
+contract's version.  Lower versions are rejected outright and the migration will fail.
+* The contract's internal versioning storage is updated to reflect the new contract code's version.
+* If any options are provided in the message's [MigrationOptions](src/core/msg.rs), they are executed. Those options
+are as follows:
+  * `new_admin_address`: If provided as a valid bech32 address, the contract's internal admin account will be changed to
+    match this value.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `migrate_contract`.
+* `asset_new_value`: This value will always match the version property of the [Cargo.toml] in the build used to store
+the wasm bytecode for the new contract instance.
+* `asset_additional_metadata`: If any values were provided as [MigrationOptions](src/core/msg.rs), they will be included
+in this attribute using a key/value system.  If no options were provided, this attribute will be omitted.
+
+__Full Request Sample With Options__:
+```json
+{
+  "contract_upgrade": {
+    "options": {
+      "new_admin_address": "tp1ps3750ga04lp3yw3n3uydm2sw6rn832wszcpkz"
+    }
+  }
+}
+```
+
+__Full Request Sample Without Options__:
+```json
+{
+  "contract_upgrade": {}
+}
+```
+
 ### Execution Routes
 
 The contract exposes various execute routes by which interaction is possible.  All execution route enum variants are

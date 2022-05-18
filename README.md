@@ -64,7 +64,7 @@ when specified, indicates that some or all of the fees provided during the onboa
 The fee account is specified directly in a [FeeDestination](src/core/types/fee_destination.rs), nested within the [VerifierDetail](src/core/types/verifier_detail.rs).
 There can be multiple Fee Accounts for a single Verifier Account, ensuring that any amount of fee division can occur.
 
-### Instantiation
+### [Instantiation](src/instantiate/init_contract.rs)
 
 Instantiating a smart contract is a core portion of the contract creation process.  Instantiating the asset classification
 smart contract utilizes a standard [InitMsg](src/core/msg.rs).  For a json breakdown, check out the [InitMsg Schema](schema/init_msg.json).
@@ -150,7 +150,7 @@ The contract exposes various execute routes by which interaction is possible.  A
 defined in the [ExecuteMsg Enum](src/core/msg.rs).   The json schema for sending a contract execution transation message
 is defined in the [Execute Schema Json](schema/execute_msg.json).
 
-#### Onboard Asset
+#### [Onboard Asset](src/execute/onboard_asset.rs)
 
 This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of
 asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the
@@ -188,6 +188,16 @@ can be leveraged to easily determine the source of the underlying data.  If thes
 they can always be added by using the `UpdateAccessRoutes` execution route.  Note: Access routes can specify a `name`
 parameter, as well, to indicate the reason for the route, but this is entirely optional.
 
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `onboard_asset`.
+* `asset_type`: This value will correspond to the value of the `asset_type` parameter passed into the request.
+* `asset_scope_address`: This value will be the bech32 address of the scope used during onboarding.
+* `asset_verifier_address`: This value will be the bech32 address included in the `verifier_address` parameter of this
+execution route.
+* `asset_scope_owner_address`: This value will be the bech32 address of the owner of the scope processed in the request.
+As the request will be rejected unless it is made by the scope owner, this address should match the sender of the message
+as well.
+
 __Full Request Sample__:
 ```json
 {
@@ -212,7 +222,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Verify Asset
+#### [Verify Asset](src/execute/verify_asset.rs)
 
 This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs)
 of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to
@@ -248,6 +258,13 @@ own subset of [AccessRoute](src/core/types/access_route.rs) values to allow acto
 data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data
 interaction.
 
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `verify_asset`.
+* `asset_type`: This value will correspond to `asset_type` parameter stored in the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs)
+attached to the scope that was previously onboarded before verification.
+* `asset_scope_address`: This value will be the bech32 address of the scope modified during verification.
+* `asset_verifier_address`: This value will be the bech32 address of the verifier invoking the execution route.
+
 __Full Request Sample__:
 ```json
 {
@@ -267,7 +284,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Add Asset Definition
+#### [Add Asset Definition](src/execute/add_asset_definition.rs)
 
 __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinition](src/core/types/asset_definition.rs)
 value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
@@ -283,6 +300,10 @@ The various parameters for the `AddAssetDefinition` execution route are as follo
 * `asset_definition`: An [AssetDefinitionInput](src/core/types/asset_definition.rs) value defining all of the new
 [AssetDefinition](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
 asset definition.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `add_asset_definition`.
+* `asset_type`: This value will be the `asset_type` value stored in the added [AssetDefinition](src/core/types/asset_definition.rs).
 
 __Full Request Sample__:
 ```json
@@ -325,7 +346,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Update Asset Definition
+#### [Update Asset Definition](src/execute/update_asset_definition.rs)
 __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinition](src/core/types/asset_definition.rs)
 value to be updated.  It works by matching the input's `asset_type` to an existing asset definition and overwriting the
 existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation
@@ -336,6 +357,10 @@ The various parameters for the `UpdateAssetDefinition` execution route are as fo
 * `asset_definition`: An [AssetDefinitionInput](src/core/types/asset_definition.rs) value defining all of the updated
   [AssetDefinition](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
   asset definition.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `update_asset_definition`.
+* `asset_type`: This value will be the `asset_type` value stored in the updated [AssetDefinition](src/core/types/asset_definition.rs).
 
 __Full Request Sample__:
 ```json
@@ -373,7 +398,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Toggle Asset Definition
+#### [Toggle Asset Definition](src/execute/toggle_asset_definition.rs)
 __This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinition](src/core/types/asset_definition.rs)
 from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to
 be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be
@@ -390,6 +415,11 @@ on each asset definition is guaranteed to be unique, this key is all that is nee
 multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if
 the asset definition is in the intended state during the execution of the route.
 
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `toggle_asset_definition`.
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_new_value`: This value will be the new status of the asset definition's `enabled` property, after the toggle occurs (true/false).
+
 __Full Request Sample__:
 ```json
 {
@@ -400,7 +430,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Add Asset Verifier
+#### [Add Asset Verifier](src/execute/add_asset_verifier.rs)
 __This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetail](src/core/types/verifier_detail.rs)
 to an existing [AssetDefinition](src/core/types/asset_definition.rs).  This route is intended to register new verifiers
 without the bulky requirements of the `UpdateAssetDefinition` execution route.  This route will reject verifiers added
@@ -414,6 +444,11 @@ will be rejected.
 * `verifier`: The new [VerifierDetail](src/core/types/verifier_detail.rs) to be added to the asset definition, with all
 of its required values.  No verifiers within the existing asset definition must have the same `address` value of this
 parameter, or the request will be rejected.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `add_asset_verifier`.
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the new [VerifierDetail](src/core/types/verifier_detail.rs).
 
 __Full Request Sample__:
 ```json
@@ -442,7 +477,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Update Asset Verifier
+#### [Update Asset Verifier](src/execute/update_asset_verifier.rs)
 __This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetail](src/core/types/verifier_detail.rs)
 in an existing [AssetDefinition](src/core/types/asset_definition.rs).  This route is intended to be used when the values
 of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the
@@ -457,6 +492,11 @@ will be rejected.
 * `verifier`: The updated [VerifierDetail](src/core/types/verifier_detail.rs) to be modified in the asset definition.
 An existing verifier detail within the target asset definition must have a matching `address` value, or the request will
 be rejected.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `update_asset_verifier`.
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the updated [VerifierDetail](src/core/types/verifier_detail.rs).
 
 __Full Request Sample__:
 ```json
@@ -480,7 +520,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Update Access Routes
+#### [Update Access Routes](src/execute/update_access_routes.rs)
 __This route is only accessible to the contract's admin address OR to the owner of the access routes being updated.__
 This route will swap all existing access routes for a specific owner for a specific scope to the provided values. These
 access routes either correspond to those created during the onboarding process, or those created during the verification
@@ -504,6 +544,12 @@ tied to a scope after the onboarding process occurs.
 If other existing routes need to be maintained and the updated is intended to simply add a new route, then the existing
 routes need to be included in the request alongside the new route(s).
 
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `update_access_routes`.
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_scope_address`: This value will be the bech32 address of the [Provenance Blockchain Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope)
+referred to by the `identifier` parameter passed into the execution message.
+
 __Full Request Sample__:
 ```json
 {
@@ -523,7 +569,7 @@ __Full Request Sample__:
 }
 ```
 
-#### Bind Contract Alias
+#### [Bind Contract Alias](src/execute/bind_contract_alias.rs)
 __This route is only accessible to the contract's admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)
 offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route
 allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name
@@ -535,6 +581,10 @@ ease.  This route will fail execution if a name is provided that stems from a re
 The various parameters for the `BindContractAlias` execution route are as follows:
 
 * `alias_name`: The name to bind to the contract.  Ex: `assetclassificationalias.pb`.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `bind_contract_alias`.
+* `asset_new_value`: This value will be the value of the `alias_name` passed into the execution message.
 
 __Full Request Sample__:
 ```json

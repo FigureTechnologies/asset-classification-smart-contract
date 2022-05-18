@@ -16,7 +16,6 @@ pub fn init_contract(
     msg: InitMsg,
 ) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
-
     let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // If specified true, the contract needs to own its root name to be effective at preventing
     // asset classification "neighbors" that were never intended to be created from being reserved

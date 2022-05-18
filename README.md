@@ -64,6 +64,86 @@ when specified, indicates that some or all of the fees provided during the onboa
 The fee account is specified directly in a [FeeDestination](src/core/types/fee_destination.rs), nested within the [VerifierDetail](src/core/types/verifier_detail.rs).
 There can be multiple Fee Accounts for a single Verifier Account, ensuring that any amount of fee division can occur.
 
+### Instantiation
+
+Instantiating a smart contract is a core portion of the contract creation process.  Instantiating the asset classification
+smart contract utilizes a standard [InitMsg](src/core/msg.rs).  For a json breakdown, check out the [InitMsg Schema](schema/init_msg.json).
+When the contract is instantiated, it does the following actions:
+
+* Optionally binds a [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module) name to itself
+based on an input value.  This can be omitted if the contract does not want to actually bind its root name.  This
+circumstance can arise if the root name of the contract already exists, or if it is restricted.
+* Optionally establishes an initial set of [AssetDefinition](src/core/types/asset_definition.rs) values if any are
+provided, and binds their names, also optionally.  The names bound will be their asset types, branched from the contract's
+base name value.
+* Constructs an initial contract state, stored internally as a [StateV2](src/core/state.rs) value.  This takes the sender
+address from instantiation and uses it as the contract's admin address, initially.  This admin value can be changed
+later during a contract migration.
+* Establishes contract version information based on the value of [Cargo.toml]'s version property.
+
+The various parameters that can be provided in the [InitMsg](src/core/msg.rs) are as follows:
+
+* `base_contract_name`: This name serves as the basis for all generated [Provenance Attributes](https://docs.provenance.io/modules/account).
+All [AssetDefinition](src/core/types/asset_definition.rs) names established will use this name as the root value.
+For instance, if the `base_contract_name` is `testasset` and an asset definition's `asset_type` is specified as `donut`,
+then the attribute name used for created [AssetScopeAttributes](src/core/types/asset_scope_attribute.rs) will be
+`donut.testasset`.
+* `bind_base_name`: If set to `true`, the contract will try to bind the provided name to itself.  This will fail if the
+provided name uses a restricted root name, so using a value of `false` can circumvent this issue and the name can be
+bound later or potentially not at all.  The contract needs to own the subnames used for generated attributes in order
+for its bindings to work, but owning the root name is not necessary.
+* `asset_definitions`: An array of [AssetDefinitionInput](src/core/types/asset_definition.rs) values that will be used
+to establish an initial set of [AssetDefinition](src/core/types/asset_definition.rs)s in the contract's internal storage.
+These definitions will automatically attempt to bind their own names, branching from the `base_contract_name`, but the
+[AssetDefinitionInput](src/core/types/asset_definition.rs) includes a `bind_name` boolean that allows this functionality
+to be disabled if that behavior is not desired.
+* `is_test`: A boolean value allowing for less restrictions to be placed on certain functionalities across the contract's
+execution processes.  Notably, this disables a check during the onboarding process to determine if onboarded scopes include
+underlying record values.  This should never be set to true in a mainnet environment.
+
+__Emitted Attributes__:
+* `asset_event_type`: This value will always be populated as `instantiate_contract`.
+
+__Full Request Sample__:
+```json
+{
+  "base_contract_name": "testasset",
+  "bind_base_name": "true",
+  "asset_definitions": [
+    {
+      "asset_type": "cat",
+      "scope_spec_identifier": {
+        "type": "uuid",
+        "value": "895a4740-d6fc-11ec-abea-8bfabb5342cd"
+      },
+      "verifiers": [
+        {
+          "address": "tp14w3jf4em4uszs77yaqnmfrlxwcmqux5g6hfpdf",
+          "onboarding_cost": "150",
+          "onboarding_denom": "nhash",
+          "fee_percent": "0.5",
+          "fee_destinations": [
+            {
+              "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
+              "fee_percent": "1.0"
+            }
+          ],
+          "entity_detail": {
+            "name": "Cat Verifier",
+            "description": "Ensures that your cats are adorable and have all of their legs",
+            "home_url": "https://www.catsareadorable.gov/itstrue",
+            "source_url": "https://www.github/mycatorganization/cat-verifier"
+          }
+        }
+      ],
+      "enabled": "true",
+      "bind_name": "false"
+    }
+  ],
+  "is_test": "false"
+}
+```
+
 ### Execution Routes
 
 The contract exposes various execute routes by which interaction is possible.  All execution route enum variants are
@@ -444,7 +524,7 @@ __Full Request Sample__:
 ```
 
 #### Bind Contract Alias
-__This route is only accessible to the contract's admin address.__ The [Provenance Name Module](https://docs.provenance.io/modules/name-module)
+__This route is only accessible to the contract's admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)
 offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route
 allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name
 module works, public names can only be bound by the requesting account (in this case, the contract) or by the name

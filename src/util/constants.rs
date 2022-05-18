@@ -26,6 +26,8 @@ pub const ASSET_TYPE_KEY: &str = "asset_type";
 pub const VERIFIER_ADDRESS_KEY: &str = "asset_verifier_address";
 /// Value = Any new value being changed that can be coerced to a string target. Dynamic to be used on various routes (String)
 pub const NEW_VALUE_KEY: &str = "asset_new_value";
+/// Value = EventAdditionalMetadata meta string
+pub const ADDITIONAL_METADATA_KEY: &str = "asset_additional_metadata";
 
 //////////////////////
 // Global Constants //

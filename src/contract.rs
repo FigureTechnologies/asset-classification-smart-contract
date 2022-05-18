@@ -96,6 +96,6 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 #[entry_point]
 pub fn migrate(deps: DepsMutC, _env: Env, msg: MigrateMsg) -> EntryPointResponse {
     match msg {
-        MigrateMsg::ContractUpgrade {} => migrate_contract(deps),
+        MigrateMsg::ContractUpgrade { options } => migrate_contract(deps, options),
     }
 }

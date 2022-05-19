@@ -185,10 +185,10 @@ __Full Request Sample Without Options__:
 }
 ```
 
-### Execution Routes
+### [Execution Routes](src/execute)
 
 The contract exposes various execute routes by which interaction is possible.  All execution route enum variants are
-defined in the [ExecuteMsg Enum](src/core/msg.rs).   The json schema for sending a contract execution transation message
+defined in the [ExecuteMsg Enum](src/core/msg.rs).   The json schema for sending a contract execution transaction message
 is defined in the [Execute Schema Json](schema/execute_msg.json).
 
 #### [Onboard Asset](src/execute/onboard_asset.rs)
@@ -632,6 +632,246 @@ __Full Request Sample__:
 {
   "bind_contract_alias": {
     "alias_name": "assetclassificationalias.pb"
+  }
+}
+```
+
+### [Query Routes](src/query)
+
+The contract exposes various query routes by which data retrieval is possible.  All query route enum variants are
+defined in the [QueryMsg Enum](src/core/msg.rs).  The json schema for sending a contract query message is defined in the
+[Query Schema Json](schema/query_msg.json).
+
+#### [Query Asset Definition](src/query/query_asset_definition.rs)
+
+This route can be used to retrieve a specific [AssetDefinition](src/core/types/asset_definition.rs) from the contract's
+internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
+response will be returned.
+
+The various parameters for the `QueryAssetDefinition` query route are as follows:
+
+* `qualifier`: A serialized version of an [AssetQualifier](src/core/types/asset_qualifier.rs) enum.  Indicates the asset
+type to fetch.  The following json is an example of what this might look like in a request:
+```json
+{"qualifier": {"type": "asset_type", "value": "dog"}}
+```
+OR
+```json
+{"qualifier": {"type": "scope_spec_address", "value": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3"}}
+```
+
+__Full Request Sample__:
+```json
+{
+  "query_asset_definition": {
+    "qualifier": {
+      "type": "asset_type",
+      "value": "dog"
+    }
+  }
+}
+```
+
+__Response Sample__:
+```json
+{
+  "data": {
+    "asset_type": "dog",
+    "scope_spec_address": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3",
+    "verifiers": [
+      {
+        "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
+        "onboarding_cost": "1000000000",
+        "onboarding_denom": "nhash",
+        "fee_percent": "0.5",
+        "fee_destinations": [
+          {
+            "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
+            "fee_percent": "1.0"
+          }
+        ],
+        "entity_detail": {
+          "name": "Dog Verifier",
+          "description": "Ensures that each dog has a clean coat and knows how to play fetch",
+          "home_url": "https://www.website.web.site/website",
+          "source_url": "https://www.github.com/dogorg/dog-verifier"
+        }
+      }
+    ],
+    "enabled": "true"
+  }
+}
+```
+
+#### [Query Asset Definitions](src/query/query_asset_definitions.rs)
+
+This route can be used to retrieve all asset definitions stored in the contract.  This response payload can be quite
+large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
+to be inspected or displayed.  The query asset definition route is much more efficient.
+
+No parameters are used for the `QueryAssetDefinitions` route.
+
+__Full Request Sample__:
+```json
+{
+  "query_asset_definitions": {}
+}
+```
+
+__Response Sample__:
+```json
+{
+  "data": {
+    "asset_definitions": [
+      {
+        "asset_type": "ferret",
+        "scope_spec_address": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3",
+        "verifiers": [
+          {
+            "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
+            "onboarding_cost": "250",
+            "onboarding_denom": "ferretcoin",
+            "fee_percent": "1.0",
+            "fee_destinations": [
+              {
+                "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
+                "fee_percent": "1.0"
+              }
+            ],
+            "entity_detail": {
+              "name": "Ferret Verifier",
+              "description": "Ensures that each ferret smells terrible because they generally do",
+              "home_url": "https://www.website.web.site/website",
+              "source_url": "https://www.github.com/ferretorg/ferret-verifier"
+            }
+          }
+        ],
+        "enabled": "true"
+      }
+    ]
+  }
+}
+```
+
+#### [Query Asset Scope Attribute](src/query/query_asset_scope_attribute.rs)
+
+This route can be used to retrieve an existing [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) that has
+been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
+contract.  This route will return a null if the scope has never had a scope attribute added to it by the contract.
+This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
+successfully classified by a verifier.
+
+The various parameters for the `QueryAssetScopeAttribute` query route are as follows:
+
+* `identifier`: A serialized version of an [AssetIdentifier](src/core/types/asset_identifier.rs) enum.  Indicates the
+target scope for the search.  The following json is an example of what this might look like in a request:
+```json
+{"identifier": {"type": "asset_uuid", "value": "8f9cea0a-d6e7-11ec-be71-dbbe1d4d92be"}}
+```
+OR
+```json
+{"identifier": {"type": "scope_address", "value": "scope1qzj8tjp76mn3rmyvz49c5738k2asm824ga"}}
+```
+
+__Full Request Sample__:
+```json
+{
+  "query_asset_scope_attribute": {
+    "identifier": {
+      "type": "asset_uuid",
+      "value": "67b4e0b4-d706-11ec-9542-9f84339d2300"
+    }
+  }
+}
+```
+
+__Response Sample__:
+```json
+{
+  "data": {
+    "asset_uuid": "67b4e0b4-d706-11ec-9542-9f84339d2300",
+    "scope_address": "scope1qpnmfc956urprmy4g20cgvuayvqqpa98dj",
+    "asset_type": "heloc",
+    "requestor_address": "tp18lscdretne93g0wk8ukknxp92jj9y7hmcecvf0",
+    "verifier_address": "tp1un7l6rm0n2ualsrnnuvqakxr63e39gaa5h3am6",
+    "onboarding_status": "approved",
+    "latest_verification_result": {
+      "message": "Heloc was successfully verified",
+      "success": true
+    },
+    "access_definitions": [
+      {
+        "owner_address": "tp18lscdretne93g0wk8ukknxp92jj9y7hmcecvf0",
+        "access_routes": [
+          {
+            "route": "https://www.helocplace.internet/heloc",
+            "name": "download"
+          }
+        ],
+        "definition_type": "Requestor"
+      },
+      {
+        "owner_address": "tp1un7l6rm0n2ualsrnnuvqakxr63e39gaa5h3am6",
+        "access_routes": [
+          {
+            "route": "https://www.internal.helocplace.internet/helocs",
+            "name": "download"
+          }
+        ],
+        "definition_type": "Verifier"
+      }
+    ]
+  }
+}
+```
+
+#### [Query State](src/query/query_state.rs)
+
+This route can be used to retrieve the internal contract state values.  These are core configurations that denote how
+the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It
+responds with a [StateV2](src/core/state.rs) struct value.
+
+No parameters are used for the `QueryState` route.
+
+__Full Request Sample__:
+```json
+{
+  "query_state": {}
+}
+```
+
+__Response Sample__:
+```json
+{
+  "data": {
+    "base_contract_name": "testassets.pb",
+    "admin": "tp17ryu7zepmk467s3mg5p4hnfu6k3xyh4trcn5ss",
+    "is_test": true
+  }
+}
+```
+
+#### [Query Version](src/query/query_version.rs)
+
+This route can be used to retrieve the internal contract version information.  It elucidates the current version of the
+contract that was derived through instantiation or the most recent code migration.  It responds with a [VersionInfoV1](src/migrate/version_info.rs)
+struct value.
+
+No parameters are used for the `QueryVersion` route.
+
+__Full Request Sample__:
+```json
+{
+  "query_version": {}
+}
+```
+
+__Response Sample__:
+```json
+{
+  "data": {
+    "contract": "asset_classification_smart_contract",
+    "version": "1.0.0"
   }
 }
 ```

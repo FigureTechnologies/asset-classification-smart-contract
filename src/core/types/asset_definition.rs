@@ -18,14 +18,11 @@ use super::verifier_detail::VerifierDetail;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinition {
-    /// The name of the asset associated with the definition.  This value must be unique across all
-    /// instances persisted in contract storage, or requests to add will be rejected.
+    /// The unique name of the asset associated with the definition.
     pub asset_type: String,
-    /// A link to a scope specification that defines this asset type.  Must be unique across all
-    /// instances persisted in contract storage, or requests to add will be rejected.
+    /// A link to a scope specification that defines this asset type.
     pub scope_spec_address: String,
-    /// Individual verifier definitions.  Each value must have a unique `address` property or
-    /// requests to add will be rejected.
+    /// Individual verifier definitions.  There can be many verifiers for a single asset type.
     pub verifiers: Vec<VerifierDetail>,
     /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
     /// requests to onboard assets of this type will be rejected.
@@ -36,7 +33,9 @@ impl AssetDefinition {
     ///
     /// # Parameters
     ///
-    /// *
+    /// * `asset_type` The unique name of the asset associated with the definition.
+    /// * `scope_spec_address` A link to a scope specification that defines this asset type.
+    /// * `verifiers` Individual verifier definitions.
     pub fn new<S1: Into<String>, S2: Into<String>>(
         asset_type: S1,
         scope_spec_address: S2,
@@ -56,6 +55,12 @@ impl AssetDefinition {
         self.asset_type.to_lowercase().as_bytes().to_vec()
     }
 
+    /// Helper functionality to retrieve the base contract name from state and use it to create the
+    /// Provenance Blockchain Attribute Module name for this asset type.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
     pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
         let state = config_read_v2(deps.storage).load()?;
         generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
@@ -67,13 +72,45 @@ impl AssetDefinition {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinitionInput {
+    /// The name of the asset associated with the definition.  This value must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
     pub asset_type: String,
+    /// A link to a scope specification that defines this asset type.  A serialized version of a
+    /// [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple
+    /// different values to be derived as a scope specification address.  Must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
     pub scope_spec_identifier: SerializedEnum,
+    /// Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
+    /// value must have a unique `address` property or requests to add will be rejected.
     pub verifiers: Vec<VerifierDetail>,
+    /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
     pub enabled: Option<bool>,
+    /// Whether or not to bind a Provenance Blockchain Name Module name to this contract when this
+    /// struct is used to add a new asset type to the contract.  If this value is omitted OR set to
+    /// true in a request that adds an asset definition, the name derived by combining the
+    /// [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type`
+    /// will be bound to the contract.  For example, if the base name is "pb" and the asset type is
+    /// "myasset," the resulting bound name would be "myasset.pb".
     pub bind_name: Option<bool>,
 }
 impl AssetDefinitionInput {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The name of the asset associated with the definition.  This value must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
+    /// * `scope_spec_identifier` A link to a scope specification that defines this asset type.
+    /// A serialized version of a [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple
+    /// different values to be derived as a scope specification address.  Must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
+    /// * `verifiers` Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
+    /// value must have a unique `address` property or requests to add will be rejected.
+    /// * `enabled` Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
+    /// * `bind_name` Whether or not to bind a Provenance Blockchain Name Module name to this contract when this
+    /// struct is used to add a new asset type to the contract.
     pub fn new<S1: Into<String>>(
         asset_type: S1,
         scope_spec_identifier: SerializedEnum,
@@ -90,6 +127,8 @@ impl AssetDefinitionInput {
         }
     }
 
+    /// Moves this struct into an instance of [AssetDefinition](self::AssetDefinition), converting
+    /// the contained `scope_spec_identifier` enum value into a string scope spec address.
     pub fn into_asset_definition(self) -> AssetResult<AssetDefinition> {
         AssetDefinition {
             asset_type: self.asset_type,
@@ -103,6 +142,8 @@ impl AssetDefinitionInput {
         .to_ok()
     }
 
+    /// Clones the values contained within this struct into an instance of [AssetDefinition](self::AssetDefinition).
+    /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInput::into_asset_definition).
     pub fn as_asset_definition(&self) -> AssetResult<AssetDefinition> {
         AssetDefinition::new(
             &self.asset_type,

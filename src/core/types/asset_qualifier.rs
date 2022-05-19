@@ -8,13 +8,23 @@ use serde::{Deserialize, Serialize};
 const ASSET_TYPE_NAME: &str = "asset_type";
 const SCOPE_SPEC_ADDRESS_NAME: &str = "scope_spec_address";
 
+/// An enum containing different identifiers that can be used to fetch an [AssetDefinition](super::asset_definition::AssetDefinition).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AssetQualifier {
+    /// The unique name for an asset type.  Ex: heloc, payable, etc.
     AssetType(String),
+    /// A unique bech32 address with an hrp of "scopespec".
     ScopeSpecAddress(String),
 }
 impl AssetQualifier {
+    /// Converts a [SerializedEnum](super::serialized_enum::SerializedEnum) instance to one of the
+    /// variants of this enum, if possible.  On a failure, a [ContractError::UnexpectedSerializedEnum](crate::core::error::ContractError::UnexpectedSerializedEnum)
+    /// error will be produced, indicating the unexpected value.
+    ///
+    /// # Parameters
+    ///
+    /// * `e` The serialized enum instance for which to attempt conversion.
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
         match e.r#type.as_str() {
             ASSET_TYPE_NAME => Self::asset_type(&e.value).to_ok(),
@@ -29,6 +39,7 @@ impl AssetQualifier {
         }
     }
 
+    /// Converts the specific variant of this enum to a [SerializedEnum](super::serialized_enum::SerializedEnum).
     pub fn to_serialized_enum(&self) -> SerializedEnum {
         match self {
             Self::AssetType(asset_type) => SerializedEnum::new(ASSET_TYPE_NAME, asset_type),
@@ -38,10 +49,20 @@ impl AssetQualifier {
         }
     }
 
+    /// Creates a new instance of this enum as the [AssetType](self::AssetQualifier::AssetType) variant.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The unique name for an asset type.
     pub fn asset_type<S: Into<String>>(asset_type: S) -> Self {
         Self::AssetType(asset_type.into())
     }
 
+    /// Creates an instance of this enum as the [ScopeSpecAddress](self::AssetQualifier::ScopeSpecAddress) variant.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_spec_address` A unique bech32 address with an hrp of "scopespec".
     pub fn scope_spec_address<S: Into<String>>(scope_spec_address: S) -> Self {
         Self::ScopeSpecAddress(scope_spec_address.into())
     }

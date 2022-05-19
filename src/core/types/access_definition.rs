@@ -11,9 +11,9 @@ use super::access_route::AccessRoute;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AccessDefinitionType {
-    /// Indicates that the access definition was created by the requestor that onboarded the scope
+    /// Indicates that the access definition was created by the requestor that onboarded the scope.
     Requestor,
-    /// Indicates that the access definition was created by the verifier for a scope
+    /// Indicates that the access definition was created by the verifier for a scope.
     Verifier,
 }
 
@@ -33,6 +33,12 @@ pub struct AccessDefinition {
 impl AccessDefinition {
     /// Constructs a new instance of this struct, ensuring that the provided `owner_address` is a
     /// valid Provenance Blockchain bech32 address.
+    ///
+    /// # Parameters
+    ///
+    /// * `owner_address` The bech32 address of the account that created the underlying [AccessRoutes](super::access_route::AccessRoute).
+    /// * `access_routes` A collection of [AccessRoute](super::access_route::AccessRoute) structs that define methods of obtaining the underlying data for a scope.
+    /// * `definition_type` Defines the source that created this definition.
     pub fn new_checked<S1: Into<String>>(
         owner_address: S1,
         access_routes: Vec<AccessRoute>,

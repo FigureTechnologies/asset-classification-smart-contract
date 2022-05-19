@@ -12,13 +12,23 @@ use crate::util::{
 const ASSET_UUID_NAME: &str = "asset_uuid";
 const SCOPE_ADDRESS_NAME: &str = "scope_address";
 
+/// An enum containing interchangeable values that can be used to define an asset (uuid or address).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AssetIdentifier {
+    /// A uuid v4 represented by a string.
     AssetUuid(String),
+    /// A bech32 Provenance Blockchain address that begins with "scope".
     ScopeAddress(String),
 }
 impl AssetIdentifier {
+    /// Converts a [SerializedEnum](super::serialized_enum::SerializedEnum) instance to one of the
+    /// variants of this enum, if possible.  On a failure, a [ContractError::UnexpectedSerializedEnum](crate::core::error::ContractError::UnexpectedSerializedEnum)
+    /// error will be produced, indicating the unexpected value.
+    ///
+    /// # Parameters
+    ///
+    /// * `e` The serialized enum instance for which to attempt conversion.
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
         match e.r#type.as_str() {
             ASSET_UUID_NAME => Self::asset_uuid(&e.value).to_ok(),
@@ -31,6 +41,7 @@ impl AssetIdentifier {
         }
     }
 
+    /// Converts the specific variant of this enum to a [SerializedEnum](super::serialized_enum::SerializedEnum).
     pub fn to_serialized_enum(&self) -> SerializedEnum {
         match self {
             Self::AssetUuid(uuid) => SerializedEnum::new(ASSET_UUID_NAME, uuid),
@@ -38,14 +49,29 @@ impl AssetIdentifier {
         }
     }
 
+    /// Creates a new instance of this enum as the [AssetUuid](self::AssetIdentifier::AssetUuid) variant.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_uuid` A uuid v4 string instance.
     pub fn asset_uuid<S: Into<String>>(asset_uuid: S) -> Self {
         Self::AssetUuid(asset_uuid.into())
     }
 
+    /// Creates a new instance of this enum as the [ScopeAddress](self::AssetIdentifier::ScopeAddress) variant.
+    ///
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` A bech32 address with an hrp of "scope".
     pub fn scope_address<S: Into<String>>(scope_address: S) -> Self {
         Self::ScopeAddress(scope_address.into())
     }
 
+    /// Fetches the asset uuid value from this enum.  The [AssetUuid](self::AssetIdentifier::AssetUuid) variant
+    /// can directly provide the value, but the [ScopeAddress](self::AssetIdentifier::ScopeAddress) variant
+    /// needs to utilize the [scope_address_to_asset_uuid](crate::util::scope_address_utils::scope_address_to_asset_uuid) function
+    /// to derive the value.
     pub fn get_asset_uuid(&self) -> AssetResult<String> {
         match self {
             Self::AssetUuid(asset_uuid) => (*asset_uuid).clone().to_ok(),
@@ -53,6 +79,10 @@ impl AssetIdentifier {
         }
     }
 
+    /// Fetches the scope address value from this enum.  The [ScopeAddress](self::AssetIdentifier::ScopeAddress) variant
+    /// can directly provide the value, but the [AssetUuid](self::AssetIdentifier::AssetUuid) variant
+    /// needs to utilize the [asset_uuid_to_scope_address](crate::util::scope_address_utils::asset_uuid_to_scope_address) function
+    /// to derive the value.
     pub fn get_scope_address(&self) -> AssetResult<String> {
         match self {
             Self::AssetUuid(asset_uuid) => asset_uuid_to_scope_address(asset_uuid),
@@ -67,12 +97,21 @@ impl AssetIdentifier {
     }
 }
 
-/// A simple named collection of both the asset uuid and scope address
+/// A simple named collection of both the asset uuid and scope address, derived from using bech32
+/// conversion utilities on a variant of [AssetIdentifier](self::AssetIdentifier).
 pub struct AssetIdentifiers {
+    /// A uuid v4 value.
     pub asset_uuid: String,
+    /// A bech32 address value with an hrp of "scope".
     pub scope_address: String,
 }
 impl AssetIdentifiers {
+    /// Constructs a new instance of this struct with the provided values directly propagated.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_uuid` A uuid v4 value.
+    /// * `scope_address` A bech32 address value with an hrp of "scope".
     pub fn new<S1: Into<String>, S2: Into<String>>(asset_uuid: S1, scope_address: S2) -> Self {
         Self {
             asset_uuid: asset_uuid.into(),

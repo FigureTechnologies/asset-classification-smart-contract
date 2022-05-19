@@ -1,3 +1,5 @@
+//! Contains all execution routes used by the [contract file](crate::contract).
+
 pub mod add_asset_definition;
 pub mod add_asset_verifier;
 pub mod bind_contract_alias;

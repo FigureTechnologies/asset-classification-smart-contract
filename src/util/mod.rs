@@ -1,3 +1,5 @@
+//! Miscellaneous functionalities that do not logically belong to a concrete group.
+
 pub mod aliases;
 pub mod constants;
 pub mod contract_helpers;

@@ -18,6 +18,13 @@ use super::version_info::{
     get_version_info, migrate_version_info, CONTRACT_NAME, CONTRACT_VERSION,
 };
 
+/// The main entrypoint function for running a code migration.  Referred to in the [contract file](crate::contract).
+///
+/// # Parameters
+///
+/// * `deps` A DepsMutC provided by cosmwasm in the migrate entrypoint.
+/// * `options` An optional instance of [MigrationOptions](crate::core::msg::MigrationOptions) that
+/// dictates whether or not to execute optional functionality during the migration.
 pub fn migrate_contract(deps: DepsMutC, options: Option<MigrationOptions>) -> EntryPointResponse {
     // Ensure the migration is not attempting to revert to an old version or something crazier
     check_valid_migration_versioning(deps.storage)?;

@@ -13,15 +13,30 @@ use crate::{
 
 use super::verifier_detail::VerifierDetail;
 
+/// Defines a specific asset type associated with the contract.  Allows its specified type to be
+/// onboarded and verified.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinition {
+    /// The name of the asset associated with the definition.  This value must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
     pub asset_type: String,
+    /// A link to a scope specification that defines this asset type.  Must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
     pub scope_spec_address: String,
+    /// Individual verifier definitions.  Each value must have a unique `address` property or
+    /// requests to add will be rejected.
     pub verifiers: Vec<VerifierDetail>,
+    /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
     pub enabled: bool,
 }
 impl AssetDefinition {
+    /// Constructs a new instance of AssetDefinition, setting enabled to `true` by default.
+    ///
+    /// # Parameters
+    ///
+    /// *
     pub fn new<S1: Into<String>, S2: Into<String>>(
         asset_type: S1,
         scope_spec_address: S2,

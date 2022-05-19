@@ -91,7 +91,7 @@ base name value.
 address from instantiation and uses it as the contract's admin address, initially.  This admin value can be changed
 later during a contract migration.
 
-* Establishes contract version information based on the value of [Cargo.toml]'s version property.
+* Establishes contract version information based on the value of [Cargo.toml](Cargo.toml)'s version property.
 
 #### Request Parameters
 
@@ -183,7 +183,7 @@ migration.  Each option and its behavior is as follows:
 #### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `migrate_contract`.
 
-* `asset_new_value`: This value will always match the version property of the [Cargo.toml] in the build used to store
+* `asset_new_value`: This value will always match the version property of the [Cargo.toml](Cargo.toml) in the build used to store
 the wasm bytecode for the new contract instance.
 
 * `asset_additional_metadata`: If any values were provided as [MigrationOptions](src/core/msg.rs), they will be included

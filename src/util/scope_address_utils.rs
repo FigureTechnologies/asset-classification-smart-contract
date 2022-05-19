@@ -22,11 +22,19 @@ const SCOPE_SPEC_HRP: &str = "scopespec";
 const VALID_HRPS: [&str; 4] = [MAINNET_HRP, TESTNET_HRP, SCOPE_HRP, SCOPE_SPEC_HRP];
 
 /// Converts a string containing an asset uuid into a scope address.
+///
+/// # Parameters
+///
+/// * `asset_uuid` A valid uuid v4 string.
 pub fn asset_uuid_to_scope_address<S: Into<String>>(asset_uuid: S) -> AssetResult<String> {
     uuid_to_address(KEY_SCOPE, SCOPE_HRP, asset_uuid)
 }
 
 /// Converts a string containing a scope spec uuid into a scope spec address.
+///
+/// # Parameters
+///
+/// * `scope_spec_uuid` A valid bech32 address with an hrp of "scopespec".
 pub fn scope_spec_uuid_to_scope_spec_address<S: Into<String>>(
     scope_spec_uuid: S,
 ) -> AssetResult<String> {
@@ -35,19 +43,31 @@ pub fn scope_spec_uuid_to_scope_spec_address<S: Into<String>>(
 
 /// Takes a string representation of a scope address and converts it into an asset uuid string.
 /// Note: This conversion can also be called scope_address_to_scope_uuid because asset uuid always
-/// matches the scope uuid, as a convention
+/// matches the scope uuid, as a convention.
+///
+/// # Parameters
+///
+/// * `scope_address` A valid bech32 address with an hrp of "scope".
 pub fn scope_address_to_asset_uuid<S: Into<String>>(scope_address: S) -> AssetResult<String> {
     address_to_uuid(scope_address, SCOPE_HRP)
 }
 
 /// Takes a string representation of a scope spec address and converts it to the scope spec's uuid.
+///
+/// # Parameters
+///
+/// * `scope_spec_address` A valid bech32 address with an hrp of "scopespec".
 pub fn scope_spec_address_to_scope_spec_uuid<S: Into<String>>(
     scope_spec_address: S,
 ) -> AssetResult<String> {
     address_to_uuid(scope_spec_address, SCOPE_SPEC_HRP)
 }
 
-/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr
+/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr.
+///
+/// # Parameters
+///
+/// * `address` A valid bech32 address with any provenance blockchain hrp specified in this contract.
 pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> AssetResult<Addr> {
     let address_string = address.into();
     // First, try to decode the string as Bech32.  If this fails, then the input is invalid and should not be converted to an Addr
@@ -66,6 +86,14 @@ pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> AssetResult<Addr> {
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its
 /// big-endian bytes to a byte slice that also contains a prefix key (as defined in the provenance source).
+///
+/// # Parameters
+///
+/// * `key_byte` The first byte of the result encoding, indicating the type of bech32 address to
+/// generate.  This value, encoded into the bech32 value, should be a standard value accepted by
+/// the Provenance Blockchain.
+/// * `hrp` The human readable prefix of the bech32 address to generate.
+/// * `uuid` A valid uuid v4 string.
 fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> AssetResult<String> {
     let mut buffer = vec![key_byte];
     buffer.append(&mut Uuid::from_str(&uuid.into())?.as_bytes().to_vec());
@@ -74,6 +102,12 @@ fn uuid_to_address<S: Into<String>>(key_byte: u8, hrp: &str, uuid: S) -> AssetRe
 
 /// Takes a valid bech32 address with the acknowledged prefix and attempts to convert it to a uuid.
 /// This should only be used for addresses that are derived from uuid sources, like scope and scope spec.
+///
+/// # Parameters
+///
+/// * `address` A valid Provenance Blockchain bech32 address.
+/// * `expected_hrp` The hrp expected to be at the front of the provided address.  This ensures that
+/// the correct operation is being performed and the code does not have any bugs.
 fn address_to_uuid<S1: Into<String>, S2: Into<String>>(
     address: S1,
     expected_hrp: S2,
@@ -86,7 +120,7 @@ fn address_to_uuid<S1: Into<String>, S2: Into<String>>(
     if hrp != expected_hrp_string {
         return ContractError::InvalidAddress {
             address: target_address,
-             explanation: format!("expected the prefix [{}] to be included in the specified address, but the prefix was [{}]", expected_hrp_string, hrp) 
+             explanation: format!("expected the prefix [{}] to be included in the specified address, but the prefix was [{}]", expected_hrp_string, hrp)
         }
         .to_err();
     }

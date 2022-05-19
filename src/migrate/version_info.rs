@@ -10,7 +10,9 @@ use serde::{Deserialize, Serialize};
 // NOTE: The program verifies that migrated versions match the contract name and have a greater
 // version than that which was previous stored. Ensure to update the version field on each release
 // before migrating, because it's important to be able to differentiate versions as they're applied.
+/// Automatically derived from the Cargo.toml's name property.
 pub const CONTRACT_NAME: &str = env!("CARGO_CRATE_NAME");
+/// Automatically derived from the Cargo.toml's version property.
 pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 const VERSION_INFO_NAMESPACE: &str = "version_info";
 const VERSION_INFO: Item<VersionInfoV1> = Item::new(VERSION_INFO_NAMESPACE);
@@ -19,7 +21,11 @@ const VERSION_INFO: Item<VersionInfoV1> = Item::new(VERSION_INFO_NAMESPACE);
 /// Used to ensure that migrations have the correct targets and are not downgrades.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VersionInfoV1 {
+    /// The name of the contract, set to the value of [CONTRACT_NAME](self::CONTRACT_NAME) during instantiation and
+    /// following migrations.
     pub contract: String,
+    /// The version of the contract, set to the value of [CONTRACT_VERSION](self::CONTRACT_VERSION) during
+    /// instantiation and following migrations.
     pub version: String,
 }
 impl VersionInfoV1 {

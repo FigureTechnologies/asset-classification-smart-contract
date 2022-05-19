@@ -73,7 +73,7 @@ where
             }
         };
 
-    // verify perscribed verifier is present as a verifier in asset definition
+    // verify prescribed verifier is present as a verifier in asset definition
     let verifier_config = match asset_definition
         .verifiers
         .into_iter()

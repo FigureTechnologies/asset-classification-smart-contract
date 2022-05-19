@@ -60,7 +60,7 @@ where
 
     // verify sender is requested verifier
     if info.sender != scope_attribute.verifier_address {
-        return ContractError::UnathorizedAssetVerifier {
+        return ContractError::UnauthorizedAssetVerifier {
             scope_address: asset_identifiers.scope_address,
             verifier_address: info.sender.into(),
             expected_verifier_address: scope_attribute.verifier_address.into_string(),
@@ -199,7 +199,7 @@ mod tests {
         .unwrap_err();
 
         match err {
-            ContractError::UnathorizedAssetVerifier {
+            ContractError::UnauthorizedAssetVerifier {
                 scope_address,
                 verifier_address,
                 expected_verifier_address,

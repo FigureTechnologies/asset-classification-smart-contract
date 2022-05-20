@@ -10,6 +10,12 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use std::ops::Mul;
 
+/// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its
+/// associated [AssetDefinition](crate::core::types::asset_definition::AssetDefinition) values.
+///
+/// # Parameters
+///
+/// * `msg` The init msg sent during the [instantiation](crate::contract::instantiate) process.
 pub fn validate_init_msg(msg: &InitMsg) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if msg.base_contract_name.is_empty() {
@@ -39,10 +45,22 @@ pub fn validate_init_msg(msg: &InitMsg) -> AssetResult<()> {
     }
 }
 
+/// Validates that an asset definition input value is properly formed, ensuring that all fields
+/// are properly set and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `input` The asset definition input value to validate for issues.
 pub fn validate_asset_definition_input(input: &AssetDefinitionInput) -> AssetResult<()> {
     validate_asset_definition(&input.as_asset_definition()?)
 }
 
+/// Validates that an asset definition value is properly formed, ensuring that all fields are
+/// properly set and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `asset_definition` The asset definition value to validate for issues.
 pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> AssetResult<()> {
     let invalid_fields = validate_asset_definition_internal(asset_definition);
     if !invalid_fields.is_empty() {
@@ -56,10 +74,24 @@ pub fn validate_asset_definition(asset_definition: &AssetDefinition) -> AssetRes
     }
 }
 
+/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set
+/// and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `verifier` The verifier detail value to validate for issues.
 pub fn validate_verifier(verifier: &VerifierDetail) -> AssetResult<()> {
     validate_verifier_with_provided_errors(verifier, None)
 }
 
+/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set
+/// and fees are established correctly, with an additional funnel for exiting errors encountered
+/// beforehand.
+///
+/// # Parameters
+///
+/// * `verifier` The verifier detail value to validate for issues.
+/// * `provided_errors` Any existing errors encountered before validation of the verifier detail.
 pub fn validate_verifier_with_provided_errors(
     verifier: &VerifierDetail,
     provided_errors: Option<Vec<String>>,

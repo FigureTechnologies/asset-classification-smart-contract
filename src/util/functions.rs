@@ -41,8 +41,8 @@ where
 /// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the
 /// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) property of an
 /// [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
-/// * `contract_base_name` The value to use at the end of the name qualifier, after the dot.  Should
-/// refer to the [contract_base_name](crate::core::state::StateV2::contract_base_name] of the
+/// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should
+/// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the
 /// contract's [StateV2](crate::core::state::StateV2) internally-stored value.
 ///
 /// # Examples
@@ -50,15 +50,15 @@ where
 /// use asset_classification_smart_contract::util::functions::generate_asset_attribute_name;
 ///
 /// let asset_type = "mortgage";
-/// let contract_base_name = "asset";
-/// let attribute_name = generate_asset_attribute_name(asset_type, contract_base_name);
+/// let base_contract_name = "asset";
+/// let attribute_name = generate_asset_attribute_name(asset_type, base_contract_name);
 /// assert_eq!("mortgage.asset", attribute_name.as_str());
 /// ```
 pub fn generate_asset_attribute_name<T: Into<String>, U: Into<String>>(
     asset_type: T,
-    contract_base_name: U,
+    base_contract_name: U,
 ) -> String {
-    format!("{}.{}", asset_type.into(), contract_base_name.into())
+    format!("{}.{}", asset_type.into(), base_contract_name.into())
 }
 
 /// Converts a decimal to a display string, like "1%".

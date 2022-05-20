@@ -10,6 +10,11 @@ use crate::{
 
 /// Pulls the version info for the contract out of the version store.
 /// On a success, serializes the value to a cosmwasm Binary and responds with Ok.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
 pub fn query_version(deps: &DepsC) -> AssetResult<Binary> {
     to_binary(&get_version_info(deps.storage)?)?.to_ok()
 }

@@ -8,6 +8,12 @@ use crate::{
     },
 };
 
+/// A query that directly returns the contract's stored [StateV2](crate::core::state::StateV2) value.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
 pub fn query_state(deps: &DepsC) -> AssetResult<Binary> {
     let state = config_read_v2(deps.storage).load()?;
     to_binary(&state)?.to_ok()

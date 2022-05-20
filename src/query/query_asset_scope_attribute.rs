@@ -14,7 +14,13 @@ use crate::{
     },
 };
 
-/// Fetches an AssetScopeAttribute by either the asset uuid or the scope address
+/// Fetches an AssetScopeAttribute by either the asset uuid or the scope address.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `identifier` Helps derive a unique key that can locate an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 pub fn query_asset_scope_attribute(
     deps: &DepsC,
     identifier: AssetIdentifier,
@@ -32,6 +38,13 @@ pub fn query_asset_scope_attribute(
 
 /// Fetches an AssetScopeAttribute by the asset uuid value directly.  Useful for internal contract
 /// functionality.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `asset_uuid` Directly links to the [asset_uuid](crate::core::types::asset_scope_attribute::AssetScopeAttribute::asset_uuid)
+/// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 pub fn query_scope_attribute_by_asset_uuid<S: Into<String>>(
     deps: &DepsC,
     asset_uuid: S,
@@ -39,9 +52,16 @@ pub fn query_scope_attribute_by_asset_uuid<S: Into<String>>(
     query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)?)
 }
 
-/// Fetches an AssetScopeAttribubte by the scope address value directly.  The most efficient version
+/// Fetches an AssetScopeAttribute by the scope address value directly.  The most efficient version
 /// of these functions, but still has to do quite a few lookups.  This functionality should only be used
 /// on a once-per-transaction basis, if possible.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `scope_address` Directly links to the [scope_address](crate::core::types::asset_scope_attribute::AssetScopeAttribute::scope_address)
+/// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,
@@ -65,7 +85,14 @@ pub fn query_scope_attribute_by_scope_address<S: Into<String>>(
     }
 }
 
-/// Fetches an AssetScopeAttribubte by the scope address value, derived from the asset uuid.
+/// Fetches an AssetScopeAttribute by the scope address value, derived from the asset uuid.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `asset_uuid` Directly links to the [asset_uuid](crate::core::types::asset_scope_attribute::AssetScopeAttribute::asset_uuid)
+/// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 pub fn may_query_scope_attribute_by_asset_uuid<S: Into<String>>(
     deps: &DepsC,
     asset_uuid: S,
@@ -73,10 +100,17 @@ pub fn may_query_scope_attribute_by_asset_uuid<S: Into<String>>(
     may_query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)?)
 }
 
-/// Fetches an AssetScopeAttribubte by the scope address value directly.  The most efficient version
+/// Fetches an AssetScopeAttribute by the scope address value directly.  The most efficient version
 /// of these functions, but still has to do quite a few lookups.  This functionality should only be used
 /// on a once-per-transaction basis, if possible. Returns ContractResult<None> in the case of no attribute
 /// being associated with the scope.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `scope_address` Directly links to the [scope_address](crate::core::types::asset_scope_attribute::AssetScopeAttribute::scope_address)
+/// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     deps: &DepsC,
     scope_address: S,

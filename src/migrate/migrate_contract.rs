@@ -56,6 +56,11 @@ pub fn migrate_contract(deps: DepsMutC, options: Option<MigrationOptions>) -> En
 }
 
 /// Verifies that the migration is going to a proper version and the contract name of the new wasm matches
+/// the value in the Cargo.toml.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract's internal storage for data manipulation.
 fn check_valid_migration_versioning(storage: &mut dyn Storage) -> AssetResult<()> {
     let stored_version_info = get_version_info(storage)?;
     // If the contract name has changed or another contract attempts to overwrite this one, this

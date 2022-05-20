@@ -34,7 +34,12 @@ impl VersionInfoV1 {
     }
 }
 
-/// Sets the contract's version definition directly to the specified VersionInfoV1 struct
+/// Sets the contract's version definition directly to the specified [VersionInfoV1](self::VersionInfoV1) struct.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract's internal storage.
+/// * `version_info` A struct defining the name and version of the current contract instance.
 pub fn set_version_info(
     storage: &mut dyn Storage,
     version_info: &VersionInfoV1,
@@ -45,11 +50,19 @@ pub fn set_version_info(
 }
 
 /// Fetches, if possible, the current version information for the contract.
+///
+/// # Parameters
+///
+/// * `storage` A read-only instance of the contract's internal storage.
 pub fn get_version_info(storage: &dyn Storage) -> AssetResult<VersionInfoV1> {
     VERSION_INFO.load(storage).map_err(ContractError::Std)
 }
 
-/// Sets the version info for the given contract to the derived values from the Cargo.toml file
+/// Sets the version info for the given contract to the derived values from the Cargo.toml file.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract's internal storage.
 pub fn migrate_version_info(storage: &mut dyn Storage) -> AssetResult<VersionInfoV1> {
     let version_info = VersionInfoV1 {
         contract: CONTRACT_NAME.to_string(),

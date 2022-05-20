@@ -366,7 +366,7 @@ __This route is only accessible to the contract's admin address.__  This route a
 value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
 be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
 two criteria:
-* Its `asset_type` value must not yet be registrered in a different asset definition.
+* Its `asset_type` value must not yet be registered in a different asset definition.
 * Its `scope_spec_address` (entered as a [ScopeSpecIdentifier](src/core/types/scope_spec_identifier.rs)) must also be
 unique across asset definitions.
 Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).

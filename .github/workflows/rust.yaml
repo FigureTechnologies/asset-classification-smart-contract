@@ -73,30 +73,6 @@ jobs:
           fi
           echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
 
-      - name: Generate Rust Docs
-        if: ${{ !env.TAG_EXISTS }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --no-deps
-
-      - name: Stage Cargo Docs
-        if: ${{ !env.TAG_EXISTS }}
-        run: |
-          # Add redirect page to inner doc index
-          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> ./target/doc/index.html
-          # Create doc deployment location
-          mkdir ./pages-files
-          # Move documentation to its configured location in settings
-          cp -r target/doc ./pages-files/docs
-
-      - name: Deploy to GitHub Pages
-        if: ${{ !env.TAG_EXISTS }}
-        uses: JamesIves/github-pages-deploy-action@v4.2.2
-        with:
-          branch: gh-pages
-          folder: pages-files
-
       - name: Optimize
         # No need to create the release WASM if the version hasn't changed and no new release will be made
         if: ${{ !env.TAG_EXISTS }}
@@ -117,5 +93,27 @@ jobs:
             artifacts/asset_classification_smart_contract.wasm
             artifacts/checksums.txt
 
+      - name: Generate Rust Docs
+        if: ${{ !env.TAG_EXISTS }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --no-deps
 
+      - name: Stage Cargo Docs
+        if: ${{ !env.TAG_EXISTS }}
+        run: |
+          # Add redirect page to inner doc index
+          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> ./target/doc/index.html
+          # Create doc deployment location
+          mkdir ./pages-files
+          # Move documentation to its configured location in settings
+          cp -r target/doc ./pages-files/docs
+
+      - name: Deploy Docs to GitHub Pages
+        if: ${{ !env.TAG_EXISTS }}
+        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        with:
+          branch: gh-pages
+          folder: pages-files
 

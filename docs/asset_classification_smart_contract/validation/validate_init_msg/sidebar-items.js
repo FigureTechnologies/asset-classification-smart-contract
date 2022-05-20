@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["validate_asset_definition",""],["validate_asset_definition_input",""],["validate_init_msg",""],["validate_verifier",""],["validate_verifier_with_provided_errors",""]]});

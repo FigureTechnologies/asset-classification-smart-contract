@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["check_admin_only","Ensures that only the admin of the contract can call into a route."],["check_funds_are_empty","Ensures that the info provided to the route does not include any funds."]]});

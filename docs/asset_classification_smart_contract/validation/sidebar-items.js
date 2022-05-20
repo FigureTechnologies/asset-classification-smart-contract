@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["validate_execute_msg",""],["validate_init_msg",""]]});

@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["asset_classification_smart_contract"];

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AssetDefinition",""],["AssetDefinitionInput","Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`."]]});

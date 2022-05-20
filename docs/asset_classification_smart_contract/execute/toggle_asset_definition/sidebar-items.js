@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["toggle_asset_definition",""]],"struct":[["ToggleAssetDefinitionV1",""]]});

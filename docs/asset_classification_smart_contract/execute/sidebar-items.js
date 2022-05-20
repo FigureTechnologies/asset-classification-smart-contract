@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["add_asset_definition",""],["add_asset_verifier",""],["bind_contract_alias",""],["onboard_asset",""],["toggle_asset_definition",""],["update_access_routes",""],["update_asset_definition",""],["update_asset_verifier",""],["verify_asset",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["EventType",""]],"struct":[["EventAdditionalMetadata","A helper collection that allows underlying processes to specify dynamic key values for processes that don’t necessarily need to specify a large amount of new event keys."],["EventAttributes",""]]});

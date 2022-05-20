@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AssetIdentifier",""]],"struct":[["AssetIdentifiers","A simple named collection of both the asset uuid and scope address"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AccessDefinitionType","Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses"]],"struct":[["AccessDefinition",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["onboard_asset",""]],"struct":[["OnboardAssetV1",""]]});

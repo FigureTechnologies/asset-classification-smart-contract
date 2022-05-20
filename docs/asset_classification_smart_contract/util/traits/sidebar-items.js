@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["OptionExtensions","Allows any Sized type to functionally move itself into an Option"],["ResultExtensions","Allows any Sized type to functionally move itself into a Result<T, U>"]]});

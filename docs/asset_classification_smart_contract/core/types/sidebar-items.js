@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["access_definition",""],["access_route",""],["asset_definition",""],["asset_identifier",""],["asset_onboarding_status",""],["asset_qualifier",""],["asset_scope_attribute",""],["asset_verification_result",""],["entity_detail",""],["fee_destination",""],["scope_spec_identifier",""],["serialized_enum",""],["verifier_detail",""]]});

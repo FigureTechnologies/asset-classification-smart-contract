@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["add_asset_definition",""]],"struct":[["AddAssetDefinitionV1",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["update_asset_verifier",""]],"struct":[["UpdateAssetVerifierV1",""]]});

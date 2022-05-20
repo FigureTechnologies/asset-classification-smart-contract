@@ -21,22 +21,27 @@ jobs:
           toolchain: stable
           default: true
           components: clippy, rustfmt
-      - name: Cargo format
+      - name: Cargo Format
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-      - name: Cargo clippy
+      - name: Cargo Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-      - name: Cargo tarpaulin xml report
+      - name: Cargo Doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --no-deps
+      - name: Cargo Tarpaulin XML Report
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.19.1'
           out-type: Xml
           args: '--ignore-config --ignore-tests --features enable-test-utils'
-      - name: Archive code coverage results
+      - name: Archive Code Coverage Results
         uses: actions/upload-artifact@v1
         with:
           name: code-coverage-report
@@ -50,13 +55,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get release version
+      - name: Get Release Version
         run: |
           APP_VERSION=$(cargo metadata | jq -r '.packages[] | select(.name == "asset-classification-smart-contract") | .version')
           echo "Using application version v$APP_VERSION for release"
           echo "RELEASE_VERSION=v$APP_VERSION" >> $GITHUB_ENV
 
-      - name: Check release is new version
+      - name: Check Release is New Version
         run: |
           TAG_EXISTS=$((git show-ref --tags "$RELEASE_VERSION") || echo "")
           if [ $TAG_EXISTS ]; then
@@ -85,3 +90,18 @@ jobs:
           files: |
             artifacts/asset_classification_smart_contract.wasm
             artifacts/checksums.txt
+
+      - name: Stage Cargo Docs
+        if: ${{ !env.TAG_EXISTS }}
+        run: |
+          # Add redirect page to inner doc index
+          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" > target/doc/index.html
+          # Create doc deployment location
+          cp -r target/doc ./pages-files/docs
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        with:
+          branch: gh-pages
+          folder: pages-files
+

@@ -7,6 +7,12 @@ use super::{aliases::AssetResult, functions::generate_asset_attribute_name};
 
 /// Helper function to generate an "add attribute" message, as the functionality is re-used across
 /// multiple functions.
+///
+/// # Parameters
+///
+/// * `attribute` The scope attribute to be added to a Provenance Metadata Scope.
+/// * `contract_base_name` The base name of the contract, defined in the [contract_base_name](crate::core::state::StateV2::contract_base_name)
+/// property of the [StateV2](crate::core::state::StateV2) value stored internally in the contract.
 pub fn get_add_attribute_to_scope_msg(
     attribute: &AssetScopeAttribute,
     contract_base_name: impl Into<String>,

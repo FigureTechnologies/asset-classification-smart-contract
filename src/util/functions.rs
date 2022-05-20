@@ -11,6 +11,12 @@ use std::ops::Mul;
 /// Determines how many elements within the provided reference slice are unique by the given
 /// property.
 ///
+/// # Parameters
+///
+/// * `slice` A reference slice from which to derive values to count.
+/// * `selector` A closure that defines the criteria used to determine when a value in the slice
+/// should be added to the count.
+///
 /// # Examples
 /// ```
 /// use asset_classification_smart_contract::util::functions::distinct_count_by_property;
@@ -30,6 +36,15 @@ where
 /// Converts an asset type and a contract base name into an asset attribute that will be reserved
 /// to the contract for writing scope attributes.
 ///
+/// # Parameters
+///
+/// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the
+/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) property of an
+/// [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+/// * `contract_base_name` The value to use at the end of the name qualifier, after the dot.  Should
+/// refer to the [contract_base_name](crate::core::state::StateV2::contract_base_name] of the
+/// contract's [StateV2](crate::core::state::StateV2) internally-stored value.
+///
 /// # Examples
 /// ```
 /// use asset_classification_smart_contract::util::functions::generate_asset_attribute_name;
@@ -48,6 +63,10 @@ pub fn generate_asset_attribute_name<T: Into<String>, U: Into<String>>(
 
 /// Converts a decimal to a display string, like "1%".
 ///
+/// # Parameters
+///
+/// * `decimal` The cosmwasm decimal instance to convert to a percent.
+///
 /// # Examples
 /// ```
 /// use cosmwasm_std::Decimal;
@@ -64,6 +83,13 @@ pub fn decimal_display_string(decimal: &Decimal) -> String {
 /// Takes an existing vector, moves it into this function, swaps out a single existing item for
 /// a specified replacement item.  If less or more than one existing item matches the given
 /// predicate closure, an error is returned.
+///
+/// # Parameters
+///
+/// * `v` The vector to move and replace an item within.
+/// * `new` The instance of the new item to use in place of an existing item.
+/// * `predicate` A closure that defines how to locate the single item to remove from the vector
+/// and replace with the new item.
 pub fn replace_single_matching_vec_element<T, F>(
     v: Vec<T>,
     new: T,
@@ -94,6 +120,12 @@ where
 /// Creates a message that sends funds of the specified denomination from the contract to the recipient address.
 /// Important: The response type is of ProvenanceMsg, which allows this bank send message to match the type
 /// used for contract execution routes.
+///
+/// # Parameters
+///
+/// * `recipient` The bech32 address of the receiver of the sent funds.
+/// * `amount` An amount of coin to send (from the contract's internal funding amount).
+/// * `denom` The denomination of coin to send.
 pub fn bank_send<R: Into<String>, D: Into<String>>(
     recipient: R,
     amount: u128,
@@ -110,6 +142,11 @@ pub fn bank_send<R: Into<String>, D: Into<String>>(
 /// Ensures that access routes have a non-empty route property.
 /// Ensures that access routes either have an unset name, or a non-blank, set name.
 /// Ensures that all access routes, after being trimmed of trailing whitespace, are unique. Drops duplicates.
+///
+/// # Parameters
+///
+/// * `routes` The vector of routes to filter. Moves into this function and is replaced by a new
+/// vector containing only valid routes.
 pub fn filter_valid_access_routes(routes: Vec<AccessRoute>) -> Vec<AccessRoute> {
     routes
         .into_iter()

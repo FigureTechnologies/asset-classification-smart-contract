@@ -5,10 +5,18 @@ use crate::util::aliases::DepsMutC;
 /// Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects
 /// relatively easily and then freed when required.
 pub struct DepsContainer<'a> {
+    /// A ref cell used to control access to the held deps mut without causing it to be moved through
+    /// various actions.
     deps_cell: RefCell<DepsMutC<'a>>,
 }
 impl<'a> DepsContainer<'a> {
     /// Constructs a new instance of the DepsContainer.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+    /// resources like contract internal storage and a querier to retrieve blockchain objects.
+    ///
     /// # Example
     /// ```
     /// use provwasm_mocks::mock_dependencies;
@@ -24,7 +32,11 @@ impl<'a> DepsContainer<'a> {
     }
 
     /// Allows the encapsulated DepsMutC value to be used while the service owns it.
-    /// Note: In order to release the owned DepsMutC, simply call self.dispose()
+    /// Note: In order to release the owned DepsMutC, simply call `self.dispose()`.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps_fn` A closure that utilizes the internally-held [DepsMutC](super::aliases::DepsMutC) reference
     pub fn use_deps<T, F>(&self, mut deps_fn: F) -> T
     where
         F: FnMut(&mut DepsMutC) -> T,
@@ -32,7 +44,7 @@ impl<'a> DepsContainer<'a> {
         deps_fn(&mut self.deps_cell.borrow_mut())
     }
 
-    /// Relinquishes the held DepsMutC to the caller
+    /// Relinquishes the held DepsMutC to the caller with a move.
     pub fn get(self) -> DepsMutC<'a> {
         self.deps_cell.into_inner()
     }

@@ -7,18 +7,19 @@ use uuid::Uuid;
 
 use super::traits::ResultExtensions;
 
-/// Standard scope key prefix from the Provenance libs
+// Standard scope key prefix from the Provenance libs
 const KEY_SCOPE: u8 = 0x00;
-/// Standard scope spec key prefix from the Provenance libs
+// Standard scope spec key prefix from the Provenance libs
 const KEY_SCOPE_SPEC: u8 = 0x04;
-/// Standard bech32 encoding for mainnet addresses simply begins the with the string "pb"
+// Standard bech32 encoding for mainnet addresses simply begins the with the string "pb"
 const MAINNET_HRP: &str = "pb";
-/// Standard bech32 encoding for testnet addresses simply begins with the string "tp"
+// Standard bech32 encoding for testnet addresses simply begins with the string "tp"
 const TESTNET_HRP: &str = "tp";
-/// Standard bech32 encoding for scope addresses simply begins with the string "scope"
+// Standard bech32 encoding for scope addresses simply begins with the string "scope"
 const SCOPE_HRP: &str = "scope";
-/// Standard bech32 encoding for scope spec addresses simply begins with the string "scopespec"
+// Standard bech32 encoding for scope spec addresses simply begins with the string "scopespec"
 const SCOPE_SPEC_HRP: &str = "scopespec";
+// All valid hrps for use in the underlying functions
 const VALID_HRPS: [&str; 4] = [MAINNET_HRP, TESTNET_HRP, SCOPE_HRP, SCOPE_SPEC_HRP];
 
 /// Converts a string containing an asset uuid into a scope address.

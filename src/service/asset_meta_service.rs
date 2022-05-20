@@ -33,11 +33,22 @@ use super::{
     message_gathering_service::MessageGatheringService,
 };
 
+/// Ties all service code together into a cohesive struct to use for complex operations during the
+/// onboarding and verification processes.
 pub struct AssetMetaService<'a> {
+    /// A wrapper for a [DepsMutC](core::util::aliases::DepsMutC] that allows access to it without
+    /// moving the value.
     deps: DepsContainer<'a>,
+    /// All messages generated over the course of function invocations.
     messages: VecContainer<CosmosMsg<ProvenanceMsg>>,
 }
 impl<'a> AssetMetaService<'a> {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` The cosmwasm deps that will be moved into a [DepsContainer](crate::util::deps_container::DepsContainer)
+    /// for future access.
     pub fn new(deps: DepsMutC<'a>) -> Self {
         Self {
             deps: DepsContainer::new(deps),

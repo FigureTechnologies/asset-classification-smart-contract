@@ -11,6 +11,7 @@ env:
 
 jobs:
   check:
+    name: Check Project Integrity
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,11 +31,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-      - name: Cargo Doc
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --no-deps
       - name: Cargo Tarpaulin XML Report
         uses: actions-rs/tarpaulin@v0.1
         with:
@@ -48,6 +44,7 @@ jobs:
           path: cobertura.xml
 
   release:
+    name: Release Project Build Files
     needs: check
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -91,11 +88,17 @@ jobs:
             artifacts/asset_classification_smart_contract.wasm
             artifacts/checksums.txt
 
+      - name: Generate Rust Docs
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --no-deps
+
       - name: Stage Cargo Docs
         if: ${{ !env.TAG_EXISTS }}
         run: |
           # Add redirect page to inner doc index
-          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> target/doc/index.html
+          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> ./target/doc/index.html
           # Create doc deployment location
           mkdir ./pages-files
           # Move documentation to its configured location in settings

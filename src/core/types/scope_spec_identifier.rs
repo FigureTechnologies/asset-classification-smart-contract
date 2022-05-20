@@ -14,13 +14,23 @@ use crate::util::{
 const UUID_NAME: &str = "uuid";
 const ADDRESS_NAME: &str = "address";
 
+/// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ScopeSpecIdentifier {
+    /// A uuid v4 represented by a string.
     Uuid(String),
+    /// A bech32 Provenance Blockchain address with an hrp of "scopespec".
     Address(String),
 }
 impl ScopeSpecIdentifier {
+    /// Converts a [SerializedEnum](super::serialized_enum::SerializedEnum) instance to one of the
+    /// variants of this enum, if possible.  On a failure, a [ContractError::UnexpectedSerializedEnum](crate::core::error::ContractError::UnexpectedSerializedEnum)
+    /// error will be produced, indicating the unexpected value.
+    ///
+    /// # Parameters
+    ///
+    /// * `e` The serialized enum instance for which to attempt conversion.
     pub fn from_serialized_enum(e: &SerializedEnum) -> AssetResult<Self> {
         match e.r#type.as_str() {
             UUID_NAME => Self::uuid(&e.value).to_ok(),
@@ -35,6 +45,7 @@ impl ScopeSpecIdentifier {
         }
     }
 
+    /// Converts the specific variant of this enum to a [SerializedEnum](super::serialized_enum::SerializedEnum).
     pub fn to_serialized_enum(&self) -> SerializedEnum {
         match self {
             Self::Uuid(uuid) => SerializedEnum::new(UUID_NAME, uuid),
@@ -42,14 +53,28 @@ impl ScopeSpecIdentifier {
         }
     }
 
+    /// Creates a new instance of this enum as the [Uuid](self::ScopeSpecIdentifier::Uuid) variant.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_spec_uuid` A uuid v4 string instance representing a scope specification.
     pub fn uuid<S: Into<String>>(scope_spec_uuid: S) -> Self {
         Self::Uuid(scope_spec_uuid.into())
     }
 
+    /// Creates a new instance of this enum as the [Address](self::ScopeSpecIdentifier::Address) variant.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_spec_address` A bech32 address instance with an hrp of "scopespec".
     pub fn address<S: Into<String>>(scope_spec_address: S) -> Self {
         Self::Address(scope_spec_address.into())
     }
 
+    /// Fetches the scope spec uuid value from this enum.  The [Uuid](self::ScopeSpecIdentifier::Uuid) variant
+    /// can directly provide the value, but the [Address](self::ScopeSpecIdentifier::Address) variant
+    /// needs to utilize the [scope_spec_address_to_scope_spec_uuid](crate::util::scope_address_utils::scope_spec_address_to_scope_spec_uuid)
+    /// function to derive the value.
     pub fn get_scope_spec_uuid(&self) -> AssetResult<String> {
         match self {
             Self::Uuid(scope_spec_uuid) => (*scope_spec_uuid).clone().to_ok(),
@@ -59,6 +84,10 @@ impl ScopeSpecIdentifier {
         }
     }
 
+    /// Fetches the scope spec address value from this enum.  The [Address](self::ScopeSpecIdentifier::Address) variant
+    /// can directly provide the value, but the [Uuid](self::ScopeSpecIdentifier::Uuid) variant
+    /// needs to utilize the [scope_spec_uuid_to_scope_spec_address](crate::util::scope_address_utils::scope_spec_uuid_to_scope_spec_address)
+    /// function to derive the value.
     pub fn get_scope_spec_address(&self) -> AssetResult<String> {
         match self {
             Self::Uuid(scope_spec_uuid) => scope_spec_uuid_to_scope_spec_address(scope_spec_uuid),
@@ -66,7 +95,7 @@ impl ScopeSpecIdentifier {
         }
     }
 
-    /// Takes the value provided and dervies both values from it, where necessary,
+    /// Takes the value provided and derives both values from it, where necessary,
     /// ensuring that both scope_spec_uuid and scope_spec_address are available to the user
     pub fn to_identifiers(&self) -> AssetResult<ScopeSpecIdentifiers> {
         ScopeSpecIdentifiers::new(self.get_scope_spec_uuid()?, self.get_scope_spec_address()?)
@@ -74,11 +103,21 @@ impl ScopeSpecIdentifier {
     }
 }
 
+/// A simple named collection of both the scope spec uuid and the scope spec address, derived from
+/// using bech32 conversion utilities on a variant of [ScopeSpecIdentifier](self::ScopeSpecIdentifier).
 pub struct ScopeSpecIdentifiers {
+    /// A uuid v4 value.
     pub scope_spec_uuid: String,
+    /// A bech32 address value with an hrp of "scopespec".
     pub scope_spec_address: String,
 }
 impl ScopeSpecIdentifiers {
+    /// Constructs a new instance of this struct with the provided values directly propagated.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_spec_uuid` A uuid v4 value.
+    /// * `scope_spec_address` A bech32 address value with an hrp of "scopespec".
     pub fn new<S1, S2>(scope_spec_uuid: S1, scope_spec_address: S2) -> Self
     where
         S1: Into<String>,

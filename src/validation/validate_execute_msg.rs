@@ -9,6 +9,12 @@ use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_verifier_with_provided_errors,
 };
 
+/// The main branch of validation for an execute msg.  Funnels the intercepted value based on variant
+/// to one of the various sub-functions in this module.
+///
+/// # Parameters
+///
+/// * `msg` An execute msg to process.
 pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
     match msg {
         ExecuteMsg::OnboardAsset {
@@ -44,6 +50,20 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
     }
 }
 
+/// Validates the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// stored internally in the contract.
+/// * `verifier_address` The bech32 address of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
+/// held within the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// for onboarding.
 fn validate_onboard_asset(
     identifier: &SerializedEnum,
     asset_type: &str,
@@ -62,6 +82,15 @@ fn validate_onboard_asset(
     gen_validation_response("ExecuteMsg::OnboardAsset", invalid_fields)
 }
 
+/// Validates the [VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
 fn validate_verify_asset(identifier: &SerializedEnum) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if let Some(message) = get_asset_identifier_invalid_message(identifier) {
@@ -70,6 +99,15 @@ fn validate_verify_asset(identifier: &SerializedEnum) -> AssetResult<()> {
     gen_validation_response("ExecuteMsg::VerifyAsset", invalid_fields)
 }
 
+/// Validates the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// stored internally in the contract.
 fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_type.is_empty() {
@@ -78,6 +116,16 @@ fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     gen_validation_response("ExecuteMsg::ToggleAssetDefinition", invalid_fields)
 }
 
+/// Validates the [AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier) or [UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
+/// variants of the [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on
+/// success, or an  [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
+/// error when invalid fields are found.
+///
+/// # Parameters
+///
+/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// stored internally in the contract.
+/// * `verifier` The verifier detail to add or update.
 fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> AssetResult<()> {
     let errors = if asset_type.is_empty() {
         vec!["asset_type must not be empty".to_string()].to_some()
@@ -87,6 +135,16 @@ fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> A
     validate_verifier_with_provided_errors(verifier, errors)
 }
 
+/// Validates the [UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+/// * `owner_address` The bech32 address of the account that owns the access routes.
 fn validate_update_access_routes(
     identifier: &SerializedEnum,
     owner_address: &str,
@@ -101,6 +159,15 @@ fn validate_update_access_routes(
     gen_validation_response("ExecuteMsg::UpdateAccessRoutes", invalid_fields)
 }
 
+/// Validates the [BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `alias_name` The fully-qualified Provenance Blockchain Name Module name to bind to the
+/// contract.
 fn validate_bind_contract_alias(alias_name: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
     if alias_name.is_empty() {
@@ -109,6 +176,13 @@ fn validate_bind_contract_alias(alias_name: &str) -> AssetResult<()> {
     gen_validation_response("ExecuteMsg::BindContractAlias", invalid_fields)
 }
 
+/// Validates a serialized enum to ensure that it can convert to a valid [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier),
+/// returning an optional string that is only populated if an error is present.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
 fn get_asset_identifier_invalid_message(identifier: &SerializedEnum) -> Option<String> {
     match identifier.to_asset_identifier() {
         Ok(identifier) => match identifier {
@@ -144,6 +218,16 @@ fn get_asset_identifier_invalid_message(identifier: &SerializedEnum) -> Option<S
     }
 }
 
+/// Takes the invalid fields produced by the various validation functions, and, if they are not
+/// empty, returns an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
+/// error.  If they are empty, returns an empty response.
+///
+/// # Parameters
+///
+/// * `message_type` A free-form string that defines the [ExecuteMsg](crate::core::msg::ExecuteMsg)
+/// variant that is being validated.
+/// * `invalid_fields` A vector containing error messages produced by a validation function.  If
+/// empty, this indicates that validation found no issue with input.
 fn gen_validation_response<S: Into<String>>(
     message_type: S,
     invalid_fields: Vec<String>,

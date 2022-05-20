@@ -6,6 +6,15 @@ use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{to_binary, Binary};
 
+/// A query that fetches a target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// from the contract's internal storage.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `qualifier` An enum containing identifier information that can be used to look up a stored
+/// [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
 pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetResult<Binary> {
     let asset_definition = match qualifier {
         AssetQualifier::AssetType(asset_type) => {

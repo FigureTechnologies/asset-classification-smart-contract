@@ -7,17 +7,38 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::{bind_name, NameBinding};
 
+/// A transformation of [ExecuteMsg::BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias)
+/// for ease of use in the underlying [bind_contract_alias](self::bind_contract_alias) function.
+///
+/// # Parameters
+///
+/// * `alias_name` The Provenance Name Module fully-qualified name to have the contract bind to
+/// itself in the [bind_contract_alias](self::bind_contract_alias) function.
 #[derive(Clone, PartialEq)]
 pub struct BindContractAliasV1 {
     pub alias_name: String,
 }
 impl BindContractAliasV1 {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `alias_name` The Provenance Name Module fully-qualified name to have the contract bind to
+    /// itself in the [bind_contract_alias](self::bind_contract_alias) function.
     pub fn new<S: Into<String>>(alias_name: S) -> Self {
         Self {
             alias_name: alias_name.into(),
         }
     }
 
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<BindContractAliasV1> {
         match msg {
             ExecuteMsg::BindContractAlias { alias_name } => {
@@ -36,6 +57,17 @@ impl BindContractAliasV1 {
 /// Note: Due to the way Provenance names work, this route will only work when attempting to self-bind
 /// to an unrestricted parent name.  Binding an alias to a restricted parent name will still require
 /// that the address that owns the parent name signs the name binding message.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+/// details, as well as blockchain information at the time of the transaction.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the bind contract alias v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn bind_contract_alias(
     deps: DepsMutC,
     env: Env,

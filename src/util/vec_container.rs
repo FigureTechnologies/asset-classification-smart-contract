@@ -4,45 +4,56 @@ use std::{cell::RefCell, ops::Deref};
 /// Allows for the internal values to be mutated without declaring
 /// the value as mutable.
 pub struct VecContainer<T> {
+    /// The inner values of the container that are manipulated by the various implementation
+    /// functions.
     pub values: RefCell<Vec<T>>,
 }
 impl<T> VecContainer<T> {
-    /// Construct a new instance of a container, starting with an empty vector
+    /// Construct a new instance of a container, starting with an empty vector.
     pub fn new() -> Self {
         Self {
             values: RefCell::new(vec![]),
         }
     }
 
-    /// Pushes a single owned item to the contained Vec
-    pub fn push(&self, msg: T) {
-        self.values.borrow_mut().push(msg);
+    /// Pushes a single owned item to the contained Vec.
+    ///
+    /// # Parameters
+    ///
+    /// * `value` A value append to the end of the inner Vec.
+    pub fn push(&self, value: T) {
+        self.values.borrow_mut().push(value);
     }
 
-    /// Appends an owned, mutable instance of a Vec containing instances of T to the contained Vec
-    pub fn append(&self, msgs: &mut Vec<T>) {
-        self.values.borrow_mut().append(msgs)
+    /// Appends an owned, mutable instance of a Vec containing instances of T to the contained Vec.
+    ///
+    /// # Parameters
+    ///
+    /// * `values` A mutable reference to an external vector of values to be added to the inner Vec.
+    pub fn append(&self, values: &mut Vec<T>) {
+        self.values.borrow_mut().append(values)
     }
 
+    /// Removes all values from the inner Vec.
     pub fn clear(&self) {
         self.values.borrow_mut().clear();
     }
 
     /// Fetches the actual value inside the RefCell, moving the internalized value
-    /// and disposing of this container in the process
+    /// and disposing of this container in the process.
     pub fn get(self) -> Vec<T> {
         self.values.into_inner()
     }
 }
 impl<T: Clone> VecContainer<T> {
-    /// Fetches a cloned set of the owned values. Useful for early fetches without disposing of the container
+    /// Fetches a cloned set of the owned values. Useful for early fetches without disposing of the container.
     pub fn get_cloned(&self) -> Vec<T> {
         self.values.borrow().deref().to_owned().to_vec()
     }
 }
 impl<T: Copy> VecContainer<T> {
     /// Fetches a copied set of the owned values.  Copying is more efficient than cloning, so this function should
-    /// be preferred over get_cloned when an object contained in the VecContainer implements both
+    /// be preferred over get_cloned when an object contained in the VecContainer implements both.
     pub fn get_copied(&self) -> Vec<T> {
         self.values.borrow().deref().to_owned()
     }

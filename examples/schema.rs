@@ -4,7 +4,9 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use asset_classification_smart_contract::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
-use asset_classification_smart_contract::core::types::asset_definition::AssetDefinition;
+use asset_classification_smart_contract::core::types::asset_definition::{
+    AssetDefinition, AssetDefinitionInput,
+};
 use asset_classification_smart_contract::core::types::asset_identifier::AssetIdentifier;
 use asset_classification_smart_contract::core::types::asset_qualifier::AssetQualifier;
 use asset_classification_smart_contract::core::types::asset_scope_attribute::AssetScopeAttribute;
@@ -23,6 +25,7 @@ fn main() {
     export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(AssetScopeAttribute), &out_dir);
     export_schema(&schema_for!(AssetDefinition), &out_dir);
+    export_schema(&schema_for!(AssetDefinitionInput), &out_dir);
     export_schema(&schema_for!(VerifierDetail), &out_dir);
     export_schema(&schema_for!(AssetIdentifier), &out_dir);
     export_schema(&schema_for!(AssetQualifier), &out_dir);

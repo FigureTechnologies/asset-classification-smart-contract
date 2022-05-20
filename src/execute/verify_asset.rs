@@ -12,6 +12,28 @@ use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
+/// A transformation of [ExecuteMsg::VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset)
+/// for ease of use in the underlying [verify_asset](self::verify_asset) function.
+///
+/// # Parameters
+///
+/// * `identifier` An instance of the asset identifier enum that helps the contract identify which
+/// scope that the requestor is referring to in the request.
+/// * `success` A boolean indicating whether or not verification was successful.  A value of `false`
+/// either indicates that the underlying data was fetched and it did not meet the requirements for a
+/// classified asset, or that a failure occurred during the verification process.  Note: Verifiers
+/// should be wary of returning false immediately on a code failure, as this incurs additional cost
+/// to the onboarding account.  Instead, it is recommended that verification implement some process
+/// that retries logic when exceptions or other code execution issues cause a failed verification.
+/// * `message` An optional string describing the result of the verification process.  If omitted,
+/// a standard message describing success or failure based on the value of `success` will be
+/// displayed in the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
+/// * `access_routes` Like in the [OnboardAsset](self::ExecuteMsg::OnboardAsset) message, this
+/// parameter allows the verifier to provide access routes for  the assets that it has successfully
+/// fetched from the underlying scope data.  This allows for the verifier to define its own subset
+/// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission
+/// to easily fetch asset data from a new location, potentially without any Provenance Blockchain
+/// interaction, facilitating the process of data interaction.
 #[derive(Clone, PartialEq)]
 pub struct VerifyAssetV1 {
     pub identifier: AssetIdentifier,
@@ -20,6 +42,14 @@ pub struct VerifyAssetV1 {
     pub access_routes: Vec<AccessRoute>,
 }
 impl VerifyAssetV1 {
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<VerifyAssetV1> {
         match msg {
             ExecuteMsg::VerifyAsset {
@@ -42,6 +72,20 @@ impl VerifyAssetV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
+/// message is provided.  An execution route for use by the asset verifier selected by a requestor
+/// during the [onboarding](super::onboard_asset::onboard_asset) process to mark a scope as verified
+/// or rejected.
+///
+/// # Parameters
+///
+/// * `repository` A helper collection of traits that allows complex lookups of scope values and
+/// emits messages to construct the process of verification as a collection of messages to produce
+/// in the function's result.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the verify asset v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn verify_asset<'a, T>(
     repository: T,
     info: MessageInfo,
@@ -60,7 +104,7 @@ where
 
     // verify sender is requested verifier
     if info.sender != scope_attribute.verifier_address {
-        return ContractError::UnathorizedAssetVerifier {
+        return ContractError::UnauthorizedAssetVerifier {
             scope_address: asset_identifiers.scope_address,
             verifier_address: info.sender.into(),
             expected_verifier_address: scope_attribute.verifier_address.into_string(),
@@ -199,7 +243,7 @@ mod tests {
         .unwrap_err();
 
         match err {
-            ContractError::UnathorizedAssetVerifier {
+            ContractError::UnauthorizedAssetVerifier {
                 scope_address,
                 verifier_address,
                 expected_verifier_address,

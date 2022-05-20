@@ -10,17 +10,34 @@ use crate::{
     },
 };
 
+/// A simple wrapper for all asset definitions returned as a result of the [query_asset_definitions](self::query_asset_definitions)
+/// function.
 #[derive(Serialize, Deserialize, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QueryAssetDefinitionsResponse {
+    /// All derived asset definitions derived from the [query_asset_definitions](self::query_asset_definitions)
+    /// function.
     pub asset_definitions: Vec<AssetDefinition>,
 }
 impl QueryAssetDefinitionsResponse {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_definitions` All derived asset definitions derived from the [query_asset_definitions](self::query_asset_definitions)
+    /// function.
     pub fn new(asset_definitions: Vec<AssetDefinition>) -> Self {
         Self { asset_definitions }
     }
 }
 
+/// A query that fetches all [AssetDefinitions](crate::core::types::asset_definition::AssetDefinition)
+/// from the contract's internal storage.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
 pub fn query_asset_definitions(deps: &DepsC) -> AssetResult<Binary> {
     let asset_definitions = asset_definitions()
         .range(deps.storage, None, None, cosmwasm_std::Order::Descending)

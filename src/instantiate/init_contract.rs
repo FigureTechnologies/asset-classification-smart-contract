@@ -9,6 +9,21 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
 use provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
 
+/// The main functionality executed when the smart contract is first instantiated.   This creates
+/// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided
+/// [AssetDefinitions](crate::core::types::asset_definition::AssetDefinition) provided in the init
+/// msg.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+/// details, as well as blockchain information at the time of the transaction.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` A custom instantiation message defined by this contract for creating the initial
+/// configuration used by the contract.
 pub fn init_contract(
     deps: DepsMutC,
     env: Env,
@@ -16,7 +31,6 @@ pub fn init_contract(
     msg: InitMsg,
 ) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
-
     let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     // If specified true, the contract needs to own its root name to be effective at preventing
     // asset classification "neighbors" that were never intended to be created from being reserved

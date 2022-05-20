@@ -10,7 +10,9 @@ use serde::{Deserialize, Serialize};
 // NOTE: The program verifies that migrated versions match the contract name and have a greater
 // version than that which was previous stored. Ensure to update the version field on each release
 // before migrating, because it's important to be able to differentiate versions as they're applied.
+/// Automatically derived from the Cargo.toml's name property.
 pub const CONTRACT_NAME: &str = env!("CARGO_CRATE_NAME");
+/// Automatically derived from the Cargo.toml's version property.
 pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 const VERSION_INFO_NAMESPACE: &str = "version_info";
 const VERSION_INFO: Item<VersionInfoV1> = Item::new(VERSION_INFO_NAMESPACE);
@@ -19,7 +21,11 @@ const VERSION_INFO: Item<VersionInfoV1> = Item::new(VERSION_INFO_NAMESPACE);
 /// Used to ensure that migrations have the correct targets and are not downgrades.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VersionInfoV1 {
+    /// The name of the contract, set to the value of [CONTRACT_NAME](self::CONTRACT_NAME) during instantiation and
+    /// following migrations.
     pub contract: String,
+    /// The version of the contract, set to the value of [CONTRACT_VERSION](self::CONTRACT_VERSION) during
+    /// instantiation and following migrations.
     pub version: String,
 }
 impl VersionInfoV1 {
@@ -28,7 +34,12 @@ impl VersionInfoV1 {
     }
 }
 
-/// Sets the contract's version definition directly to the specified VersionInfoV1 struct
+/// Sets the contract's version definition directly to the specified [VersionInfoV1](self::VersionInfoV1) struct.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract's internal storage.
+/// * `version_info` A struct defining the name and version of the current contract instance.
 pub fn set_version_info(
     storage: &mut dyn Storage,
     version_info: &VersionInfoV1,
@@ -39,11 +50,19 @@ pub fn set_version_info(
 }
 
 /// Fetches, if possible, the current version information for the contract.
+///
+/// # Parameters
+///
+/// * `storage` A read-only instance of the contract's internal storage.
 pub fn get_version_info(storage: &dyn Storage) -> AssetResult<VersionInfoV1> {
     VERSION_INFO.load(storage).map_err(ContractError::Std)
 }
 
-/// Sets the version info for the given contract to the derived values from the Cargo.toml file
+/// Sets the version info for the given contract to the derived values from the Cargo.toml file.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract's internal storage.
 pub fn migrate_version_info(storage: &mut dyn Storage) -> AssetResult<VersionInfoV1> {
     let version_info = VersionInfoV1 {
         contract: CONTRACT_NAME.to_string(),

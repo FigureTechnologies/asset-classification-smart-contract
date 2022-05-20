@@ -25,6 +25,13 @@ pub struct SerializedEnum {
     pub value: String,
 }
 impl SerializedEnum {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `enum_type` Specifies the type of enum to deserialize into. Maps into one of the values specified in
+    /// the impl for this struct.
+    /// * `value` Specifies the string value to be used for the type.
     pub fn new<S1: Into<String>, S2: Into<String>>(enum_type: S1, value: S2) -> Self {
         Self {
             r#type: enum_type.into(),
@@ -32,14 +39,17 @@ impl SerializedEnum {
         }
     }
 
+    /// Converts this value to an instance of an asset identifier if it has a compatible type.
     pub fn to_asset_identifier(&self) -> AssetResult<AssetIdentifier> {
         AssetIdentifier::from_serialized_enum(self)
     }
 
+    /// Converts this value to an instance of an asset qualifier if it has a compatible type.
     pub fn to_asset_qualifier(&self) -> AssetResult<AssetQualifier> {
         AssetQualifier::from_serialized_enum(self)
     }
 
+    /// Converts this value to an instance of a scope spec identifier if it has a compatible type.
     pub fn to_scope_spec_identifier(&self) -> AssetResult<ScopeSpecIdentifier> {
         ScopeSpecIdentifier::from_serialized_enum(self)
     }

@@ -16,13 +16,32 @@ use super::{error::ContractError, types::asset_definition::AssetDefinition};
 pub static STATE_V2_KEY: &[u8] = b"state_v2";
 pub static ASSET_META_KEY: &[u8] = b"asset_meta";
 
+/// Stores the main configurations for the contract internally.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StateV2 {
+    /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)
+    /// will use this value as their parent name.
     pub base_contract_name: String,
+    /// The Provenance Blockchain bech32 address that maintains primary control over the contract.
+    /// This address is derived from the sender of the initial contract instantiation, and is the
+    /// only address that can access administrative execution routes in the contract.  It can be
+    /// changed during migrations.
     pub admin: Addr,
+    /// A boolean value allowing for less restrictions to be placed on certain functionalities
+    /// across the contract's execution processes.  Notably, this disables a check during the
+    /// onboarding process to determine if onboarded scopes include underlying record values.  This
+    /// should never be set to true in a mainnet environment.
     pub is_test: bool,
 }
 impl StateV2 {
+    /// Constructs a new instance of this struct for the instantiation process.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` The message submitted by the instantiating account.
+    /// * `admin` The Provenance Blockchain bech32 address of the administrator account for the contract.
+    /// The sender's address is automatically used for this, and they alone will have access to
+    /// change the admin address to a different one via migrations.
     pub fn new(msg: InitMsg, admin: Addr) -> StateV2 {
         StateV2 {
             base_contract_name: msg.base_contract_name,
@@ -32,10 +51,21 @@ impl StateV2 {
     }
 }
 
+/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC) or
+/// a [DepsC](crate::util::aliases::DepsC).
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
 pub fn config_v2(storage: &mut dyn Storage) -> Singleton<StateV2> {
     singleton(storage, STATE_V2_KEY)
 }
 
+/// Fetches a read-only cosmwasm storage singleton instance for loading the contract's state.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).
 pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
     singleton_read(storage, STATE_V2_KEY)
 }
@@ -45,7 +75,7 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
 /// that saves cannot include duplicate scope specs.
 /// If it becomes a requirement in the future that we have duplicate scope specs,
 /// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
-/// will fall apart
+/// will fall apart.
 pub struct AssetDefinitionIndexes<'a> {
     scope_spec: UniqueIndex<'a, String, AssetDefinition>,
 }
@@ -56,9 +86,9 @@ impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
     }
 }
 
-/// The main entrypoint access for AssetDefinition state.  Establishes an index map for all definitions,
-/// allowing the standard save(), load() and iterator functionality. Private access to ensure only
-/// helper functions below are used
+/// The main entrypoint access for [AssetDefinition](super::types::asset_definition::AssetDefinition) state.
+/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
+/// functionality. Private access to ensure only helper functions below are used.
 pub fn asset_definitions<'a>(
 ) -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>> {
     let indexes = AssetDefinitionIndexes {
@@ -70,11 +100,14 @@ pub fn asset_definitions<'a>(
     IndexedMap::new("asset_definitions", indexes)
 }
 
-/// Inserts a new asset definition into storage.
-/// If a value already exists, an error will be returned.
-/// Note: Asset definitions must contain a unique asset_type value,
-/// as well as a unique scope_spec_address.  Either unique constraint being
-/// violated will return an error.
+/// Inserts a new asset definition into storage. If a value already exists, an error will be returned.
+/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+/// value, as well as a unique [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address).
+/// Either unique constraint being violated will return an error.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
 pub fn insert_asset_definition(
     storage: &mut dyn Storage,
     definition: &AssetDefinition,
@@ -98,13 +131,18 @@ pub fn insert_asset_definition(
     }
 }
 
-/// Replaces an existing asset definition in state with the provided value.
-/// If no value exists for the given definition, an error will be returned.
-/// Note: IndexedMap (the type asset_definitions() function returns) provides
-/// a really nice update() function that allows two branches (one for success and one for failure to find)
-/// that seems ideal for this functionality, but it requires a non-reference version of the data to be used.
-/// This requires that the provided definition must be cloned, which makes it vastly inefficient compared to
-/// this implementation.
+/// Replaces an existing asset definition in state with the provided value.  If no value exists for
+/// the given definition, an error will be returned.  Note: IndexedMap (the type [asset_definitions](self::asset_definitions)
+/// function returns) provides a really nice update() function that allows two branches (one for
+/// success and one for failure to find) that seems ideal for this functionality, but it requires a
+/// non-reference version of the data to be used. This requires that the provided definition must be
+/// cloned, which makes it vastly inefficient compared to this implementation.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
+/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+/// property.
 pub fn replace_asset_definition(
     storage: &mut dyn Storage,
     definition: &AssetDefinition,
@@ -134,7 +172,13 @@ pub fn replace_asset_definition(
 }
 
 /// Finds an existing asset definition in state by checking against the provided asset type,
-/// returning an Option that reflects whether or not the definition exists
+/// returning an Option that reflects whether or not the definition exists.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+/// for the requested asset definition.
 pub fn may_load_asset_definition_by_type<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
@@ -146,6 +190,12 @@ pub fn may_load_asset_definition_by_type<S: Into<String>>(
 }
 
 /// Finds an existing asset definition by asset type, or returns an error if no definition is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+/// for the requested asset definition.
 pub fn load_asset_definition_by_type<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
@@ -163,6 +213,12 @@ pub fn load_asset_definition_by_type<S: Into<String>>(
 
 /// Finds an existing asset definition in state by checking against the provided scope spec address,
 /// returning an Option that reflects whether or not the definition exists.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address)
+/// for the requested asset definition.
 pub fn may_load_asset_definition_by_scope_spec<S: Into<String>>(
     storage: &dyn Storage,
     scope_spec_address: S,
@@ -177,7 +233,14 @@ pub fn may_load_asset_definition_by_scope_spec<S: Into<String>>(
         .map_err(ContractError::Std)
 }
 
-/// Finds an existing asset definition by scope spec address, or returns an error if no definition is found.
+/// Finds an existing asset definition by scope spec address, or returns an error if no definition is
+/// found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address)
+/// for the requested asset definition.
 pub fn load_asset_definition_by_scope_spec<S: Into<String>>(
     storage: &dyn Storage,
     scope_spec_address: S,

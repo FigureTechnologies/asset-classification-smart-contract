@@ -18,24 +18,60 @@ use super::{
     asset_verification_result::AssetVerificationResult, verifier_detail::VerifierDetail,
 };
 
+/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly
+/// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
+    /// A unique uuid v4 value that defines the asset contained within the scope.
     pub asset_uuid: String,
+    /// The bech32 address with a prefix of "scope" that uniquely defines the scope.
     pub scope_address: String,
+    /// The name of the type of asset that is being used to classify this scope.
     pub asset_type: String,
+    /// The bech32 address of the account that requested this scope be classified.
     pub requestor_address: Addr,
+    /// The bech32 address of the account that the requestor selected to perform verification of the
+    /// underlying data within the scope.  This account decides whether or not the asset should be
+    /// classified.
     pub verifier_address: Addr,
+    /// Indicates the portion of the classification process at which the scope currently is.
     pub onboarding_status: AssetOnboardingStatus,
+    /// When the onboarding process runs, the verifier detail currently in contract storage for the
+    /// verifier address chosen by the requestor is added to the scope attribute.  This ensures that
+    /// if the verifier values change due to an external update, the original fee structure will be
+    /// honored for the onboarding task placed originally.
     pub latest_verifier_detail: Option<VerifierDetail>,
+    /// The most recent verification is kept on the scope attribute.  If the verifier determines that
+    /// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.
     pub latest_verification_result: Option<AssetVerificationResult>,
+    /// All provided access definitions are stored in the attribute for external consumers, and can
+    /// be externally manipulated by admin routes or verification tasks.
     pub access_definitions: Vec<AccessDefinition>,
 }
 impl AssetScopeAttribute {
     /// Constructs a new instance of AssetScopeAttribute from the input params
     /// Prefer initializing a scope attribute with this function!
     /// It ensures passed addresses are valid, as well as ensuring that the
-    /// asset uuid and scope address match each other
+    /// asset uuid and scope address match each other.  This function automatically sets the
+    /// [latest_verification_result
+    ///
+    /// # Parameters
+    ///
+    /// * `identifier` An asset identifier instance to be converted into the asset uuid and scope
+    /// address that encompass the details of the scope attribute.
+    /// * `asset_type` The name of the type of asset that is being used to classify this scope.
+    /// * `requestor_address` The bech32 address of the account that requested this scope be classified.
+    /// * `verifier_address` The bech32 address of the account that the requestor selected to perform
+    /// verification of the underlying data within the scope.  This account decides whether or not
+    /// the asset should be classified.
+    /// * `onboarding_status` Indicates the portion of the classification process at which the scope
+    /// currently is.  If omitted, this value is populated as [Pending](super::asset_onboarding_status::AssetOnboardingStatus::Pending).
+    /// * `latest_verifier_detail` The initial verifier detail to be placed onto this scope attribute.
+    /// As this function should always be used to create a new scope attribute, this value does not
+    /// need to be optional.
+    /// * `access_routes` The initial access routes for the scope attribute.  These values are
+    /// implicitly assumed to be from the requestor, and are wrapped in an initial [AccessDefinition](super::access_definition::AccessDefinition).
     pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         identifier: &AssetIdentifier,
         asset_type: S1,

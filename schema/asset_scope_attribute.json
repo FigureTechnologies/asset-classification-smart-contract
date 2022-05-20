@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AssetScopeAttribute",
+  "description": "An asset scope attribute contains all relevant information for asset classification, and is serialized directly as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.",
   "type": "object",
   "required": [
     "access_definitions",
@@ -13,18 +14,22 @@
   ],
   "properties": {
     "access_definitions": {
+      "description": "All provided access definitions are stored in the attribute for external consumers, and can be externally manipulated by admin routes or verification tasks.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/AccessDefinition"
       }
     },
     "asset_type": {
+      "description": "The name of the type of asset that is being used to classify this scope.",
       "type": "string"
     },
     "asset_uuid": {
+      "description": "A unique uuid v4 value that defines the asset contained within the scope.",
       "type": "string"
     },
     "latest_verification_result": {
+      "description": "The most recent verification is kept on the scope attribute.  If the verifier determines that the asset cannot be classified, this value may be overwritten later by a subsequent onboard.",
       "anyOf": [
         {
           "$ref": "#/definitions/AssetVerificationResult"
@@ -35,6 +40,7 @@
       ]
     },
     "latest_verifier_detail": {
+      "description": "When the onboarding process runs, the verifier detail currently in contract storage for the verifier address chosen by the requestor is added to the scope attribute.  This ensures that if the verifier values change due to an external update, the original fee structure will be honored for the onboarding task placed originally.",
       "anyOf": [
         {
           "$ref": "#/definitions/VerifierDetail"
@@ -45,20 +51,37 @@
       ]
     },
     "onboarding_status": {
-      "$ref": "#/definitions/AssetOnboardingStatus"
+      "description": "Indicates the portion of the classification process at which the scope currently is.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/AssetOnboardingStatus"
+        }
+      ]
     },
     "requestor_address": {
-      "$ref": "#/definitions/Addr"
+      "description": "The bech32 address of the account that requested this scope be classified.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Addr"
+        }
+      ]
     },
     "scope_address": {
+      "description": "The bech32 address with a prefix of \"scope\" that uniquely defines the scope.",
       "type": "string"
     },
     "verifier_address": {
-      "$ref": "#/definitions/Addr"
+      "description": "The bech32 address of the account that the requestor selected to perform verification of the underlying data within the scope.  This account decides whether or not the asset should be classified.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Addr"
+        }
+      ]
     }
   },
   "definitions": {
     "AccessDefinition": {
+      "description": "Defines a collection of [AccessRoute](super::access_route::AccessRoute) for a specific address.",
       "type": "object",
       "required": [
         "access_routes",
@@ -67,21 +90,28 @@
       ],
       "properties": {
         "access_routes": {
+          "description": "A collection of [AccessRoute](super::access_route::AccessRoute) structs that define methods of obtaining the underlying data for a scope.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/AccessRoute"
           }
         },
         "definition_type": {
-          "$ref": "#/definitions/AccessDefinitionType"
+          "description": "Defines the source that created this definition.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AccessDefinitionType"
+            }
+          ]
         },
         "owner_address": {
+          "description": "The bech32 address of the account that created the underlying [AccessRoutes](super::access_route::AccessRoute).",
           "type": "string"
         }
       }
     },
     "AccessDefinitionType": {
-      "description": "Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses",
+      "description": "Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses.",
       "type": "string",
       "enum": [
         "requestor",
@@ -89,18 +119,21 @@
       ]
     },
     "AccessRoute": {
+      "description": "Defines a method of obtaining underlying asset data for a scope.",
       "type": "object",
       "required": [
         "route"
       ],
       "properties": {
         "name": {
+          "description": "An optional name parameter, allowing the creator of the route to give it a definition or to label it for external resources to identify it.",
           "type": [
             "string",
             "null"
           ]
         },
         "route": {
+          "description": "A path to a resource that can provide underlying asset data for a scope.  Can be anything: http path, grpc, etc.",
           "type": "string"
         }
       }
@@ -110,6 +143,7 @@
       "type": "string"
     },
     "AssetOnboardingStatus": {
+      "description": "An enum that denotes the various states that an [AssetScopeAttribute](super::asset_scope_attribute::AssetScopeAttribute) can have.",
       "type": "string",
       "enum": [
         "pending",
@@ -118,6 +152,7 @@
       ]
     },
     "AssetVerificationResult": {
+      "description": "A simple wrapper for the result of a verification for a scope.",
       "type": "object",
       "required": [
         "message",
@@ -125,9 +160,11 @@
       ],
       "properties": {
         "message": {
+          "description": "A free-form message describing the result of the verification process.",
           "type": "string"
         },
         "success": {
+          "description": "If true, the asset is deemed as successfully classified.  On false, an issue arose with the verifier and/or underlying asset data that caused the scope to not be classified.",
           "type": "boolean"
         }
       }
@@ -137,30 +174,32 @@
       "type": "string"
     },
     "EntityDetail": {
+      "description": "Various fields describing an entity, which could be an organization, account, etc.",
       "type": "object",
       "properties": {
         "description": {
-          "description": "A short description of the entity's purpose",
+          "description": "A short description of the entity's purpose.",
           "type": [
             "string",
             "null"
           ]
         },
         "home_url": {
-          "description": "A web link that can send observers to the organization that the verifier belongs to",
+          "description": "A web link that can send observers to the organization that the entity belongs to.",
           "type": [
             "string",
             "null"
           ]
         },
         "name": {
-          "description": "A short name describing the entity",
+          "description": "A short name describing the entity.",
           "type": [
             "string",
             "null"
           ]
         },
         "source_url": {
+          "description": "A web link that can send observers to the source code of the entity for increased transparency.",
           "type": [
             "string",
             "null"
@@ -169,6 +208,7 @@
       }
     },
     "FeeDestination": {
+      "description": "Defines an external account designated as a recipient of funds during the verification process.",
       "type": "object",
       "required": [
         "address",
@@ -176,10 +216,16 @@
       ],
       "properties": {
         "address": {
+          "description": "The Provenance Blockchain bech32 address belonging to the account.",
           "type": "string"
         },
         "fee_percent": {
-          "$ref": "#/definitions/Decimal"
+          "description": "The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent) of the containing [VerifierDetail](super::verifier_detail::VerifierDetail).  This number should always be between 0 and 1, and indicate a percentage.  Ex: 0.5 indicates 50%. For instance, if the fee total is 100nhash and the verifier detail's fee percent is .5 (50%) and the destination's fee percent is 1 (100%), then that fee destination account would receive 50nhash during the transaction, which is 100% of the 50% designated to fee accounts.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Decimal"
+            }
+          ]
         }
       }
     },
@@ -188,6 +234,7 @@
       "type": "string"
     },
     "VerifierDetail": {
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinition](super::asset_definition::AssetDefinition).",
       "type": "object",
       "required": [
         "address",
@@ -198,9 +245,11 @@
       ],
       "properties": {
         "address": {
+          "description": "The Provenance Blockchain bech32 address of the verifier account.",
           "type": "string"
         },
         "entity_detail": {
+          "description": "An optional set of fields that define the verifier, including its name and home URL location.",
           "anyOf": [
             {
               "$ref": "#/definitions/EntityDetail"
@@ -211,18 +260,30 @@
           ]
         },
         "fee_destinations": {
+          "description": "Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent). All of these destinations' individual [fee_percent](super::fee_destination::FeeDestination::fee_percent) properties should sum to 1.  Less amounts will cause this verifier detail to be considered invalid and rejected in requests that include it.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/FeeDestination"
           }
         },
         "fee_percent": {
-          "$ref": "#/definitions/Decimal"
+          "description": "The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost) to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination). This should be a number from 0 to 1, representing a percentage (ex: 0.35 = 35%).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Decimal"
+            }
+          ]
         },
         "onboarding_cost": {
-          "$ref": "#/definitions/Uint128"
+          "description": "The total amount charged to use the onboarding process this this verifier.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "onboarding_denom": {
+          "description": "The coin denomination used for this onboarding process.",
           "type": "string"
         }
       }

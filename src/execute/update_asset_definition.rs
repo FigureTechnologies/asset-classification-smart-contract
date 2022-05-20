@@ -8,15 +8,36 @@ use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
+/// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+/// for ease of use in the underlying [update_asset_definition](self::update_asset_definition) function.
+///
+/// # Parameters
+///
+/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+/// property that matches an existing asset definition in contract storage.
 #[derive(Clone, PartialEq)]
 pub struct UpdateAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
 }
 impl UpdateAssetDefinitionV1 {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+    /// property that matches an existing asset definition in contract storage.
     pub fn new(asset_definition: AssetDefinition) -> Self {
         UpdateAssetDefinitionV1 { asset_definition }
     }
 
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetDefinitionV1> {
         match msg {
             ExecuteMsg::UpdateAssetDefinition { asset_definition } => Self {
@@ -31,6 +52,19 @@ impl UpdateAssetDefinitionV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+/// message is provided.  Attempts to replace an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+/// property.  If no matching type is present, the request will be rejected.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the update asset definition v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_asset_definition(
     deps: DepsMutC,
     info: MessageInfo,

@@ -7,9 +7,15 @@ use super::{aliases::AssetResult, functions::generate_asset_attribute_name};
 
 /// Helper function to generate an "add attribute" message, as the functionality is re-used across
 /// multiple functions.
+///
+/// # Parameters
+///
+/// * `attribute` The scope attribute to be added to a Provenance Metadata Scope.
+/// * `base_contract_name` The base name of the contract, defined in the [base_contract_name](crate::core::state::StateV2::base_contract_name)
+/// property of the [StateV2](crate::core::state::StateV2) value stored internally in the contract.
 pub fn get_add_attribute_to_scope_msg(
     attribute: &AssetScopeAttribute,
-    contract_base_name: impl Into<String>,
+    base_contract_name: impl Into<String>,
 ) -> AssetResult<CosmosMsg<ProvenanceMsg>> {
     add_json_attribute(
         // Until there's a way to parse a scope address as an Addr, we must use Addr::unchecked.
@@ -17,7 +23,7 @@ pub fn get_add_attribute_to_scope_msg(
         // so it'll just fail later down the line with a less sane error message than if it was
         // being properly checked.
         Addr::unchecked(&attribute.scope_address),
-        generate_asset_attribute_name(&attribute.asset_type, contract_base_name),
+        generate_asset_attribute_name(&attribute.asset_type, base_contract_name),
         attribute,
     )
     .map_err(ContractError::Std)

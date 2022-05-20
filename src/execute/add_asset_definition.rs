@@ -10,12 +10,30 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::{bind_name, NameBinding};
 
+/// A transformation of [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
+/// for ease of use in the underlying [add_asset_definition](self::add_asset_definition) function.
+///
+/// # Parameters
+///
+/// * `asset_definition` The asset definition to add to the internal storage.  Must have a unique
+/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
+/// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
+/// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
+/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
 #[derive(Clone, PartialEq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,
     pub bind_name: Option<bool>,
 }
 impl AddAssetDefinitionV1 {
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<Self> {
         match msg {
             ExecuteMsg::AddAssetDefinition { asset_definition } => Self {
@@ -31,6 +49,20 @@ impl AddAssetDefinitionV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
+/// message is provided.  Attempts to add a new [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// to the contract's internal storage.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+/// details, as well as blockchain information at the time of the transaction.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the add asset definition v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn add_asset_definition(
     deps: DepsMutC,
     env: Env,

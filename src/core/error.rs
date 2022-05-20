@@ -3,153 +3,286 @@ use thiserror::Error;
 
 use super::types::asset_onboarding_status::AssetOnboardingStatus;
 
+/// A massive enum including all the different error scenarios that can be encountered throughout
+/// each process in the contract.
 #[derive(Error, Debug)]
 pub enum ContractError {
-    #[error("{0}")]
-    Std(#[from] StdError),
-
+    ///////////////////////
+    //                   //
+    // INTERCEPTED TYPES //
+    //                   //
+    ///////////////////////
+    /// An interceptor for a [Bech32 Error](bech32::Error).
     #[error("{0}")]
     Bech32Error(#[from] bech32::Error),
 
+    /// An interceptor for a [SemVer Error](semver::Error).
     #[error("Semver parsing error: {0}")]
     SemVer(#[from] semver::Error),
 
-    #[error("duplicate/existing verifier address provided as input")]
-    DuplicateVerifierProvided,
-
-    #[error("Invalid address provided [{address}]: {explanation}")]
-    InvalidAddress {
-        address: String,
-        explanation: String,
-    },
-
-    #[error("Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]")]
-    InvalidContractName {
-        current_contract: String,
-        migration_contract: String,
-    },
-
-    #[error("Current contract version [{current_version}] is higher than provided migration version [{migration_version}]")]
-    InvalidContractVersion {
-        current_version: String,
-        migration_version: String,
-    },
-
+    /// An interceptor for a [Cosmwasm Error](cosmwasm_std::StdError).
     #[error("{0}")]
-    InvalidFunds(String),
+    Std(#[from] StdError),
 
-    #[error("Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}")]
-    InvalidMessageFields {
-        message_type: String,
-        invalid_fields: Vec<String>,
-    },
+    /// An interceptor for a [Uuid Error](uuid::Error).
+    #[error("{0}")]
+    UuidError(#[from] uuid::Error),
 
-    #[error("Invalid message type provided. Expected message type {expected_message_type}")]
-    InvalidMessageType { expected_message_type: String },
-
-    #[error("Resource not found: {explanation}")]
-    NotFound { explanation: String },
-
-    #[error("Unsupported asset type [{asset_type}]")]
-    UnsupportedAssetType { asset_type: String },
-
-    #[error("Unsupported verifier [{verifier_address}] for asset type [{asset_type}]")]
-    UnsupportedVerifier {
-        verifier_address: String,
-        asset_type: String,
-    },
-
+    //////////////////
+    //              //
+    // CUSTOM TYPES //
+    //              //
+    //////////////////
+    /// This error is encountered when an asset is attempted in the onboarding process, but it has
+    /// already been onboarded and classified.
     #[error("Asset {scope_address} has already been fully onboarded")]
-    AssetAlreadyOnboarded { scope_address: String },
+    AssetAlreadyOnboarded {
+        /// The bech32 scope address of the already-onboarded asset.
+        scope_address: String,
+    },
 
+    /// An error emitted when a verifier attempts to run the verification process on an asset that
+    /// does not require it.  This can only occur when a verifier attempts to run a duplicate
+    /// verification on a scope that has already had its verification process completed.
+    #[error("Asset [{scope_address}] was already verified and has status [{status}]")]
+    AssetAlreadyVerified {
+        /// The bech32 address of the scope that has already been verified.
+        scope_address: String,
+        /// The current onboarding status in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
+        /// on the scope that has already been verified.
+        status: AssetOnboardingStatus,
+    },
+
+    /// This error is encountered when the onboarding process cannot locate the scope specified by
+    /// the requestor.
+    #[error("Asset {scope_address} not found")]
+    AssetNotFound {
+        /// The bech32 address of the scope that does not appear to yet exist on the Provenance Blockchain.
+        scope_address: String,
+    },
+
+    /// This error is encountered when the onboarding process is attempted for an asset that has
+    /// already been onboarded as is awaiting a decision from its target verifier.
     #[error(
         "Asset {scope_address} is currently awaiting verification from address {verifier_address}"
     )]
     AssetPendingVerification {
+        /// The bech32 scope address of the asset that has been onboarded.
         scope_address: String,
+        /// The bech32 address of the verifier that will perform verification on the asset.
         verifier_address: String,
     },
 
-    #[error("Asset {scope_address} not found")]
-    AssetNotFound { scope_address: String },
-
-    #[error("Error onboarding asset (type: {asset_type}, address: {scope_address}): {message}")]
-    AssetOnboardingError {
-        asset_type: String,
-        scope_address: String,
-        message: String,
-    },
-
-    #[error("Asset identifier not supplied, please provide either asset_uuid or scope_address")]
-    AssetIdentifierNotSupplied,
-
-    #[error("Asset identifier mismatch, both asset_uuid and scope_address provided, but provided scope_address [{scope_address}] cannot be derived from asset_uuid [{asset_uuid}]")]
-    AssetIdentifierMismatch {
-        asset_uuid: String,
-        scope_address: String,
-    },
-
+    /// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinition::asset_type),
+    /// but the [AssetDefinition](super::types::asset_definition::AssetDefinition) for that type
+    /// has a different Provenance Blockchain Scope Specification bech32 address listed in the
+    /// contract's internal storage.  This is to prevent scopes from being onboarded as a specific
+    /// type unless they meet the correct specification listed on the blockchain.
     #[error("Provided scope [address: {scope_address}, spec_address: {scope_spec_address}] does not conform to the spec configured for the provided asset_type [{asset_type}]. Expected a scope of spec [{expected_scope_spec_address}]")]
     AssetSpecMismatch {
+        /// The type of asset provided by the requestor for onboarding.
         asset_type: String,
+        /// The bech32 scope address of the asset provided during onboarding.
         scope_address: String,
+        /// The bech32 scope specification address listed on the scope provided during onboarding.
         scope_spec_address: String,
+        /// The bech32 scope specification address listed in the [AssetDefinition](super::types::asset_definition::AssetDefinition)
+        /// stored for the given asset type.
         expected_scope_spec_address: String,
     },
 
+    /// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+    /// linked to an [AssetDefinition](super::types::asset_definition::AssetDefinition) that is
+    /// currently not [enabled](super::types::asset_definition::AssetDefinition::enabled)]
     #[error("Asset type {asset_type} is currently disabled")]
-    AssetTypeDisabled { asset_type: String },
+    AssetTypeDisabled {
+        /// The type of asset that is currently disabled.
+        asset_type: String,
+    },
 
+    /// Denotes that an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail)
+    /// has the same [address](super::types::verifier_detail::VerifierDetail::address) property
+    /// as the provided [VerifierDetail](super::types::verifier_detail::VerifierDetail) to be
+    /// added to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+    #[error("duplicate/existing verifier address provided as input")]
+    DuplicateVerifierProvided,
+
+    /// An error that can be used in a circumstance where a named error is not necessary to be
+    /// created.
+    #[error("{msg}")]
+    GenericError {
+        /// A free-form text description of the error that occurred.
+        msg: String,
+    },
+
+    /// Indicates that a bech32 address was provided that does not meet proper specifications for the
+    /// given scenario.
+    #[error("Invalid address provided [{address}]: {explanation}")]
+    InvalidAddress {
+        /// The invalid bech32 address.
+        address: String,
+        /// A message further explaining the issue.
+        explanation: String,
+    },
+
+    /// An error that can occur during a migration that indicates that an incorrect stored contract
+    /// code was attempted to be provided for a migration.
+    #[error("Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]")]
+    InvalidContractName {
+        /// The name of the existing contract.  Should correlate to the value specified in Cargo.toml's name property.
+        current_contract: String,
+        /// The name of the incorrect contract.
+        migration_contract: String,
+    },
+
+    /// An error that can occur during a migration that indicates that the stored contract code that
+    /// was used as the migration target has a version that is lower than the current contract version.
+    /// This error is to prevent downgrading the contract to a previous version, which could remove
+    /// features and cause problems.
+    #[error("Current contract version [{current_version}] is higher than provided migration version [{migration_version}]")]
+    InvalidContractVersion {
+        /// The version of the contract currently active on the Provenance Blockchain.
+        current_version: String,
+        /// The version of the stored code used in the migration.
+        migration_version: String,
+    },
+
+    /// A generic error that specifies that some form of provided or utilized coin was invalid.
+    #[error("{0}")]
+    InvalidFunds(
+        /// Denotes the reason that invalid funds were detected.
+        String,
+    ),
+
+    /// An error emitted by the [validation](crate::validation) that indicates that input values
+    /// were not properly specified (blank strings, invalid numbers, etc).
+    #[error("Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}")]
+    InvalidMessageFields {
+        /// Indicates the type of message that was sent, causing the error.  Will be one of the
+        /// values in the [msg file](super::msg).
+        message_type: String,
+        /// A collection of messages that indicate every issue present in the bad [msg](super::msg).
+        invalid_fields: Vec<String>,
+    },
+
+    /// An error emitted when an internal issue arises, indicating that an incorrect [msg](super::msg)
+    /// was sent to a function receiver.  The functions that use this error are all at first called
+    /// into in the [contract file](crate::contract).
+    #[error("Invalid message type provided. Expected message type {expected_message_type}")]
+    InvalidMessageType {
+        /// Denotes the correct [msg](super::msg) that was expected to be provided.
+        expected_message_type: String,
+    },
+
+    /// An error that indicates that a scope inspected during the onboarding process is missing
+    /// internal values and is not valid for onboarding, like an internal Provenance Blockchain Metadata
+    /// Record.
+    #[error("Invalid scope: {explanation}")]
+    InvalidScope {
+        /// A free-form text description of the reason that the scope is considered invalid.
+        explanation: String,
+    },
+
+    /// An error that occurs when a lookup is attempted for a contract resource but the resource
+    /// does not exist.  For instance, when an [AssetDefinition](super::types::asset_definition::AssetDefinition)
+    /// does not contain a [VerifierDetail](super::types::verifier_detail::VerifierDetail) with a
+    /// specified bech32 [address](super::types::verifier_detail::VerifierDetail::address), this
+    /// error will occur.
+    #[error("Resource not found: {explanation}")]
+    NotFound {
+        /// A message describing the reason that the resource could not be found.
+        explanation: String,
+    },
+
+    /// An error that occurs when a unique key is violated during an attempt to add new data to the
+    /// contract's internal storage.  Reference: [state](super::state).
+    #[error("Existing record found: {explanation}")]
+    RecordAlreadyExists {
+        /// A free-form text description of the reason that the record already exists.
+        explanation: String,
+    },
+
+    /// Occurs when a mandatory data lookup is performed on the contract's internal storage, but
+    /// the required value is not found.  Reference: [state](super::state).
+    #[error("Record not found: {explanation}")]
+    RecordNotFound {
+        /// A free-form text description of the record that could not be found.
+        explanation: String,
+    },
+
+    /// A generic error that occurs when an address attempts to perform an operation in the contract
+    /// that it does not have the permission to.
+    #[error("Unauthorized: {explanation}")]
+    Unauthorized {
+        /// A free-form text description of why the action was not authorized.
+        explanation: String,
+    },
+
+    /// An error emitted when an account attempts to initiate the verification process for a scope
+    /// when its bech32 address is not listed as the verifier for the particular onboarding instance.
     #[error("Unauthorized verifier [{verifier_address}] for scope [{scope_address}], expected verifier [{expected_verifier_address}]")]
-    UnathorizedAssetVerifier {
+    UnauthorizedAssetVerifier {
+        /// The bech32 address of the scope that is awaiting verification.
         scope_address: String,
+        /// The bech32 address of the account that attempted to run verification.
         verifier_address: String,
+        /// The bech32 address of the account that has been requested to run verification.
         expected_verifier_address: String,
     },
 
-    #[error("Asset [{scope_address}] was already verified and has status [{status}]")]
-    AssetAlreadyVerified {
-        scope_address: String,
-        status: AssetOnboardingStatus,
+    /// This error occurs when a [SerializedEnum](super::types::serialized_enum::SerializedEnum) is
+    /// received from a caller that cannot be properly converted to its expected underlying type.
+    #[error("Unexpected enum value received. Got type [{received_type}]. {explanation}")]
+    UnexpectedSerializedEnum {
+        /// The [type](super::types::serialized_enum::SerializedEnum::type) value of the serialized enum
+        /// that could not be properly converted.
+        received_type: String,
+        /// A free-form text description of what went wrong in converting the value to its
+        /// underlying type.
+        explanation: String,
     },
 
-    #[error("Invalid scope: {explanation}")]
-    InvalidScope { explanation: String },
-
-    #[error("Expected only a single asset attribute on scope {scope_address}, but found {attribute_amount}")]
-    InvalidScopeAttribute {
-        scope_address: String,
-        attribute_amount: usize,
-    },
-
-    #[error("Existing record found: {explanation}")]
-    RecordAlreadyExists { explanation: String },
-
-    #[error("Record not found: {explanation}")]
-    RecordNotFound { explanation: String },
-
-    #[error("Unauthorized: {explanation}")]
-    Unauthorized { explanation: String },
-
+    /// An error that can occur when the contract is in an unexpected state and refuses to perform
+    /// an operation.
     #[error("Unexpected state: {explanation}")]
-    UnexpectedState { explanation: String },
+    UnexpectedState {
+        /// A free-form text description of why the operation was rejected.
+        explanation: String,
+    },
 
+    /// A placeholder error that can be used as a stopgap during the implementation of functionality
+    /// to allow the tests to compile and run before the feature is completed.  This error should
+    /// never be used in a release build.
     #[error("Requested functionality is not yet implemented")]
     Unimplemented,
 
-    #[error("{0}")]
-    UuidError(#[from] uuid::Error),
+    /// This error is encountered when an asset type is attempted to be used during the onboarding
+    /// process, but the asset type cannot be found in the contract's internal storage.
+    #[error("Unsupported asset type [{asset_type}]")]
+    UnsupportedAssetType {
+        /// The type of asset that could not be located for onboarrding.
+        asset_type: String,
+    },
 
-    #[error("{msg}")]
-    GenericError { msg: String },
-
-    #[error("Unexpected enum value received. Got type [{received_type}]. {explanation}")]
-    UnexpectedSerializedEnum {
-        received_type: String,
-        explanation: String,
+    /// This error can occur when a target [VerifierDetail](super::types::verifier_detail::VerifierDetail)
+    /// does not exist in an [AssetDefinition](super::types::asset_definition::AssetDefinition) during
+    /// the onboarding process.
+    #[error("Unsupported verifier [{verifier_address}] for asset type [{asset_type}]")]
+    UnsupportedVerifier {
+        /// The bech32 address of the target verifier.
+        verifier_address: String,
+        /// The [asset_type](super::types::asset_definition::AssetDefinition::asset_type) selected
+        /// during onboarding.
+        asset_type: String,
     },
 }
 impl ContractError {
+    /// Constructs an instance of the [GenericError](self::ContractError::GenericError) variant,
+    /// allowing a generic Into<String> implementation.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` The string value to use as the msg field of the generic error.
     pub fn generic<S: Into<String>>(msg: S) -> ContractError {
         ContractError::GenericError { msg: msg.into() }
     }

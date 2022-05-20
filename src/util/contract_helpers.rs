@@ -6,6 +6,13 @@ use cosmwasm_std::MessageInfo;
 
 /// Ensures that only the admin of the contract can call into a route.
 ///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+///
 /// # Examples
 /// ```
 /// use cosmwasm_std::MessageInfo;
@@ -34,6 +41,11 @@ pub fn check_admin_only(deps: &DepsC, info: &MessageInfo) -> AssetResult<()> {
 }
 
 /// Ensures that the info provided to the route does not include any funds.
+///
+/// # Parameters
+///
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
 ///
 /// # Examples
 /// ```

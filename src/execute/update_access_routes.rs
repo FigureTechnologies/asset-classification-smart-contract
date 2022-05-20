@@ -14,6 +14,21 @@ use crate::util::functions::filter_valid_access_routes;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
+/// A transformation of [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)
+/// for ease of use in the underlying [update_access_routes](self::update_access_routes) function.
+///
+/// # Parameters
+///
+/// * `identifier` An instance of the asset identifier enum that helps the contract identify which
+/// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the
+/// sender is referring to in the request.
+/// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by
+/// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or
+/// the sender must be the [contract admin](crate::core::state::StateV2::admin).
+/// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used
+/// instead of the existing routes.  If other existing routes need to be maintained and the updated
+/// is intended to simply add a new route, then the existing routes need to be included in the
+/// request alongside the new route(s).
 #[derive(Clone, PartialEq)]
 pub struct UpdateAccessRoutesV1 {
     pub identifier: AssetIdentifier,
@@ -21,6 +36,20 @@ pub struct UpdateAccessRoutesV1 {
     pub access_routes: Vec<AccessRoute>,
 }
 impl UpdateAccessRoutesV1 {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `identifier` An instance of the asset identifier enum that helps the contract identify which
+    /// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the
+    /// sender is referring to in the request.
+    /// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by
+    /// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or
+    /// the sender must be the [contract admin](crate::core::state::StateV2::admin).
+    /// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used
+    /// instead of the existing routes.  If other existing routes need to be maintained and the updated
+    /// is intended to simply add a new route, then the existing routes need to be included in the
+    /// request alongside the new route(s).
     pub fn new<S: Into<String>>(
         identifier: AssetIdentifier,
         owner_address: S,
@@ -33,6 +62,14 @@ impl UpdateAccessRoutesV1 {
         }
     }
 
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<Self> {
         match msg {
             ExecuteMsg::UpdateAccessRoutes {
@@ -53,6 +90,20 @@ impl UpdateAccessRoutesV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)
+/// message is provided.  Attempts to change the [AccessRoutes](crate::core::types::access_route::AccessRoute)
+/// for an [AccessDefinition](crate::core::types::access_definition::AccessDefinition) on a target
+/// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
+///
+/// # Parameters
+///
+/// * `repository` A helper collection of traits that allows complex lookups of scope values and
+/// emits messages to construct the process of updating access routes as a collection of messages
+/// to produce in the function's result.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the update access routes v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_access_routes<'a, T>(
     repository: T,
     info: MessageInfo,

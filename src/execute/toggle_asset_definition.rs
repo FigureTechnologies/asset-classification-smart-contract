@@ -14,12 +14,35 @@ use crate::{
     },
 };
 
+/// A transformation of [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)
+/// for ease of use in the underlying [toggle_asset_definition](self::toggle_asset_definition) function.
+///
+/// # Parameters
+///
+/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+/// property.
+/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+/// after the toggle takes place.  This value is required to ensure that multiple toggles executed
+/// in succession (either by accident or by various unrelated callers) will only be honored if
+/// the asset definition is in the intended state during the execution of the route.
 #[derive(Clone, PartialEq)]
 pub struct ToggleAssetDefinitionV1 {
     pub asset_type: String,
     pub expected_result: bool,
 }
 impl ToggleAssetDefinitionV1 {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+    /// property.
+    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+    /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
+    /// in succession (either by accident or by various unrelated callers) will only be honored if
+    /// the asset definition is in the intended state during the execution of the route.
     pub fn new<S: Into<String>>(asset_type: S, expected_result: bool) -> Self {
         ToggleAssetDefinitionV1 {
             asset_type: asset_type.into(),
@@ -27,6 +50,14 @@ impl ToggleAssetDefinitionV1 {
         }
     }
 
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<ToggleAssetDefinitionV1> {
         match msg {
             ExecuteMsg::ToggleAssetDefinition {
@@ -41,6 +72,18 @@ impl ToggleAssetDefinitionV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)
+/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+/// property from true to false, or false to true.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the toggle asset definition v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn toggle_asset_definition(
     deps: DepsMutC,
     info: MessageInfo,

@@ -5,17 +5,30 @@ use super::constants::{
 use crate::util::constants::ADDITIONAL_METADATA_KEY;
 use std::collections::HashMap;
 
+/// An enum that contains all different event types that can occur throughout the [contract's](crate::contract)
+/// routes.
 pub enum EventType {
+    /// Occurs when the contract is [instantiated](crate::contract::instantiate) with [instantiate](crate::instantiate::init_contract).
     InstantiateContract,
+    /// Occurs when the contract is [migrated](crate::contract::migrate) with [migrate](crate::contract::migrate).
     MigrateContract,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [onboard an asset](crate::execute::onboard_asset).
     OnboardAsset,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [verify an asset](crate::execute::verify_asset).
     VerifyAsset,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [add an asset definition](crate::execute::add_asset_definition).
     AddAssetDefinition,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [update an asset definition](crate::execute::update_asset_definition).
     UpdateAssetDefinition,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [toggle an asset definition](crate::execute::toggle_asset_definition).
     ToggleAssetDefinition,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [add an asset verifier detail](crate::execute::add_asset_verifier).
     AddAssetVerifier,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [update an asset verifier detail](crate::execute::update_asset_verifier).
     UpdateAssetVerifier,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [update access routes](crate::execute::update_access_routes).
     UpdateAccessRoutes,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [bind a contract alias](crate::execute::bind_contract_alias).
     BindContractAlias,
 }
 #[allow(clippy::from_over_into)]
@@ -38,21 +51,45 @@ impl Into<String> for EventType {
     }
 }
 impl EventType {
+    /// Utilizes the implementation of Into<String> to automatically derive the event name.  This
+    /// allows an invocation without an explicit type declaration.
     pub fn event_name(self) -> String {
         self.into()
     }
 }
 
+/// A helper struct to emit attributes for a [Response](cosmwasm_std::Response).
 pub struct EventAttributes {
+    /// All generated attributes as tuples, which can easily be used to add into a [Response](cosmwasm_std::Response).
     attributes: Vec<(String, String)>,
 }
 impl EventAttributes {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `event_type` All events should denote their type for external consumers of Provenance
+    /// Blockchain Event Stream, so this value is required for any new instance and appends the
+    /// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).
     pub fn new(event_type: EventType) -> Self {
         EventAttributes {
             attributes: vec![(ASSET_EVENT_TYPE_KEY.into(), event_type.into())],
         }
     }
 
+    /// Certain events like [onboard_asset](crate::execute::onboard_asset::onboard_asset) require a
+    /// standard set of event types.  This is a constructor for the struct that includes those
+    /// values to facilitate the process of generating all events.
+    ///
+    /// # Parameters
+    ///
+    /// * `event_type` All events should denote their type for external consumers of Provenance
+    /// Blockchain Event Stream, so this value is required for any new instance and appends the
+    /// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).
+    /// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
+    /// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
     pub fn for_asset_event<T1: Into<String>, T2: Into<String>>(
         event_type: EventType,
         asset_type: T1,
@@ -63,36 +100,81 @@ impl EventAttributes {
             .set_scope_address(scope_address)
     }
 
+    /// Appends an asset type value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
     pub fn set_asset_type<T: Into<String>>(mut self, asset_type: T) -> Self {
         self.attributes
             .push((ASSET_TYPE_KEY.into(), asset_type.into()));
         self
     }
 
+    /// Appends a scope address bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
     pub fn set_scope_address<T: Into<String>>(mut self, scope_address: T) -> Self {
         self.attributes
             .push((ASSET_SCOPE_ADDRESS_KEY.into(), scope_address.into()));
         self
     }
 
+    /// Appends a verifier address bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetail::address)
+    /// for a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) that uses the
+    /// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).
     pub fn set_verifier<T: Into<String>>(mut self, verifier_address: T) -> Self {
         self.attributes
             .push((VERIFIER_ADDRESS_KEY.into(), verifier_address.into()));
         self
     }
 
+    /// Appends a dynamic value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `new_value` Any dynamic value that pertains to the current execution process, using the
+    /// key [NEW_VALUE_KEY](super::constants::NEW_VALUE_KEY).
     pub fn set_new_value<T: ToString>(mut self, new_value: T) -> Self {
         self.attributes
             .push((NEW_VALUE_KEY.into(), new_value.to_string()));
         self
     }
 
+    /// Appends a scope owner bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_owner` A bech32 address that owns a Provenance Metadata Scope referred to by the
+    /// current execution process, appended with the key [SCOPE_OWNER_KEY](super::constants::SCOPE_OWNER_KEY).
     pub fn set_scope_owner<T: ToString>(mut self, scope_owner: T) -> Self {
         self.attributes
             .push((SCOPE_OWNER_KEY.into(), scope_owner.to_string()));
         self
     }
 
+    /// Appends a dynamic set of additional metadata to an existing [EventAttributes](self::EventAttributes)
+    /// and returns the same instance to create a functional chain for further attribute addition.
+    /// Note: If the metadata provided is empty, this key will be skipped to prevent strange value
+    /// displays to external consumers.
+    ///
+    /// # Parameters
+    ///
+    /// * `additional_metadata` An instance of additional metadata to be displayed to any external
+    /// consumers.  Uses the key of [ADDITIONAL_METADATA_KEY](super::constants::ADDITIONAL_METADATA_KEY).
     pub fn set_additional_metadata(
         mut self,
         additional_metadata: &EventAdditionalMetadata,
@@ -119,25 +201,39 @@ impl IntoIterator for EventAttributes {
 }
 
 /// A helper collection that allows underlying processes to specify dynamic key values for processes
-/// that don't necessarily need to specify a large amount of new event keys.
+/// that don't necessarily need to specify a large amount of new event keys.  Emitted values are
+/// aggregated and sorted deterministically, and then displayed using the format:
+/// \[a=1, b=2, c=3, etc\]
 pub struct EventAdditionalMetadata {
+    /// An internal collection of all added metadata.
     fields: HashMap<String, String>,
 }
 impl EventAdditionalMetadata {
+    /// Constructs a new instance of this struct with an empty fields set.
     pub fn new() -> Self {
         Self {
             fields: HashMap::new(),
         }
     }
 
+    /// Returns `true` only if metadata fields have been added with the [add_metadata](self::EventAdditionalMetadata::add_metadata)
+    /// function.
     pub fn has_metadata(&self) -> bool {
         !self.fields.is_empty()
     }
 
+    /// Appends a new key and value pair to the internal fields value.
+    ///
+    /// # Parameters
+    ///
+    /// * `key` The string key that will be displayed before the = sign in the display.
+    /// * `value` The string value that will be displayed after the = sign in the display.
     pub fn add_metadata<S1: Into<String>, S2: Into<String>>(&mut self, key: S1, value: S2) {
         self.fields.insert(key.into(), value.into());
     }
 
+    /// Aggregates and deterministically sorts the internal values, resulting in a display string
+    /// for adding as an event attribute in the format: \[a=1, b=2, c=3, etc\]
     pub fn get_meta_string(&self) -> String {
         let mut map_displays = self
             .fields

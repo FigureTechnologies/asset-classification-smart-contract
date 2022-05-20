@@ -1,8 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
+  "description": "Defines all routes in which the contract can be queried.  These are all handled directly in the [contract file](crate::contract::query).",
   "anyOf": [
     {
+      "description": "This route can be used to retrieve a specific [AssetDefinition](super::types::asset_definition::AssetDefinition) from the contract's internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null response will be returned.",
       "type": "object",
       "required": [
         "query_asset_definition"
@@ -15,7 +17,7 @@
           ],
           "properties": {
             "qualifier": {
-              "description": "Expects an AssetQualifier-compatible SerializedEnum",
+              "description": "Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
               "allOf": [
                 {
                   "$ref": "#/definitions/SerializedEnum"
@@ -28,6 +30,7 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve all [AssetDefinitions](super::types::asset_definition::AssetDefinition) stored in the contract.  This response payload can be quite large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need to be inspected or displayed.  The query asset definition route is much more efficient.",
       "type": "object",
       "required": [
         "query_asset_definitions"
@@ -40,6 +43,7 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
       "type": "object",
       "required": [
         "query_asset_scope_attribute"
@@ -52,7 +56,7 @@
           ],
           "properties": {
             "identifier": {
-              "description": "Expects an AssetIdentifier-compatible SerializedEnum",
+              "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
               "allOf": [
                 {
                   "$ref": "#/definitions/SerializedEnum"
@@ -65,6 +69,7 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve the internal contract state values.  These are core configurations that denote how the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It responds with a [StateV2](super::state::StateV2) struct value.",
       "type": "object",
       "required": [
         "query_state"
@@ -77,6 +82,7 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve the internal contract version information.  It elucidates the current version of the contract that was derived through instantiation or the most recent code migration.  It responds with a [VersionInfoV1](crate::migrate::version_info::VersionInfoV1) struct value.",
       "type": "object",
       "required": [
         "query_version"

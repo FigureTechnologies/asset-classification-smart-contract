@@ -14,6 +14,24 @@ use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
+/// A transformation of [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
+/// for ease of use in the underlying [onboard_asset](self::onboard_asset) function.
+///
+/// # Parameters
+///
+/// * `identifier` An instance of the asset identifier enum that helps the contract identify which
+/// scope that the requestor is referring to in the request.
+/// * `asset_type` [AssetDefinition's](crate::core::types::asset_definition::AssetDefinition) unique
+/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) value.  This
+/// value must correspond to an existing type in the contract's internal storage, or the request
+/// for onboarding will be rejected.
+/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetail::address)
+/// of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) on the [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// referred to by the [asset_type](self::OnboardAssetV1::asset_type) property. If the address does
+/// not refer to any existing verifier detail, the request will be rejected.
+/// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute's](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+/// [AccessDefinition](crate::core::types::access_definition::AccessDefinition) for the [Requestor](crate::core::types::access_definition::AccessDefinitionType::Requestor)
+/// entry.
 #[derive(Clone, Debug, PartialEq)]
 pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
@@ -22,6 +40,14 @@ pub struct OnboardAssetV1 {
     pub access_routes: Vec<AccessRoute>,
 }
 impl OnboardAssetV1 {
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<OnboardAssetV1> {
         match msg {
             ExecuteMsg::OnboardAsset {
@@ -44,6 +70,20 @@ impl OnboardAssetV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
+/// message is provided.  Attempts to verify that a provided Provenance Blockchain Metadata Scope is
+/// properly formed on a basic level, and then adds an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+/// to it as a Provenance Blockchain Attribute.
+///
+/// # Parameters
+///
+/// * `repository` A helper collection of traits that allows complex lookups of scope values and
+/// emits messages to construct the process of onboarding as a collection of messages to produce
+/// in the function's result.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the onboard asset v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn onboard_asset<'a, T>(
     repository: T,
     info: MessageInfo,
@@ -73,7 +113,7 @@ where
             }
         };
 
-    // verify perscribed verifier is present as a verifier in asset definition
+    // verify prescribed verifier is present as a verifier in asset definition
     let verifier_config = match asset_definition
         .verifiers
         .into_iter()

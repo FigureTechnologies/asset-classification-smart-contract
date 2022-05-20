@@ -9,12 +9,33 @@ use crate::util::functions::replace_single_matching_vec_element;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
+/// A transformation of [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
+/// for ease of use in the underlying [update_asset_verifier](self::update_asset_verifier) function.
+///
+/// # Parameters
+///
+/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)
+/// property.
+/// * `verifier` The verifier detail that will be updated.  All values within this provided struct
+/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
 #[derive(Clone, PartialEq)]
 pub struct UpdateAssetVerifierV1 {
     pub asset_type: String,
     pub verifier: VerifierDetail,
 }
 impl UpdateAssetVerifierV1 {
+    /// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+    /// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)
+    /// property.
+    /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
+    /// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
     pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetail) -> Self {
         UpdateAssetVerifierV1 {
             asset_type: asset_type.into(),
@@ -22,6 +43,14 @@ impl UpdateAssetVerifierV1 {
         }
     }
 
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetVerifierV1> {
         match msg {
             ExecuteMsg::UpdateAssetVerifier {
@@ -36,6 +65,18 @@ impl UpdateAssetVerifierV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
+/// message is provided.  Replaces an existing [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
+/// on an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the update asset verifier v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_asset_verifier(
     deps: DepsMutC,
     info: MessageInfo,

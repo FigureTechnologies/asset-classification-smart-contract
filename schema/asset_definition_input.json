@@ -10,24 +10,33 @@
   ],
   "properties": {
     "asset_type": {
+      "description": "The name of the asset associated with the definition.  This value must be unique across all instances persisted in contract storage, or requests to add will be rejected.",
       "type": "string"
     },
     "bind_name": {
+      "description": "Whether or not to bind a Provenance Blockchain Name Module name to this contract when this struct is used to add a new asset type to the contract.  If this value is omitted OR set to true in a request that adds an asset definition, the name derived by combining the [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type` will be bound to the contract.  For example, if the base name is \"pb\" and the asset type is \"myasset,\" the resulting bound name would be \"myasset.pb\".",
       "type": [
         "boolean",
         "null"
       ]
     },
     "enabled": {
+      "description": "Indicates whether or not the asset definition is enabled for use in the contract.  If disabled, requests to onboard assets of this type will be rejected.",
       "type": [
         "boolean",
         "null"
       ]
     },
     "scope_spec_identifier": {
-      "$ref": "#/definitions/SerializedEnum"
+      "description": "A link to a scope specification that defines this asset type.  A serialized version of a [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple different values to be derived as a scope specification address.  Must be unique across all instances persisted in contract storage, or requests to add will be rejected.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/SerializedEnum"
+        }
+      ]
     },
     "verifiers": {
+      "description": "Individual verifier definitions.  There can be many verifiers for a single asset type.  Each value must have a unique `address` property or requests to add will be rejected.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/VerifierDetail"
@@ -40,30 +49,32 @@
       "type": "string"
     },
     "EntityDetail": {
+      "description": "Various fields describing an entity, which could be an organization, account, etc.",
       "type": "object",
       "properties": {
         "description": {
-          "description": "A short description of the entity's purpose",
+          "description": "A short description of the entity's purpose.",
           "type": [
             "string",
             "null"
           ]
         },
         "home_url": {
-          "description": "A web link that can send observers to the organization that the verifier belongs to",
+          "description": "A web link that can send observers to the organization that the entity belongs to.",
           "type": [
             "string",
             "null"
           ]
         },
         "name": {
-          "description": "A short name describing the entity",
+          "description": "A short name describing the entity.",
           "type": [
             "string",
             "null"
           ]
         },
         "source_url": {
+          "description": "A web link that can send observers to the source code of the entity for increased transparency.",
           "type": [
             "string",
             "null"
@@ -72,6 +83,7 @@
       }
     },
     "FeeDestination": {
+      "description": "Defines an external account designated as a recipient of funds during the verification process.",
       "type": "object",
       "required": [
         "address",
@@ -79,10 +91,16 @@
       ],
       "properties": {
         "address": {
+          "description": "The Provenance Blockchain bech32 address belonging to the account.",
           "type": "string"
         },
         "fee_percent": {
-          "$ref": "#/definitions/Decimal"
+          "description": "The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent) of the containing [VerifierDetail](super::verifier_detail::VerifierDetail).  This number should always be between 0 and 1, and indicate a percentage.  Ex: 0.5 indicates 50%. For instance, if the fee total is 100nhash and the verifier detail's fee percent is .5 (50%) and the destination's fee percent is 1 (100%), then that fee destination account would receive 50nhash during the transaction, which is 100% of the 50% designated to fee accounts.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Decimal"
+            }
+          ]
         }
       }
     },
@@ -109,6 +127,7 @@
       "type": "string"
     },
     "VerifierDetail": {
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinition](super::asset_definition::AssetDefinition).",
       "type": "object",
       "required": [
         "address",
@@ -119,9 +138,11 @@
       ],
       "properties": {
         "address": {
+          "description": "The Provenance Blockchain bech32 address of the verifier account.",
           "type": "string"
         },
         "entity_detail": {
+          "description": "An optional set of fields that define the verifier, including its name and home URL location.",
           "anyOf": [
             {
               "$ref": "#/definitions/EntityDetail"
@@ -132,18 +153,30 @@
           ]
         },
         "fee_destinations": {
+          "description": "Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent). All of these destinations' individual [fee_percent](super::fee_destination::FeeDestination::fee_percent) properties should sum to 1.  Less amounts will cause this verifier detail to be considered invalid and rejected in requests that include it.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/FeeDestination"
           }
         },
         "fee_percent": {
-          "$ref": "#/definitions/Decimal"
+          "description": "The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost) to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination). This should be a number from 0 to 1, representing a percentage (ex: 0.35 = 35%).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Decimal"
+            }
+          ]
         },
         "onboarding_cost": {
-          "$ref": "#/definitions/Uint128"
+          "description": "The total amount charged to use the onboarding process this this verifier.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "onboarding_denom": {
+          "description": "The coin denomination used for this onboarding process.",
           "type": "string"
         }
       }

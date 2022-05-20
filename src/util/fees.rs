@@ -10,11 +10,11 @@ use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions
 /// This function distributes funds from the sender address to the targets defined by a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail).
 /// It breaks down all percentages defined in the verifier detail's fee destinations and core onboarding
 /// cost to derive a variable sized vector of destination messages.
-/// Important: The response type is of [ProvenanceMsg](provwasm_std::ProvenanceMsg), which allows 
+/// Important: The response type is of [ProvenanceMsg](provwasm_std::ProvenanceMsg), which allows
 /// these bank send messages to match the type used for contract execution routes.
-/// 
+///
 /// # Parameters
-/// 
+///
 /// * `verifier` The verifier detail from which to extract fee information.
 pub fn calculate_verifier_cost_messages(
     verifier: &VerifierDetail,

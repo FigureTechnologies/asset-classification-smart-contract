@@ -1,8 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AssetIdentifier",
+  "description": "An enum containing interchangeable values that can be used to define an asset (uuid or address).",
   "anyOf": [
     {
+      "description": "A uuid v4 represented by a string.",
       "type": "object",
       "required": [
         "asset_uuid"
@@ -15,6 +17,7 @@
       "additionalProperties": false
     },
     {
+      "description": "A bech32 Provenance Blockchain address that begins with \"scope\".",
       "type": "object",
       "required": [
         "scope_address"

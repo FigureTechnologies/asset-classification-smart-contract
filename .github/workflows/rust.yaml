@@ -16,27 +16,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           default: true
           components: clippy, rustfmt
+
       - name: Cargo Format
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
+
       - name: Cargo Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
+
       - name: Cargo Tarpaulin XML Report
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.19.1'
           out-type: Xml
           args: '--ignore-config --ignore-tests --features enable-test-utils'
+
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@v1
         with:
@@ -44,13 +49,19 @@ jobs:
           path: cobertura.xml
 
   release:
-    name: Release Project Build Files
+    name: Release Project Files
     needs: check
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
 
       - name: Get Release Version
         run: |
@@ -68,32 +79,6 @@ jobs:
           fi
           echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
 
-      - name: Optimize
-        # No need to create the release WASM if the version hasn't changed and no new release will be made
-        if: ${{ !env.TAG_EXISTS }}
-        run: |
-          # Build the WASM output in the artifacts directory
-          make optimize
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        # Only upload a new release if the attempted tag does not yet exist
-        if: ${{ !env.TAG_EXISTS }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          name: ${{ env.RELEASE_VERSION }}
-          tag_name: ${{ env.RELEASE_VERSION }}
-          files: |
-            artifacts/asset_classification_smart_contract.wasm
-            artifacts/checksums.txt
-
-      - name: Generate Rust Docs
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --no-deps
-
       - name: Stage Cargo Docs
         if: ${{ !env.TAG_EXISTS }}
         run: |
@@ -110,4 +95,26 @@ jobs:
         with:
           branch: gh-pages
           folder: pages-files
+
+      - name: Optimize
+        # No need to create the release WASM if the version hasn't changed and no new release will be made
+        if: ${{ !env.TAG_EXISTS }}
+        run: |
+          # Build the WASM output in the artifacts directory
+          make optimize
+
+      - name: Release WASM
+        uses: softprops/action-gh-release@v1
+        # Only upload a new release if the attempted tag does not yet exist
+        if: ${{ !env.TAG_EXISTS }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ env.RELEASE_VERSION }}
+          files: |
+            artifacts/asset_classification_smart_contract.wasm
+            artifacts/checksums.txt
+
+
 

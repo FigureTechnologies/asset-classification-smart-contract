@@ -98,7 +98,7 @@ jobs:
           echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> target/doc/index.html
           # Create doc deployment location
           mkdir ./pages-files
-          # Move documentation to
+          # Move documentation to its configured location in settings
           cp -r target/doc ./pages-files/docs
 
       - name: Deploy to GitHub Pages

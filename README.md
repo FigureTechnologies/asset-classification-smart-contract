@@ -16,6 +16,10 @@ to verify the contents of the asset by granting permission to them.
 [loc-badge]: https://tokei.rs/b1/github/provenance-io/asset-classification-smart-contract
 [loc-report]: https://github.com/provenance-io/asset-classification-smart-contract
 
+## Documentation
+
+For more information on how the contract is composed, check out the code [documentation](https://provenance-io.github.io/asset-classification-smart-contract/).
+
 ## Build
 
 To build the smart contract, simply run the following:

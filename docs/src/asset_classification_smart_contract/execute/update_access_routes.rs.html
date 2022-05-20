@@ -556,6 +556,57 @@
 <span id="551">551</span>
 <span id="552">552</span>
 <span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_read_v2</span>;
@@ -572,6 +623,21 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)</span>
+<span class="doccomment">/// for ease of use in the underlying [update_access_routes](self::update_access_routes) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `identifier` An instance of the asset identifier enum that helps the contract identify which</span>
+<span class="doccomment">/// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the</span>
+<span class="doccomment">/// sender is referring to in the request.</span>
+<span class="doccomment">/// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by</span>
+<span class="doccomment">/// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or</span>
+<span class="doccomment">/// the sender must be the [contract admin](crate::core::state::StateV2::admin).</span>
+<span class="doccomment">/// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used</span>
+<span class="doccomment">/// instead of the existing routes.  If other existing routes need to be maintained and the updated</span>
+<span class="doccomment">/// is intended to simply add a new route, then the existing routes need to be included in the</span>
+<span class="doccomment">/// request alongside the new route(s).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAccessRoutesV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
@@ -579,6 +645,20 @@
     <span class="kw">pub</span> <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">UpdateAccessRoutesV1</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `identifier` An instance of the asset identifier enum that helps the contract identify which</span>
+    <span class="doccomment">/// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the</span>
+    <span class="doccomment">/// sender is referring to in the request.</span>
+    <span class="doccomment">/// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by</span>
+    <span class="doccomment">/// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or</span>
+    <span class="doccomment">/// the sender must be the [contract admin](crate::core::state::StateV2::admin).</span>
+    <span class="doccomment">/// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used</span>
+    <span class="doccomment">/// instead of the existing routes.  If other existing routes need to be maintained and the updated</span>
+    <span class="doccomment">/// is intended to simply add a new route, then the existing routes need to be included in the</span>
+    <span class="doccomment">/// request alongside the new route(s).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
         <span class="ident">owner_address</span>: <span class="ident">S</span>,
@@ -591,6 +671,14 @@
         }
     }
 
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::UpdateAccessRoutes</span> {
@@ -611,6 +699,20 @@
     }
 }
 
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)</span>
+<span class="doccomment">/// message is provided.  Attempts to change the [AccessRoutes](crate::core::types::access_route::AccessRoute)</span>
+<span class="doccomment">/// for an [AccessDefinition](crate::core::types::access_definition::AccessDefinition) on a target</span>
+<span class="doccomment">/// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `repository` A helper collection of traits that allows complex lookups of scope values and</span>
+<span class="doccomment">/// emits messages to construct the process of updating access routes as a collection of messages</span>
+<span class="doccomment">/// to produce in the function&#39;s result.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the update access routes v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_access_routes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">repository</span>: <span class="ident">T</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,

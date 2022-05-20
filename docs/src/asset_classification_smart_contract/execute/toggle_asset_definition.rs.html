@@ -300,6 +300,49 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
@@ -316,12 +359,35 @@
     },
 };
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)</span>
+<span class="doccomment">/// for ease of use in the underlying [toggle_asset_definition](self::toggle_asset_definition) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
+<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// property.</span>
+<span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+<span class="doccomment">/// after the toggle takes place.  This value is required to ensure that multiple toggles executed</span>
+<span class="doccomment">/// in succession (either by accident or by various unrelated callers) will only be honored if</span>
+<span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToggleAssetDefinitionV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">expected_result</span>: <span class="ident">bool</span>,
 }
 <span class="kw">impl</span> <span class="ident">ToggleAssetDefinitionV1</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
+    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+    <span class="doccomment">/// property.</span>
+    <span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+    <span class="doccomment">/// after the toggle takes place.  This value is required to ensure that multiple toggles executed</span>
+    <span class="doccomment">/// in succession (either by accident or by various unrelated callers) will only be honored if</span>
+    <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_type</span>: <span class="ident">S</span>, <span class="ident">expected_result</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ToggleAssetDefinitionV1</span> {
             <span class="ident">asset_type</span>: <span class="ident">asset_type</span>.<span class="ident">into</span>(),
@@ -329,6 +395,14 @@
         }
     }
 
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">ToggleAssetDefinitionV1</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::ToggleAssetDefinition</span> {
@@ -343,6 +417,18 @@
     }
 }
 
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)</span>
+<span class="doccomment">/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+<span class="doccomment">/// property from true to false, or false to true.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the toggle asset definition v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">toggle_asset_definition</span>(
     <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,

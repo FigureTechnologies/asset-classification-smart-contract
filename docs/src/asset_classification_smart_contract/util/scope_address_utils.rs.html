@@ -321,6 +321,41 @@
 <span id="316">316</span>
 <span id="317">317</span>
 <span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryInto</span>, <span class="ident">str::FromStr</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">core::error::ContractError</span>, <span class="ident">util::aliases::AssetResult</span>};
@@ -330,26 +365,35 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::traits::ResultExtensions</span>;
 
-<span class="doccomment">/// Standard scope key prefix from the Provenance libs</span>
+<span class="comment">// Standard scope key prefix from the Provenance libs</span>
 <span class="kw">const</span> <span class="ident">KEY_SCOPE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x00</span>;
-<span class="doccomment">/// Standard scope spec key prefix from the Provenance libs</span>
+<span class="comment">// Standard scope spec key prefix from the Provenance libs</span>
 <span class="kw">const</span> <span class="ident">KEY_SCOPE_SPEC</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x04</span>;
-<span class="doccomment">/// Standard bech32 encoding for mainnet addresses simply begins the with the string &quot;pb&quot;</span>
+<span class="comment">// Standard bech32 encoding for mainnet addresses simply begins the with the string &quot;pb&quot;</span>
 <span class="kw">const</span> <span class="ident">MAINNET_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;pb&quot;</span>;
-<span class="doccomment">/// Standard bech32 encoding for testnet addresses simply begins with the string &quot;tp&quot;</span>
+<span class="comment">// Standard bech32 encoding for testnet addresses simply begins with the string &quot;tp&quot;</span>
 <span class="kw">const</span> <span class="ident">TESTNET_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;tp&quot;</span>;
-<span class="doccomment">/// Standard bech32 encoding for scope addresses simply begins with the string &quot;scope&quot;</span>
+<span class="comment">// Standard bech32 encoding for scope addresses simply begins with the string &quot;scope&quot;</span>
 <span class="kw">const</span> <span class="ident">SCOPE_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;scope&quot;</span>;
-<span class="doccomment">/// Standard bech32 encoding for scope spec addresses simply begins with the string &quot;scopespec&quot;</span>
+<span class="comment">// Standard bech32 encoding for scope spec addresses simply begins with the string &quot;scopespec&quot;</span>
 <span class="kw">const</span> <span class="ident">SCOPE_SPEC_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;scopespec&quot;</span>;
+<span class="comment">// All valid hrps for use in the underlying functions</span>
 <span class="kw">const</span> <span class="ident">VALID_HRPS</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="ident">MAINNET_HRP</span>, <span class="ident">TESTNET_HRP</span>, <span class="ident">SCOPE_HRP</span>, <span class="ident">SCOPE_SPEC_HRP</span>];
 
 <span class="doccomment">/// Converts a string containing an asset uuid into a scope address.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `asset_uuid` A valid uuid v4 string.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">asset_uuid_to_scope_address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_uuid</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">uuid_to_address</span>(<span class="ident">KEY_SCOPE</span>, <span class="ident">SCOPE_HRP</span>, <span class="ident">asset_uuid</span>)
 }
 
 <span class="doccomment">/// Converts a string containing a scope spec uuid into a scope spec address.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `scope_spec_uuid` A valid bech32 address with an hrp of &quot;scopespec&quot;.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_spec_uuid_to_scope_spec_address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">scope_spec_uuid</span>: <span class="ident">S</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -358,19 +402,31 @@
 
 <span class="doccomment">/// Takes a string representation of a scope address and converts it into an asset uuid string.</span>
 <span class="doccomment">/// Note: This conversion can also be called scope_address_to_scope_uuid because asset uuid always</span>
-<span class="doccomment">/// matches the scope uuid, as a convention</span>
+<span class="doccomment">/// matches the scope uuid, as a convention.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `scope_address` A valid bech32 address with an hrp of &quot;scope&quot;.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_address_to_asset_uuid</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">scope_address</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">address_to_uuid</span>(<span class="ident">scope_address</span>, <span class="ident">SCOPE_HRP</span>)
 }
 
 <span class="doccomment">/// Takes a string representation of a scope spec address and converts it to the scope spec&#39;s uuid.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `scope_spec_address` A valid bech32 address with an hrp of &quot;scopespec&quot;.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_spec_address_to_scope_spec_uuid</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">address_to_uuid</span>(<span class="ident">scope_spec_address</span>, <span class="ident">SCOPE_SPEC_HRP</span>)
 }
 
-<span class="doccomment">/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr</span>
+<span class="doccomment">/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `address` A valid bech32 address with any provenance blockchain hrp specified in this contract.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bech32_string_to_addr</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">address</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Addr</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">address_string</span> <span class="op">=</span> <span class="ident">address</span>.<span class="ident">into</span>();
     <span class="comment">// First, try to decode the string as Bech32.  If this fails, then the input is invalid and should not be converted to an Addr</span>
@@ -389,6 +445,14 @@
 
 <span class="doccomment">/// Takes a string representation of a UUID and converts it to a scope address by appending its</span>
 <span class="doccomment">/// big-endian bytes to a byte slice that also contains a prefix key (as defined in the provenance source).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `key_byte` The first byte of the result encoding, indicating the type of bech32 address to</span>
+<span class="doccomment">/// generate.  This value, encoded into the bech32 value, should be a standard value accepted by</span>
+<span class="doccomment">/// the Provenance Blockchain.</span>
+<span class="doccomment">/// * `hrp` The human readable prefix of the bech32 address to generate.</span>
+<span class="doccomment">/// * `uuid` A valid uuid v4 string.</span>
 <span class="kw">fn</span> <span class="ident">uuid_to_address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">key_byte</span>: <span class="ident">u8</span>, <span class="ident">hrp</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">uuid</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">key_byte</span>];
     <span class="ident">buffer</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Uuid::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">uuid</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">as_bytes</span>().<span class="ident">to_vec</span>());
@@ -397,6 +461,12 @@
 
 <span class="doccomment">/// Takes a valid bech32 address with the acknowledged prefix and attempts to convert it to a uuid.</span>
 <span class="doccomment">/// This should only be used for addresses that are derived from uuid sources, like scope and scope spec.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `address` A valid Provenance Blockchain bech32 address.</span>
+<span class="doccomment">/// * `expected_hrp` The hrp expected to be at the front of the provided address.  This ensures that</span>
+<span class="doccomment">/// the correct operation is being performed and the code does not have any bugs.</span>
 <span class="kw">fn</span> <span class="ident">address_to_uuid</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">address</span>: <span class="ident">S1</span>,
     <span class="ident">expected_hrp</span>: <span class="ident">S2</span>,
@@ -409,7 +479,7 @@
     <span class="kw">if</span> <span class="ident">hrp</span> <span class="op">!</span><span class="op">=</span> <span class="ident">expected_hrp_string</span> {
         <span class="kw">return</span> <span class="ident">ContractError::InvalidAddress</span> {
             <span class="ident">address</span>: <span class="ident">target_address</span>,
-             <span class="ident">explanation</span>: <span class="macro">format!</span>(<span class="string">&quot;expected the prefix [{}] to be included in the specified address, but the prefix was [{}]&quot;</span>, <span class="ident">expected_hrp_string</span>, <span class="ident">hrp</span>) 
+             <span class="ident">explanation</span>: <span class="macro">format!</span>(<span class="string">&quot;expected the prefix [{}] to be included in the specified address, but the prefix was [{}]&quot;</span>, <span class="ident">expected_hrp_string</span>, <span class="ident">hrp</span>)
         }
         .<span class="ident">to_err</span>();
     }

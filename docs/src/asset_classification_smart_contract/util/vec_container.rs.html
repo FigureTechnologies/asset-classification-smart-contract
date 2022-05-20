@@ -143,51 +143,73 @@
 <span id="138">138</span>
 <span id="139">139</span>
 <span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::RefCell</span>, <span class="ident">ops::Deref</span>};
 
 <span class="doccomment">/// Contains a RefCell that manages a Vec of Clone-implementing values.</span>
 <span class="doccomment">/// Allows for the internal values to be mutated without declaring</span>
 <span class="doccomment">/// the value as mutable.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VecContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// The inner values of the container that are manipulated by the various implementation</span>
+    <span class="doccomment">/// functions.</span>
     <span class="kw">pub</span> <span class="ident">values</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">VecContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Construct a new instance of a container, starting with an empty vector</span>
+    <span class="doccomment">/// Construct a new instance of a container, starting with an empty vector.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">values</span>: <span class="ident">RefCell::new</span>(<span class="macro">vec!</span>[]),
         }
     }
 
-    <span class="doccomment">/// Pushes a single owned item to the contained Vec</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">T</span>) {
-        <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">msg</span>);
+    <span class="doccomment">/// Pushes a single owned item to the contained Vec.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `value` A value append to the end of the inner Vec.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) {
+        <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">value</span>);
     }
 
-    <span class="doccomment">/// Appends an owned, mutable instance of a Vec containing instances of T to the contained Vec</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">msgs</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow_mut</span>().<span class="ident">append</span>(<span class="ident">msgs</span>)
+    <span class="doccomment">/// Appends an owned, mutable instance of a Vec containing instances of T to the contained Vec.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `values` A mutable reference to an external vector of values to be added to the inner Vec.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">values</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) {
+        <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow_mut</span>().<span class="ident">append</span>(<span class="ident">values</span>)
     }
 
+    <span class="doccomment">/// Removes all values from the inner Vec.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow_mut</span>().<span class="ident">clear</span>();
     }
 
     <span class="doccomment">/// Fetches the actual value inside the RefCell, moving the internalized value</span>
-    <span class="doccomment">/// and disposing of this container in the process</span>
+    <span class="doccomment">/// and disposing of this container in the process.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">into_inner</span>()
     }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">VecContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Fetches a cloned set of the owned values. Useful for early fetches without disposing of the container</span>
+    <span class="doccomment">/// Fetches a cloned set of the owned values. Useful for early fetches without disposing of the container.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cloned</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow</span>().<span class="ident">deref</span>().<span class="ident">to_owned</span>().<span class="ident">to_vec</span>()
     }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Copy</span><span class="op">&gt;</span> <span class="ident">VecContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Fetches a copied set of the owned values.  Copying is more efficient than cloning, so this function should</span>
-    <span class="doccomment">/// be preferred over get_cloned when an object contained in the VecContainer implements both</span>
+    <span class="doccomment">/// be preferred over get_cloned when an object contained in the VecContainer implements both.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_copied</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">values</span>.<span class="ident">borrow</span>().<span class="ident">deref</span>().<span class="ident">to_owned</span>()
     }

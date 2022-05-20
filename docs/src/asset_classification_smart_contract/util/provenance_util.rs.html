@@ -27,6 +27,12 @@
 <span id="22">22</span>
 <span id="23">23</span>
 <span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Addr</span>, <span class="ident">CosmosMsg</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">add_json_attribute</span>, <span class="ident">ProvenanceMsg</span>};
 
@@ -36,9 +42,15 @@
 
 <span class="doccomment">/// Helper function to generate an &quot;add attribute&quot; message, as the functionality is re-used across</span>
 <span class="doccomment">/// multiple functions.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `attribute` The scope attribute to be added to a Provenance Metadata Scope.</span>
+<span class="doccomment">/// * `base_contract_name` The base name of the contract, defined in the [base_contract_name](crate::core::state::StateV2::base_contract_name)</span>
+<span class="doccomment">/// property of the [StateV2](crate::core::state::StateV2) value stored internally in the contract.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_add_attribute_to_scope_msg</span>(
     <span class="ident">attribute</span>: <span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span>,
-    <span class="ident">contract_base_name</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">base_contract_name</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="ident">add_json_attribute</span>(
         <span class="comment">// Until there&#39;s a way to parse a scope address as an Addr, we must use Addr::unchecked.</span>
@@ -46,7 +58,7 @@
         <span class="comment">// so it&#39;ll just fail later down the line with a less sane error message than if it was</span>
         <span class="comment">// being properly checked.</span>
         <span class="ident">Addr::unchecked</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>),
-        <span class="ident">generate_asset_attribute_name</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">asset_type</span>, <span class="ident">contract_base_name</span>),
+        <span class="ident">generate_asset_attribute_name</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">asset_type</span>, <span class="ident">base_contract_name</span>),
         <span class="ident">attribute</span>,
     )
     .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)

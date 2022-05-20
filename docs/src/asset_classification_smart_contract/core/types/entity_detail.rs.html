@@ -33,22 +33,40 @@
 <span id="28">28</span>
 <span id="29">29</span>
 <span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
+<span class="doccomment">/// Various fields describing an entity, which could be an organization, account, etc.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EntityDetail</span> {
-    <span class="doccomment">/// A short name describing the entity</span>
+    <span class="doccomment">/// A short name describing the entity.</span>
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// A short description of the entity&#39;s purpose</span>
+    <span class="doccomment">/// A short description of the entity&#39;s purpose.</span>
     <span class="kw">pub</span> <span class="ident">description</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// A web link that can send observers to the organization that the verifier belongs to</span>
+    <span class="doccomment">/// A web link that can send observers to the organization that the entity belongs to.</span>
     <span class="kw">pub</span> <span class="ident">home_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="comment">// A web link that can send observers to the source code of the verifier, for increased transparency</span>
+    <span class="doccomment">/// A web link that can send observers to the source code of the entity for increased transparency.</span>
     <span class="kw">pub</span> <span class="ident">source_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">EntityDetail</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `name` A short name describing the entity.</span>
+    <span class="doccomment">/// * `description` A short description of the entity&#39;s purpose.</span>
+    <span class="doccomment">/// * `home_url` A web link that can send observers to the organization that the entity belongs to.</span>
+    <span class="doccomment">/// * `source_url` A web link that can send observers to the source code of the entity for increased transparency.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S3</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S4</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">name</span>: <span class="ident">S1</span>,
         <span class="ident">description</span>: <span class="ident">S2</span>,

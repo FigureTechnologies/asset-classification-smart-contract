@@ -276,6 +276,45 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
@@ -292,13 +331,23 @@
 <span class="kw">const</span> <span class="ident">UUID_NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;uuid&quot;</span>;
 <span class="kw">const</span> <span class="ident">ADDRESS_NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;address&quot;</span>;
 
+<span class="doccomment">/// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ScopeSpecIdentifier</span> {
+    <span class="doccomment">/// A uuid v4 represented by a string.</span>
     <span class="ident">Uuid</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// A bech32 Provenance Blockchain address with an hrp of &quot;scopespec&quot;.</span>
     <span class="ident">Address</span>(<span class="ident">String</span>),
 }
 <span class="kw">impl</span> <span class="ident">ScopeSpecIdentifier</span> {
+    <span class="doccomment">/// Converts a [SerializedEnum](super::serialized_enum::SerializedEnum) instance to one of the</span>
+    <span class="doccomment">/// variants of this enum, if possible.  On a failure, a [ContractError::UnexpectedSerializedEnum](crate::core::error::ContractError::UnexpectedSerializedEnum)</span>
+    <span class="doccomment">/// error will be produced, indicating the unexpected value.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `e` The serialized enum instance for which to attempt conversion.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_serialized_enum</span>(<span class="ident">e</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">r#type</span>.<span class="ident">as_str</span>() {
             <span class="ident">UUID_NAME</span> =&gt; <span class="ident"><span class="self">Self</span>::uuid</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">value</span>).<span class="ident">to_ok</span>(),
@@ -313,6 +362,7 @@
         }
     }
 
+    <span class="doccomment">/// Converts the specific variant of this enum to a [SerializedEnum](super::serialized_enum::SerializedEnum).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_serialized_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SerializedEnum</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::Uuid</span>(<span class="ident">uuid</span>) =&gt; <span class="ident">SerializedEnum::new</span>(<span class="ident">UUID_NAME</span>, <span class="ident">uuid</span>),
@@ -320,14 +370,28 @@
         }
     }
 
+    <span class="doccomment">/// Creates a new instance of this enum as the [Uuid](self::ScopeSpecIdentifier::Uuid) variant.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `scope_spec_uuid` A uuid v4 string instance representing a scope specification.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uuid</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">scope_spec_uuid</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::Uuid</span>(<span class="ident">scope_spec_uuid</span>.<span class="ident">into</span>())
     }
 
+    <span class="doccomment">/// Creates a new instance of this enum as the [Address](self::ScopeSpecIdentifier::Address) variant.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `scope_spec_address` A bech32 address instance with an hrp of &quot;scopespec&quot;.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">scope_spec_address</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::Address</span>(<span class="ident">scope_spec_address</span>.<span class="ident">into</span>())
     }
 
+    <span class="doccomment">/// Fetches the scope spec uuid value from this enum.  The [Uuid](self::ScopeSpecIdentifier::Uuid) variant</span>
+    <span class="doccomment">/// can directly provide the value, but the [Address](self::ScopeSpecIdentifier::Address) variant</span>
+    <span class="doccomment">/// needs to utilize the [scope_spec_address_to_scope_spec_uuid](crate::util::scope_address_utils::scope_spec_address_to_scope_spec_uuid)</span>
+    <span class="doccomment">/// function to derive the value.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_scope_spec_uuid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::Uuid</span>(<span class="ident">scope_spec_uuid</span>) =&gt; (<span class="kw-2">*</span><span class="ident">scope_spec_uuid</span>).<span class="ident">clone</span>().<span class="ident">to_ok</span>(),
@@ -337,6 +401,10 @@
         }
     }
 
+    <span class="doccomment">/// Fetches the scope spec address value from this enum.  The [Address](self::ScopeSpecIdentifier::Address) variant</span>
+    <span class="doccomment">/// can directly provide the value, but the [Uuid](self::ScopeSpecIdentifier::Uuid) variant</span>
+    <span class="doccomment">/// needs to utilize the [scope_spec_uuid_to_scope_spec_address](crate::util::scope_address_utils::scope_spec_uuid_to_scope_spec_address)</span>
+    <span class="doccomment">/// function to derive the value.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_scope_spec_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::Uuid</span>(<span class="ident">scope_spec_uuid</span>) =&gt; <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="ident">scope_spec_uuid</span>),
@@ -344,7 +412,7 @@
         }
     }
 
-    <span class="doccomment">/// Takes the value provided and dervies both values from it, where necessary,</span>
+    <span class="doccomment">/// Takes the value provided and derives both values from it, where necessary,</span>
     <span class="doccomment">/// ensuring that both scope_spec_uuid and scope_spec_address are available to the user</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_identifiers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">ScopeSpecIdentifiers</span><span class="op">&gt;</span> {
         <span class="ident">ScopeSpecIdentifiers::new</span>(<span class="self">self</span>.<span class="ident">get_scope_spec_uuid</span>()<span class="question-mark">?</span>, <span class="self">self</span>.<span class="ident">get_scope_spec_address</span>()<span class="question-mark">?</span>)
@@ -352,11 +420,21 @@
     }
 }
 
+<span class="doccomment">/// A simple named collection of both the scope spec uuid and the scope spec address, derived from</span>
+<span class="doccomment">/// using bech32 conversion utilities on a variant of [ScopeSpecIdentifier](self::ScopeSpecIdentifier).</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ScopeSpecIdentifiers</span> {
+    <span class="doccomment">/// A uuid v4 value.</span>
     <span class="kw">pub</span> <span class="ident">scope_spec_uuid</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// A bech32 address value with an hrp of &quot;scopespec&quot;.</span>
     <span class="kw">pub</span> <span class="ident">scope_spec_address</span>: <span class="ident">String</span>,
 }
 <span class="kw">impl</span> <span class="ident">ScopeSpecIdentifiers</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct with the provided values directly propagated.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `scope_spec_uuid` A uuid v4 value.</span>
+    <span class="doccomment">/// * `scope_spec_address` A bech32 address value with an hrp of &quot;scopespec&quot;.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>, <span class="ident">S2</span><span class="op">&gt;</span>(<span class="ident">scope_spec_uuid</span>: <span class="ident">S1</span>, <span class="ident">scope_spec_address</span>: <span class="ident">S2</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,

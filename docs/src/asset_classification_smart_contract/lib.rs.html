@@ -17,7 +17,22 @@
 <span id="12">12</span>
 <span id="13">13</span>
 <span id="14">14</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::all</span>)]</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Asset Classification Smart Contract</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This contract uses [Cosmwasm](https://github.com/CosmWasm/cosmwasm)&#39;s provided architecture in</span>
+<span class="doccomment">//! conjunction with [Provwasm](#https://github.com/provenance-io/provwasm) to create a wasm smart</span>
+<span class="doccomment">//! contract that can be deployed to and interact with the Provenance Blockchain.</span>
+
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::all</span>)]</span>
+<span class="doccomment">/// The entrypoint for all external commands sent to the compiled wasm.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">contract</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">core</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">execute</span>;
@@ -30,6 +45,7 @@
 
 <span class="comment">// Conditional modules</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-test-utils&quot;</span>)]</span>
+<span class="doccomment">/// A special module only used for facilitating test code, not included in the compiled wasm.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">testutil</span>;
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>

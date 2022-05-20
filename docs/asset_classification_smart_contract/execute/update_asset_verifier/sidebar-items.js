@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["update_asset_verifier",""]],"struct":[["UpdateAssetVerifierV1",""]]});
+initSidebarItems({"fn":[["update_asset_verifier","The function used by execute when an ExecuteMsg::UpdateAssetVerifier message is provided.  Replaces an existing VerifierDetail on an existing AssetDefinition."]],"struct":[["UpdateAssetVerifierV1","A transformation of ExecuteMsg::UpdateAssetVerifier for ease of use in the underlying update_asset_verifier function."]]});

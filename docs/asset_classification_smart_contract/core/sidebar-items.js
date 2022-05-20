@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["error",""],["msg",""],["state",""],["types",""]]});
+initSidebarItems({"mod":[["error","Contains each error type emitted by the contract."],["msg","Contains each message taken as a request by the contract."],["state","Contains the core internal storage functionalities for the contract."],["types","Contains all structs used to drive core functionality throughout the contract."]]});

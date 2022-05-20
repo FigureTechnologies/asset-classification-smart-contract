@@ -336,6 +336,42 @@
 <span id="331">331</span>
 <span id="332">332</span>
 <span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::Addr</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -356,24 +392,60 @@
     <span class="ident">asset_verification_result::AssetVerificationResult</span>, <span class="ident">verifier_detail::VerifierDetail</span>,
 };
 
+<span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly</span>
+<span class="doccomment">/// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetScopeAttribute</span> {
+    <span class="doccomment">/// A unique uuid v4 value that defines the asset contained within the scope.</span>
     <span class="kw">pub</span> <span class="ident">asset_uuid</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The bech32 address with a prefix of &quot;scope&quot; that uniquely defines the scope.</span>
     <span class="kw">pub</span> <span class="ident">scope_address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The name of the type of asset that is being used to classify this scope.</span>
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The bech32 address of the account that requested this scope be classified.</span>
     <span class="kw">pub</span> <span class="ident">requestor_address</span>: <span class="ident">Addr</span>,
+    <span class="doccomment">/// The bech32 address of the account that the requestor selected to perform verification of the</span>
+    <span class="doccomment">/// underlying data within the scope.  This account decides whether or not the asset should be</span>
+    <span class="doccomment">/// classified.</span>
     <span class="kw">pub</span> <span class="ident">verifier_address</span>: <span class="ident">Addr</span>,
+    <span class="doccomment">/// Indicates the portion of the classification process at which the scope currently is.</span>
     <span class="kw">pub</span> <span class="ident">onboarding_status</span>: <span class="ident">AssetOnboardingStatus</span>,
+    <span class="doccomment">/// When the onboarding process runs, the verifier detail currently in contract storage for the</span>
+    <span class="doccomment">/// verifier address chosen by the requestor is added to the scope attribute.  This ensures that</span>
+    <span class="doccomment">/// if the verifier values change due to an external update, the original fee structure will be</span>
+    <span class="doccomment">/// honored for the onboarding task placed originally.</span>
     <span class="kw">pub</span> <span class="ident">latest_verifier_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VerifierDetail</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The most recent verification is kept on the scope attribute.  If the verifier determines that</span>
+    <span class="doccomment">/// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.</span>
     <span class="kw">pub</span> <span class="ident">latest_verification_result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetVerificationResult</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// All provided access definitions are stored in the attribute for external consumers, and can</span>
+    <span class="doccomment">/// be externally manipulated by admin routes or verification tasks.</span>
     <span class="kw">pub</span> <span class="ident">access_definitions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessDefinition</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">AssetScopeAttribute</span> {
     <span class="doccomment">/// Constructs a new instance of AssetScopeAttribute from the input params</span>
     <span class="doccomment">/// Prefer initializing a scope attribute with this function!</span>
     <span class="doccomment">/// It ensures passed addresses are valid, as well as ensuring that the</span>
-    <span class="doccomment">/// asset uuid and scope address match each other</span>
+    <span class="doccomment">/// asset uuid and scope address match each other.  This function automatically sets the</span>
+    <span class="doccomment">/// [latest_verification_result</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `identifier` An asset identifier instance to be converted into the asset uuid and scope</span>
+    <span class="doccomment">/// address that encompass the details of the scope attribute.</span>
+    <span class="doccomment">/// * `asset_type` The name of the type of asset that is being used to classify this scope.</span>
+    <span class="doccomment">/// * `requestor_address` The bech32 address of the account that requested this scope be classified.</span>
+    <span class="doccomment">/// * `verifier_address` The bech32 address of the account that the requestor selected to perform</span>
+    <span class="doccomment">/// verification of the underlying data within the scope.  This account decides whether or not</span>
+    <span class="doccomment">/// the asset should be classified.</span>
+    <span class="doccomment">/// * `onboarding_status` Indicates the portion of the classification process at which the scope</span>
+    <span class="doccomment">/// currently is.  If omitted, this value is populated as [Pending](super::asset_onboarding_status::AssetOnboardingStatus::Pending).</span>
+    <span class="doccomment">/// * `latest_verifier_detail` The initial verifier detail to be placed onto this scope attribute.</span>
+    <span class="doccomment">/// As this function should always be used to create a new scope attribute, this value does not</span>
+    <span class="doccomment">/// need to be optional.</span>
+    <span class="doccomment">/// * `access_routes` The initial access routes for the scope attribute.  These values are</span>
+    <span class="doccomment">/// implicitly assumed to be from the requestor, and are wrapped in an initial [AccessDefinition](super::access_definition::AccessDefinition).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S3</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier</span>,
         <span class="ident">asset_type</span>: <span class="ident">S1</span>,

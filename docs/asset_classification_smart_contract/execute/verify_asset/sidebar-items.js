@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["verify_asset",""]],"struct":[["VerifyAssetV1",""]]});
+initSidebarItems({"fn":[["verify_asset","The function used by execute when an ExecuteMsg::OnboardAsset message is provided.  An execution route for use by the asset verifier selected by a requestor during the onboarding process to mark a scope as verified or rejected."]],"struct":[["VerifyAssetV1","A transformation of ExecuteMsg::VerifyAsset for ease of use in the underlying verify_asset function."]]});

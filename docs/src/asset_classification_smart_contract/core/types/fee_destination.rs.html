@@ -21,17 +21,47 @@
 <span id="16">16</span>
 <span id="17">17</span>
 <span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::Decimal</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
+<span class="doccomment">/// Defines an external account designated as a recipient of funds during the verification process.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FeeDestination</span> {
+    <span class="doccomment">/// The Provenance Blockchain bech32 address belonging to the account.</span>
     <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent) of the</span>
+    <span class="doccomment">/// containing [VerifierDetail](super::verifier_detail::VerifierDetail).  This number should</span>
+    <span class="doccomment">/// always be between 0 and 1, and indicate a percentage.  Ex: 0.5 indicates 50%.</span>
+    <span class="doccomment">/// For instance, if the fee total is 100nhash and the verifier detail&#39;s fee percent is .5 (50%)</span>
+    <span class="doccomment">/// and the destination&#39;s fee percent is 1 (100%), then that fee destination account would</span>
+    <span class="doccomment">/// receive 50nhash during the transaction, which is 100% of the 50% designated to fee accounts.</span>
     <span class="kw">pub</span> <span class="ident">fee_percent</span>: <span class="ident">Decimal</span>,
 }
 <span class="kw">impl</span> <span class="ident">FeeDestination</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `address` The Provenance Blockchain bech32 address belonging to the account.</span>
+    <span class="doccomment">/// * `fee_percent` The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent)</span>
+    <span class="doccomment">/// of the containing [VerifierDetail](super::verifier_detail::VerifierDetail).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">address</span>: <span class="ident">S</span>, <span class="ident">fee_percent</span>: <span class="ident">Decimal</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">FeeDestination</span> {
             <span class="ident">address</span>: <span class="ident">address</span>.<span class="ident">into</span>(),

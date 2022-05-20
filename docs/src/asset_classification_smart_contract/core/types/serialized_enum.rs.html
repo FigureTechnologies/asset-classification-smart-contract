@@ -228,6 +228,16 @@
 <span id="223">223</span>
 <span id="224">224</span>
 <span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::scope_spec_identifier::ScopeSpecIdentifier</span>;
@@ -255,6 +265,13 @@
     <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">String</span>,
 }
 <span class="kw">impl</span> <span class="ident">SerializedEnum</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `enum_type` Specifies the type of enum to deserialize into. Maps into one of the values specified in</span>
+    <span class="doccomment">/// the impl for this struct.</span>
+    <span class="doccomment">/// * `value` Specifies the string value to be used for the type.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">enum_type</span>: <span class="ident">S1</span>, <span class="ident">value</span>: <span class="ident">S2</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">r#type</span>: <span class="ident">enum_type</span>.<span class="ident">into</span>(),
@@ -262,14 +279,17 @@
         }
     }
 
+    <span class="doccomment">/// Converts this value to an instance of an asset identifier if it has a compatible type.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_asset_identifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetIdentifier</span><span class="op">&gt;</span> {
         <span class="ident">AssetIdentifier::from_serialized_enum</span>(<span class="self">self</span>)
     }
 
+    <span class="doccomment">/// Converts this value to an instance of an asset qualifier if it has a compatible type.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_asset_qualifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetQualifier</span><span class="op">&gt;</span> {
         <span class="ident">AssetQualifier::from_serialized_enum</span>(<span class="self">self</span>)
     }
 
+    <span class="doccomment">/// Converts this value to an instance of a scope spec identifier if it has a compatible type.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_scope_spec_identifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">ScopeSpecIdentifier</span><span class="op">&gt;</span> {
         <span class="ident">ScopeSpecIdentifier::from_serialized_enum</span>(<span class="self">self</span>)
     }

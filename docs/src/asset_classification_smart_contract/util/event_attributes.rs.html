@@ -239,6 +239,102 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::constants</span>::{
     <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">NEW_VALUE_KEY</span>, <span class="ident">SCOPE_OWNER_KEY</span>,
     <span class="ident">VERIFIER_ADDRESS_KEY</span>,
@@ -246,17 +342,30 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::ADDITIONAL_METADATA_KEY</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
+<span class="doccomment">/// An enum that contains all different event types that can occur throughout the [contract&#39;s](crate::contract)</span>
+<span class="doccomment">/// routes.</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EventType</span> {
+    <span class="doccomment">/// Occurs when the contract is [instantiated](crate::contract::instantiate) with [instantiate](crate::instantiate::init_contract).</span>
     <span class="ident">InstantiateContract</span>,
+    <span class="doccomment">/// Occurs when the contract is [migrated](crate::contract::migrate) with [migrate](crate::contract::migrate).</span>
     <span class="ident">MigrateContract</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [onboard an asset](crate::execute::onboard_asset).</span>
     <span class="ident">OnboardAsset</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [verify an asset](crate::execute::verify_asset).</span>
     <span class="ident">VerifyAsset</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset definition](crate::execute::add_asset_definition).</span>
     <span class="ident">AddAssetDefinition</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset definition](crate::execute::update_asset_definition).</span>
     <span class="ident">UpdateAssetDefinition</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [toggle an asset definition](crate::execute::toggle_asset_definition).</span>
     <span class="ident">ToggleAssetDefinition</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset verifier detail](crate::execute::add_asset_verifier).</span>
     <span class="ident">AddAssetVerifier</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset verifier detail](crate::execute::update_asset_verifier).</span>
     <span class="ident">UpdateAssetVerifier</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update access routes](crate::execute::update_access_routes).</span>
     <span class="ident">UpdateAccessRoutes</span>,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [bind a contract alias](crate::execute::bind_contract_alias).</span>
     <span class="ident">BindContractAlias</span>,
 }
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::from_over_into</span>)]</span>
@@ -279,21 +388,45 @@
     }
 }
 <span class="kw">impl</span> <span class="ident">EventType</span> {
+    <span class="doccomment">/// Utilizes the implementation of Into&lt;String&gt; to automatically derive the event name.  This</span>
+    <span class="doccomment">/// allows an invocation without an explicit type declaration.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_name</span>(<span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="self">self</span>.<span class="ident">into</span>()
     }
 }
 
+<span class="doccomment">/// A helper struct to emit attributes for a [Response](cosmwasm_std::Response).</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventAttributes</span> {
+    <span class="doccomment">/// All generated attributes as tuples, which can easily be used to add into a [Response](cosmwasm_std::Response).</span>
     <span class="ident">attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">EventAttributes</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `event_type` All events should denote their type for external consumers of Provenance</span>
+    <span class="doccomment">/// Blockchain Event Stream, so this value is required for any new instance and appends the</span>
+    <span class="doccomment">/// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">event_type</span>: <span class="ident">EventType</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">EventAttributes</span> {
             <span class="ident">attributes</span>: <span class="macro">vec!</span>[(<span class="ident">ASSET_EVENT_TYPE_KEY</span>.<span class="ident">into</span>(), <span class="ident">event_type</span>.<span class="ident">into</span>())],
         }
     }
 
+    <span class="doccomment">/// Certain events like [onboard_asset](crate::execute::onboard_asset::onboard_asset) require a</span>
+    <span class="doccomment">/// standard set of event types.  This is a constructor for the struct that includes those</span>
+    <span class="doccomment">/// values to facilitate the process of generating all events.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `event_type` All events should denote their type for external consumers of Provenance</span>
+    <span class="doccomment">/// Blockchain Event Stream, so this value is required for any new instance and appends the</span>
+    <span class="doccomment">/// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).</span>
+    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
+    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_asset_event</span><span class="op">&lt;</span><span class="ident">T1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">T2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">event_type</span>: <span class="ident">EventType</span>,
         <span class="ident">asset_type</span>: <span class="ident">T1</span>,
@@ -304,36 +437,81 @@
             .<span class="ident">set_scope_address</span>(<span class="ident">scope_address</span>)
     }
 
+    <span class="doccomment">/// Appends an asset type value to an existing [EventAttributes](self::EventAttributes) and</span>
+    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_asset_type</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">asset_type</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
             .<span class="ident">push</span>((<span class="ident">ASSET_TYPE_KEY</span>.<span class="ident">into</span>(), <span class="ident">asset_type</span>.<span class="ident">into</span>()));
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Appends a scope address bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
+    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scope_address</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scope_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
             .<span class="ident">push</span>((<span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>.<span class="ident">into</span>(), <span class="ident">scope_address</span>.<span class="ident">into</span>()));
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Appends a verifier address bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
+    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetail::address)</span>
+    <span class="doccomment">/// for a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) that uses the</span>
+    <span class="doccomment">/// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_verifier</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">verifier_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
             .<span class="ident">push</span>((<span class="ident">VERIFIER_ADDRESS_KEY</span>.<span class="ident">into</span>(), <span class="ident">verifier_address</span>.<span class="ident">into</span>()));
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Appends a dynamic value to an existing [EventAttributes](self::EventAttributes) and</span>
+    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `new_value` Any dynamic value that pertains to the current execution process, using the</span>
+    <span class="doccomment">/// key [NEW_VALUE_KEY](super::constants::NEW_VALUE_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_new_value</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new_value</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
             .<span class="ident">push</span>((<span class="ident">NEW_VALUE_KEY</span>.<span class="ident">into</span>(), <span class="ident">new_value</span>.<span class="ident">to_string</span>()));
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Appends a scope owner bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
+    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `scope_owner` A bech32 address that owns a Provenance Metadata Scope referred to by the</span>
+    <span class="doccomment">/// current execution process, appended with the key [SCOPE_OWNER_KEY](super::constants::SCOPE_OWNER_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scope_owner</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scope_owner</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
             .<span class="ident">push</span>((<span class="ident">SCOPE_OWNER_KEY</span>.<span class="ident">into</span>(), <span class="ident">scope_owner</span>.<span class="ident">to_string</span>()));
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Appends a dynamic set of additional metadata to an existing [EventAttributes](self::EventAttributes)</span>
+    <span class="doccomment">/// and returns the same instance to create a functional chain for further attribute addition.</span>
+    <span class="doccomment">/// Note: If the metadata provided is empty, this key will be skipped to prevent strange value</span>
+    <span class="doccomment">/// displays to external consumers.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `additional_metadata` An instance of additional metadata to be displayed to any external</span>
+    <span class="doccomment">/// consumers.  Uses the key of [ADDITIONAL_METADATA_KEY](super::constants::ADDITIONAL_METADATA_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_additional_metadata</span>(
         <span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">additional_metadata</span>: <span class="kw-2">&amp;</span><span class="ident">EventAdditionalMetadata</span>,
@@ -360,25 +538,39 @@
 }
 
 <span class="doccomment">/// A helper collection that allows underlying processes to specify dynamic key values for processes</span>
-<span class="doccomment">/// that don&#39;t necessarily need to specify a large amount of new event keys.</span>
+<span class="doccomment">/// that don&#39;t necessarily need to specify a large amount of new event keys.  Emitted values are</span>
+<span class="doccomment">/// aggregated and sorted deterministically, and then displayed using the format:</span>
+<span class="doccomment">/// \[a=1, b=2, c=3, etc\]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventAdditionalMetadata</span> {
+    <span class="doccomment">/// An internal collection of all added metadata.</span>
     <span class="ident">fields</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">EventAdditionalMetadata</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct with an empty fields set.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">fields</span>: <span class="ident">HashMap::new</span>(),
         }
     }
 
+    <span class="doccomment">/// Returns `true` only if metadata fields have been added with the [add_metadata](self::EventAdditionalMetadata::add_metadata)</span>
+    <span class="doccomment">/// function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="op">!</span><span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>()
     }
 
+    <span class="doccomment">/// Appends a new key and value pair to the internal fields value.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `key` The string key that will be displayed before the = sign in the display.</span>
+    <span class="doccomment">/// * `value` The string value that will be displayed after the = sign in the display.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_metadata</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">S1</span>, <span class="ident">value</span>: <span class="ident">S2</span>) {
         <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">into</span>(), <span class="ident">value</span>.<span class="ident">into</span>());
     }
 
+    <span class="doccomment">/// Aggregates and deterministically sorts the internal values, resulting in a display string</span>
+    <span class="doccomment">/// for adding as an event attribute in the format: \[a=1, b=2, c=3, etc\]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_meta_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map_displays</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">fields</span>

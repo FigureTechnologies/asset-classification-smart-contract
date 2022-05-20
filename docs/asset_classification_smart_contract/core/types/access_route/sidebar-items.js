@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["AccessRoute",""]]});
+initSidebarItems({"struct":[["AccessRoute","Defines a method of obtaining underlying asset data for a scope."]]});

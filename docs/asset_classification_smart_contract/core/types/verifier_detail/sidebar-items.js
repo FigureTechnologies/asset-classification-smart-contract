@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["VerifierDetail",""]]});
+initSidebarItems({"struct":[["VerifierDetail","Defines the fees and addresses for a single verifier account for an AssetDefinition."]]});

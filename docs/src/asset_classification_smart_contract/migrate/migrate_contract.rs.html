@@ -278,6 +278,18 @@
 <span id="273">273</span>
 <span id="274">274</span>
 <span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Response</span>, <span class="ident">Storage</span>};
 <span class="kw">use</span> <span class="ident">semver::Version</span>;
 
@@ -298,6 +310,13 @@
     <span class="ident">get_version_info</span>, <span class="ident">migrate_version_info</span>, <span class="ident">CONTRACT_NAME</span>, <span class="ident">CONTRACT_VERSION</span>,
 };
 
+<span class="doccomment">/// The main entrypoint function for running a code migration.  Referred to in the [contract file](crate::contract).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A DepsMutC provided by cosmwasm in the migrate entrypoint.</span>
+<span class="doccomment">/// * `options` An optional instance of [MigrationOptions](crate::core::msg::MigrationOptions) that</span>
+<span class="doccomment">/// dictates whether or not to execute optional functionality during the migration.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate_contract</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>, <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span>) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="comment">// Ensure the migration is not attempting to revert to an old version or something crazier</span>
     <span class="ident">check_valid_migration_versioning</span>(<span class="ident">deps</span>.<span class="ident">storage</span>)<span class="question-mark">?</span>;
@@ -329,6 +348,11 @@
 }
 
 <span class="doccomment">/// Verifies that the migration is going to a proper version and the contract name of the new wasm matches</span>
+<span class="doccomment">/// the value in the Cargo.toml.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A mutable instance of the contract&#39;s internal storage for data manipulation.</span>
 <span class="kw">fn</span> <span class="ident">check_valid_migration_versioning</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">stored_version_info</span> <span class="op">=</span> <span class="ident">get_version_info</span>(<span class="ident">storage</span>)<span class="question-mark">?</span>;
     <span class="comment">// If the contract name has changed or another contract attempts to overwrite this one, this</span>

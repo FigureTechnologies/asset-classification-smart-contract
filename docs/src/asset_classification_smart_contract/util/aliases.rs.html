@@ -23,7 +23,7 @@
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Deps</span>, <span class="ident">DepsMut</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">ProvenanceMsg</span>, <span class="ident">ProvenanceQuery</span>};
 
-<span class="doccomment">/// Shortens the lengthy response type for contract entrypoints</span>
+<span class="doccomment">/// Shortens the lengthy response type for contract entrypoints.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">EntryPointResponse</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span>, <span class="ident">ContractError</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// All contract pathways with exceptional code should return a result that has a contract error</span>

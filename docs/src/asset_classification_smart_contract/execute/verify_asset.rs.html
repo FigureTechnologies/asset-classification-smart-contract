@@ -354,6 +354,50 @@
 <span id="349">349</span>
 <span id="350">350</span>
 <span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
@@ -368,6 +412,28 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset)</span>
+<span class="doccomment">/// for ease of use in the underlying [verify_asset](self::verify_asset) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `identifier` An instance of the asset identifier enum that helps the contract identify which</span>
+<span class="doccomment">/// scope that the requestor is referring to in the request.</span>
+<span class="doccomment">/// * `success` A boolean indicating whether or not verification was successful.  A value of `false`</span>
+<span class="doccomment">/// either indicates that the underlying data was fetched and it did not meet the requirements for a</span>
+<span class="doccomment">/// classified asset, or that a failure occurred during the verification process.  Note: Verifiers</span>
+<span class="doccomment">/// should be wary of returning false immediately on a code failure, as this incurs additional cost</span>
+<span class="doccomment">/// to the onboarding account.  Instead, it is recommended that verification implement some process</span>
+<span class="doccomment">/// that retries logic when exceptions or other code execution issues cause a failed verification.</span>
+<span class="doccomment">/// * `message` An optional string describing the result of the verification process.  If omitted,</span>
+<span class="doccomment">/// a standard message describing success or failure based on the value of `success` will be</span>
+<span class="doccomment">/// displayed in the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).</span>
+<span class="doccomment">/// * `access_routes` Like in the [OnboardAsset](self::ExecuteMsg::OnboardAsset) message, this</span>
+<span class="doccomment">/// parameter allows the verifier to provide access routes for  the assets that it has successfully</span>
+<span class="doccomment">/// fetched from the underlying scope data.  This allows for the verifier to define its own subset</span>
+<span class="doccomment">/// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission</span>
+<span class="doccomment">/// to easily fetch asset data from a new location, potentially without any Provenance Blockchain</span>
+<span class="doccomment">/// interaction, facilitating the process of data interaction.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VerifyAssetV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
@@ -376,6 +442,14 @@
     <span class="kw">pub</span> <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">VerifyAssetV1</span> {
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">VerifyAssetV1</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::VerifyAsset</span> {
@@ -398,6 +472,20 @@
     }
 }
 
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)</span>
+<span class="doccomment">/// message is provided.  An execution route for use by the asset verifier selected by a requestor</span>
+<span class="doccomment">/// during the [onboarding](super::onboard_asset::onboard_asset) process to mark a scope as verified</span>
+<span class="doccomment">/// or rejected.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `repository` A helper collection of traits that allows complex lookups of scope values and</span>
+<span class="doccomment">/// emits messages to construct the process of verification as a collection of messages to produce</span>
+<span class="doccomment">/// in the function&#39;s result.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the verify asset v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">verify_asset</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">repository</span>: <span class="ident">T</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,
@@ -416,7 +504,7 @@
 
     <span class="comment">// verify sender is requested verifier</span>
     <span class="kw">if</span> <span class="ident">info</span>.<span class="ident">sender</span> <span class="op">!</span><span class="op">=</span> <span class="ident">scope_attribute</span>.<span class="ident">verifier_address</span> {
-        <span class="kw">return</span> <span class="ident">ContractError::UnathorizedAssetVerifier</span> {
+        <span class="kw">return</span> <span class="ident">ContractError::UnauthorizedAssetVerifier</span> {
             <span class="ident">scope_address</span>: <span class="ident">asset_identifiers</span>.<span class="ident">scope_address</span>,
             <span class="ident">verifier_address</span>: <span class="ident">info</span>.<span class="ident">sender</span>.<span class="ident">into</span>(),
             <span class="ident">expected_verifier_address</span>: <span class="ident">scope_attribute</span>.<span class="ident">verifier_address</span>.<span class="ident">into_string</span>(),
@@ -555,7 +643,7 @@
         .<span class="ident">unwrap_err</span>();
 
         <span class="kw">match</span> <span class="ident">err</span> {
-            <span class="ident">ContractError::UnathorizedAssetVerifier</span> {
+            <span class="ident">ContractError::UnauthorizedAssetVerifier</span> {
                 <span class="ident">scope_address</span>,
                 <span class="ident">verifier_address</span>,
                 <span class="ident">expected_verifier_address</span>,

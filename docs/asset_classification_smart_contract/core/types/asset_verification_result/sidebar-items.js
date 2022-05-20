@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["AssetVerificationResult",""]]});
+initSidebarItems({"struct":[["AssetVerificationResult","A simple wrapper for the result of a verification for a scope."]]});

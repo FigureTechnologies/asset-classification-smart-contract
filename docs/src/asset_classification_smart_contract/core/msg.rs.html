@@ -3,105 +3,264 @@
         </a><h2 class="location"></h2>
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1"> 1</span>
-<span id="2"> 2</span>
-<span id="3"> 3</span>
-<span id="4"> 4</span>
-<span id="5"> 5</span>
-<span id="6"> 6</span>
-<span id="7"> 7</span>
-<span id="8"> 8</span>
-<span id="9"> 9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -111,92 +270,251 @@
     <span class="ident">verifier_detail::VerifierDetail</span>,
 };
 
+<span class="doccomment">/// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InitMsg</span> {
+    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)</span>
+    <span class="doccomment">/// will use this value as their parent name.</span>
     <span class="kw">pub</span> <span class="ident">base_contract_name</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name)</span>
+    <span class="doccomment">/// during the instantiation process to itself.  No action will be taken if the value is `false`,</span>
+    <span class="doccomment">/// but the base name will still be recorded in the contract&#39;s [state](super::state::StateV2)</span>
+    <span class="doccomment">/// and be used for child names for [AssetDefinitions](super::types::access_definition::AccessDefinition).</span>
     <span class="kw">pub</span> <span class="ident">bind_base_name</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// All the initial [AssetDefinitions](super::types::access_definition::AccessDefinition) for the</span>
+    <span class="doccomment">/// contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition)</span>
+    <span class="doccomment">/// functionality.</span>
     <span class="kw">pub</span> <span class="ident">asset_definitions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionInput</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities</span>
+    <span class="doccomment">/// across the contract&#39;s execution processes.  Notably, this disables a check during the</span>
+    <span class="doccomment">/// onboarding process to determine if onboarded scopes include underlying record values.  This</span>
+    <span class="doccomment">/// should never be set to true in a mainnet environment.</span>
     <span class="kw">pub</span> <span class="ident">is_test</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
 }
 
+<span class="doccomment">/// Defines all routes in which the contract can be queried.  These are all handled directly in</span>
+<span class="doccomment">/// the [contract file](crate::contract::query).</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">QueryMsg</span> {
+    <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinition](super::types::asset_definition::AssetDefinition) from the contract&#39;s</span>
+    <span class="doccomment">/// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null</span>
+    <span class="doccomment">/// response will be returned.</span>
+    <span class="ident">QueryAssetDefinition</span> {
+        <span class="doccomment">/// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
+        <span class="ident">qualifier</span>: <span class="ident">SerializedEnum</span>,
+    },
+    <span class="doccomment">/// This route can be used to retrieve all [AssetDefinitions](super::types::asset_definition::AssetDefinition) stored in the contract.  This response payload can be quite</span>
+    <span class="doccomment">/// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need</span>
+    <span class="doccomment">/// to be inspected or displayed.  The query asset definition route is much more efficient.</span>
+    <span class="ident">QueryAssetDefinitions</span> {},
+    <span class="doccomment">/// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has</span>
+    <span class="doccomment">/// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this</span>
+    <span class="doccomment">/// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.</span>
+    <span class="doccomment">/// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been</span>
+    <span class="doccomment">/// successfully classified by a verifier.</span>
+    <span class="ident">QueryAssetScopeAttribute</span> {
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
+        <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+    },
+    <span class="doccomment">/// This route can be used to retrieve the internal contract state values.  These are core configurations that denote how</span>
+    <span class="doccomment">/// the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It</span>
+    <span class="doccomment">/// responds with a [StateV2](super::state::StateV2) struct value.</span>
+    <span class="ident">QueryState</span> {},
+    <span class="doccomment">/// This route can be used to retrieve the internal contract version information.  It elucidates the current version of the</span>
+    <span class="doccomment">/// contract that was derived through instantiation or the most recent code migration.  It responds with a [VersionInfoV1](crate::migrate::version_info::VersionInfoV1)</span>
+    <span class="doccomment">/// struct value.</span>
+    <span class="ident">QueryVersion</span> {},
+}
+
+<span class="doccomment">/// Defines all routes in which the contract can be executed.  These are all handled directly in</span>
+<span class="doccomment">/// the [contract file](crate::contract::execute).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ExecuteMsg</span> {
+    <span class="doccomment">/// This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of</span>
+    <span class="doccomment">/// asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the</span>
+    <span class="doccomment">/// provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The</span>
+    <span class="doccomment">/// attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type</span>
+    <span class="doccomment">/// in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is &quot;asset&quot; and the asset type is &quot;myasset&quot;, the attribute would be assigned</span>
+    <span class="doccomment">/// under the name of &quot;myasset.asset&quot;.  All available asset types are queryable, and stored in the contract as [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be</span>
+    <span class="doccomment">/// stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus)</span>
+    <span class="doccomment">/// of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending),</span>
+    <span class="doccomment">/// indicating that the asset has been onboarded to the contract but is awaiting verification.</span>
     <span class="ident">OnboardAsset</span> {
-        <span class="doccomment">/// Expects an AssetIdentifier-compatible SerializedEnum</span>
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// A name that must directly match one of the contract&#39;s internal [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+        <span class="doccomment">/// names.  Any request with a specified type not matching an asset definition will be rejected outright.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The bech32 address of a Verifier Account associated with the targeted [AssetDefinition](super::types::asset_definition::AssetDefinition),</span>
+        <span class="doccomment">/// within its nested vector of [VerifierDetails](super::types::verifier_detail::VerifierDetail).</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// An optional parameter that allows the specification of a location to get the underlying asset data</span>
+        <span class="doccomment">/// for the specified scope.  The [AccessRoute](super::types::access_route::AccessRoute) struct is very generic in its composition</span>
+        <span class="doccomment">/// for the purpose of allowing various different solutions to fetching asset data.  If the verification process requires</span>
+        <span class="doccomment">/// generic lookups for each onboarded asset, access routes on the scope&#39;s [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
+        <span class="doccomment">/// can be leveraged to easily determine the source of the underlying data.  If these values are omitted at first, but later needed,</span>
+        <span class="doccomment">/// they can always be added by using the [UpdateAccessRoutes](self::ExecuteMsg::UpdateAccessRoutes) execution route.</span>
+        <span class="doccomment">/// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)</span>
+        <span class="doccomment">/// parameter, as well, to indicate the reason for the route, but this is entirely optional.</span>
         <span class="ident">access_routes</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     },
+    <span class="doccomment">/// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
+    <span class="doccomment">/// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to</span>
+    <span class="doccomment">/// the owner of the scope whether or not the content within the scope was valid or not.  The Verifier Account, after determining</span>
+    <span class="doccomment">/// validity of the underlying data, will either mark the classification as a success or failure.  This route will reject</span>
+    <span class="doccomment">/// all invokers except for Verifiers linked to a scope by the scope attribute, ensuring that only the verifier requested</span>
+    <span class="doccomment">/// has the permission needed to classify an asset.  In this way, the process for verification ensures that all involved</span>
+    <span class="doccomment">/// parties&#39; requirements for security are satisfied.  In addition, the verifier used in the process is stored on the scope</span>
+    <span class="doccomment">/// attribute after the fact, ensuring that external inspectors of the generated attribute can choose which verifications to</span>
+    <span class="doccomment">/// acknowledge and which to disregard.</span>
     <span class="ident">VerifyAsset</span> {
-        <span class="doccomment">/// Expects an AssetIdentifier-compatible SerializedEnum</span>
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// A boolean indicating whether or not verification was successful.  A value of `false` either indicates that</span>
+        <span class="doccomment">/// the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred</span>
+        <span class="doccomment">/// during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as</span>
+        <span class="doccomment">/// this incurs additional cost to the onboarding account.  Instead, it is recommended that verification implement some</span>
+        <span class="doccomment">/// process that retries logic when exceptions or other code execution issues cause a failed verification.</span>
         <span class="ident">success</span>: <span class="ident">bool</span>,
+        <span class="doccomment">/// An optional string describing the result of the verification process.  If omitted, a standard message</span>
+        <span class="doccomment">/// describing success or failure based on the value of `success` will be displayed in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute).</span>
         <span class="ident">message</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Like in the [OnboardAsset](self::ExecuteMsg::OnboardAsset) message, this parameter allows the verifier to provide access routes for</span>
+        <span class="doccomment">/// the assets that it has successfully fetched from the underlying scope data.  This allows for the verifier to define its</span>
+        <span class="doccomment">/// own subset of [AccessRoute](super::types::access_route::AccessRoute) values to allow actors with permission to easily fetch asset</span>
+        <span class="doccomment">/// data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data</span>
+        <span class="doccomment">/// interaction.</span>
         <span class="ident">access_routes</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__  This route allows a new [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// value to be added to the contract&#39;s internal storage.  These asset definitions dictate which asset types are allowed to</span>
+    <span class="doccomment">/// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in</span>
+    <span class="doccomment">/// two criteria:</span>
+    <span class="doccomment">/// * Its [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value must not yet be registered in a different asset definition.</span>
+    <span class="doccomment">/// * Its [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))</span>
+    <span class="doccomment">/// must also be unique across asset definitions.</span>
+    <span class="doccomment">/// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).</span>
     <span class="ident">AddAssetDefinition</span> {
+        <span class="doccomment">/// An asset definition input value defining all of the new [AssetDefinition](super::types::asset_definition::AssetDefinition)&#39;s</span>
+        <span class="doccomment">/// values.  The execution route converts the incoming value to an asset definition.</span>
         <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInput</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route allows an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// value to be updated.  It works by matching the input&#39;s [asset_type](super::types::asset_definition::AssetDefinition::asset_type) to an existing asset definition and overwriting the</span>
+    <span class="doccomment">/// existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation</span>
+    <span class="doccomment">/// ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.</span>
     <span class="ident">UpdateAssetDefinition</span> {
+        <span class="doccomment">/// An asset definition input value defining all of the updated [AssetDefinition](super::types::asset_definition::AssetDefinition)&#39;s</span>
+        <span class="doccomment">/// values.  The execution route converts the incoming value to an asset definition.</span>
         <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInput</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route toggles an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to</span>
+    <span class="doccomment">/// be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be</span>
+    <span class="doccomment">/// allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of</span>
+    <span class="doccomment">/// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinition::enabled)</span>
+    <span class="doccomment">/// value on the `asset_definition` parameter, but this route is significantly simpler and prevents</span>
+    <span class="doccomment">/// accidental data mutation due to it not requiring the entirety of the definition&#39;s values.</span>
     <span class="ident">ToggleAssetDefinition</span> {
+        <span class="doccomment">/// The type of asset for which the definition&#39;s [enabled](super::types::asset_definition::AssetDefinition::enabled) value will be toggled.  As the asset type value</span>
+        <span class="doccomment">/// on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The value of [enabled](super::types::asset_definition::AssetDefinition::enabled) after the toggle takes place.  This value is required to ensure that</span>
+        <span class="doccomment">/// multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if</span>
+        <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
         <span class="ident">expected_result</span>: <span class="ident">bool</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route adds a new [VerifierDetail](super::types::verifier_detail::VerifierDetail)</span>
+    <span class="doccomment">/// to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to register new verifiers</span>
+    <span class="doccomment">/// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added</span>
+    <span class="doccomment">/// with addresses that match any other verifiers on the target asset definition.</span>
     <span class="ident">AddAssetVerifier</span> {
+        <span class="doccomment">/// The type of asset for which the new [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be added.</span>
+        <span class="doccomment">/// This must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)&#39;s [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+        <span class="doccomment">/// value, or the request will be rejected.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The new verifier detail to be added to the asset definition, with all of its required</span>
+        <span class="doccomment">/// values.  No verifiers within the existing asset definition must have the same [address](super::types::verifier_detail::VerifierDetail::address) value of this</span>
+        <span class="doccomment">/// parameter, or the request will be rejected.</span>
         <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route updates an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail)</span>
+    <span class="doccomment">/// in an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to be used when the values</span>
+    <span class="doccomment">/// of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the</span>
+    <span class="doccomment">/// referenced asset definition is not present within the contract, or if a verifier does not exist within the asset</span>
+    <span class="doccomment">/// definition that matches the address of the provided verifier data.</span>
     <span class="ident">UpdateAssetVerifier</span> {
+        <span class="doccomment">/// The type of asset for which the [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be updated. This</span>
+        <span class="doccomment">/// must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)&#39;s [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+        <span class="doccomment">/// value, or the request will be rejected.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The updated verifier detail to be modified in the asset definition. An existing verifier</span>
+        <span class="doccomment">/// detail within the target asset definition must have a matching [address](super::types::verifier_detail::VerifierDetail::address)</span>
+        <span class="doccomment">/// value, or the request will be rejected.</span>
         <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address OR to the owner of the access routes being updated.__</span>
+    <span class="doccomment">/// This route will swap all existing access routes for a specific owner for a specific scope to the provided values. These</span>
+    <span class="doccomment">/// access routes either correspond to those created during the onboarding process, or those created during the verification</span>
+    <span class="doccomment">/// process.</span>
     <span class="ident">UpdateAccessRoutes</span> {
-        <span class="doccomment">/// Expects an AssetIdentifier-compatible SerializedEnum</span>
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// Corresponds to the bech32 address of the account that originally created the [AccessRoutes](super::types::access_route::AccessRoute).</span>
+        <span class="doccomment">/// These values can be found in the [AccessDefinition](super::types::access_definition::AccessDefinition) of the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
+        <span class="doccomment">/// tied to a scope after the onboarding process occurs.</span>
         <span class="ident">owner_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// A vector of [AccessRoute](super::types::access_route::AccessRoute) to be used instead of the existing routes.</span>
+        <span class="doccomment">/// If other existing routes need to be maintained and the updated is intended to simply add a new route, then the existing</span>
+        <span class="doccomment">/// routes need to be included in the request alongside the new route(s).</span>
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
     },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)</span>
+    <span class="doccomment">/// offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route</span>
+    <span class="doccomment">/// allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name</span>
+    <span class="doccomment">/// module works, public names can only be bound by the requesting account (in this case, the contract) or by the name</span>
+    <span class="doccomment">/// owner.  In most cases, users won&#39;t have access to the root name owner of an unrestricted name, but will want to bind a</span>
+    <span class="doccomment">/// name to the contract in order to facilitate lookups.  This allows any unrestricted name to be bound to the contract with</span>
+    <span class="doccomment">/// ease.  This route will fail execution if a name is provided that stems from a restricted parent.</span>
     <span class="ident">BindContractAlias</span> {
+        <span class="doccomment">/// The name to bind to the contract.  Ex: `assetclassificationalias.pb`.</span>
         <span class="ident">alias_name</span>: <span class="ident">String</span>,
     },
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">QueryMsg</span> {
-    <span class="ident">QueryAssetDefinition</span> {
-        <span class="doccomment">/// Expects an AssetQualifier-compatible SerializedEnum</span>
-        <span class="ident">qualifier</span>: <span class="ident">SerializedEnum</span>,
-    },
-    <span class="ident">QueryAssetDefinitions</span> {},
-    <span class="ident">QueryAssetScopeAttribute</span> {
-        <span class="doccomment">/// Expects an AssetIdentifier-compatible SerializedEnum</span>
-        <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
-    },
-    <span class="ident">QueryState</span> {},
-    <span class="ident">QueryVersion</span> {},
-}
-
+<span class="doccomment">/// The struct used to migrate the contract from one code instance to another.  Utilized in the core</span>
+<span class="doccomment">/// [contract file](crate::contract::migrate).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">MigrateMsg</span> {
-    <span class="ident">ContractUpgrade</span> { <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span> },
+    <span class="doccomment">/// Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract)</span>
+    <span class="doccomment">/// function.</span>
+    <span class="ident">ContractUpgrade</span> {
+        <span class="doccomment">/// Various optional values that dictate additional behavior that can occur during a contract</span>
+        <span class="doccomment">/// upgrade.</span>
+        <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span>,
+    },
 }
 
 <span class="doccomment">/// Sub-level struct that defines optional changes that can occur during the migration process.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MigrationOptions</span> {
-    <span class="doccomment">/// Sets the contract admin to a new address</span>
+    <span class="doccomment">/// Sets the contract admin to a new address when populated.  Must be a valid Provenance</span>
+    <span class="doccomment">/// Blockchain bech32 address.</span>
     <span class="kw">pub</span> <span class="ident">new_admin_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">MigrationOptions</span> {
-    <span class="doccomment">/// Notes whether or not any options have been specified</span>
+    <span class="doccomment">/// Notes whether or not any options have been specified.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_changes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">new_admin_address</span>.<span class="ident">is_some</span>()
     }

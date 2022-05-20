@@ -316,6 +316,47 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">load_asset_definition_by_type</span>, <span class="ident">replace_asset_definition</span>};
@@ -327,12 +368,33 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)</span>
+<span class="doccomment">/// for ease of use in the underlying [update_asset_verifier](self::update_asset_verifier) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
+<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)</span>
+<span class="doccomment">/// property.</span>
+<span class="doccomment">/// * `verifier` The verifier detail that will be updated.  All values within this provided struct</span>
+<span class="doccomment">/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAssetVerifierV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>,
 }
 <span class="kw">impl</span> <span class="ident">UpdateAssetVerifierV1</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
+    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+    <span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)</span>
+    <span class="doccomment">/// property.</span>
+    <span class="doccomment">/// * `verifier` The verifier detail that will be updated.  All values within this provided struct</span>
+    <span class="doccomment">/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_type</span>: <span class="ident">S</span>, <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">UpdateAssetVerifierV1</span> {
             <span class="ident">asset_type</span>: <span class="ident">asset_type</span>.<span class="ident">into</span>(),
@@ -340,6 +402,14 @@
         }
     }
 
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">UpdateAssetVerifierV1</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::UpdateAssetVerifier</span> {
@@ -354,6 +424,18 @@
     }
 }
 
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)</span>
+<span class="doccomment">/// message is provided.  Replaces an existing [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)</span>
+<span class="doccomment">/// on an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the update asset verifier v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_asset_verifier</span>(
     <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,

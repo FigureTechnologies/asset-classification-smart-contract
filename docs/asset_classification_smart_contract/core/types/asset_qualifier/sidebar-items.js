@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["AssetQualifier",""]]});
+initSidebarItems({"enum":[["AssetQualifier","An enum containing different identifiers that can be used to fetch an AssetDefinition."]]});

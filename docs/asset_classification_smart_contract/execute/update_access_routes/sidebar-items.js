@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["update_access_routes",""]],"struct":[["UpdateAccessRoutesV1",""]]});
+initSidebarItems({"fn":[["update_access_routes","The function used by execute when an ExecuteMsg::UpdateAccessRoutes message is provided.  Attempts to change the AccessRoutes for an AccessDefinition on a target AssetScopeAttribute."]],"struct":[["UpdateAccessRoutesV1","A transformation of ExecuteMsg::UpdateAccessRoutes for ease of use in the underlying update_access_routes function."]]});

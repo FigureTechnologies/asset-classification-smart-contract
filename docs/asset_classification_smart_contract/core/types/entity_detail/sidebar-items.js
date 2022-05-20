@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["EntityDetail",""]]});
+initSidebarItems({"struct":[["EntityDetail","Various fields describing an entity, which could be an organization, account, etc."]]});

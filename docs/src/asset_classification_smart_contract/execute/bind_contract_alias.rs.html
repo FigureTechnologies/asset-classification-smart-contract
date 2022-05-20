@@ -201,6 +201,38 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
@@ -210,17 +242,38 @@
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Env</span>, <span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">bind_name</span>, <span class="ident">NameBinding</span>};
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias)</span>
+<span class="doccomment">/// for ease of use in the underlying [bind_contract_alias](self::bind_contract_alias) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `alias_name` The Provenance Name Module fully-qualified name to have the contract bind to</span>
+<span class="doccomment">/// itself in the [bind_contract_alias](self::bind_contract_alias) function.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BindContractAliasV1</span> {
     <span class="kw">pub</span> <span class="ident">alias_name</span>: <span class="ident">String</span>,
 }
 <span class="kw">impl</span> <span class="ident">BindContractAliasV1</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `alias_name` The Provenance Name Module fully-qualified name to have the contract bind to</span>
+    <span class="doccomment">/// itself in the [bind_contract_alias](self::bind_contract_alias) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">alias_name</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">alias_name</span>: <span class="ident">alias_name</span>.<span class="ident">into</span>(),
         }
     }
 
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">BindContractAliasV1</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::BindContractAlias</span> { <span class="ident">alias_name</span> } =&gt; {
@@ -239,6 +292,17 @@
 <span class="doccomment">/// Note: Due to the way Provenance names work, this route will only work when attempting to self-bind</span>
 <span class="doccomment">/// to an unrestricted parent name.  Binding an alias to a restricted parent name will still require</span>
 <span class="doccomment">/// that the address that owns the parent name signs the name binding message.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
+<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the bind contract alias v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bind_contract_alias</span>(
     <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
     <span class="ident">env</span>: <span class="ident">Env</span>,

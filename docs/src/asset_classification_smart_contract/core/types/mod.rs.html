@@ -16,18 +16,52 @@
 <span id="11">11</span>
 <span id="12">12</span>
 <span id="13">13</span>
-</pre><pre class="rust"><code><span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">access_definition</span>;
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Contains all structs used to drive core functionality throughout the contract.</span>
+
+<span class="doccomment">/// Defines a collection of [AccessRoute](self::access_route::AccessRoute) for a specific address.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">access_definition</span>;
+<span class="doccomment">/// Defines a method of obtaining underlying asset data for a scope.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">access_route</span>;
+<span class="doccomment">/// Defines a specific asset type associated with the contract.  Allows its specified type to be onboarded and verified.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_definition</span>;
+<span class="doccomment">/// An enum containing interchangeable values that can be used to define an asset (uuid or address).</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_identifier</span>;
+<span class="doccomment">/// An enum that denotes the various states that an [AssetScopeAttribute](self::asset_scope_attribute::AssetScopeAttribute) can have.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_onboarding_status</span>;
+<span class="doccomment">/// An enum containing different identifiers that can be used to fetch an [AssetDefinition](self::asset_definition::AssetDefinition).</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_qualifier</span>;
+<span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly</span>
+<span class="doccomment">/// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_scope_attribute</span>;
+<span class="doccomment">/// A simple wrapper for the result of a verification for a scope.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_verification_result</span>;
+<span class="doccomment">/// Various fields describing an entity, which could be an organization, account, etc.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">entity_detail</span>;
+<span class="doccomment">/// Defines an external account designated as a recipient of funds during the verification process.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fee_destination</span>;
+<span class="doccomment">/// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">scope_spec_identifier</span>;
+<span class="doccomment">/// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:</span>
+<span class="doccomment">/// [AssetIdentifier](self::asset_identifier::AssetIdentifier), [AssetQualifier](self::asset_qualifier::AssetQualifier), and [ScopeSpecIdentifier](self::scope_spec_identifier::ScopeSpecIdentifier).</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">serialized_enum</span>;
+<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinition](self::asset_definition::AssetDefinition).</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">verifier_detail</span>;
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>

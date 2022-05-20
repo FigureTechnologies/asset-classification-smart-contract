@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["FeeDestination",""]]});
+initSidebarItems({"struct":[["FeeDestination","Defines an external account designated as a recipient of funds during the verification process."]]});

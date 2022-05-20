@@ -1032,6 +1032,46 @@
 <span id="1027">1027</span>
 <span id="1028">1028</span>
 <span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_by_type</span>};
@@ -1048,6 +1088,24 @@
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceQuerier</span>;
 
+<span class="doccomment">/// A transformation of [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)</span>
+<span class="doccomment">/// for ease of use in the underlying [onboard_asset](self::onboard_asset) function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `identifier` An instance of the asset identifier enum that helps the contract identify which</span>
+<span class="doccomment">/// scope that the requestor is referring to in the request.</span>
+<span class="doccomment">/// * `asset_type` [AssetDefinition&#39;s](crate::core::types::asset_definition::AssetDefinition) unique</span>
+<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) value.  This</span>
+<span class="doccomment">/// value must correspond to an existing type in the contract&#39;s internal storage, or the request</span>
+<span class="doccomment">/// for onboarding will be rejected.</span>
+<span class="doccomment">/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetail::address)</span>
+<span class="doccomment">/// of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) on the [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+<span class="doccomment">/// referred to by the [asset_type](self::OnboardAssetV1::asset_type) property. If the address does</span>
+<span class="doccomment">/// not refer to any existing verifier detail, the request will be rejected.</span>
+<span class="doccomment">/// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute&#39;s](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
+<span class="doccomment">/// [AccessDefinition](crate::core::types::access_definition::AccessDefinition) for the [Requestor](crate::core::types::access_definition::AccessDefinitionType::Requestor)</span>
+<span class="doccomment">/// entry.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OnboardAssetV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
@@ -1056,6 +1114,14 @@
     <span class="kw">pub</span> <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">OnboardAssetV1</span> {
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
+    <span class="doccomment">/// value is not of the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)</span>
+    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
+    <span class="doccomment">/// error will be returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">OnboardAssetV1</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">msg</span> {
             <span class="ident">ExecuteMsg::OnboardAsset</span> {
@@ -1078,6 +1144,20 @@
     }
 }
 
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)</span>
+<span class="doccomment">/// message is provided.  Attempts to verify that a provided Provenance Blockchain Metadata Scope is</span>
+<span class="doccomment">/// properly formed on a basic level, and then adds an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
+<span class="doccomment">/// to it as a Provenance Blockchain Attribute.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `repository` A helper collection of traits that allows complex lookups of scope values and</span>
+<span class="doccomment">/// emits messages to construct the process of onboarding as a collection of messages to produce</span>
+<span class="doccomment">/// in the function&#39;s result.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` An instance of the onboard asset v1 struct, provided by conversion from an</span>
+<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">onboard_asset</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">repository</span>: <span class="ident">T</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,
@@ -1107,7 +1187,7 @@
             }
         };
 
-    <span class="comment">// verify perscribed verifier is present as a verifier in asset definition</span>
+    <span class="comment">// verify prescribed verifier is present as a verifier in asset definition</span>
     <span class="kw">let</span> <span class="ident">verifier_config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">asset_definition</span>
         .<span class="ident">verifiers</span>
         .<span class="ident">into_iter</span>()

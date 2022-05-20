@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ContractError",""]]});
+initSidebarItems({"enum":[["ContractError","A massive enum including all the different error scenarios that can be encountered throughout each process in the contract."]]});

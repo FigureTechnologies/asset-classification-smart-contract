@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["update_asset_definition",""]],"struct":[["UpdateAssetDefinitionV1",""]]});
+initSidebarItems({"fn":[["update_asset_definition","The function used by execute when an ExecuteMsg::UpdateAssetDefinition message is provided.  Attempts to replace an existing AssetDefinition value based on a matching asset_type property.  If no matching type is present, the request will be rejected."]],"struct":[["UpdateAssetDefinitionV1","A transformation of ExecuteMsg::UpdateAssetDefinition for ease of use in the underlying update_asset_definition function."]]});

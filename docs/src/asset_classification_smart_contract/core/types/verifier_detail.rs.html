@@ -38,23 +38,69 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Decimal</span>, <span class="ident">Uint128</span>};
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">entity_detail::EntityDetail</span>, <span class="ident">fee_destination::FeeDestination</span>};
 
+<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinition](super::asset_definition::AssetDefinition).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VerifierDetail</span> {
+    <span class="doccomment">/// The Provenance Blockchain bech32 address of the verifier account.</span>
     <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The total amount charged to use the onboarding process this this verifier.</span>
     <span class="kw">pub</span> <span class="ident">onboarding_cost</span>: <span class="ident">Uint128</span>,
+    <span class="doccomment">/// The coin denomination used for this onboarding process.</span>
     <span class="kw">pub</span> <span class="ident">onboarding_denom</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost)</span>
+    <span class="doccomment">/// to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination). This should</span>
+    <span class="doccomment">/// be a number from 0 to 1, representing a percentage (ex: 0.35 = 35%).</span>
     <span class="kw">pub</span> <span class="ident">fee_percent</span>: <span class="ident">Decimal</span>,
+    <span class="doccomment">/// Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent).</span>
+    <span class="doccomment">/// All of these destinations&#39; individual [fee_percent](super::fee_destination::FeeDestination::fee_percent) properties</span>
+    <span class="doccomment">/// should sum to 1.  Less amounts will cause this verifier detail to be considered invalid and rejected</span>
+    <span class="doccomment">/// in requests that include it.</span>
     <span class="kw">pub</span> <span class="ident">fee_destinations</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FeeDestination</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// An optional set of fields that define the verifier, including its name and home URL location.</span>
     <span class="kw">pub</span> <span class="ident">entity_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntityDetail</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span> <span class="ident">VerifierDetail</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `address` The Provenance Blockchain bech32 address of the verifier account.</span>
+    <span class="doccomment">/// * `onboarding_cost` The total amount charged to use the onboarding process this this verifier.</span>
+    <span class="doccomment">/// * `onboarding_denom` The coin denomination used for this onboarding process.</span>
+    <span class="doccomment">/// * `fee_percent` The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost)</span>
+    <span class="doccomment">/// to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination).</span>
+    <span class="doccomment">/// `fee_destinations` Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent).</span>
+    <span class="doccomment">/// `entity_detail` An optional set of fields that define the verifier, including its name and home URL location.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">address</span>: <span class="ident">S1</span>,
         <span class="ident">onboarding_cost</span>: <span class="ident">Uint128</span>,

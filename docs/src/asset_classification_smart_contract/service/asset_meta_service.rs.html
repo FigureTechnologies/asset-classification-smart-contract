@@ -1073,6 +1073,17 @@
 <span id="1068">1068</span>
 <span id="1069">1069</span>
 <span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
 <span class="kw">use</span> <span class="ident">cosmwasm_std::CosmosMsg</span>;
@@ -1108,11 +1119,22 @@
     <span class="ident">message_gathering_service::MessageGatheringService</span>,
 };
 
+<span class="doccomment">/// Ties all service code together into a cohesive struct to use for complex operations during the</span>
+<span class="doccomment">/// onboarding and verification processes.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetMetaService</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// A wrapper for a [DepsMutC](core::util::aliases::DepsMutC] that allows access to it without</span>
+    <span class="doccomment">/// moving the value.</span>
     <span class="ident">deps</span>: <span class="ident">DepsContainer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// All messages generated over the course of function invocations.</span>
     <span class="ident">messages</span>: <span class="ident">VecContainer</span><span class="op">&lt;</span><span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">AssetMetaService</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `deps` The cosmwasm deps that will be moved into a [DepsContainer](crate::util::deps_container::DepsContainer)</span>
+    <span class="doccomment">/// for future access.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">deps</span>: <span class="ident">DepsContainer::new</span>(<span class="ident">deps</span>),

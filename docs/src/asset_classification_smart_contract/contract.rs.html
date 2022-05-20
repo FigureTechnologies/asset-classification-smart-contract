@@ -104,6 +104,61 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg</span>::{<span class="ident">ExecuteMsg</span>, <span class="ident">InitMsg</span>, <span class="ident">MigrateMsg</span>, <span class="ident">QueryMsg</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_definition</span>::{<span class="ident">add_asset_definition</span>, <span class="ident">AddAssetDefinitionV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_verifier</span>::{<span class="ident">add_asset_verifier</span>, <span class="ident">AddAssetVerifierV1</span>};
@@ -127,6 +182,19 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg::validate_init_msg</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">entry_point</span>, <span class="ident">Binary</span>, <span class="ident">Env</span>, <span class="ident">MessageInfo</span>};
 
+<span class="doccomment">/// The entry point used when an external address instantiates a stored code wasm payload of this</span>
+<span class="doccomment">/// contract on the Provenance Blockchain.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
+<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` A custom instantiation message defined by this contract for creating the initial</span>
+<span class="doccomment">/// configuration used by the contract.</span>
 <span class="attribute">#[<span class="ident">entry_point</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">instantiate</span>(
     <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
@@ -140,6 +208,19 @@
     <span class="ident">init_contract</span>(<span class="ident">deps</span>, <span class="ident">env</span>, <span class="ident">info</span>, <span class="ident">msg</span>)
 }
 
+<span class="doccomment">/// The entry point used when an external address desires to retrieve information from the contract.</span>
+<span class="doccomment">/// Allows access to the internal storage information, as well as scope attributes emitted by the</span>
+<span class="doccomment">/// onboarding process.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `_env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
+<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.  Unused by this</span>
+<span class="doccomment">/// function, but required by cosmwasm for successful query entrypoint.</span>
+<span class="doccomment">/// * `msg` A custom query message enum defined by this contract to allow multiple different results</span>
+<span class="doccomment">/// to be determined for this route.</span>
 <span class="attribute">#[<span class="ident">entry_point</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query</span>(<span class="ident">deps</span>: <span class="ident">DepsC</span>, <span class="ident">_env</span>: <span class="ident">Env</span>, <span class="ident">msg</span>: <span class="ident">QueryMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">msg</span> {
@@ -155,6 +236,22 @@
     }
 }
 
+<span class="doccomment">/// The entry point used when an external address desires to initiate a process defined in the</span>
+<span class="doccomment">/// contract.  This defines the primary purposes of this contract, like the onboarding and</span>
+<span class="doccomment">/// verification processes, as well as allowing the administrator address to make changes to the</span>
+<span class="doccomment">/// contract&#39;s internal configuration.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
+<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.</span>
+<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
+<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
+<span class="doccomment">/// * `msg` A custom execution message enum defined by this contract to allow multiple different</span>
+<span class="doccomment">/// processes to be defined for the singular execution route entry point allowed by the</span>
+<span class="doccomment">/// cosmwasm framework.</span>
 <span class="attribute">#[<span class="ident">entry_point</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>, <span class="ident">env</span>: <span class="ident">Env</span>, <span class="ident">info</span>: <span class="ident">MessageInfo</span>, <span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="comment">// Ensure the execute message is properly formatted before doing anything</span>
@@ -199,6 +296,19 @@
     }
 }
 
+<span class="doccomment">/// The entry point used when migrating a live contract instance to a new code instance, or to</span>
+<span class="doccomment">/// refresh the contract with an existing matching codebase for the purpose of running migration</span>
+<span class="doccomment">/// options.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
+<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
+<span class="doccomment">/// * `_env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
+<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.  Unused by this</span>
+<span class="doccomment">/// function, but required by cosmwasm for successful migration entrypoint.</span>
+<span class="doccomment">/// * msg` A custom migrate message enum defined by this contract to allow multiple different</span>
+<span class="doccomment">/// results of invoking the migrate endpoint.</span>
 <span class="attribute">#[<span class="ident">entry_point</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>, <span class="ident">_env</span>: <span class="ident">Env</span>, <span class="ident">msg</span>: <span class="ident">MigrateMsg</span>) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="kw">match</span> <span class="ident">msg</span> {

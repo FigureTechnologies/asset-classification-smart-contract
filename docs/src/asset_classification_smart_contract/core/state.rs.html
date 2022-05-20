@@ -372,6 +372,69 @@
 <span id="367">367</span>
 <span id="368">368</span>
 <span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core::msg::InitMsg</span>,
     <span class="ident">util</span>::{
@@ -390,13 +453,32 @@
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">STATE_V2_KEY</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;state_v2&quot;</span>;
 <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ASSET_META_KEY</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;asset_meta&quot;</span>;
 
+<span class="doccomment">/// Stores the main configurations for the contract internally.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StateV2</span> {
+    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)</span>
+    <span class="doccomment">/// will use this value as their parent name.</span>
     <span class="kw">pub</span> <span class="ident">base_contract_name</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The Provenance Blockchain bech32 address that maintains primary control over the contract.</span>
+    <span class="doccomment">/// This address is derived from the sender of the initial contract instantiation, and is the</span>
+    <span class="doccomment">/// only address that can access administrative execution routes in the contract.  It can be</span>
+    <span class="doccomment">/// changed during migrations.</span>
     <span class="kw">pub</span> <span class="ident">admin</span>: <span class="ident">Addr</span>,
+    <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities</span>
+    <span class="doccomment">/// across the contract&#39;s execution processes.  Notably, this disables a check during the</span>
+    <span class="doccomment">/// onboarding process to determine if onboarded scopes include underlying record values.  This</span>
+    <span class="doccomment">/// should never be set to true in a mainnet environment.</span>
     <span class="kw">pub</span> <span class="ident">is_test</span>: <span class="ident">bool</span>,
 }
 <span class="kw">impl</span> <span class="ident">StateV2</span> {
+    <span class="doccomment">/// Constructs a new instance of this struct for the instantiation process.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Parameters</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `msg` The message submitted by the instantiating account.</span>
+    <span class="doccomment">/// * `admin` The Provenance Blockchain bech32 address of the administrator account for the contract.</span>
+    <span class="doccomment">/// The sender&#39;s address is automatically used for this, and they alone will have access to</span>
+    <span class="doccomment">/// change the admin address to a different one via migrations.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">msg</span>: <span class="ident">InitMsg</span>, <span class="ident">admin</span>: <span class="ident">Addr</span>) -&gt; <span class="ident">StateV2</span> {
         <span class="ident">StateV2</span> {
             <span class="ident">base_contract_name</span>: <span class="ident">msg</span>.<span class="ident">base_contract_name</span>,
@@ -406,10 +488,21 @@
     }
 }
 
+<span class="doccomment">/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC) or</span>
+<span class="doccomment">/// a [DepsC](crate::util::aliases::DepsC).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config_v2</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">Singleton</span><span class="op">&lt;</span><span class="ident">StateV2</span><span class="op">&gt;</span> {
     <span class="ident">singleton</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
 }
 
+<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract&#39;s state.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config_read_v2</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">ReadonlySingleton</span><span class="op">&lt;</span><span class="ident">StateV2</span><span class="op">&gt;</span> {
     <span class="ident">singleton_read</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
 }
@@ -419,7 +512,7 @@
 <span class="doccomment">/// that saves cannot include duplicate scope specs.</span>
 <span class="doccomment">/// If it becomes a requirement in the future that we have duplicate scope specs,</span>
 <span class="doccomment">/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract</span>
-<span class="doccomment">/// will fall apart</span>
+<span class="doccomment">/// will fall apart.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionIndexes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">String</span>, <span class="ident">AssetDefinition</span><span class="op">&gt;</span>,
 }
@@ -430,9 +523,9 @@
     }
 }
 
-<span class="doccomment">/// The main entrypoint access for AssetDefinition state.  Establishes an index map for all definitions,</span>
-<span class="doccomment">/// allowing the standard save(), load() and iterator functionality. Private access to ensure only</span>
-<span class="doccomment">/// helper functions below are used</span>
+<span class="doccomment">/// The main entrypoint access for [AssetDefinition](super::types::asset_definition::AssetDefinition) state.</span>
+<span class="doccomment">/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator</span>
+<span class="doccomment">/// functionality. Private access to ensure only helper functions below are used.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">asset_definitions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
 ) -&gt; <span class="ident">IndexedMap</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">AssetDefinition</span>, <span class="ident">AssetDefinitionIndexes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">indexes</span> <span class="op">=</span> <span class="ident">AssetDefinitionIndexes</span> {
@@ -444,11 +537,14 @@
     <span class="ident">IndexedMap::new</span>(<span class="string">&quot;asset_definitions&quot;</span>, <span class="ident">indexes</span>)
 }
 
-<span class="doccomment">/// Inserts a new asset definition into storage.</span>
-<span class="doccomment">/// If a value already exists, an error will be returned.</span>
-<span class="doccomment">/// Note: Asset definitions must contain a unique asset_type value,</span>
-<span class="doccomment">/// as well as a unique scope_spec_address.  Either unique constraint being</span>
-<span class="doccomment">/// violated will return an error.</span>
+<span class="doccomment">/// Inserts a new asset definition into storage. If a value already exists, an error will be returned.</span>
+<span class="doccomment">/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// value, as well as a unique [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address).</span>
+<span class="doccomment">/// Either unique constraint being violated will return an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_asset_definition</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinition</span>,
@@ -472,13 +568,18 @@
     }
 }
 
-<span class="doccomment">/// Replaces an existing asset definition in state with the provided value.</span>
-<span class="doccomment">/// If no value exists for the given definition, an error will be returned.</span>
-<span class="doccomment">/// Note: IndexedMap (the type asset_definitions() function returns) provides</span>
-<span class="doccomment">/// a really nice update() function that allows two branches (one for success and one for failure to find)</span>
-<span class="doccomment">/// that seems ideal for this functionality, but it requires a non-reference version of the data to be used.</span>
-<span class="doccomment">/// This requires that the provided definition must be cloned, which makes it vastly inefficient compared to</span>
-<span class="doccomment">/// this implementation.</span>
+<span class="doccomment">/// Replaces an existing asset definition in state with the provided value.  If no value exists for</span>
+<span class="doccomment">/// the given definition, an error will be returned.  Note: IndexedMap (the type [asset_definitions](self::asset_definitions)</span>
+<span class="doccomment">/// function returns) provides a really nice update() function that allows two branches (one for</span>
+<span class="doccomment">/// success and one for failure to find) that seems ideal for this functionality, but it requires a</span>
+<span class="doccomment">/// non-reference version of the data to be used. This requires that the provided definition must be</span>
+<span class="doccomment">/// cloned, which makes it vastly inefficient compared to this implementation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
+<span class="doccomment">/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// property.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_asset_definition</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinition</span>,
@@ -508,7 +609,13 @@
 }
 
 <span class="doccomment">/// Finds an existing asset definition in state by checking against the provided asset type,</span>
-<span class="doccomment">/// returning an Option that reflects whether or not the definition exists</span>
+<span class="doccomment">/// returning an Option that reflects whether or not the definition exists.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
+<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// for the requested asset definition.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_by_type</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">asset_type</span>: <span class="ident">S</span>,
@@ -520,6 +627,12 @@
 }
 
 <span class="doccomment">/// Finds an existing asset definition by asset type, or returns an error if no definition is found.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
+<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// for the requested asset definition.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_by_type</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">asset_type</span>: <span class="ident">S</span>,
@@ -537,6 +650,12 @@
 
 <span class="doccomment">/// Finds an existing asset definition in state by checking against the provided scope spec address,</span>
 <span class="doccomment">/// returning an Option that reflects whether or not the definition exists.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
+<span class="doccomment">/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address)</span>
+<span class="doccomment">/// for the requested asset definition.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_by_scope_spec</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
@@ -551,7 +670,14 @@
         .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
 }
 
-<span class="doccomment">/// Finds an existing asset definition by scope spec address, or returns an error if no definition is found.</span>
+<span class="doccomment">/// Finds an existing asset definition by scope spec address, or returns an error if no definition is</span>
+<span class="doccomment">/// found.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
+<span class="doccomment">/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address)</span>
+<span class="doccomment">/// for the requested asset definition.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_by_scope_spec</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,

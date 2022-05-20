@@ -345,6 +345,43 @@
 <span id="340">340</span>
 <span id="341">341</span>
 <span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
@@ -357,6 +394,12 @@
 
 <span class="doccomment">/// Determines how many elements within the provided reference slice are unique by the given</span>
 <span class="doccomment">/// property.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `slice` A reference slice from which to derive values to count.</span>
+<span class="doccomment">/// * `selector` A closure that defines the criteria used to determine when a value in the slice</span>
+<span class="doccomment">/// should be added to the count.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
@@ -377,23 +420,36 @@
 <span class="doccomment">/// Converts an asset type and a contract base name into an asset attribute that will be reserved</span>
 <span class="doccomment">/// to the contract for writing scope attributes.</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the</span>
+<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) property of an</span>
+<span class="doccomment">/// [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
+<span class="doccomment">/// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should</span>
+<span class="doccomment">/// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the</span>
+<span class="doccomment">/// contract&#39;s [StateV2](crate::core::state::StateV2) internally-stored value.</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use asset_classification_smart_contract::util::functions::generate_asset_attribute_name;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let asset_type = &quot;mortgage&quot;;</span>
-<span class="doccomment">/// let contract_base_name = &quot;asset&quot;;</span>
-<span class="doccomment">/// let attribute_name = generate_asset_attribute_name(asset_type, contract_base_name);</span>
+<span class="doccomment">/// let base_contract_name = &quot;asset&quot;;</span>
+<span class="doccomment">/// let attribute_name = generate_asset_attribute_name(asset_type, base_contract_name);</span>
 <span class="doccomment">/// assert_eq!(&quot;mortgage.asset&quot;, attribute_name.as_str());</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_asset_attribute_name</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">U</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">asset_type</span>: <span class="ident">T</span>,
-    <span class="ident">contract_base_name</span>: <span class="ident">U</span>,
+    <span class="ident">base_contract_name</span>: <span class="ident">U</span>,
 ) -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">contract_base_name</span>.<span class="ident">into</span>())
+    <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">base_contract_name</span>.<span class="ident">into</span>())
 }
 
 <span class="doccomment">/// Converts a decimal to a display string, like &quot;1%&quot;.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `decimal` The cosmwasm decimal instance to convert to a percent.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
@@ -411,6 +467,13 @@
 <span class="doccomment">/// Takes an existing vector, moves it into this function, swaps out a single existing item for</span>
 <span class="doccomment">/// a specified replacement item.  If less or more than one existing item matches the given</span>
 <span class="doccomment">/// predicate closure, an error is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `v` The vector to move and replace an item within.</span>
+<span class="doccomment">/// * `new` The instance of the new item to use in place of an existing item.</span>
+<span class="doccomment">/// * `predicate` A closure that defines how to locate the single item to remove from the vector</span>
+<span class="doccomment">/// and replace with the new item.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_single_matching_vec_element</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(
     <span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
     <span class="ident">new</span>: <span class="ident">T</span>,
@@ -441,6 +504,12 @@
 <span class="doccomment">/// Creates a message that sends funds of the specified denomination from the contract to the recipient address.</span>
 <span class="doccomment">/// Important: The response type is of ProvenanceMsg, which allows this bank send message to match the type</span>
 <span class="doccomment">/// used for contract execution routes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `recipient` The bech32 address of the receiver of the sent funds.</span>
+<span class="doccomment">/// * `amount` An amount of coin to send (from the contract&#39;s internal funding amount).</span>
+<span class="doccomment">/// * `denom` The denomination of coin to send.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bank_send</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">D</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">recipient</span>: <span class="ident">R</span>,
     <span class="ident">amount</span>: <span class="ident">u128</span>,
@@ -457,6 +526,11 @@
 <span class="doccomment">/// Ensures that access routes have a non-empty route property.</span>
 <span class="doccomment">/// Ensures that access routes either have an unset name, or a non-blank, set name.</span>
 <span class="doccomment">/// Ensures that all access routes, after being trimmed of trailing whitespace, are unique. Drops duplicates.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `routes` The vector of routes to filter. Moves into this function and is replaced by a new</span>
+<span class="doccomment">/// vector containing only valid routes.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span> {
     <span class="ident">routes</span>
         .<span class="ident">into_iter</span>()

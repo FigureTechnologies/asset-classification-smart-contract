@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["DepsManager",""]]});
+initSidebarItems({"trait":[["DepsManager","Allows dynamic delegation of a cosmwasm DepsMutC to prevent common issues that arise when the struct is moved."]]});

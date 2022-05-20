@@ -57,12 +57,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-
       - name: Get Release Version
         run: |
           APP_VERSION=$(cargo metadata | jq -r '.packages[] | select(.name == "asset-classification-smart-contract") | .version')
@@ -78,6 +72,13 @@ jobs:
             echo "Tag [$RELEASE_VERSION] has not yet been used. Continuing with release";
           fi
           echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
+
+      - name: Generate Rust Docs
+        if: ${{ !env.TAG_EXISTS }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --no-deps
 
       - name: Stage Cargo Docs
         if: ${{ !env.TAG_EXISTS }}

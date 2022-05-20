@@ -63,9 +63,9 @@ impl AddAssetVerifierV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier)
-/// message is provided.  Attempts to add a new [VerifierDefinition](crate::core::types::verifier_definition::VerifierDefinition)
+/// message is provided.  Attempts to add a new [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
 /// to an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition) if no
-/// verifier exists with a matching [address](crate::core::types::verifier_definition::VerifierDefinition::address).
+/// verifier exists with a matching [address](crate::core::types::verifier_detail::VerifierDetail::address).
 ///
 /// # Parameters
 ///

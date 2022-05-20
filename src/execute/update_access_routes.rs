@@ -23,9 +23,9 @@ use cosmwasm_std::{MessageInfo, Response};
 /// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the
 /// sender is referring to in the request.
 /// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by
-/// the [identifier](self::UpdateAccessRoutes::identifier).  This must either match the sender, or
+/// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or
 /// the sender must be the [contract admin](crate::core::state::StateV2::admin).
-/// * `access_routes` A vector of [AccessRoute](super::types::access_route::AccessRoute) to be used
+/// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used
 /// instead of the existing routes.  If other existing routes need to be maintained and the updated
 /// is intended to simply add a new route, then the existing routes need to be included in the
 /// request alongside the new route(s).
@@ -44,9 +44,9 @@ impl UpdateAccessRoutesV1 {
     /// [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute) that the
     /// sender is referring to in the request.
     /// * `owner_address` The Provenance Blockchain bech32 address that owns the scope referred to by
-    /// the [identifier](self::UpdateAccessRoutes::identifier).  This must either match the sender, or
+    /// the [identifier](self::UpdateAccessRoutesV1::identifier).  This must either match the sender, or
     /// the sender must be the [contract admin](crate::core::state::StateV2::admin).
-    /// * `access_routes` A vector of [AccessRoute](super::types::access_route::AccessRoute) to be used
+    /// * `access_routes` A vector of [AccessRoute](crate::core::types::access_route::AccessRoute) to be used
     /// instead of the existing routes.  If other existing routes need to be maintained and the updated
     /// is intended to simply add a new route, then the existing routes need to be included in the
     /// request alongside the new route(s).

@@ -22,7 +22,7 @@ use crate::{
 /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
 /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
 /// property.
-/// * `expected_result` The value of [enabled](super::types::asset_definition::AssetDefinition::enabled)
+/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
 /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
 /// in succession (either by accident or by various unrelated callers) will only be honored if
 /// the asset definition is in the intended state during the execution of the route.
@@ -39,7 +39,7 @@ impl ToggleAssetDefinitionV1 {
     /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
     /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
     /// property.
-    /// * `expected_result` The value of [enabled](super::types::asset_definition::AssetDefinition::enabled)
+    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
     /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
     /// in succession (either by accident or by various unrelated callers) will only be honored if
     /// the asset definition is in the intended state during the execution of the route.

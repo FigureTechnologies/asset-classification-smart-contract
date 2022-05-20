@@ -27,11 +27,11 @@ use cosmwasm_std::{MessageInfo, Response};
 /// that retries logic when exceptions or other code execution issues cause a failed verification.
 /// * `message` An optional string describing the result of the verification process.  If omitted,
 /// a standard message describing success or failure based on the value of `success` will be
-/// displayed in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute).
+/// displayed in the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 /// * `access_routes` Like in the [OnboardAsset](self::ExecuteMsg::OnboardAsset) message, this
 /// parameter allows the verifier to provide access routes for  the assets that it has successfully
 /// fetched from the underlying scope data.  This allows for the verifier to define its own subset
-/// of [AccessRoute](super::types::access_route::AccessRoute) values to allow actors with permission
+/// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission
 /// to easily fetch asset data from a new location, potentially without any Provenance Blockchain
 /// interaction, facilitating the process of data interaction.
 #[derive(Clone, PartialEq)]

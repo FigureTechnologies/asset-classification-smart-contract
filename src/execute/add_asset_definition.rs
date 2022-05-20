@@ -16,10 +16,10 @@ use provwasm_std::{bind_name, NameBinding};
 /// # Parameters
 ///
 /// * `asset_definition` The asset definition to add to the internal storage.  Must have a unique
-/// [asset_type](crate::core::types:asset_definition::AssetDefinition::asset_type).
+/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
 /// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
 /// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
-/// with the provided definition's [asset_type](crate::core::types:asset_definition::AssetDefinition::asset_type).
+/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
 #[derive(Clone, PartialEq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinition,

@@ -95,11 +95,14 @@ jobs:
         if: ${{ !env.TAG_EXISTS }}
         run: |
           # Add redirect page to inner doc index
-          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" > target/doc/index.html
+          echo "<meta http-equiv=\"refresh\" content=\"0; url=asset_classification_smart_contract\">" >> target/doc/index.html
           # Create doc deployment location
+          mkdir ./pages-files
+          # Move documentation to
           cp -r target/doc ./pages-files/docs
 
       - name: Deploy to GitHub Pages
+        if: ${{ !env.TAG_EXISTS }}
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
           branch: gh-pages

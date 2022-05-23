@@ -333,6 +333,16 @@ pub fn assert_single_item<T: Clone, S: Into<String>>(slice: &[T], message: S) ->
     slice.first().unwrap().clone()
 }
 
+pub fn assert_single_item_by<T: Clone, S: Into<String>, F: FnMut(&&T) -> bool>(
+    slice: &[T],
+    message: S,
+    predicate: F,
+) -> T {
+    let filtered_slice = slice.into_iter().filter(predicate).collect::<Vec<&T>>();
+    assert_eq!(1, filtered_slice.len(), "{}", message.into());
+    filtered_slice.first().unwrap().clone().to_owned()
+}
+
 /// Crawls the vector of messages contained in the provided response, and, if an add attribute message
 /// is contained therein, will set the attribute in the MockOwnedDeps' ProvenanceMockQuerier, which
 /// will cause downstream consumers in the rest of the test structure to see that attribute as the latest

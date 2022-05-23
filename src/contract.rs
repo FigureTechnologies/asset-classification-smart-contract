@@ -10,6 +10,7 @@ use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVe
 use crate::execute::verify_asset::{verify_asset, VerifyAssetV1};
 use crate::instantiate::init_contract::init_contract;
 use crate::migrate::migrate_contract::migrate_contract;
+use crate::migrate::migrate_to_asset_definition_v2::migrate_to_asset_definition_v2;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_definitions::query_asset_definitions;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
@@ -152,5 +153,8 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 pub fn migrate(deps: DepsMutC, _env: Env, msg: MigrateMsg) -> EntryPointResponse {
     match msg {
         MigrateMsg::ContractUpgrade { options } => migrate_contract(deps, options),
+        MigrateMsg::MigrateToAssetDefinitionV2 { options } => {
+            migrate_to_asset_definition_v2(deps, options)
+        }
     }
 }

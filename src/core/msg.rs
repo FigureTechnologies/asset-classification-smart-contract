@@ -239,6 +239,10 @@ pub enum MigrateMsg {
         /// upgrade.
         options: Option<MigrationOptions>,
     },
+    // TODO: Remove after removing AssetDefinitionV1
+    MigrateToAssetDefinitionV2 {
+        options: Option<MigrationOptions>,
+    },
 }
 
 /// Sub-level struct that defines optional changes that can occur during the migration process.

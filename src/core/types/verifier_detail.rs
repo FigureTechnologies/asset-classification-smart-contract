@@ -2,6 +2,7 @@ use crate::core::types::fee_destination::FeeDestinationV2;
 use cosmwasm_std::{Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::ops::Mul;
 
 use super::{entity_detail::EntityDetail, fee_destination::FeeDestination};
 
@@ -55,6 +56,22 @@ impl VerifierDetail {
             fee_percent,
             fee_destinations,
             entity_detail,
+        }
+    }
+
+    pub fn to_v2(self) -> VerifierDetailV2 {
+        let total_fee_cost = self.onboarding_cost.mul(self.fee_percent);
+        VerifierDetailV2 {
+            address: self.address,
+            onboarding_cost: self.onboarding_cost,
+            onboarding_denom: self.onboarding_denom,
+            fee_amount: total_fee_cost,
+            fee_destinations: self
+                .fee_destinations
+                .into_iter()
+                .map(|dest| dest.to_v2(total_fee_cost.u128()))
+                .collect(),
+            entity_detail: self.entity_detail,
         }
     }
 }

@@ -10,7 +10,7 @@ use crate::util::traits::ResultExtensions;
 use cosmwasm_std::Uint128;
 
 /// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its
-/// associated [AssetDefinition](crate::core::types::asset_definition::AssetDefinition) values.
+/// associated [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) values.
 ///
 /// # Parameters
 ///

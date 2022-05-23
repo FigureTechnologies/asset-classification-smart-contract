@@ -10,14 +10,14 @@
   ],
   "properties": {
     "asset_definitions": {
-      "description": "All the initial [AssetDefinitions](super::types::access_definition::AccessDefinition) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
+      "description": "All the initial [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/AssetDefinitionInputV2"
       }
     },
     "base_contract_name": {
-      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition) will use this value as their parent name.",
+      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2) will use this value as their parent name.",
       "type": "string"
     },
     "bind_base_name": {

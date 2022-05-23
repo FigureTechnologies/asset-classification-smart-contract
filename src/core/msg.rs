@@ -10,7 +10,7 @@ use super::types::access_route::AccessRoute;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InitMsg {
-    /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)
+    /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2)
     /// will use this value as their parent name.
     pub base_contract_name: String,
     /// If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name)
@@ -18,7 +18,7 @@ pub struct InitMsg {
     /// but the base name will still be recorded in the contract's [state](super::state::StateV2)
     /// and be used for child names for [AssetDefinitions](super::types::access_definition::AccessDefinition).
     pub bind_base_name: bool,
-    /// All the initial [AssetDefinitions](super::types::access_definition::AccessDefinition) for the
+    /// All the initial [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2) for the
     /// contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition)
     /// functionality.
     pub asset_definitions: Vec<AssetDefinitionInputV2>,
@@ -34,7 +34,7 @@ pub struct InitMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    /// This route can be used to retrieve a specific [AssetDefinition](super::types::asset_definition::AssetDefinition) from the contract's
+    /// This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract's
     /// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
     /// response will be returned.
     QueryAssetDefinition {
@@ -42,7 +42,7 @@ pub enum QueryMsg {
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         qualifier: SerializedEnum,
     },
-    /// This route can be used to retrieve all [AssetDefinitions](super::types::asset_definition::AssetDefinition) stored in the contract.  This response payload can be quite
+    /// This route can be used to retrieve all [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) stored in the contract.  This response payload can be quite
     /// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
     /// to be inspected or displayed.  The query asset definition route is much more efficient.
     QueryAssetDefinitions {},

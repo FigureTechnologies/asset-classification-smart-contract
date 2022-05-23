@@ -2,6 +2,7 @@ use cosmwasm_std::Addr;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
@@ -15,7 +16,7 @@ use crate::{
 use super::{
     access_definition::AccessDefinition, access_route::AccessRoute,
     asset_identifier::AssetIdentifier, asset_onboarding_status::AssetOnboardingStatus,
-    asset_verification_result::AssetVerificationResult, verifier_detail::VerifierDetail,
+    asset_verification_result::AssetVerificationResult,
 };
 
 /// An asset scope attribute contains all relevant information for asset classification, and is serialized directly
@@ -41,7 +42,7 @@ pub struct AssetScopeAttribute {
     /// verifier address chosen by the requestor is added to the scope attribute.  This ensures that
     /// if the verifier values change due to an external update, the original fee structure will be
     /// honored for the onboarding task placed originally.
-    pub latest_verifier_detail: Option<VerifierDetail>,
+    pub latest_verifier_detail: Option<VerifierDetailV2>,
     /// The most recent verification is kept on the scope attribute.  If the verifier determines that
     /// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.
     pub latest_verification_result: Option<AssetVerificationResult>,
@@ -78,7 +79,7 @@ impl AssetScopeAttribute {
         requestor_address: S2,
         verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
-        latest_verifier_detail: VerifierDetail,
+        latest_verifier_detail: VerifierDetailV2,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;

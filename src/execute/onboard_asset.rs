@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, load_asset_definition_by_type};
+use crate::core::state::{config_read_v2, load_asset_definition_v2_by_type};
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
@@ -21,12 +21,12 @@ use provwasm_std::ProvenanceQuerier;
 ///
 /// * `identifier` An instance of the asset identifier enum that helps the contract identify which
 /// scope that the requestor is referring to in the request.
-/// * `asset_type` [AssetDefinition's](crate::core::types::asset_definition::AssetDefinition) unique
-/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) value.  This
+/// * `asset_type` [AssetDefinitionV2's](crate::core::types::asset_definition::AssetDefinitionV2) unique
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type) value.  This
 /// value must correspond to an existing type in the contract's internal storage, or the request
 /// for onboarding will be rejected.
-/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetail::address)
-/// of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) on the [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetailV2::address)
+/// of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// referred to by the [asset_type](self::OnboardAssetV1::asset_type) property. If the address does
 /// not refer to any existing verifier detail, the request will be rejected.
 /// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute's](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
@@ -94,24 +94,25 @@ where
 {
     let asset_identifiers = msg.identifier.to_identifiers()?;
     // get asset definition config for type, or error if not present
-    let asset_definition =
-        match repository.use_deps(|d| load_asset_definition_by_type(d.storage, &msg.asset_type)) {
-            Ok(state) => {
-                if !state.enabled {
-                    return ContractError::AssetTypeDisabled {
-                        asset_type: msg.asset_type,
-                    }
-                    .to_err();
-                }
-                state
-            }
-            Err(_) => {
-                return ContractError::UnsupportedAssetType {
+    let asset_definition = match repository
+        .use_deps(|d| load_asset_definition_v2_by_type(d.storage, &msg.asset_type))
+    {
+        Ok(state) => {
+            if !state.enabled {
+                return ContractError::AssetTypeDisabled {
                     asset_type: msg.asset_type,
                 }
-                .to_err()
+                .to_err();
             }
-        };
+            state
+        }
+        Err(_) => {
+            return ContractError::UnsupportedAssetType {
+                asset_type: msg.asset_type,
+            }
+            .to_err()
+        }
+    };
 
     // verify prescribed verifier is present as a verifier in asset definition
     let verifier_config = match asset_definition

@@ -258,13 +258,15 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Uint128};
+    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, ProvenanceMsg, ProvenanceMsgParams,
     };
     use serde_json_wasm::to_string;
 
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::DEFAULT_FEE_AMOUNT;
     use crate::{
         core::{
             error::ContractError,
@@ -276,7 +278,6 @@ mod tests {
                 asset_onboarding_status::AssetOnboardingStatus,
                 asset_scope_attribute::AssetScopeAttribute,
                 asset_verification_result::AssetVerificationResult,
-                verifier_detail::VerifierDetail,
             },
         },
         execute::verify_asset::VerifyAssetV1,
@@ -288,8 +289,8 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
-                DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
                 assert_single_item, get_default_access_routes, get_default_asset_scope_attribute,
@@ -560,11 +561,11 @@ mod tests {
                     requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
                     verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
                     onboarding_status: AssetOnboardingStatus::Pending,
-                    latest_verifier_detail: VerifierDetail {
+                    latest_verifier_detail: VerifierDetailV2 {
                         address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                         onboarding_cost: Uint128::new(DEFAULT_ONBOARDING_COST),
                         onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
-                        fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
+                        fee_amount: Uint128::new(DEFAULT_FEE_AMOUNT),
                         fee_destinations: vec![],
                         entity_detail: get_default_entity_detail().to_some(),
                     }

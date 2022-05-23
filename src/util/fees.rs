@@ -1,13 +1,12 @@
-use std::ops::Mul;
-
-use cosmwasm_std::{CosmosMsg, Uint128};
+use cosmwasm_std::CosmosMsg;
 use provwasm_std::ProvenanceMsg;
 
-use crate::core::{error::ContractError, types::verifier_detail::VerifierDetail};
+use crate::core::error::ContractError;
+use crate::core::types::verifier_detail::VerifierDetailV2;
 
 use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions};
 
-/// This function distributes funds from the sender address to the targets defined by a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail).
+/// This function distributes funds from the sender address to the targets defined by a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2).
 /// It breaks down all percentages defined in the verifier detail's fee destinations and core onboarding
 /// cost to derive a variable sized vector of destination messages.
 /// Important: The response type is of [ProvenanceMsg](provwasm_std::ProvenanceMsg), which allows
@@ -17,71 +16,61 @@ use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions
 ///
 /// * `verifier` The verifier detail from which to extract fee information.
 pub fn calculate_verifier_cost_messages(
-    verifier: &VerifierDetail,
+    verifier: &VerifierDetailV2,
 ) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
     let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
-    // The total funds disbursed across fees are equal to the cost multiplied by the fee percent
-    let fee_total = verifier.onboarding_cost.mul(verifier.fee_percent);
     let denom = &verifier.onboarding_denom;
     // The onboarding_cost is a u128, so attempting to subtract the fee total from it when the fee total is a greater value
     // will result in an unhandled panic.  Detect this potentiality for a misconfigured verifier and exit early to prevent
     // future head-scratching (panics are very difficult to debug due to redacted responses)
-    if fee_total > verifier.onboarding_cost {
+    if verifier.fee_amount > verifier.onboarding_cost {
         return ContractError::generic(
-            format!("misconfigured verifier data! calculated fee total ({}{}) was greater than the total cost of onboarding ({}{})",
-            fee_total,
+             format!("misconfigured verifier data! fee total ({}{}) was greater than the total cost of onboarding ({}{})",
+             verifier.fee_amount,
              denom,
              verifier.onboarding_cost,
              denom,
         )).to_err();
     }
     // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-    let verifier_cost = verifier.onboarding_cost - fee_total;
-    // If all the fee totals plus the verifier cost do not equate to the onboarding cost, then the verifier is misconfigured
-    let inner_fee_distribution_sum = verifier
-        .fee_destinations
-        .iter()
-        .map(|d| fee_total.mul(d.fee_percent))
-        .sum::<Uint128>();
-    if verifier.onboarding_cost != verifier_cost + inner_fee_distribution_sum {
-        return ContractError::generic(
-            format!("misconfigured verifier data! expected onboarding cost to total {}{}, but total costs were {}{} (verifier) + {}{} (fee destination sum) = {}{}",
-            verifier.onboarding_cost,
-            denom,
-            verifier_cost,
-            denom,
-            inner_fee_distribution_sum,
-            denom,
-            verifier_cost + inner_fee_distribution_sum,
-            denom,
-        )).to_err();
-    }
+    let verifier_cost = verifier.onboarding_cost - verifier.fee_amount;
     // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
-    if verifier_cost > Uint128::zero() {
+    if !verifier_cost.is_zero() {
         cost_messages.push(bank_send(&verifier.address, verifier_cost.u128(), denom));
     }
+    let mut fee_total: u128 = 0;
     // Append a message for each destination
     verifier.fee_destinations.iter().for_each(|destination| {
         cost_messages.push(bank_send(
             &destination.address,
-            fee_total.mul(destination.fee_percent).u128(),
+            destination.fee_amount.u128(),
             denom,
         ));
+        fee_total += destination.fee_amount.u128();
     });
+    if fee_total != verifier.fee_amount.u128() {
+        return ContractError::generic(
+            format!("misconfigured fee destinations! fee total ({}{}) was not equal to the specified fee amount ({}{})",
+                fee_total,
+                denom,
+                verifier.fee_amount.u128(),
+                denom,
+            )
+        ).to_err();
+    }
     cost_messages.to_ok()
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{BankMsg, CosmosMsg, Decimal, Uint128};
+    use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
     use provwasm_std::ProvenanceMsg;
 
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::{
-        core::{
-            error::ContractError,
-            types::{fee_destination::FeeDestination, verifier_detail::VerifierDetail},
-        },
+        core::error::ContractError,
         testutil::test_utilities::get_default_entity_detail,
         util::{constants::NHASH, traits::OptionExtensions},
     };
@@ -91,19 +80,19 @@ mod tests {
     #[test]
     fn test_invalid_verifier_greater_fee_than_onboarding_cost() {
         // This verifier tries to send 150% of the fee to the fee destination. NO BUENO!
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "address",
             Uint128::new(100),
             NHASH,
-            Decimal::percent(150),
-            vec![FeeDestination::new("fee", Decimal::percent(100))],
+            Uint128::new(101),
+            vec![FeeDestinationV2::new("fee", Uint128::new(101))],
             get_default_entity_detail().to_some(),
         );
         let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured verifier data! calculated fee total (150nhash) was greater than the total cost of onboarding (100nhash)",
+                    "misconfigured verifier data! fee total (101nhash) was greater than the total cost of onboarding (100nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
@@ -117,21 +106,21 @@ mod tests {
 
     #[test]
     fn test_invalid_verifier_fee_destination_sum_mismatch() {
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "address",
             Uint128::new(100),
             NHASH,
-            // Take half of the onboarding cost as a fee, but only request that 50% of that cost to be disbursed
-            Decimal::percent(50),
-            // All fee destinations should always add up to 100% (as enforced by validation)
-            vec![FeeDestination::new("fee", Decimal::percent(50))],
+            // Take half of the onboarding cost as a fee, but have the destination request more than that
+            Uint128::new(50),
+            // All fee destinations should always add up to the verifier's fee_amount
+            vec![FeeDestinationV2::new("fee", Uint128::new(51))],
             None,
         );
         let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured verifier data! expected onboarding cost to total 100nhash, but total costs were 50nhash (verifier) + 25nhash (fee destination sum) = 75nhash",
+                    "misconfigured fee destinations! fee total (51nhash) was not equal to the specified fee amount (50nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
@@ -145,11 +134,11 @@ mod tests {
 
     #[test]
     fn test_only_send_to_verifier() {
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "verifier",
             Uint128::new(100),
             NHASH,
-            Decimal::zero(),
+            Uint128::zero(),
             vec![],
             None,
         );
@@ -171,15 +160,12 @@ mod tests {
 
     #[test]
     fn test_only_send_to_single_fee_destination() {
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "verifier",
             Uint128::new(100),
             NHASH,
-            Decimal::percent(100),
-            vec![FeeDestination::new(
-                "fee-destination",
-                Decimal::percent(100),
-            )],
+            Uint128::new(100),
+            vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
             None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
@@ -200,15 +186,12 @@ mod tests {
 
     #[test]
     fn test_even_split_between_verifier_and_single_fee_destination() {
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "verifier",
             Uint128::new(100),
             NHASH,
-            Decimal::percent(50),
-            vec![FeeDestination::new(
-                "fee-destination",
-                Decimal::percent(100),
-            )],
+            Uint128::new(50),
+            vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
             None,
         );
         let messages = calculate_verifier_cost_messages(&verifier)
@@ -232,17 +215,17 @@ mod tests {
 
     #[test]
     fn test_many_fee_destinations_and_some_to_verifier() {
-        let verifier = VerifierDetail::new(
+        let verifier = VerifierDetailV2::new(
             "verifier",
             Uint128::new(200),
             NHASH,
-            Decimal::percent(50),
+            Uint128::new(100),
             vec![
-                FeeDestination::new("first", Decimal::percent(20)),
-                FeeDestination::new("second", Decimal::percent(20)),
-                FeeDestination::new("third", Decimal::percent(40)),
-                FeeDestination::new("fourth", Decimal::percent(5)),
-                FeeDestination::new("fifth", Decimal::percent(15)),
+                FeeDestinationV2::new("first", Uint128::new(20)),
+                FeeDestinationV2::new("second", Uint128::new(20)),
+                FeeDestinationV2::new("third", Uint128::new(40)),
+                FeeDestinationV2::new("fourth", Uint128::new(5)),
+                FeeDestinationV2::new("fifth", Uint128::new(15)),
             ],
             None,
         );
@@ -261,35 +244,35 @@ mod tests {
             "first",
             20,
             NHASH,
-            "expected 20 percent of the remainder to be sent to the first fee destination",
+            "expected 20 nhash of the fee to be sent to the first fee destination",
         );
         test_messages_contains_send_for_address(
             &messages,
             "second",
             20,
             NHASH,
-            "expected 20 percent of the remainder to be sent to the second fee destination",
+            "expected 20 nhash of the fee to be sent to the second fee destination",
         );
         test_messages_contains_send_for_address(
             &messages,
             "third",
             40,
             NHASH,
-            "expected 40 percent of the remainder to be sent to the third fee destination",
+            "expected 40 nhash of the fee to be sent to the third fee destination",
         );
         test_messages_contains_send_for_address(
             &messages,
             "fourth",
             5,
             NHASH,
-            "expected 5 percent of the remainder to be sent to the fourth fee destination",
+            "expected 5 nhash of the fee to be sent to the fourth fee destination",
         );
         test_messages_contains_send_for_address(
             &messages,
             "fifth",
             15,
             NHASH,
-            "expected 15 percent of the remainder to be sent to the fifth fee destination",
+            "expected 15 nhash of the fee to be sent to the fifth fee destination",
         );
     }
 

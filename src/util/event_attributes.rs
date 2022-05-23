@@ -86,9 +86,9 @@ impl EventAttributes {
     /// * `event_type` All events should denote their type for external consumers of Provenance
     /// Blockchain Event Stream, so this value is required for any new instance and appends the
     /// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).
-    /// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// * `asset_type` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
     /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
-    /// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// * `scope_address` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
     /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
     pub fn for_asset_event<T1: Into<String>, T2: Into<String>>(
         event_type: EventType,
@@ -105,7 +105,7 @@ impl EventAttributes {
     ///
     /// # Parameters
     ///
-    /// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// * `asset_type` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
     /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
     pub fn set_asset_type<T: Into<String>>(mut self, asset_type: T) -> Self {
         self.attributes
@@ -118,7 +118,7 @@ impl EventAttributes {
     ///
     /// # Parameters
     ///
-    /// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// * `scope_address` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
     /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
     pub fn set_scope_address<T: Into<String>>(mut self, scope_address: T) -> Self {
         self.attributes
@@ -131,8 +131,8 @@ impl EventAttributes {
     ///
     /// # Parameters
     ///
-    /// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetail::address)
-    /// for a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) that uses the
+    /// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetailV2::address)
+    /// for a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) that uses the
     /// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).
     pub fn set_verifier<T: Into<String>>(mut self, verifier_address: T) -> Self {
         self.attributes

@@ -1,10 +1,10 @@
 use cosmwasm_std::{to_binary, Addr, Binary};
 use provwasm_std::ProvenanceQuerier;
 
+use crate::core::state::load_asset_definition_v2_by_scope_spec;
 use crate::{
     core::{
         error::ContractError,
-        state::load_asset_definition_by_scope_spec,
         types::{asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute},
     },
     util::{
@@ -120,7 +120,7 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     let scope = querier.get_scope(scope_address.into())?;
     // Second, query up the asset definition by the scope spec, which is a unique characteristic to the scope spec
     let asset_definition =
-        load_asset_definition_by_scope_spec(deps.storage, scope.specification_id)?;
+        load_asset_definition_v2_by_scope_spec(deps.storage, scope.specification_id)?;
     // Third, construct the attribute name that the scope attribute lives on by mixing the asset definition's asset type with state values
     let attribute_name = asset_definition.attribute_name(deps)?;
     // Fourth, query up scope attributes attached to the scope address under the name attribute.
@@ -149,10 +149,10 @@ mod tests {
     use cosmwasm_std::{from_binary, StdError};
     use provwasm_mocks::mock_dependencies;
 
+    use crate::core::state::load_asset_definition_v2_by_type;
     use crate::{
         core::{
             error::ContractError,
-            state::load_asset_definition_by_type,
             types::{
                 asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute,
             },
@@ -179,7 +179,7 @@ mod tests {
         let scope_address = asset_uuid_to_scope_address(&asset_uuid)
             .expect("expected uuid to scope address conversion to work properly");
         // TDOO: Use the onboard_asset code here when it's ready with mock attribute tracking and such
-        let asset_def = load_asset_definition_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+        let asset_def = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect(
                 "the default asset definition should be available in storage after instantiation",
             );

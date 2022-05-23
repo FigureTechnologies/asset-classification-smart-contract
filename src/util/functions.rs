@@ -2,11 +2,10 @@ use crate::core::error::ContractError;
 use crate::core::types::access_route::AccessRoute;
 use crate::util::aliases::AssetResult;
 use crate::util::traits::ResultExtensions;
-use cosmwasm_std::{coin, BankMsg, CosmosMsg, Decimal, Uint128};
+use cosmwasm_std::{coin, BankMsg, CosmosMsg};
 use provwasm_std::ProvenanceMsg;
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::ops::Mul;
 
 /// Determines how many elements within the provided reference slice are unique by the given
 /// property.
@@ -39,8 +38,8 @@ where
 /// # Parameters
 ///
 /// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the
-/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) property of an
-/// [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type) property of an
+/// [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
 /// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should
 /// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the
 /// contract's [StateV2](crate::core::state::StateV2) internally-stored value.
@@ -59,25 +58,6 @@ pub fn generate_asset_attribute_name<T: Into<String>, U: Into<String>>(
     base_contract_name: U,
 ) -> String {
     format!("{}.{}", asset_type.into(), base_contract_name.into())
-}
-
-/// Converts a decimal to a display string, like "1%".
-///
-/// # Parameters
-///
-/// * `decimal` The cosmwasm decimal instance to convert to a percent.
-///
-/// # Examples
-/// ```
-/// use cosmwasm_std::Decimal;
-/// use asset_classification_smart_contract::util::functions::decimal_display_string;
-///
-/// let decimal = Decimal::percent(25);
-/// let display_string = decimal_display_string(&decimal);
-/// assert_eq!("25%", display_string.as_str());
-/// ```
-pub fn decimal_display_string(decimal: &Decimal) -> String {
-    format!("{}%", Uint128::new(100).mul(*decimal))
 }
 
 /// Takes an existing vector, moves it into this function, swaps out a single existing item for

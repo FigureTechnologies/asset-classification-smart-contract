@@ -60,19 +60,19 @@ meant to be an exhaustive list of all different types of accounts that may have 
 the sender address is automatically used as the admin.  This account is required to execute many of the
 contract execution endpoints.  This address can later be changed when running a contract migration.
 
-* __Verifier Account__: This account type is used in the contract's [AssetDefinition](src/core/types/asset_definition.rs)'s
-[VerifierDetail](src/core/types/verifier_detail.rs).  It indicates an account that will inspect the events emitted by
+* __Verifier Account__: This account type is used in the contract's [AssetDefinitionV2](src/core/types/asset_definition.rs)'s
+[VerifierDetailV2](src/core/types/verifier_detail.rs).  It indicates an account that will inspect the events emitted by
 the contract, receive all or a portion of the fees sent to the contract during the onboarding process, and perform
 verification of an underlying scope.  Eventually, this account is tasked with calling into the [Verify Asset](src/execute/verify_asset.rs)
 execution route to specify whether or not an onboarded scope is valid and therefore verified.
 
 * __Onboarding Account__: This account is not stored in the contract, and can be any Provenance Blockchain address.  It
 is the primary consumer of the contract's functionality, and calls into the [Onboard Asset](src/execute/onboard_asset.rs)
-execution route, specifying a Verifier Account and paying the fees required by the verifier's [VerifierDetail](src/core/types/verifier_detail.rs).
+execution route, specifying a Verifier Account and paying the fees required by the verifier's [VerifierDetailV2](src/core/types/verifier_detail.rs).
 
-* __Fee Account__: This account is an optional specification in a [VerifierDetail](src/core/types/verifier_detail.rs) and,
+* __Fee Account__: This account is an optional specification in a [VerifierDetailV2](src/core/types/verifier_detail.rs) and,
 when specified, indicates that some or all of the fees provided during the onboarding process should be sent to this address.
-The fee account is specified directly in a [FeeDestination](src/core/types/fee_destination.rs), nested within the [VerifierDetail](src/core/types/verifier_detail.rs).
+The fee account is specified directly in a [FeeDestinationV2](src/core/types/fee_destination.rs), nested within the [VerifierDetailV2](src/core/types/verifier_detail.rs).
 There can be multiple Fee Accounts for a single Verifier Account, ensuring that any amount of fee division can occur.
 
 ## Contract Interaction
@@ -87,7 +87,7 @@ When the contract is instantiated, it does the following actions:
 based on an input value.  This can be omitted if the contract does not want to actually bind its root name.  This
 circumstance can arise if the root name of the contract already exists, or if it is restricted.
 
-* Optionally establishes an initial set of [AssetDefinition](src/core/types/asset_definition.rs) values if any are
+* Optionally establishes an initial set of [AssetDefinitionV2](src/core/types/asset_definition.rs) values if any are
 provided, and binds their names, also optionally.  The names bound will be their asset types, branched from the contract's
 base name value.
 
@@ -100,7 +100,7 @@ later during a contract migration.
 #### Request Parameters
 
 * `base_contract_name`: This name serves as the basis for all generated [Provenance Attributes](https://docs.provenance.io/modules/account).
-All [AssetDefinition](src/core/types/asset_definition.rs) names established will use this name as the root value.
+All [AssetDefinitionV2](src/core/types/asset_definition.rs) names established will use this name as the root value.
 For instance, if the `base_contract_name` is `testasset` and an asset definition's `asset_type` is specified as `donut`,
 then the attribute name used for created [AssetScopeAttributes](src/core/types/asset_scope_attribute.rs) will be
 `donut.testasset`.
@@ -110,10 +110,10 @@ provided name uses a restricted root name, so using a value of `false` can circu
 bound later or potentially not at all.  The contract needs to own the subnames used for generated attributes in order
 for its bindings to work, but owning the root name is not necessary.
 
-* `asset_definitions`: An array of [AssetDefinitionInput](src/core/types/asset_definition.rs) values that will be used
-to establish an initial set of [AssetDefinition](src/core/types/asset_definition.rs)s in the contract's internal storage.
+* `asset_definitions`: An array of [AssetDefinitionInputV2](src/core/types/asset_definition.rs) values that will be used
+to establish an initial set of [AssetDefinitionV2](src/core/types/asset_definition.rs)s in the contract's internal storage.
 These definitions will automatically attempt to bind their own names, branching from the `base_contract_name`, but the
-[AssetDefinitionInput](src/core/types/asset_definition.rs) includes a `bind_name` boolean that allows this functionality
+[AssetDefinitionInputV2](src/core/types/asset_definition.rs) includes a `bind_name` boolean that allows this functionality
 to be disabled if that behavior is not desired.
 
 * `is_test`: A boolean value allowing for less restrictions to be placed on certain functionalities across the contract's
@@ -140,11 +140,11 @@ underlying record values.  This should never be set to true in a mainnet environ
           "address": "tp14w3jf4em4uszs77yaqnmfrlxwcmqux5g6hfpdf",
           "onboarding_cost": "150",
           "onboarding_denom": "nhash",
-          "fee_percent": "0.5",
+          "fee_amount": "75",
           "fee_destinations": [
             {
               "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
-              "fee_percent": "1.0"
+              "fee_amount": "75"
             }
           ],
           "entity_detail": {
@@ -224,7 +224,7 @@ asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all c
 provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The
 attribute is attached based on the `base_contract_name` specified in the contract, combined with the specified asset type
 in the request.  Ex: if `base_contract_name` is "asset" and the asset type is "myasset", the attribute would be assigned
-under the name of "myasset.asset".  All available asset types are queryable, and stored in the contract as [AssetDefinition](src/core/types/asset_definition.rs)
+under the name of "myasset.asset".  All available asset types are queryable, and stored in the contract as [AssetDefinitionV2](src/core/types/asset_definition.rs)
 values.  After onboarding is completed, an [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) will be
 stored on the scope with an [AssetOnboardingStatus](src/core/types/asset_onboarding_status.rs) of `Pending`, indicating
 that the asset has been onboarded to the contract but is awaiting verification.
@@ -244,11 +244,11 @@ OR
 {"identifier": {"type": "scope_address", "value": "scope1qzj8tjp76mn3rmyvz49c5738k2asm824ga"}}
 ```
 
-* `asset_type`: A name that must directly match one of the contract's internal [AssetDefinition](src/core/types/asset_definition.rs)
+* `asset_type`: A name that must directly match one of the contract's internal [AssetDefinitionV2](src/core/types/asset_definition.rs)
 names.  Any request with a specified type not matching an asset definition will be rejected outright.
 
-* `verifier_address`: The bech32 address of a Verifier Account associated with the targeted [AssetDefinition](src/core/types/asset_definition.rs),
-within its nested vector of [VerifierDetail](src/core/types/verifier_detail.rs)s.
+* `verifier_address`: The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV2](src/core/types/asset_definition.rs),
+within its nested vector of [VerifierDetailV2](src/core/types/verifier_detail.rs)s.
 
 * `access_routes`: An optional parameter that allows the specification of a location to get the underlying asset data
 for the specified scope.  The [AccessRoute](src/core/types/access_route.rs) struct is very generic in its composition
@@ -366,7 +366,7 @@ attached to the scope that was previously onboarded before verification.
 
 #### [Add Asset Definition](src/execute/add_asset_definition.rs)
 
-__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinition](src/core/types/asset_definition.rs)
+__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](src/core/types/asset_definition.rs)
 value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
 be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
 two criteria:
@@ -377,14 +377,14 @@ Additionally, all added asset definitions must refer to an existing [Provenance 
 
 ##### Request Parameters
 
-* `asset_definition`: An [AssetDefinitionInput](src/core/types/asset_definition.rs) value defining all of the new
-[AssetDefinition](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
+* `asset_definition`: An [AssetDefinitionInputV2](src/core/types/asset_definition.rs) value defining all of the new
+[AssetDefinitionV2](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
 asset definition.
 
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `add_asset_definition`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the added [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the added [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
 ##### Response Sample
 ```json
@@ -401,15 +401,15 @@ asset definition.
           "address": "tp1eqfg2lxlwqs23m320arhuk3dad47ha6tvzu5n5",
           "onboarding_cost": "1000000000",
           "onboarding_denom:": "nhash",
-          "fee_percent": "0.5",
+          "fee_amount": "500000000",
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
-              "fee_percent": "0.5"
+              "fee_amount": "500000000"
             },
             {
               "address": "tp1k5m8lkshpupuf44p02r4mwgjdawd2kta4n9ry0",
-              "fee_percent": "0.5"
+              "fee_amount": "500000000"
             }
           ],
           "entity_detail": {
@@ -428,21 +428,21 @@ asset definition.
 ```
 
 #### [Update Asset Definition](src/execute/update_asset_definition.rs)
-__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinition](src/core/types/asset_definition.rs)
+__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](src/core/types/asset_definition.rs)
 value to be updated.  It works by matching the input's `asset_type` to an existing asset definition and overwriting the
 existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation
 ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.
 
 ##### Request Parameters
 
-* `asset_definition`: An [AssetDefinitionInput](src/core/types/asset_definition.rs) value defining all of the updated
-  [AssetDefinition](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
+* `asset_definition`: An [AssetDefinitionInputV2](src/core/types/asset_definition.rs) value defining all of the updated
+  [AssetDefinitionV2](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
   asset definition.
 
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `update_asset_definition`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the updated [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the updated [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
 ##### Response Sample
 ```json
@@ -459,11 +459,11 @@ ensures that after the update, all scope specification addresses contained in as
           "address": "tp1uvnpfg9hmeyuf0t3a6l9xhegx8ewhtk9z683x4",
           "onboarding_cost": "15000000000",
           "onboarding_denom:": "carcoins",
-          "fee_percent": "0.25",
+          "fee_amount": "20000",
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
-              "fee_percent": "1.0"
+              "fee_amount": "20000"
             }
           ],
           "entity_detail": {
@@ -481,7 +481,7 @@ ensures that after the update, all scope specification addresses contained in as
 ```
 
 #### [Toggle Asset Definition](src/execute/toggle_asset_definition.rs)
-__This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinition](src/core/types/asset_definition.rs)
+__This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinitionV2](src/core/types/asset_definition.rs)
 from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to
 be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be
 allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of
@@ -501,7 +501,7 @@ the asset definition is in the intended state during the execution of the route.
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `toggle_asset_definition`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
 * `asset_new_value`: This value will be the new status of the asset definition's `enabled` property, after the toggle occurs (true/false).
 
@@ -516,27 +516,27 @@ the asset definition is in the intended state during the execution of the route.
 ```
 
 #### [Add Asset Verifier](src/execute/add_asset_verifier.rs)
-__This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetail](src/core/types/verifier_detail.rs)
-to an existing [AssetDefinition](src/core/types/asset_definition.rs).  This route is intended to register new verifiers
+__This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetailV2](src/core/types/verifier_detail.rs)
+to an existing [AssetDefinitionV2](src/core/types/asset_definition.rs).  This route is intended to register new verifiers
 without the bulky requirements of the `UpdateAssetDefinition` execution route.  This route will reject verifiers added
 with addresses that match any other verifiers on the target asset definition.
 
 ##### Request Parameters
 
-* `asset_type`: The type of asset for which the new [VerifierDetail](src/core/types/verifier_detail.rs) will be added.
-This must refer to an existing [AssetDefinition](src/core/types/asset_definition.rs)'s `asset_type` value, or the request
+* `asset_type`: The type of asset for which the new [VerifierDetailV2](src/core/types/verifier_detail.rs) will be added.
+This must refer to an existing [AssetDefinitionV2](src/core/types/asset_definition.rs)'s `asset_type` value, or the request
 will be rejected.
 
-* `verifier`: The new [VerifierDetail](src/core/types/verifier_detail.rs) to be added to the asset definition, with all
+* `verifier`: The new [VerifierDetailV2](src/core/types/verifier_detail.rs) to be added to the asset definition, with all
 of its required values.  No verifiers within the existing asset definition must have the same `address` value of this
 parameter, or the request will be rejected.
 
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `add_asset_verifier`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
-* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the new [VerifierDetail](src/core/types/verifier_detail.rs).
+* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the new [VerifierDetailV2](src/core/types/verifier_detail.rs).
 
 ##### Response Sample
 ```json
@@ -547,11 +547,11 @@ parameter, or the request will be rejected.
       "address": "tp149832nekuva7lxtzcezlwhzqjc32vu8lsaqcuv",
       "onboarding_cost": "250",
       "onboarding_denom": "traintoken",
-      "fee_percent": "1.0",
+      "fee_amount": "250",
       "fee_destinations": [
         {
           "address": "tp1lmp2qmntl090whuftym0wthzwjc8xv0v79cu6l",
-          "fee_percent": "1.0"
+          "fee_amount": "250"
         }
       ],
       "entity_detail": {
@@ -566,28 +566,28 @@ parameter, or the request will be rejected.
 ```
 
 #### [Update Asset Verifier](src/execute/update_asset_verifier.rs)
-__This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetail](src/core/types/verifier_detail.rs)
-in an existing [AssetDefinition](src/core/types/asset_definition.rs).  This route is intended to be used when the values
+__This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetailV2](src/core/types/verifier_detail.rs)
+in an existing [AssetDefinitionV2](src/core/types/asset_definition.rs).  This route is intended to be used when the values
 of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the
 referenced asset definition is not present within the contract, or if a verifier does not exist within the asset
 definition that matches the address of the provided verifier data.
 
 ##### Request Parameters
 
-* `asset_type`: The type of asset for which the [VerifierDetail](src/core/types/verifier_detail.rs) will be updated. This
-must refer to an existing [AssetDefinition](src/core/types/asset_definition.rs)'s `asset_type` value, or the request
+* `asset_type`: The type of asset for which the [VerifierDetailV2](src/core/types/verifier_detail.rs) will be updated. This
+must refer to an existing [AssetDefinitionV2](src/core/types/asset_definition.rs)'s `asset_type` value, or the request
 will be rejected.
 
-* `verifier`: The updated [VerifierDetail](src/core/types/verifier_detail.rs) to be modified in the asset definition.
+* `verifier`: The updated [VerifierDetailV2](src/core/types/verifier_detail.rs) to be modified in the asset definition.
 An existing verifier detail within the target asset definition must have a matching `address` value, or the request will
 be rejected.
 
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `update_asset_verifier`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
-* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the updated [VerifierDetail](src/core/types/verifier_detail.rs).
+* `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the updated [VerifierDetailV2](src/core/types/verifier_detail.rs).
 
 ##### Response Sample
 ```json
@@ -598,7 +598,7 @@ be rejected.
       "address": "tp15n6as7tytrza9692anawwc52kyg5pv86lpeyhu",
       "onboarding_cost": "200",
       "onboarding_denom": "widgetdollar",
-      "fee_percent": "0",
+      "fee_amount": "0",
       "fee_destinations": [],
       "entity_detail": {
         "name": "Widget Verifier Inc.",
@@ -639,7 +639,7 @@ routes need to be included in the request alongside the new route(s).
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `update_access_routes`.
 
-* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinition](src/core/types/asset_definition.rs).
+* `asset_type`: This value will be the `asset_type` value stored in the modified [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
 * `asset_scope_address`: This value will be the bech32 address of the [Provenance Blockchain Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope)
 referred to by the `identifier` parameter passed into the execution message.
@@ -698,7 +698,7 @@ defined in the [QueryMsg Enum](src/core/msg.rs).  The json schema for sending a 
 
 #### [Query Asset Definition](src/query/query_asset_definition.rs)
 
-This route can be used to retrieve a specific [AssetDefinition](src/core/types/asset_definition.rs) from the contract's
+This route can be used to retrieve a specific [AssetDefinitionV2](src/core/types/asset_definition.rs) from the contract's
 internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
 response will be returned.
 
@@ -737,11 +737,15 @@ OR
         "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
         "onboarding_cost": "1000000000",
         "onboarding_denom": "nhash",
-        "fee_percent": "0.5",
+        "fee_amount": "1234",
         "fee_destinations": [
           {
             "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
-            "fee_percent": "1.0"
+            "fee_amount": "1000"
+          },
+          {
+            "address": "tp1gkg4a8zrtadlz5c5u56fuhcf5gq3xy4v8pgaef",
+            "fee_amount": "234"
           }
         ],
         "entity_detail": {
@@ -787,11 +791,11 @@ No parameters are used for the `QueryAssetDefinitions` route.
             "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
             "onboarding_cost": "250",
             "onboarding_denom": "ferretcoin",
-            "fee_percent": "1.0",
+            "fee_amount": "250",
             "fee_destinations": [
               {
                 "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
-                "fee_percent": "1.0"
+                "fee_amount": "250"
               }
             ],
             "entity_detail": {

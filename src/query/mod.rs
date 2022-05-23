@@ -1,9 +1,9 @@
 //! Contains the functionality used in the [contract file](crate::contract) to perform a contract query.
 
-/// A query that fetches a target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// A query that fetches a target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// from the contract's internal storage.
 pub mod query_asset_definition;
-/// A query that fetches all [AssetDefinitions](crate::core::types::asset_definition::AssetDefinition)
+/// A query that fetches all [AssetDefinitionV2s](crate::core::types::asset_definition::AssetDefinitionV2)
 /// from the contract's internal storage.
 pub mod query_asset_definitions;
 /// A query that attempts to find an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)

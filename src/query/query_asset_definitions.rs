@@ -2,12 +2,11 @@ use cosmwasm_std::{to_binary, Binary};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    core::{state::asset_definitions, types::asset_definition::AssetDefinition},
-    util::{
-        aliases::{AssetResult, DepsC},
-        traits::ResultExtensions,
-    },
+use crate::core::state::asset_definitions_v2;
+use crate::core::types::asset_definition::AssetDefinitionV2;
+use crate::util::{
+    aliases::{AssetResult, DepsC},
+    traits::ResultExtensions,
 };
 
 /// A simple wrapper for all asset definitions returned as a result of the [query_asset_definitions](self::query_asset_definitions)
@@ -17,7 +16,7 @@ use crate::{
 pub struct QueryAssetDefinitionsResponse {
     /// All derived asset definitions derived from the [query_asset_definitions](self::query_asset_definitions)
     /// function.
-    pub asset_definitions: Vec<AssetDefinition>,
+    pub asset_definitions: Vec<AssetDefinitionV2>,
 }
 impl QueryAssetDefinitionsResponse {
     /// Constructs a new instance of this struct.
@@ -26,12 +25,12 @@ impl QueryAssetDefinitionsResponse {
     ///
     /// * `asset_definitions` All derived asset definitions derived from the [query_asset_definitions](self::query_asset_definitions)
     /// function.
-    pub fn new(asset_definitions: Vec<AssetDefinition>) -> Self {
+    pub fn new(asset_definitions: Vec<AssetDefinitionV2>) -> Self {
         Self { asset_definitions }
     }
 }
 
-/// A query that fetches all [AssetDefinitions](crate::core::types::asset_definition::AssetDefinition)
+/// A query that fetches all [AssetDefinitionV2s](crate::core::types::asset_definition::AssetDefinitionV2)
 /// from the contract's internal storage.
 ///
 /// # Parameters
@@ -39,28 +38,27 @@ impl QueryAssetDefinitionsResponse {
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
 pub fn query_asset_definitions(deps: &DepsC) -> AssetResult<Binary> {
-    let asset_definitions = asset_definitions()
+    let asset_definitions = asset_definitions_v2()
         .range(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .into_iter()
         .filter(|result| result.is_ok())
         .map(|result| result.unwrap().1)
-        .collect::<Vec<AssetDefinition>>();
+        .collect::<Vec<AssetDefinitionV2>>();
     to_binary(&QueryAssetDefinitionsResponse::new(asset_definitions))?.to_ok()
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
-    use cosmwasm_std::{from_binary, Decimal, Uint128};
+    use cosmwasm_std::{from_binary, Uint128};
     use provwasm_mocks::mock_dependencies;
     use uuid::Uuid;
 
+    use crate::core::types::asset_definition::AssetDefinitionInputV2;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::util::traits::OptionExtensions;
     use crate::{
-        core::types::{
-            asset_definition::AssetDefinitionInput, scope_spec_identifier::ScopeSpecIdentifier,
-            verifier_detail::VerifierDetail,
-        },
+        core::types::scope_spec_identifier::ScopeSpecIdentifier,
         query::query_asset_definitions::QueryAssetDefinitionsResponse,
         testutil::{
             test_constants::DEFAULT_VERIFIER_ADDRESS,
@@ -113,14 +111,14 @@ mod tests {
         let asset_definition_inputs = def_ids
             .into_iter()
             .map(|id| {
-                AssetDefinitionInput::new(
+                AssetDefinitionInputV2::new(
                     format!("asset_type_{}", id),
                     ScopeSpecIdentifier::Uuid(Uuid::new_v4().to_string()).to_serialized_enum(),
-                    vec![VerifierDetail::new(
+                    vec![VerifierDetailV2::new(
                         DEFAULT_VERIFIER_ADDRESS,
                         Uint128::new(150),
                         "nhash",
-                        Decimal::zero(),
+                        Uint128::zero(),
                         vec![],
                         None,
                     )],
@@ -128,7 +126,7 @@ mod tests {
                     true.to_some(),
                 )
             })
-            .collect::<Vec<AssetDefinitionInput>>();
+            .collect::<Vec<AssetDefinitionInputV2>>();
         test_instantiate_success(
             deps.as_mut(),
             InstArgs {

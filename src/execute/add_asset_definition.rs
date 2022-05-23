@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, insert_asset_definition};
-use crate::core::types::asset_definition::AssetDefinition;
+use crate::core::state::{config_read_v2, insert_asset_definition_v2};
+use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -16,13 +16,13 @@ use provwasm_std::{bind_name, NameBinding};
 /// # Parameters
 ///
 /// * `asset_definition` The asset definition to add to the internal storage.  Must have a unique
-/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
 /// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
 /// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
-/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type).
+/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
 #[derive(Clone, PartialEq)]
 pub struct AddAssetDefinitionV1 {
-    pub asset_definition: AssetDefinition,
+    pub asset_definition: AssetDefinitionV2,
     pub bind_name: Option<bool>,
 }
 impl AddAssetDefinitionV1 {
@@ -50,7 +50,7 @@ impl AddAssetDefinitionV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
-/// message is provided.  Attempts to add a new [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// message is provided.  Attempts to add a new [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// to the contract's internal storage.
 ///
 /// # Parameters
@@ -74,7 +74,7 @@ pub fn add_asset_definition(
     check_funds_are_empty(&info)?;
     // The insert function includes its own checking to verify that the asset definition does not yet exist, and an error
     // will be returned if a duplicate is attempted
-    insert_asset_definition(deps.storage, &msg.asset_definition)?;
+    insert_asset_definition_v2(deps.storage, &msg.asset_definition)?;
     let mut messages = vec![];
     // If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
     // to write new attributes for onboarded scopes
@@ -104,11 +104,11 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_by_type;
-    use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionInput};
-    use crate::core::types::fee_destination::FeeDestination;
+    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+    use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
-    use crate::core::types::verifier_detail::VerifierDetail;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_constants::{
@@ -125,7 +125,7 @@ mod tests {
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
     use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Decimal, Uint128};
+    use cosmwasm_std::{coin, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     // These tests board a new asset type, so they need values other than the default to work with
@@ -239,7 +239,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
-            asset_definition: AssetDefinitionInput::new(
+            asset_definition: AssetDefinitionInputV2::new(
                 "",
                 ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                 vec![],
@@ -319,7 +319,7 @@ mod tests {
         );
     }
 
-    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInput, deps: &DepsC) {
+    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV2, deps: &DepsC) {
         test_asset_definition_was_added(
             &input
                 .as_asset_definition()
@@ -328,9 +328,10 @@ mod tests {
         )
     }
 
-    fn test_asset_definition_was_added(asset_definition: &AssetDefinition, deps: &DepsC) {
-        let state_def = load_asset_definition_by_type(deps.storage, &asset_definition.asset_type)
-            .expect("expected the added asset type to be stored in the state");
+    fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV2, deps: &DepsC) {
+        let state_def =
+            load_asset_definition_v2_by_type(deps.storage, &asset_definition.asset_type)
+                .expect("expected the added asset type to be stored in the state");
         assert_eq!(
             asset_definition, &state_def,
             "the value in state should directly equate to the added value",
@@ -341,20 +342,20 @@ mod tests {
         );
     }
 
-    fn get_valid_asset_definition() -> AssetDefinitionInput {
-        let def = AssetDefinitionInput::new(
+    fn get_valid_asset_definition() -> AssetDefinitionInputV2 {
+        let def = AssetDefinitionInputV2::new(
             TEST_ASSET_TYPE,
             ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
             // Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers
-            vec![VerifierDetail::new(
+            vec![VerifierDetailV2::new(
                 DEFAULT_VERIFIER_ADDRESS,
                 Uint128::new(1000),
                 NHASH,
-                Decimal::percent(50),
-                vec![FeeDestination::new(
+                Uint128::new(500),
+                vec![FeeDestinationV2::new(
                     DEFAULT_FEE_ADDRESS,
-                    Decimal::percent(100),
+                    Uint128::new(500),
                 )],
                 get_default_entity_detail().to_some(),
             )],

@@ -1,11 +1,8 @@
 use cosmwasm_std::{MessageInfo, Response};
 
+use crate::core::state::{load_asset_definition_v2_by_type, replace_asset_definition_v2};
 use crate::{
-    core::{
-        error::ContractError,
-        msg::ExecuteMsg,
-        state::{load_asset_definition_by_type, replace_asset_definition},
-    },
+    core::{error::ContractError, msg::ExecuteMsg},
     util::{
         aliases::{AssetResult, DepsMutC, EntryPointResponse},
         contract_helpers::{check_admin_only, check_funds_are_empty},
@@ -19,10 +16,10 @@ use crate::{
 ///
 /// # Parameters
 ///
-/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
-/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinitionV2),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
 /// property.
-/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
 /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
 /// in succession (either by accident or by various unrelated callers) will only be honored if
 /// the asset definition is in the intended state during the execution of the route.
@@ -36,10 +33,10 @@ impl ToggleAssetDefinitionV1 {
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
-    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
+    /// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
     /// property.
-    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
     /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
     /// in succession (either by accident or by various unrelated callers) will only be honored if
     /// the asset definition is in the intended state during the execution of the route.
@@ -73,7 +70,7 @@ impl ToggleAssetDefinitionV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)
-/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)
+/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
 /// property from true to false, or false to true.
 ///
 /// # Parameters
@@ -91,7 +88,7 @@ pub fn toggle_asset_definition(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
+    let mut asset_definition = load_asset_definition_v2_by_type(deps.storage, &msg.asset_type)?;
     // Never toggle the state if the caller didn't expect the target result
     // If current state == expected result, then the requestor wants to change TO the current state. So this is a no-op.
     if asset_definition.enabled == msg.expected_result {
@@ -105,7 +102,7 @@ pub fn toggle_asset_definition(
     }
     // Simply negate the current value in state to swap it
     asset_definition.enabled = !asset_definition.enabled;
-    replace_asset_definition(deps.storage, &asset_definition)?;
+    replace_asset_definition_v2(deps.storage, &asset_definition)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::ToggleAssetDefinition)
@@ -121,9 +118,10 @@ mod tests {
     use cosmwasm_std::testing::{mock_env, mock_info};
     use provwasm_mocks::mock_dependencies;
 
+    use crate::core::state::load_asset_definition_v2_by_type;
     use crate::{
         contract::execute,
-        core::{error::ContractError, msg::ExecuteMsg, state::load_asset_definition_by_type},
+        core::{error::ContractError, msg::ExecuteMsg},
         testutil::{
             test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE},
             test_utilities::{
@@ -178,7 +176,7 @@ mod tests {
             single_attribute_for_key(&response, NEW_VALUE_KEY),
             "the new value key should indicate that the asset definition has been set to enabled = false",
         );
-        test_toggle_has_succesfully_occurred(&deps.as_ref(), false);
+        test_toggle_has_successfully_occurred(&deps.as_ref(), false);
     }
 
     #[test]
@@ -186,7 +184,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         toggle_default_asset_definition(deps.as_mut(), false);
-        test_toggle_has_succesfully_occurred(&deps.as_ref(), false);
+        test_toggle_has_successfully_occurred(&deps.as_ref(), false);
     }
 
     #[test]
@@ -195,10 +193,10 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         // First toggle should disable the automagically enabled default asset type
         toggle_default_asset_definition(deps.as_mut(), false);
-        test_toggle_has_succesfully_occurred(&deps.as_ref(), false);
+        test_toggle_has_successfully_occurred(&deps.as_ref(), false);
         // Second toggle should re-enable it
         toggle_default_asset_definition(deps.as_mut(), true);
-        test_toggle_has_succesfully_occurred(&deps.as_ref(), true);
+        test_toggle_has_successfully_occurred(&deps.as_ref(), true);
     }
 
     #[test]
@@ -320,8 +318,8 @@ mod tests {
         }
     }
 
-    fn test_toggle_has_succesfully_occurred(deps: &DepsC, expected_enabled_value: bool) {
-        let asset_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
+    fn test_toggle_has_successfully_occurred(deps: &DepsC, expected_enabled_value: bool) {
+        let asset_def = load_asset_definition_v2_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("the default asset definition should exist in storage");
         assert_eq!(
             expected_enabled_value, asset_def.enabled,

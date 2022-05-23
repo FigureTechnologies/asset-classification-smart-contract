@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "VerifierDetail",
-  "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinition](super::asset_definition::AssetDefinition).",
+  "title": "VerifierDetailV2",
+  "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
   "type": "object",
   "required": [
     "address",
+    "fee_amount",
     "fee_destinations",
-    "fee_percent",
     "onboarding_cost",
     "onboarding_denom"
   ],
@@ -26,20 +26,20 @@
         }
       ]
     },
-    "fee_destinations": {
-      "description": "Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent). All of these destinations' individual [fee_percent](super::fee_destination::FeeDestination::fee_percent) properties should sum to 1.  Less amounts will cause this verifier detail to be considered invalid and rejected in requests that include it.",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/FeeDestination"
-      }
-    },
-    "fee_percent": {
-      "description": "The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost) to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination). This should be a number from 0 to 1, representing a percentage (ex: 0.35 = 35%).",
+    "fee_amount": {
+      "description": "The amount taken from the total [onboarding_cost](self::VerifierDetailV2::onboarding_cost) to send to the underlying [FeeDestinationV2s](super::fee_destination::FeeDestinationV2). This should never be a larger amount than the [onboarding_cost](self::VerifierDetailV2::onboarding_cost) itself.",
       "allOf": [
         {
-          "$ref": "#/definitions/Decimal"
+          "$ref": "#/definitions/Uint128"
         }
       ]
+    },
+    "fee_destinations": {
+      "description": "Each account that should receive the amount designated in the [fee_amount](self::VerifierDetailV2::fee_amount). All of these destinations' individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties should sum to the specified [fee_amount](self::VerifierDetailV2::fee_amount).  Amounts not precisely equal in sum will cause this verifier detail to be considered invalid and rejected in requests that include it.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FeeDestinationV2"
+      }
     },
     "onboarding_cost": {
       "description": "The total amount charged to use the onboarding process this this verifier.",
@@ -55,10 +55,6 @@
     }
   },
   "definitions": {
-    "Decimal": {
-      "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
-      "type": "string"
-    },
     "EntityDetail": {
       "description": "Various fields describing an entity, which could be an organization, account, etc.",
       "type": "object",
@@ -93,23 +89,23 @@
         }
       }
     },
-    "FeeDestination": {
+    "FeeDestinationV2": {
       "description": "Defines an external account designated as a recipient of funds during the verification process.",
       "type": "object",
       "required": [
         "address",
-        "fee_percent"
+        "fee_amount"
       ],
       "properties": {
         "address": {
           "description": "The Provenance Blockchain bech32 address belonging to the account.",
           "type": "string"
         },
-        "fee_percent": {
-          "description": "The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent) of the containing [VerifierDetail](super::verifier_detail::VerifierDetail).  This number should always be between 0 and 1, and indicate a percentage.  Ex: 0.5 indicates 50%. For instance, if the fee total is 100nhash and the verifier detail's fee percent is .5 (50%) and the destination's fee percent is 1 (100%), then that fee destination account would receive 50nhash during the transaction, which is 100% of the 50% designated to fee accounts.",
+        "fee_amount": {
+          "description": "The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount) of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should always be less than or equal to the fee amount, and all fee destinations on a verifier detail should sum to the specified fee amount.",
           "allOf": [
             {
-              "$ref": "#/definitions/Decimal"
+              "$ref": "#/definitions/Uint128"
             }
           ]
         }

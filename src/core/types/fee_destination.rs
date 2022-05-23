@@ -1,3 +1,5 @@
+use crate::core::types::entity_detail::EntityDetail;
+use crate::util::traits::OptionExtensions;
 use cosmwasm_std::{Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -44,6 +46,8 @@ pub struct FeeDestinationV2 {
     /// always be less than or equal to the fee amount, and all fee destinations on a verifier
     /// detail should sum to the specified fee amount.
     pub fee_amount: Uint128,
+    /// An optional set of fields that define the fee destination, including its name and home URL location.
+    pub entity_detail: Option<EntityDetail>,
 }
 impl FeeDestinationV2 {
     /// Constructs a new instance of this struct.
@@ -54,9 +58,31 @@ impl FeeDestinationV2 {
     /// * `fee_amount` The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount)
     /// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
     pub fn new<S: Into<String>>(address: S, fee_amount: Uint128) -> Self {
-        FeeDestinationV2 {
+        Self {
             address: address.into(),
             fee_amount,
+            entity_detail: None,
+        }
+    }
+
+    /// Constructs a new instance of this struct with an entity detail.
+    ///
+    /// # Parameters
+    ///
+    /// * `address` The Provenance Blockchain bech32 address belonging to the account.
+    /// * `fee_amount` The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount)
+    /// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
+    /// * `entity_detail` An optional set of fields that define the fee destination, including its
+    /// name and home URL location.
+    pub fn new_with_detail<S: Into<String>>(
+        address: S,
+        fee_amount: Uint128,
+        entity_detail: EntityDetail,
+    ) -> Self {
+        Self {
+            address: address.into(),
+            fee_amount,
+            entity_detail: entity_detail.to_some(),
         }
     }
 }

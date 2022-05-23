@@ -10,6 +10,7 @@ use asset_classification_smart_contract::core::types::asset_definition::{
 use asset_classification_smart_contract::core::types::asset_identifier::AssetIdentifier;
 use asset_classification_smart_contract::core::types::asset_qualifier::AssetQualifier;
 use asset_classification_smart_contract::core::types::asset_scope_attribute::AssetScopeAttribute;
+use asset_classification_smart_contract::core::types::fee_destination::FeeDestinationV2;
 use asset_classification_smart_contract::core::types::serialized_enum::SerializedEnum;
 use asset_classification_smart_contract::core::types::verifier_detail::VerifierDetailV2;
 
@@ -27,6 +28,7 @@ fn main() {
     export_schema(&schema_for!(AssetDefinitionV2), &out_dir);
     export_schema(&schema_for!(AssetDefinitionInputV2), &out_dir);
     export_schema(&schema_for!(VerifierDetailV2), &out_dir);
+    export_schema(&schema_for!(FeeDestinationV2), &out_dir);
     export_schema(&schema_for!(AssetIdentifier), &out_dir);
     export_schema(&schema_for!(AssetQualifier), &out_dir);
     export_schema(&schema_for!(SerializedEnum), &out_dir);

@@ -77,6 +77,17 @@
           "description": "The Provenance Blockchain bech32 address belonging to the account.",
           "type": "string"
         },
+        "entity_detail": {
+          "description": "An optional set of fields that define the fee destination, including its name and home URL location.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EntityDetail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "fee_amount": {
           "description": "The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount) of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should always be less than or equal to the fee amount, and all fee destinations on a verifier detail should sum to the specified fee amount.",
           "allOf": [

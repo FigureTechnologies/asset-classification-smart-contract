@@ -144,7 +144,11 @@ underlying record values.  This should never be set to true in a mainnet environ
           "fee_destinations": [
             {
               "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
-              "fee_amount": "75"
+              "fee_amount": "75",
+              "entity_detail": {
+                "name": "Cat Auxiliary Fund Source",
+                "description": "Extra fees for extra cute cats"
+              }
             }
           ],
           "entity_detail": {
@@ -405,7 +409,11 @@ asset definition.
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
-              "fee_amount": "500000000"
+              "fee_amount": "500000000",
+              "entity_detail": {
+                "name": "Car Detailer",
+                "descriptions": "Details the cars and charges a fee to do it"
+              }
             },
             {
               "address": "tp1k5m8lkshpupuf44p02r4mwgjdawd2kta4n9ry0",
@@ -463,7 +471,11 @@ ensures that after the update, all scope specification addresses contained in as
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
-              "fee_amount": "20000"
+              "fee_amount": "20000",
+              "entity_detail": {
+                "name": "Car Theft Prevention Services",
+                "description": "Installs loud alarms in the cars to make sure if people steal them, everyone knows"
+              }
             }
           ],
           "entity_detail": {
@@ -551,7 +563,12 @@ parameter, or the request will be rejected.
       "fee_destinations": [
         {
           "address": "tp1lmp2qmntl090whuftym0wthzwjc8xv0v79cu6l",
-          "fee_amount": "250"
+          "fee_amount": "250",
+          "entity_detail": {
+            "name": "Conductor Fee Collector",
+            "description": "Train conductors need to eat, too!",
+            "home_url": "www.trainconductorshomesite.gov/how-do-conductors-make-money-from-the-blockchain"
+          }
         }
       ],
       "entity_detail": {
@@ -741,11 +758,19 @@ OR
         "fee_destinations": [
           {
             "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
-            "fee_amount": "1000"
+            "fee_amount": "1000",
+            "entity_detail": {
+              "name": "Totally Not a Dog Collecting Fees",
+              "description": "Bark! Bark! Uh... I mean, I'm an administrator of the website and totally a human",
+              "home_url": "https://www.totallynotadog.truth/i-am-not-a-dog"
+            }
           },
           {
             "address": "tp1gkg4a8zrtadlz5c5u56fuhcf5gq3xy4v8pgaef",
-            "fee_amount": "234"
+            "fee_amount": "234",
+            "entity_detail": {
+              "description": "All the fields for entity detail are optional, so this one only provides a description!"
+            }
           }
         ],
         "entity_detail": {
@@ -795,7 +820,10 @@ No parameters are used for the `QueryAssetDefinitions` route.
             "fee_destinations": [
               {
                 "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
-                "fee_amount": "250"
+                "fee_amount": "250",
+                "entity_detail": {
+                  "description": "All the ferret charges go to this account"
+                }
               }
             ],
             "entity_detail": {

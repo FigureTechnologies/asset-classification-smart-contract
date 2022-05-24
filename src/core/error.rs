@@ -73,8 +73,8 @@ pub enum ContractError {
         verifier_address: String,
     },
 
-    /// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinition::asset_type),
-    /// but the [AssetDefinition](super::types::asset_definition::AssetDefinition) for that type
+    /// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type),
+    /// but the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) for that type
     /// has a different Provenance Blockchain Scope Specification bech32 address listed in the
     /// contract's internal storage.  This is to prevent scopes from being onboarded as a specific
     /// type unless they meet the correct specification listed on the blockchain.
@@ -86,24 +86,24 @@ pub enum ContractError {
         scope_address: String,
         /// The bech32 scope specification address listed on the scope provided during onboarding.
         scope_spec_address: String,
-        /// The bech32 scope specification address listed in the [AssetDefinition](super::types::asset_definition::AssetDefinition)
+        /// The bech32 scope specification address listed in the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
         /// stored for the given asset type.
         expected_scope_spec_address: String,
     },
 
-    /// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
-    /// linked to an [AssetDefinition](super::types::asset_definition::AssetDefinition) that is
-    /// currently not [enabled](super::types::asset_definition::AssetDefinition::enabled)]
+    /// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
+    /// linked to an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) that is
+    /// currently not [enabled](super::types::asset_definition::AssetDefinitionV2::enabled)]
     #[error("Asset type {asset_type} is currently disabled")]
     AssetTypeDisabled {
         /// The type of asset that is currently disabled.
         asset_type: String,
     },
 
-    /// Denotes that an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail)
-    /// has the same [address](super::types::verifier_detail::VerifierDetail::address) property
-    /// as the provided [VerifierDetail](super::types::verifier_detail::VerifierDetail) to be
-    /// added to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+    /// Denotes that an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// has the same [address](super::types::verifier_detail::VerifierDetailV2::address) property
+    /// as the provided [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to be
+    /// added to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
     #[error("duplicate/existing verifier address provided as input")]
     DuplicateVerifierProvided,
 
@@ -184,9 +184,9 @@ pub enum ContractError {
     },
 
     /// An error that occurs when a lookup is attempted for a contract resource but the resource
-    /// does not exist.  For instance, when an [AssetDefinition](super::types::asset_definition::AssetDefinition)
-    /// does not contain a [VerifierDetail](super::types::verifier_detail::VerifierDetail) with a
-    /// specified bech32 [address](super::types::verifier_detail::VerifierDetail::address), this
+    /// does not exist.  For instance, when an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
+    /// does not contain a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) with a
+    /// specified bech32 [address](super::types::verifier_detail::VerifierDetailV2::address), this
     /// error will occur.
     #[error("Resource not found: {explanation}")]
     NotFound {
@@ -264,14 +264,14 @@ pub enum ContractError {
         asset_type: String,
     },
 
-    /// This error can occur when a target [VerifierDetail](super::types::verifier_detail::VerifierDetail)
-    /// does not exist in an [AssetDefinition](super::types::asset_definition::AssetDefinition) during
+    /// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// does not exist in an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) during
     /// the onboarding process.
     #[error("Unsupported verifier [{verifier_address}] for asset type [{asset_type}]")]
     UnsupportedVerifier {
         /// The bech32 address of the target verifier.
         verifier_address: String,
-        /// The [asset_type](super::types::asset_definition::AssetDefinition::asset_type) selected
+        /// The [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) selected
         /// during onboarding.
         asset_type: String,
     },

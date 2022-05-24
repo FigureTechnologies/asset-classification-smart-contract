@@ -2,7 +2,7 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::serialized_enum::SerializedEnum;
-use crate::core::types::verifier_detail::VerifierDetail;
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use crate::validation::validate_init_msg::{
@@ -59,10 +59,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
 ///
 /// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
 /// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
-/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// stored internally in the contract.
-/// * `verifier_address` The bech32 address of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
-/// held within the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `verifier_address` The bech32 address of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// held within the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// for onboarding.
 fn validate_onboard_asset(
     identifier: &SerializedEnum,
@@ -106,7 +106,7 @@ fn validate_verify_asset(identifier: &SerializedEnum) -> AssetResult<()> {
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// stored internally in the contract.
 fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
@@ -123,10 +123,10 @@ fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// stored internally in the contract.
 /// * `verifier` The verifier detail to add or update.
-fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetail) -> AssetResult<()> {
+fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetailV2) -> AssetResult<()> {
     let errors = if asset_type.is_empty() {
         vec!["asset_type must not be empty".to_string()].to_some()
     } else {

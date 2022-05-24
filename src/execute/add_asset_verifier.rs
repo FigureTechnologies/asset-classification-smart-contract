@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
-use crate::core::types::verifier_detail::VerifierDetail;
+use crate::core::state::{load_asset_definition_v2_by_type, replace_asset_definition_v2};
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -13,27 +13,27 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
-/// value of an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+/// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+/// value of an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
 /// in contract storage.
 /// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)
 /// request.
 #[derive(Clone, PartialEq)]
 pub struct AddAssetVerifierV1 {
     pub asset_type: String,
-    pub verifier: VerifierDetail,
+    pub verifier: VerifierDetailV2,
 }
 impl AddAssetVerifierV1 {
     /// Constructs a new instance of this struct.
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
-    /// value of an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)
+    /// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+    /// value of an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
     /// in contract storage.
     /// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)
     /// request.
-    pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetail) -> Self {
+    pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetailV2) -> Self {
         AddAssetVerifierV1 {
             asset_type: asset_type.into(),
             verifier,
@@ -63,9 +63,9 @@ impl AddAssetVerifierV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier)
-/// message is provided.  Attempts to add a new [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
-/// to an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition) if no
-/// verifier exists with a matching [address](crate::core::types::verifier_detail::VerifierDetail::address).
+/// message is provided.  Attempts to add a new [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// to an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) if no
+/// verifier exists with a matching [address](crate::core::types::verifier_detail::VerifierDetailV2::address).
 ///
 /// # Parameters
 ///
@@ -82,7 +82,7 @@ pub fn add_asset_verifier(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
+    let mut asset_definition = load_asset_definition_v2_by_type(deps.storage, &msg.asset_type)?;
     // If the asset definition has any verifiers on it (only ever should be 1 max) with a matching
     // address to the new verifier, this request should be an update, not an add
     if asset_definition
@@ -98,7 +98,7 @@ pub fn add_asset_verifier(
         .set_verifier(&msg.verifier.address);
     // Store the new verifier in the definition and save it to storage
     asset_definition.verifiers.push(msg.verifier);
-    replace_asset_definition(deps.storage, &asset_definition)?;
+    replace_asset_definition_v2(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -109,9 +109,9 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_by_type;
-    use crate::core::types::fee_destination::FeeDestination;
-    use crate::core::types::verifier_detail::VerifierDetail;
+    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VERIFIER_ADDRESS,
@@ -127,7 +127,7 @@ mod tests {
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_verifier;
     use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Decimal, Uint128};
+    use cosmwasm_std::{coin, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     // Addresses must be valid bech32, so these are valid randomly-generated values for testing
@@ -223,14 +223,7 @@ mod tests {
             ExecuteMsg::AddAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 // Invalid because the address is blank
-                verifier: VerifierDetail::new(
-                    "",
-                    Uint128::new(0),
-                    NHASH,
-                    Decimal::percent(0),
-                    vec![],
-                    None,
-                ),
+                verifier: VerifierDetailV2::new("", Uint128::zero(), NHASH, vec![], None),
             },
         )
         .unwrap_err();
@@ -284,11 +277,10 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             AddAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                VerifierDetail::new(
+                VerifierDetailV2::new(
                     DEFAULT_VERIFIER_ADDRESS,
                     Uint128::new(100),
                     NHASH,
-                    Decimal::percent(0),
                     vec![],
                     None,
                 ),
@@ -303,8 +295,8 @@ mod tests {
     }
 
     // Checks that the verifier passed in was added to the default asset type's definition
-    fn test_default_verifier_was_added(verifier: &VerifierDetail, deps: &DepsC) {
-        let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
+    fn test_default_verifier_was_added(verifier: &VerifierDetailV2, deps: &DepsC) {
+        let state_def = load_asset_definition_v2_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)
             .expect("expected a single verifier to be produced when searching for the new verifier's address");
@@ -314,13 +306,12 @@ mod tests {
         );
     }
 
-    fn get_valid_new_verifier() -> VerifierDetail {
-        let verifier = VerifierDetail::new(
+    fn get_valid_new_verifier() -> VerifierDetailV2 {
+        let verifier = VerifierDetailV2::new(
             TEST_VERIFIER_ADDRESS,
             Uint128::new(500000),
             NHASH,
-            Decimal::percent(10),
-            vec![FeeDestination::new(TEST_FEE_ADDRESS, Decimal::percent(100))],
+            vec![FeeDestinationV2::new(TEST_FEE_ADDRESS, Uint128::new(500))],
             get_default_entity_detail().to_some(),
         );
         validate_verifier(&verifier).expect("expected the new verifier to pass validation");

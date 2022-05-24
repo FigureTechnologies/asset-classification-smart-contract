@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{load_asset_definition_by_type, replace_asset_definition};
-use crate::core::types::verifier_detail::VerifierDetail;
+use crate::core::state::{load_asset_definition_v2_by_type, replace_asset_definition_v2};
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -14,29 +14,29 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
-/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
-/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)
+/// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)
 /// property.
 /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
-/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+/// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
 #[derive(Clone, PartialEq)]
 pub struct UpdateAssetVerifierV1 {
     pub asset_type: String,
-    pub verifier: VerifierDetail,
+    pub verifier: VerifierDetailV2,
 }
 impl UpdateAssetVerifierV1 {
     /// Constructs a new instance of this struct.
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),
-    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)
-    /// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)
+    /// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+    /// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)
     /// property.
     /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
-    /// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
-    pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetail) -> Self {
+    /// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
+    pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetailV2) -> Self {
         UpdateAssetVerifierV1 {
             asset_type: asset_type.into(),
             verifier,
@@ -66,8 +66,8 @@ impl UpdateAssetVerifierV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
-/// message is provided.  Replaces an existing [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)
-/// on an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).
+/// message is provided.  Replaces an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// on an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
 ///
 /// # Parameters
 ///
@@ -84,7 +84,7 @@ pub fn update_asset_verifier(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_definition = load_asset_definition_by_type(deps.storage, &msg.asset_type)?;
+    let mut asset_definition = load_asset_definition_v2_by_type(deps.storage, &msg.asset_type)?;
     let verifier_address = msg.verifier.address.clone();
     // If a single verifier for the given address cannot be found, data is either corrupt, or the
     // verifier does not exist.  Given validation upfront prevents multiple verifiers with the
@@ -112,7 +112,7 @@ pub fn update_asset_verifier(
         replace_single_matching_vec_element(asset_definition.verifiers, msg.verifier, |v| {
             v.address == verifier_address
         })?;
-    replace_asset_definition(deps.storage, &asset_definition)?;
+    replace_asset_definition_v2(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -123,9 +123,9 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_by_type;
-    use crate::core::types::fee_destination::FeeDestination;
-    use crate::core::types::verifier_detail::VerifierDetail;
+    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::update_asset_verifier::{update_asset_verifier, UpdateAssetVerifierV1};
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_VERIFIER_ADDRESS,
@@ -142,7 +142,7 @@ mod tests {
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_verifier;
     use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Decimal, Uint128};
+    use cosmwasm_std::{coin, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     #[test]
@@ -233,12 +233,11 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             ExecuteMsg::UpdateAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                verifier: VerifierDetail::new(
+                verifier: VerifierDetailV2::new(
                     // Invalid because the address is blank
                     "",
-                    Uint128::new(0),
+                    Uint128::zero(),
                     NHASH,
-                    Decimal::percent(0),
                     vec![],
                     None,
                 ),
@@ -295,14 +294,7 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                VerifierDetail::new(
-                    "unknown-address-guy",
-                    Uint128::new(100),
-                    NHASH,
-                    Decimal::percent(0),
-                    vec![],
-                    None,
-                ),
+                VerifierDetailV2::new("unknown-address-guy", Uint128::zero(), NHASH, vec![], None),
             ),
         )
         .unwrap_err();
@@ -313,8 +305,8 @@ mod tests {
         );
     }
 
-    fn test_default_verifier_was_updated(verifier: &VerifierDetail, deps: &DepsC) {
-        let state_def = load_asset_definition_by_type(deps.storage, DEFAULT_ASSET_TYPE)
+    fn test_default_verifier_was_updated(verifier: &VerifierDetailV2, deps: &DepsC) {
+        let state_def = load_asset_definition_v2_by_type(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)
             .expect("expected a single verifier to be produced when searching for the updated verifier's address");
@@ -326,20 +318,19 @@ mod tests {
 
     // This builds off of the existing default asset verifier in test_utilities and adds/tweaks
     // details.  The fee addresses are randomly-generated bech32 provenance testnet addresses
-    fn get_valid_update_verifier() -> VerifierDetail {
-        let verifier = VerifierDetail::new(
+    fn get_valid_update_verifier() -> VerifierDetailV2 {
+        let verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(420),
             NHASH,
-            Decimal::percent(100),
             vec![
-                FeeDestination::new(
+                FeeDestinationV2::new(
                     "tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx",
-                    Decimal::percent(50),
+                    Uint128::new(210),
                 ),
-                FeeDestination::new(
+                FeeDestinationV2::new(
                     "tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8",
-                    Decimal::percent(50),
+                    Uint128::new(210),
                 ),
             ],
             get_default_entity_detail().to_some(),

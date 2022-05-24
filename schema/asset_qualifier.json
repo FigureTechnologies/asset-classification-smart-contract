@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AssetQualifier",
-  "description": "An enum containing different identifiers that can be used to fetch an [AssetDefinition](super::asset_definition::AssetDefinition).",
+  "description": "An enum containing different identifiers that can be used to fetch an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
   "anyOf": [
     {
       "description": "The unique name for an asset type.  Ex: heloc, payable, etc.",

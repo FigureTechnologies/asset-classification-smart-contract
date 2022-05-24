@@ -1,28 +1,27 @@
+use crate::core::types::asset_definition::AssetDefinitionInputV2;
 use crate::core::types::serialized_enum::SerializedEnum;
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::types::{
-    access_route::AccessRoute, asset_definition::AssetDefinitionInput,
-    verifier_detail::VerifierDetail,
-};
+use super::types::access_route::AccessRoute;
 
 /// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InitMsg {
-    /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)
+    /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2)
     /// will use this value as their parent name.
     pub base_contract_name: String,
     /// If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name)
     /// during the instantiation process to itself.  No action will be taken if the value is `false`,
     /// but the base name will still be recorded in the contract's [state](super::state::StateV2)
-    /// and be used for child names for [AssetDefinitions](super::types::access_definition::AccessDefinition).
+    /// and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV2).
     pub bind_base_name: bool,
-    /// All the initial [AssetDefinitions](super::types::access_definition::AccessDefinition) for the
+    /// All the initial [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) for the
     /// contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition)
     /// functionality.
-    pub asset_definitions: Vec<AssetDefinitionInput>,
+    pub asset_definitions: Vec<AssetDefinitionInputV2>,
     /// A boolean value allowing for less restrictions to be placed on certain functionalities
     /// across the contract's execution processes.  Notably, this disables a check during the
     /// onboarding process to determine if onboarded scopes include underlying record values.  This
@@ -35,7 +34,7 @@ pub struct InitMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    /// This route can be used to retrieve a specific [AssetDefinition](super::types::asset_definition::AssetDefinition) from the contract's
+    /// This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract's
     /// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
     /// response will be returned.
     QueryAssetDefinition {
@@ -43,7 +42,7 @@ pub enum QueryMsg {
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         qualifier: SerializedEnum,
     },
-    /// This route can be used to retrieve all [AssetDefinitions](super::types::asset_definition::AssetDefinition) stored in the contract.  This response payload can be quite
+    /// This route can be used to retrieve all [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) stored in the contract.  This response payload can be quite
     /// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
     /// to be inspected or displayed.  The query asset definition route is much more efficient.
     QueryAssetDefinitions {},
@@ -77,7 +76,7 @@ pub enum ExecuteMsg {
     /// provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The
     /// attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type
     /// in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is "asset" and the asset type is "myasset", the attribute would be assigned
-    /// under the name of "myasset.asset".  All available asset types are queryable, and stored in the contract as [AssetDefinition](super::types::asset_definition::AssetDefinition)
+    /// under the name of "myasset.asset".  All available asset types are queryable, and stored in the contract as [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be
     /// stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus)
     /// of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending),
@@ -86,11 +85,11 @@ pub enum ExecuteMsg {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
-        /// A name that must directly match one of the contract's internal [AssetDefinition](super::types::asset_definition::AssetDefinition)
+        /// A name that must directly match one of the contract's internal [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
         /// names.  Any request with a specified type not matching an asset definition will be rejected outright.
         asset_type: String,
-        /// The bech32 address of a Verifier Account associated with the targeted [AssetDefinition](super::types::asset_definition::AssetDefinition),
-        /// within its nested vector of [VerifierDetails](super::types::verifier_detail::VerifierDetail).
+        /// The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2),
+        /// within its nested vector of [VerifierDetailV2s](super::types::verifier_detail::VerifierDetailV2).
         verifier_address: String,
         /// An optional parameter that allows the specification of a location to get the underlying asset data
         /// for the specified scope.  The [AccessRoute](super::types::access_route::AccessRoute) struct is very generic in its composition
@@ -131,7 +130,7 @@ pub enum ExecuteMsg {
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
     },
-    /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinition](super::types::asset_definition::AssetDefinition)
+    /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
     /// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
     /// two criteria:
@@ -140,63 +139,63 @@ pub enum ExecuteMsg {
     /// must also be unique across asset definitions.
     /// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).
     AddAssetDefinition {
-        /// An asset definition input value defining all of the new [AssetDefinition](super::types::asset_definition::AssetDefinition)'s
+        /// An asset definition input value defining all of the new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
-        asset_definition: AssetDefinitionInput,
+        asset_definition: AssetDefinitionInputV2,
     },
-    /// __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)
-    /// value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinition::asset_type) to an existing asset definition and overwriting the
+    /// __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
+    /// value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the
     /// existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation
     /// ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.
     UpdateAssetDefinition {
-        /// An asset definition input value defining all of the updated [AssetDefinition](super::types::asset_definition::AssetDefinition)'s
+        /// An asset definition input value defining all of the updated [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
-        asset_definition: AssetDefinitionInput,
+        asset_definition: AssetDefinitionInputV2,
     },
-    /// __This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)
+    /// __This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to
     /// be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be
     /// allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of
-    /// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinition::enabled)
+    /// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinitionV2::enabled)
     /// value on the `asset_definition` parameter, but this route is significantly simpler and prevents
     /// accidental data mutation due to it not requiring the entirety of the definition's values.
     ToggleAssetDefinition {
-        /// The type of asset for which the definition's [enabled](super::types::asset_definition::AssetDefinition::enabled) value will be toggled.  As the asset type value
+        /// The type of asset for which the definition's [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) value will be toggled.  As the asset type value
         /// on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.
         asset_type: String,
-        /// The value of [enabled](super::types::asset_definition::AssetDefinition::enabled) after the toggle takes place.  This value is required to ensure that
+        /// The value of [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) after the toggle takes place.  This value is required to ensure that
         /// multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if
         /// the asset definition is in the intended state during the execution of the route.
         expected_result: bool,
     },
-    /// __This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetail](super::types::verifier_detail::VerifierDetail)
-    /// to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to register new verifiers
+    /// __This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers
     /// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added
     /// with addresses that match any other verifiers on the target asset definition.
     AddAssetVerifier {
-        /// The type of asset for which the new [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be added.
-        /// This must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)'s [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+        /// The type of asset for which the new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be added.
+        /// This must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
         /// value, or the request will be rejected.
         asset_type: String,
         /// The new verifier detail to be added to the asset definition, with all of its required
-        /// values.  No verifiers within the existing asset definition must have the same [address](super::types::verifier_detail::VerifierDetail::address) value of this
+        /// values.  No verifiers within the existing asset definition must have the same [address](super::types::verifier_detail::VerifierDetailV2::address) value of this
         /// parameter, or the request will be rejected.
-        verifier: VerifierDetail,
+        verifier: VerifierDetailV2,
     },
-    /// __This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail)
-    /// in an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to be used when the values
+    /// __This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// in an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to be used when the values
     /// of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the
     /// referenced asset definition is not present within the contract, or if a verifier does not exist within the asset
     /// definition that matches the address of the provided verifier data.
     UpdateAssetVerifier {
-        /// The type of asset for which the [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be updated. This
-        /// must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)'s [asset_type](super::types::asset_definition::AssetDefinition::asset_type)
+        /// The type of asset for which the [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be updated. This
+        /// must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
         /// value, or the request will be rejected.
         asset_type: String,
         /// The updated verifier detail to be modified in the asset definition. An existing verifier
-        /// detail within the target asset definition must have a matching [address](super::types::verifier_detail::VerifierDetail::address)
+        /// detail within the target asset definition must have a matching [address](super::types::verifier_detail::VerifierDetailV2::address)
         /// value, or the request will be rejected.
-        verifier: VerifierDetail,
+        verifier: VerifierDetailV2,
     },
     /// __This route is only accessible to the contract's admin address OR to the owner of the access routes being updated.__
     /// This route will swap all existing access routes for a specific owner for a specific scope to the provided values. These
@@ -238,6 +237,10 @@ pub enum MigrateMsg {
     ContractUpgrade {
         /// Various optional values that dictate additional behavior that can occur during a contract
         /// upgrade.
+        options: Option<MigrationOptions>,
+    },
+    // TODO: Remove after removing AssetDefinitionV1
+    MigrateToAssetDefinitionV2 {
         options: Option<MigrationOptions>,
     },
 }

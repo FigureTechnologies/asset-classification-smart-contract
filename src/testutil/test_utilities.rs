@@ -1,7 +1,7 @@
 use cosmwasm_std::{
     from_binary,
     testing::{mock_env, mock_info, MockApi, MockStorage},
-    Addr, Coin, CosmosMsg, Decimal, Env, MessageInfo, OwnedDeps, Response, Uint128,
+    Addr, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
 use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{
@@ -11,18 +11,18 @@ use provwasm_std::{
 };
 use serde_json_wasm::to_string;
 
+use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     contract::instantiate,
     core::{
         msg::InitMsg,
         types::{
             access_definition::{AccessDefinition, AccessDefinitionType},
-            asset_definition::{AssetDefinition, AssetDefinitionInput},
             asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
             entity_detail::EntityDetail,
             scope_spec_identifier::ScopeSpecIdentifier,
-            verifier_detail::VerifierDetail,
         },
     },
     util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
@@ -36,18 +36,18 @@ use super::test_constants::{
     DEFAULT_ACCESS_ROUTE_NAME, DEFAULT_ACCESS_ROUTE_ROUTE, DEFAULT_ADMIN_ADDRESS,
     DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
     DEFAULT_ENTITY_DETAIL_DESCRIPTION, DEFAULT_ENTITY_DETAIL_HOME_URL, DEFAULT_ENTITY_DETAIL_NAME,
-    DEFAULT_ENTITY_DETAIL_SOURCE_URL, DEFAULT_FEE_PERCENT, DEFAULT_ONBOARDING_COST,
-    DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD,
-    DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS,
-    DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS,
-    DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
-    DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+    DEFAULT_ENTITY_DETAIL_SOURCE_URL, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
+    DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME,
+    DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME,
+    DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
+    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
+    DEFAULT_VERIFIER_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
-pub fn get_default_asset_definition_input() -> AssetDefinitionInput {
-    AssetDefinitionInput {
+pub fn get_default_asset_definition_input() -> AssetDefinitionInputV2 {
+    AssetDefinitionInputV2 {
         asset_type: DEFAULT_ASSET_TYPE.into(),
         scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS)
             .to_serialized_enum(),
@@ -68,28 +68,27 @@ pub fn get_default_entity_detail() -> EntityDetail {
     )
 }
 
-pub fn get_default_verifier_detail() -> VerifierDetail {
-    VerifierDetail {
+pub fn get_default_verifier_detail() -> VerifierDetailV2 {
+    VerifierDetailV2 {
         address: DEFAULT_VERIFIER_ADDRESS.into(),
         onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
         onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
-        fee_percent: Decimal::percent(DEFAULT_FEE_PERCENT),
         fee_destinations: vec![],
         entity_detail: get_default_entity_detail().to_some(),
     }
 }
 
-pub fn get_default_asset_definition() -> AssetDefinition {
+pub fn get_default_asset_definition() -> AssetDefinitionV2 {
     get_default_asset_definition_input()
         .into_asset_definition()
         .expect("the default asset definition input could not be parsed as an asset definition")
 }
 
-pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInput> {
+pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV2> {
     vec![get_default_asset_definition_input()]
 }
 
-pub fn get_default_asset_definitions() -> Vec<AssetDefinition> {
+pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV2> {
     get_default_asset_definition_inputs()
         .into_iter()
         .map(|input| {
@@ -132,7 +131,7 @@ pub struct InstArgs {
     pub base_contract_name: String,
     pub bind_base_name: bool,
     pub is_test: bool,
-    pub asset_definitions: Vec<AssetDefinitionInput>,
+    pub asset_definitions: Vec<AssetDefinitionInputV2>,
 }
 impl Default for InstArgs {
     fn default() -> Self {
@@ -330,6 +329,16 @@ pub fn mock_scope_attribute<S: Into<String>>(
 pub fn assert_single_item<T: Clone, S: Into<String>>(slice: &[T], message: S) -> T {
     assert_eq!(1, slice.len(), "{}", message.into());
     slice.first().unwrap().clone()
+}
+
+pub fn assert_single_item_by<T: Clone, S: Into<String>, F: FnMut(&&T) -> bool>(
+    slice: &[T],
+    message: S,
+    predicate: F,
+) -> T {
+    let filtered_slice = slice.into_iter().filter(predicate).collect::<Vec<&T>>();
+    assert_eq!(1, filtered_slice.len(), "{}", message.into());
+    filtered_slice.first().unwrap().clone().to_owned()
 }
 
 /// Crawls the vector of messages contained in the provided response, and, if an add attribute message

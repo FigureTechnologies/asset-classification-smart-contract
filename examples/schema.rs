@@ -5,13 +5,14 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use asset_classification_smart_contract::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use asset_classification_smart_contract::core::types::asset_definition::{
-    AssetDefinition, AssetDefinitionInput,
+    AssetDefinitionInputV2, AssetDefinitionV2,
 };
 use asset_classification_smart_contract::core::types::asset_identifier::AssetIdentifier;
 use asset_classification_smart_contract::core::types::asset_qualifier::AssetQualifier;
 use asset_classification_smart_contract::core::types::asset_scope_attribute::AssetScopeAttribute;
+use asset_classification_smart_contract::core::types::fee_destination::FeeDestinationV2;
 use asset_classification_smart_contract::core::types::serialized_enum::SerializedEnum;
-use asset_classification_smart_contract::core::types::verifier_detail::VerifierDetail;
+use asset_classification_smart_contract::core::types::verifier_detail::VerifierDetailV2;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
@@ -24,9 +25,10 @@ fn main() {
     export_schema(&schema_for!(QueryMsg), &out_dir);
     export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(AssetScopeAttribute), &out_dir);
-    export_schema(&schema_for!(AssetDefinition), &out_dir);
-    export_schema(&schema_for!(AssetDefinitionInput), &out_dir);
-    export_schema(&schema_for!(VerifierDetail), &out_dir);
+    export_schema(&schema_for!(AssetDefinitionV2), &out_dir);
+    export_schema(&schema_for!(AssetDefinitionInputV2), &out_dir);
+    export_schema(&schema_for!(VerifierDetailV2), &out_dir);
+    export_schema(&schema_for!(FeeDestinationV2), &out_dir);
     export_schema(&schema_for!(AssetIdentifier), &out_dir);
     export_schema(&schema_for!(AssetQualifier), &out_dir);
     export_schema(&schema_for!(SerializedEnum), &out_dir);

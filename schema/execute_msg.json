@@ -4,7 +4,7 @@
   "description": "Defines all routes in which the contract can be executed.  These are all handled directly in the [contract file](crate::contract::execute).",
   "anyOf": [
     {
-      "description": "This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is \"asset\" and the asset type is \"myasset\", the attribute would be assigned under the name of \"myasset.asset\".  All available asset types are queryable, and stored in the contract as [AssetDefinition](super::types::asset_definition::AssetDefinition) values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus) of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending), indicating that the asset has been onboarded to the contract but is awaiting verification.",
+      "description": "This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is \"asset\" and the asset type is \"myasset\", the attribute would be assigned under the name of \"myasset.asset\".  All available asset types are queryable, and stored in the contract as [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus) of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending), indicating that the asset has been onboarded to the contract but is awaiting verification.",
       "type": "object",
       "required": [
         "onboard_asset"
@@ -29,7 +29,7 @@
               }
             },
             "asset_type": {
-              "description": "A name that must directly match one of the contract's internal [AssetDefinition](super::types::asset_definition::AssetDefinition) names.  Any request with a specified type not matching an asset definition will be rejected outright.",
+              "description": "A name that must directly match one of the contract's internal [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) names.  Any request with a specified type not matching an asset definition will be rejected outright.",
               "type": "string"
             },
             "identifier": {
@@ -41,7 +41,7 @@
               ]
             },
             "verifier_address": {
-              "description": "The bech32 address of a Verifier Account associated with the targeted [AssetDefinition](super::types::asset_definition::AssetDefinition), within its nested vector of [VerifierDetails](super::types::verifier_detail::VerifierDetail).",
+              "description": "The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2), within its nested vector of [VerifierDetailV2s](super::types::verifier_detail::VerifierDetailV2).",
               "type": "string"
             }
           }
@@ -98,7 +98,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinition](super::types::asset_definition::AssetDefinition) value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in two criteria: * Its [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value must not yet be registered in a different asset definition. * Its [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier)) must also be unique across asset definitions. Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).",
+      "description": "__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in two criteria: * Its [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value must not yet be registered in a different asset definition. * Its [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier)) must also be unique across asset definitions. Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).",
       "type": "object",
       "required": [
         "add_asset_definition"
@@ -111,10 +111,10 @@
           ],
           "properties": {
             "asset_definition": {
-              "description": "An asset definition input value defining all of the new [AssetDefinition](super::types::asset_definition::AssetDefinition)'s values.  The execution route converts the incoming value to an asset definition.",
+              "description": "An asset definition input value defining all of the new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s values.  The execution route converts the incoming value to an asset definition.",
               "allOf": [
                 {
-                  "$ref": "#/definitions/AssetDefinitionInput"
+                  "$ref": "#/definitions/AssetDefinitionInputV2"
                 }
               ]
             }
@@ -124,7 +124,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinition](super::types::asset_definition::AssetDefinition) value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinition::asset_type) to an existing asset definition and overwriting the existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.",
+      "description": "__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.",
       "type": "object",
       "required": [
         "update_asset_definition"
@@ -137,10 +137,10 @@
           ],
           "properties": {
             "asset_definition": {
-              "description": "An asset definition input value defining all of the updated [AssetDefinition](super::types::asset_definition::AssetDefinition)'s values.  The execution route converts the incoming value to an asset definition.",
+              "description": "An asset definition input value defining all of the updated [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s values.  The execution route converts the incoming value to an asset definition.",
               "allOf": [
                 {
-                  "$ref": "#/definitions/AssetDefinitionInput"
+                  "$ref": "#/definitions/AssetDefinitionInputV2"
                 }
               ]
             }
@@ -150,7 +150,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinition](super::types::asset_definition::AssetDefinition) from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinition::enabled) value on the `asset_definition` parameter, but this route is significantly simpler and prevents accidental data mutation due to it not requiring the entirety of the definition's values.",
+      "description": "__This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) value on the `asset_definition` parameter, but this route is significantly simpler and prevents accidental data mutation due to it not requiring the entirety of the definition's values.",
       "type": "object",
       "required": [
         "toggle_asset_definition"
@@ -164,11 +164,11 @@
           ],
           "properties": {
             "asset_type": {
-              "description": "The type of asset for which the definition's [enabled](super::types::asset_definition::AssetDefinition::enabled) value will be toggled.  As the asset type value on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.",
+              "description": "The type of asset for which the definition's [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) value will be toggled.  As the asset type value on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.",
               "type": "string"
             },
             "expected_result": {
-              "description": "The value of [enabled](super::types::asset_definition::AssetDefinition::enabled) after the toggle takes place.  This value is required to ensure that multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if the asset definition is in the intended state during the execution of the route.",
+              "description": "The value of [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) after the toggle takes place.  This value is required to ensure that multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if the asset definition is in the intended state during the execution of the route.",
               "type": "boolean"
             }
           }
@@ -177,7 +177,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetail](super::types::verifier_detail::VerifierDetail) to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to register new verifiers without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added with addresses that match any other verifiers on the target asset definition.",
+      "description": "__This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added with addresses that match any other verifiers on the target asset definition.",
       "type": "object",
       "required": [
         "add_asset_verifier"
@@ -191,14 +191,14 @@
           ],
           "properties": {
             "asset_type": {
-              "description": "The type of asset for which the new [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be added. This must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)'s [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value, or the request will be rejected.",
+              "description": "The type of asset for which the new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be added. This must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value, or the request will be rejected.",
               "type": "string"
             },
             "verifier": {
-              "description": "The new verifier detail to be added to the asset definition, with all of its required values.  No verifiers within the existing asset definition must have the same [address](super::types::verifier_detail::VerifierDetail::address) value of this parameter, or the request will be rejected.",
+              "description": "The new verifier detail to be added to the asset definition, with all of its required values.  No verifiers within the existing asset definition must have the same [address](super::types::verifier_detail::VerifierDetailV2::address) value of this parameter, or the request will be rejected.",
               "allOf": [
                 {
-                  "$ref": "#/definitions/VerifierDetail"
+                  "$ref": "#/definitions/VerifierDetailV2"
                 }
               ]
             }
@@ -208,7 +208,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail) in an existing [AssetDefinition](super::types::asset_definition::AssetDefinition).  This route is intended to be used when the values of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the referenced asset definition is not present within the contract, or if a verifier does not exist within the asset definition that matches the address of the provided verifier data.",
+      "description": "__This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) in an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to be used when the values of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the referenced asset definition is not present within the contract, or if a verifier does not exist within the asset definition that matches the address of the provided verifier data.",
       "type": "object",
       "required": [
         "update_asset_verifier"
@@ -222,14 +222,14 @@
           ],
           "properties": {
             "asset_type": {
-              "description": "The type of asset for which the [VerifierDetail](super::types::verifier_detail::VerifierDetail) will be updated. This must refer to an existing [AssetDefinition](super::types::asset_definition::AssetDefinition)'s [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value, or the request will be rejected.",
+              "description": "The type of asset for which the [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be updated. This must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value, or the request will be rejected.",
               "type": "string"
             },
             "verifier": {
-              "description": "The updated verifier detail to be modified in the asset definition. An existing verifier detail within the target asset definition must have a matching [address](super::types::verifier_detail::VerifierDetail::address) value, or the request will be rejected.",
+              "description": "The updated verifier detail to be modified in the asset definition. An existing verifier detail within the target asset definition must have a matching [address](super::types::verifier_detail::VerifierDetailV2::address) value, or the request will be rejected.",
               "allOf": [
                 {
-                  "$ref": "#/definitions/VerifierDetail"
+                  "$ref": "#/definitions/VerifierDetailV2"
                 }
               ]
             }
@@ -321,7 +321,7 @@
         }
       }
     },
-    "AssetDefinitionInput": {
+    "AssetDefinitionInputV2": {
       "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
       "type": "object",
       "required": [
@@ -360,14 +360,10 @@
           "description": "Individual verifier definitions.  There can be many verifiers for a single asset type.  Each value must have a unique `address` property or requests to add will be rejected.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/VerifierDetail"
+            "$ref": "#/definitions/VerifierDetailV2"
           }
         }
       }
-    },
-    "Decimal": {
-      "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
-      "type": "string"
     },
     "EntityDetail": {
       "description": "Various fields describing an entity, which could be an organization, account, etc.",
@@ -403,23 +399,34 @@
         }
       }
     },
-    "FeeDestination": {
+    "FeeDestinationV2": {
       "description": "Defines an external account designated as a recipient of funds during the verification process.",
       "type": "object",
       "required": [
         "address",
-        "fee_percent"
+        "fee_amount"
       ],
       "properties": {
         "address": {
           "description": "The Provenance Blockchain bech32 address belonging to the account.",
           "type": "string"
         },
-        "fee_percent": {
-          "description": "The amount to be distributed to this account from the designated total [fee_percent](super::verifier_detail::VerifierDetail::fee_percent) of the containing [VerifierDetail](super::verifier_detail::VerifierDetail).  This number should always be between 0 and 1, and indicate a percentage.  Ex: 0.5 indicates 50%. For instance, if the fee total is 100nhash and the verifier detail's fee percent is .5 (50%) and the destination's fee percent is 1 (100%), then that fee destination account would receive 50nhash during the transaction, which is 100% of the 50% designated to fee accounts.",
+        "entity_detail": {
+          "description": "An optional set of fields that define the fee destination, including its name and home URL location.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EntityDetail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fee_amount": {
+          "description": "The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost) of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should always sum with the other fee destinations to be less than or at most equal to the total onboarding cost.",
           "allOf": [
             {
-              "$ref": "#/definitions/Decimal"
+              "$ref": "#/definitions/Uint128"
             }
           ]
         }
@@ -447,13 +454,12 @@
       "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
       "type": "string"
     },
-    "VerifierDetail": {
-      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinition](super::asset_definition::AssetDefinition).",
+    "VerifierDetailV2": {
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
       "type": "object",
       "required": [
         "address",
         "fee_destinations",
-        "fee_percent",
         "onboarding_cost",
         "onboarding_denom"
       ],
@@ -474,19 +480,11 @@
           ]
         },
         "fee_destinations": {
-          "description": "Each account that should receive the amount designated in the [fee_percent](self::VerifierDetail::fee_percent). All of these destinations' individual [fee_percent](super::fee_destination::FeeDestination::fee_percent) properties should sum to 1.  Less amounts will cause this verifier detail to be considered invalid and rejected in requests that include it.",
+          "description": "Each account that should receive fees when onboarding a new scope to the contract. All of these destinations' individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties should sum to an amount less than or equal to the [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost). Amounts not precisely equal in sum will cause this verifier detail to be considered invalid and rejected in requests that include it.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FeeDestination"
+            "$ref": "#/definitions/FeeDestinationV2"
           }
-        },
-        "fee_percent": {
-          "description": "The percent amount taken from the total [onboarding_cost](self::VerifierDetail::onboarding_cost) to send to the underlying [FeeDestinations](super::fee_destination::FeeDestination). This should be a number from 0 to 1, representing a percentage (ex: 0.35 = 35%).",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Decimal"
-            }
-          ]
         },
         "onboarding_cost": {
           "description": "The total amount charged to use the onboarding process this this verifier.",

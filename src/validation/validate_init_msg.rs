@@ -153,12 +153,7 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
         invalid_fields.push("verifier:onboarding_denom: must not be blank".to_string());
     }
     if !verifier.fee_destinations.is_empty()
-        && verifier
-            .fee_destinations
-            .iter()
-            .map(|d| d.fee_amount.u128())
-            .sum::<u128>()
-            > verifier.onboarding_cost.u128()
+        && verifier.get_fee_total() > verifier.onboarding_cost.u128()
     {
         invalid_fields.push(
             "verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost".to_string(),

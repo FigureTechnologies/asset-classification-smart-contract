@@ -130,3 +130,58 @@ impl VerifierDetailV2 {
             .sum::<u128>()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::util::constants::NHASH;
+    use cosmwasm_std::Uint128;
+
+    #[test]
+    fn test_no_fee_destinations_fee_total() {
+        let verifier = VerifierDetailV2::new("address", Uint128::new(100), NHASH, vec![], None);
+        assert_eq!(
+            0,
+            verifier.get_fee_total(),
+            "expected the fee total to be zero when no fee definitions are listed",
+        );
+    }
+
+    #[test]
+    fn test_one_fee_destination_fee_total() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee-address", Uint128::new(55))],
+            None,
+        );
+        assert_eq!(
+            55, verifier.get_fee_total(),
+            "expected the fee total to directly reflect the amount listed in the single fee destination",
+        );
+    }
+
+    #[test]
+    fn test_many_fee_destinations_fee_total() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(1000),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("fee-address-1", Uint128::new(10)),
+                FeeDestinationV2::new("fee-address-2", Uint128::new(20)),
+                FeeDestinationV2::new("fee-address-3", Uint128::new(30)),
+                FeeDestinationV2::new("fee-address-4", Uint128::new(40)),
+                FeeDestinationV2::new("fee-address-5", Uint128::new(50)),
+                FeeDestinationV2::new("fee-address-6", Uint128::new(60)),
+            ],
+            None,
+        );
+        assert_eq!(
+            210, verifier.get_fee_total(),
+            "expected the fee total to be the sum of all fee destinations' fee amounts (10 + 20 + 30 + 40 + 50 + 60 = 210)",
+        );
+    }
+}

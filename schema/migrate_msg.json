@@ -28,30 +28,6 @@
         }
       },
       "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "migrate_to_asset_definition_v2"
-      ],
-      "properties": {
-        "migrate_to_asset_definition_v2": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/MigrationOptions"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        }
-      },
-      "additionalProperties": false
     }
   ],
   "definitions": {

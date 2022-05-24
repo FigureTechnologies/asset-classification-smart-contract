@@ -10,18 +10,18 @@
   ],
   "properties": {
     "asset_definitions": {
-      "description": "All the initial [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
+      "description": "All the initial [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/AssetDefinitionInputV2"
       }
     },
     "base_contract_name": {
-      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::access_definition::AccessDefinitionV2) will use this value as their parent name.",
+      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) will use this value as their parent name.",
       "type": "string"
     },
     "bind_base_name": {
-      "description": "If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name) during the instantiation process to itself.  No action will be taken if the value is `false`, but the base name will still be recorded in the contract's [state](super::state::StateV2) and be used for child names for [AssetDefinitions](super::types::access_definition::AccessDefinition).",
+      "description": "If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name) during the instantiation process to itself.  No action will be taken if the value is `false`, but the base name will still be recorded in the contract's [state](super::state::StateV2) and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV2).",
       "type": "boolean"
     },
     "is_test": {
@@ -135,7 +135,7 @@
           ]
         },
         "fee_amount": {
-          "description": "The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount) of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should always be less than or equal to the fee amount, and all fee destinations on a verifier detail should sum to the specified fee amount.",
+          "description": "The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost) of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should always sum with the other fee destinations to be less than or at most equal to the total onboarding cost.",
           "allOf": [
             {
               "$ref": "#/definitions/Uint128"
@@ -171,7 +171,6 @@
       "type": "object",
       "required": [
         "address",
-        "fee_amount",
         "fee_destinations",
         "onboarding_cost",
         "onboarding_denom"
@@ -192,16 +191,8 @@
             }
           ]
         },
-        "fee_amount": {
-          "description": "The amount taken from the total [onboarding_cost](self::VerifierDetailV2::onboarding_cost) to send to the underlying [FeeDestinationV2s](super::fee_destination::FeeDestinationV2). This should never be a larger amount than the [onboarding_cost](self::VerifierDetailV2::onboarding_cost) itself.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Uint128"
-            }
-          ]
-        },
         "fee_destinations": {
-          "description": "Each account that should receive the amount designated in the [fee_amount](self::VerifierDetailV2::fee_amount). All of these destinations' individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties should sum to the specified [fee_amount](self::VerifierDetailV2::fee_amount).  Amounts not precisely equal in sum will cause this verifier detail to be considered invalid and rejected in requests that include it.",
+          "description": "Each account that should receive fees when onboarding a new scope to the contract. All of these destinations' individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties should sum to an amount less than or equal to the [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost). Amounts not precisely equal in sum will cause this verifier detail to be considered invalid and rejected in requests that include it.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/FeeDestinationV2"

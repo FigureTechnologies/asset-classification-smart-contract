@@ -1,4 +1,5 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
+use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -263,46 +264,29 @@ pub fn load_asset_definition_v2_by_scope_spec<S: Into<String>>(
 }
 
 /// Attempts to delete an existing asset definition by asset type.  Returns an error if the
-/// definition does not exist or if the deletion fails.
+/// definition does not exist or if the deletion fails.  Returns the asset type of the deleted
+/// definition on a successful deletion.
 ///
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
-/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
-/// to identify the record to delete.
-pub fn delete_asset_definition_v2_by_type<S: Into<String>>(
+/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// to delete.
+pub fn delete_asset_definition_v2_by_qualifier(
     storage: &mut dyn Storage,
-    asset_type: S,
-) -> AssetResult<()> {
-    let asset_type: String = asset_type.into();
-    // Load the definition up front to emit a nicely-formatted message to the caller that the
-    // definition does not exist, if that's necessary.
-    load_asset_definition_v2_by_type(storage, &asset_type)?;
-    // Perform the data deletion
-    asset_definitions_v2().remove(storage, asset_type.to_lowercase().as_bytes())?;
-    Ok(())
-}
-
-/// Attempts to delete an existing asset definition by scope spec address.  Returns an error if the
-/// definition does not exist or if the deletion fails.
-///
-/// # Parameters
-///
-/// * `storage` A mutable reference to the contract's internal storage.
-/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address)
-/// to identify the record to delete.
-pub fn delete_asset_definition_v2_by_scope_spec_address<S: Into<String>>(
-    storage: &mut dyn Storage,
-    scope_spec_address: S,
-) -> AssetResult<()> {
-    let scope_spec_address: String = scope_spec_address.into();
-    // Load the definition up front to emit a nicely-formatted message to the caller that the
-    // definition does not exist, if that's necessary, as well as to get the asset type for executing
-    // a deletion.
-    let existing_def = load_asset_definition_v2_by_scope_spec(storage, &scope_spec_address)?;
-    // Perform the data deletion
-    asset_definitions_v2().remove(storage, existing_def.asset_type.to_lowercase().as_bytes())?;
-    Ok(())
+    qualifier: &AssetQualifier,
+) -> AssetResult<String> {
+    let existing_asset_type = match qualifier {
+        AssetQualifier::AssetType(asset_type) => {
+            load_asset_definition_v2_by_type(storage, asset_type)
+        }
+        AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
+            load_asset_definition_v2_by_scope_spec(storage, scope_spec_address)
+        }
+    }?
+    .asset_type;
+    asset_definitions_v2().remove(storage, existing_asset_type.to_lowercase().as_bytes())?;
+    Ok(existing_asset_type)
 }
 
 #[cfg(test)]
@@ -311,12 +295,13 @@ mod tests {
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_scope_spec_address, delete_asset_definition_v2_by_type,
-        insert_asset_definition_v2, load_asset_definition_v2_by_scope_spec,
-        load_asset_definition_v2_by_type, may_load_asset_definition_v2_by_scope_spec,
-        may_load_asset_definition_v2_by_type, replace_asset_definition_v2,
+        delete_asset_definition_v2_by_qualifier, insert_asset_definition_v2,
+        load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
+        may_load_asset_definition_v2_by_scope_spec, may_load_asset_definition_v2_by_type,
+        replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
+    use crate::core::types::asset_qualifier::AssetQualifier;
 
     #[test]
     fn test_insert_asset_definition() {
@@ -499,15 +484,19 @@ mod tests {
             def,
             "sanity check: asset definition should be accessible by scope spec address",
         );
-        delete_asset_definition_v2_by_type(deps.as_mut().storage, &def.asset_type)
-            .expect("expected the deletion to succeed");
+        delete_asset_definition_v2_by_qualifier(
+            deps.as_mut().storage,
+            &AssetQualifier::asset_type(&def.asset_type),
+        )
+        .expect("expected the deletion to succeed");
         let err = load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
             .expect_err(
                 "expected an error to occur when attempting to load the deleted definition",
             );
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by asset type",
+            "expected the record not found error to occur when attempting to load by asset type, but got: {:?}",
+            err,
         );
         let err =
             load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
@@ -516,7 +505,8 @@ mod tests {
                 );
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by scope spec address",
+            "expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}",
+            err,
         );
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored again without error");
@@ -531,6 +521,21 @@ mod tests {
                 .expect("expected the load to succeed"),
             def,
             "the definition should be once again successfully attainable by scope spec address",
+        );
+    }
+
+    #[test]
+    fn test_delete_nonexistent_asset_definition_by_type_failure() {
+        let mut deps = mock_dependencies(&[]);
+        let err = delete_asset_definition_v2_by_qualifier(
+            deps.as_mut().storage,
+            &AssetQualifier::asset_type("fake-type"),
+        )
+        .expect_err("expected an error to occur when attempting to delete a missing asset type");
+        assert!(
+            matches!(err, ContractError::RecordNotFound { .. }),
+            "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",
+            err,
         );
     }
 
@@ -552,9 +557,9 @@ mod tests {
             def,
             "sanity check: asset definition should be accessible by scope spec address",
         );
-        delete_asset_definition_v2_by_scope_spec_address(
+        delete_asset_definition_v2_by_qualifier(
             deps.as_mut().storage,
-            &def.scope_spec_address,
+            &AssetQualifier::scope_spec_address(&def.scope_spec_address),
         )
         .expect("expected the deletion to succeed");
         let err = load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
@@ -563,7 +568,8 @@ mod tests {
             );
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by asset type",
+            "expected the record not found error to occur when attempting to load by asset type, but got: {:?}",
+            err,
         );
         let err =
             load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
@@ -572,7 +578,8 @@ mod tests {
                 );
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by scope spec address",
+            "expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}",
+            err,
         );
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored again without error");
@@ -587,6 +594,23 @@ mod tests {
                 .expect("expected the load to succeed"),
             def,
             "the definition should be once again successfully attainable by scope spec address",
+        );
+    }
+
+    #[test]
+    fn test_delete_nonexistent_asset_definition_by_scope_spec_address_failure() {
+        let mut deps = mock_dependencies(&[]);
+        let err = delete_asset_definition_v2_by_qualifier(
+            deps.as_mut().storage,
+            &AssetQualifier::scope_spec_address("fake-scope-spec-address"),
+        )
+        .expect_err(
+            "expected an error to occur when attempting to delete by a missing scope spec address",
+        );
+        assert!(
+            matches!(err, ContractError::RecordNotFound { .. }),
+            "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",
+            err,
         );
     }
 }

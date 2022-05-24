@@ -1,12 +1,10 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{
-    delete_asset_definition_v2_by_scope_spec_address, delete_asset_definition_v2_by_type,
-};
+use crate::core::state::delete_asset_definition_v2_by_qualifier;
 use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
-use crate::util::event_attributes::{EventAdditionalMetadata, EventAttributes, EventType};
+use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
@@ -73,24 +71,11 @@ pub fn delete_asset_definition(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut metadata = EventAdditionalMetadata::new();
-    match msg.qualifier {
-        AssetQualifier::AssetType(asset_type) => {
-            delete_asset_definition_v2_by_type(deps.storage, &asset_type)?;
-            metadata.add_metadata("asset_deleted_definition_asset_type", asset_type);
-        }
-        AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
-            delete_asset_definition_v2_by_scope_spec_address(deps.storage, &scope_spec_address)?;
-            metadata.add_metadata(
-                "asset_deleted_definition_scope_spec_address",
-                scope_spec_address,
-            );
-        }
-    };
+    let deleted_asset_type = delete_asset_definition_v2_by_qualifier(deps.storage, &msg.qualifier)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::DeleteAssetDefinition)
-                .set_additional_metadata(&metadata),
+                .set_asset_type(deleted_asset_type),
         )
         .to_ok()
 }
@@ -115,7 +100,7 @@ mod tests {
         empty_mock_info, mock_info_with_funds, single_attribute_for_key, test_instantiate_success,
         InstArgs,
     };
-    use crate::util::constants::{ADDITIONAL_METADATA_KEY, ASSET_EVENT_TYPE_KEY};
+    use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY};
     use crate::util::event_attributes::EventType;
     use cosmwasm_std::coin;
     use cosmwasm_std::testing::mock_env;
@@ -149,9 +134,9 @@ mod tests {
             "expected the event type attribute to be set correctly",
         );
         assert_eq!(
-            format!("[asset_deleted_definition_asset_type={DEFAULT_ASSET_TYPE}]"),
-            single_attribute_for_key(&response, ADDITIONAL_METADATA_KEY),
-            "expected the additional metadata attribute to be set correctly",
+            DEFAULT_ASSET_TYPE,
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
+            "expected the asset type attribute to be set correctly",
         );
         let err = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect_err("expected an error to occur when loading the default asset definition");
@@ -192,9 +177,9 @@ mod tests {
             "expected the event type attribute to be set correctly",
         );
         assert_eq!(
-            format!("[asset_deleted_definition_scope_spec_address={DEFAULT_SCOPE_SPEC_ADDRESS}]"),
-            single_attribute_for_key(&response, ADDITIONAL_METADATA_KEY),
-            "expected the additional metadata attribute to be set correctly",
+            DEFAULT_ASSET_TYPE,
+            single_attribute_for_key(&response, ASSET_TYPE_KEY),
+            "expected the asset type attribute to be set correctly",
         );
         let err = load_asset_definition_v2_by_scope_spec(
             deps.as_ref().storage,

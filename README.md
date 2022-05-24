@@ -7,14 +7,11 @@ to verify the contents of the asset by granting permission to them.
 ## Status
 [![Latest Release][release-badge]][release-latest]
 [![Apache 2.0 License][license-badge]][license-url]
-[![LOC][loc-badge]][loc-report]
 
 [license-badge]: https://img.shields.io/github/license/provenance-io/asset-classification-smart-contract.svg
 [license-url]: https://github.com/provenance-io/asset-classification-smart-contract/blob/main/LICENSE
 [release-badge]: https://img.shields.io/github/tag/provenance-io/asset-classification-smart-contract.svg
 [release-latest]: https://github.com/provenance-io/asset-classification-smart-contract/releases/latest
-[loc-badge]: https://tokei.rs/b1/github/provenance-io/asset-classification-smart-contract
-[loc-report]: https://github.com/provenance-io/asset-classification-smart-contract
 
 ## Documentation
 
@@ -389,7 +386,7 @@ asset definition.
 
 * `asset_type`: This value will be the `asset_type` value stored in the added [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
-##### Response Sample
+##### Request Sample
 ```json
 {
   "add_asset_definition": {
@@ -450,7 +447,7 @@ ensures that after the update, all scope specification addresses contained in as
 
 * `asset_type`: This value will be the `asset_type` value stored in the updated [AssetDefinitionV2](src/core/types/asset_definition.rs).
 
-##### Response Sample
+##### Request Sample
 ```json
 {
   "update_asset_definition": {
@@ -514,12 +511,51 @@ the asset definition is in the intended state during the execution of the route.
 
 * `asset_new_value`: This value will be the new status of the asset definition's `enabled` property, after the toggle occurs (true/false).
 
-##### Response Sample
+##### Request Sample
 ```json
 {
   "toggle_asset_definition": {
     "asset_type": "airplane",
     "expected_result": "false"
+  }
+}
+```
+
+#### [Delete Asset Definition](src/execute/delete_asset_definition.rs)
+__This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](src/core/types/asset_definition.rs)
+is erroneously added with an incorrect asset type, the scope specification address is unable to be used, as it is
+another unique key of the asset definition.  This route facilitates the removal of bad data.
+
+__IMPORTANT__: If an asset definition is completely removed, all contract references to it will fail to function.  This
+can cause assets currently in the onboarding process for a deleted type to have failures when interactions occur with
+them.  This functionality should only be used for an unused type!
+
+##### Request Parameters
+
+* `qualifier`: A serialized version of an [AssetQualifier](src/core/types/asset_qualifier.rs) enum.  Indicates the asset
+type to delete.  The following json is an example of what this might look like in a request:
+```json
+{"qualifier": {"type": "asset_type", "value": "porcupine"}}
+```
+OR
+```json
+{"qualifier": {"type": "scope_spec_address", "value": "scopespec1qsvpxtxcmw63rmy5v9rnyg5kxmqsdvzfr5"}}
+```
+
+##### Emitted Attributes
+* `asset_event_type`: This value will always be populated as `delete_asset_definition`.
+
+* `asset_type`: This value will be populated with the [asset_type](src/core/types/asset_definition.rs) property of the
+deleted [asset definition](src/core/types/asset_definition.rs).
+
+##### Request Sample
+```json
+{
+  "delete_asset_definition": {
+    "qualifier": {
+      "type": "asset_type",
+      "value": "widget"
+    }
   }
 }
 ```
@@ -547,7 +583,7 @@ parameter, or the request will be rejected.
 
 * `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the new [VerifierDetailV2](src/core/types/verifier_detail.rs).
 
-##### Response Sample
+##### Request Sample
 ```json
 {
   "add_asset_verifier": {
@@ -602,7 +638,7 @@ be rejected.
 
 * `asset_verifier_address`: This value will be the bech32 address stored in the `address` property of the updated [VerifierDetailV2](src/core/types/verifier_detail.rs).
 
-##### Response Sample
+##### Request Sample
 ```json
 {
   "update_asset_verifier": {
@@ -656,7 +692,7 @@ routes need to be included in the request alongside the new route(s).
 * `asset_scope_address`: This value will be the bech32 address of the [Provenance Blockchain Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope)
 referred to by the `identifier` parameter passed into the execution message.
 
-__Full Request Sample__:
+##### Request Sample
 ```json
 {
   "update_access_routes": {

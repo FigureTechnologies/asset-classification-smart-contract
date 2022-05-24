@@ -68,7 +68,7 @@ execution route to specify whether or not an onboarded scope is valid and theref
 
 * __Onboarding Account__: This account is not stored in the contract, and can be any Provenance Blockchain address.  It
 is the primary consumer of the contract's functionality, and calls into the [Onboard Asset](src/execute/onboard_asset.rs)
-execution route, specifying a Verifier Account and paying the fees required by the verifier's [VerifierDetailV2](src/core/types/verifier_detail.rs).
+execution route, specifying a Verifier Account and paying the fees required by the verifier's [fee destinations](src/core/types/fee_destination.rs).
 
 * __Fee Account__: This account is an optional specification in a [VerifierDetailV2](src/core/types/verifier_detail.rs) and,
 when specified, indicates that some or all of the fees provided during the onboarding process should be sent to this address.
@@ -140,7 +140,6 @@ underlying record values.  This should never be set to true in a mainnet environ
           "address": "tp14w3jf4em4uszs77yaqnmfrlxwcmqux5g6hfpdf",
           "onboarding_cost": "150",
           "onboarding_denom": "nhash",
-          "fee_amount": "75",
           "fee_destinations": [
             {
               "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
@@ -405,7 +404,6 @@ asset definition.
           "address": "tp1eqfg2lxlwqs23m320arhuk3dad47ha6tvzu5n5",
           "onboarding_cost": "1000000000",
           "onboarding_denom:": "nhash",
-          "fee_amount": "500000000",
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
@@ -467,7 +465,6 @@ ensures that after the update, all scope specification addresses contained in as
           "address": "tp1uvnpfg9hmeyuf0t3a6l9xhegx8ewhtk9z683x4",
           "onboarding_cost": "15000000000",
           "onboarding_denom:": "carcoins",
-          "fee_amount": "20000",
           "fee_destinations": [
             {
               "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
@@ -559,7 +556,6 @@ parameter, or the request will be rejected.
       "address": "tp149832nekuva7lxtzcezlwhzqjc32vu8lsaqcuv",
       "onboarding_cost": "250",
       "onboarding_denom": "traintoken",
-      "fee_amount": "250",
       "fee_destinations": [
         {
           "address": "tp1lmp2qmntl090whuftym0wthzwjc8xv0v79cu6l",
@@ -615,7 +611,6 @@ be rejected.
       "address": "tp15n6as7tytrza9692anawwc52kyg5pv86lpeyhu",
       "onboarding_cost": "200",
       "onboarding_denom": "widgetdollar",
-      "fee_amount": "0",
       "fee_destinations": [],
       "entity_detail": {
         "name": "Widget Verifier Inc.",
@@ -754,7 +749,6 @@ OR
         "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
         "onboarding_cost": "1000000000",
         "onboarding_denom": "nhash",
-        "fee_amount": "1234",
         "fee_destinations": [
           {
             "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",
@@ -816,7 +810,6 @@ No parameters are used for the `QueryAssetDefinitions` route.
             "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
             "onboarding_cost": "250",
             "onboarding_denom": "ferretcoin",
-            "fee_amount": "250",
             "fee_destinations": [
               {
                 "address": "tp126lrty2c0h78mdtjyzzf7mtsge427trccq8lta",

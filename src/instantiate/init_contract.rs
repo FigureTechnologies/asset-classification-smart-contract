@@ -165,7 +165,6 @@ mod tests {
                 DEFAULT_VERIFIER_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
                 DEFAULT_ONBOARDING_DENOM,
-                Uint128::new(DEFAULT_ONBOARDING_COST / 2),
                 vec![FeeDestinationV2::new(
                     "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
                     Uint128::new(DEFAULT_ONBOARDING_COST / 2),
@@ -183,7 +182,6 @@ mod tests {
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(150),
                 NHASH,
-                Uint128::new(150),
                 vec![
                     FeeDestinationV2::new(
                         "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",

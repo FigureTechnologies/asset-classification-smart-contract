@@ -370,11 +370,6 @@ mod tests {
             "nhash", verifier.onboarding_denom,
             "expected the verifier onboarding denom to be properly ported",
         );
-        assert_eq!(
-            0,
-            verifier.fee_amount.u128(),
-            "expected the verifier fee amount to be properly ported",
-        );
         assert!(
             verifier.fee_destinations.is_empty(),
             "expected no fee destinations to be ported",
@@ -431,11 +426,6 @@ mod tests {
         assert_eq!(
             "nhash", verifier.onboarding_denom,
             "expected the verifier onboarding denom to be properly ported",
-        );
-        assert_eq!(
-            75,
-            verifier.fee_amount.u128(),
-            "expected the verifier fee amount to be properly derived",
         );
         let fee_destination = assert_single_item(
             &verifier.fee_destinations,
@@ -506,11 +496,6 @@ mod tests {
         assert_eq!(
             "nhash", verifier.onboarding_denom,
             "expected the verifier onboarding denom to be properly ported",
-        );
-        assert_eq!(
-            200,
-            verifier.fee_amount.u128(),
-            "expected the verifier fee amount to be properly derived",
         );
         let fee_destination_1 = assert_single_item_by(
             &verifier.fee_destinations,
@@ -603,11 +588,6 @@ mod tests {
             "nhash", verifier_1.onboarding_denom,
             "expected the first verifier's onboarding denom to be properly ported",
         );
-        assert_eq!(
-            200,
-            verifier_1.fee_amount.u128(),
-            "expected the first verifier's fee amount to be properly derived",
-        );
         let fee_destination_1 = assert_single_item_by(
             &verifier_1.fee_destinations,
             "expected only a single fee destination to be ported with the address 'fee-destination-1'",
@@ -656,11 +636,6 @@ mod tests {
         assert_eq!(
             "noucoin", verifier_2.onboarding_denom,
             "expected the second verifier's onboarding denom to be properly derived",
-        );
-        assert_eq!(
-            4,
-            verifier_2.fee_amount.u128(),
-            "expected the second verifier's fee amount to be properly derived",
         );
         let fee_destination = assert_single_item(
             &verifier_2.fee_destinations,

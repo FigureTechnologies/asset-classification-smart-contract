@@ -352,7 +352,6 @@ mod tests {
                 DEFAULT_VERIFIER_ADDRESS,
                 Uint128::new(1000),
                 NHASH,
-                Uint128::new(500),
                 vec![FeeDestinationV2::new(
                     DEFAULT_FEE_ADDRESS,
                     Uint128::new(500),

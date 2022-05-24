@@ -13,7 +13,6 @@ use serde_json_wasm::to_string;
 
 use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::testutil::test_constants::DEFAULT_FEE_AMOUNT;
 use crate::{
     contract::instantiate,
     core::{
@@ -74,7 +73,6 @@ pub fn get_default_verifier_detail() -> VerifierDetailV2 {
         address: DEFAULT_VERIFIER_ADDRESS.into(),
         onboarding_cost: Uint128::from(DEFAULT_ONBOARDING_COST),
         onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
-        fee_amount: Uint128::new(DEFAULT_FEE_AMOUNT),
         fee_destinations: vec![],
         entity_detail: get_default_entity_detail().to_some(),
     }

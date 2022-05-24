@@ -20,24 +20,6 @@ pub fn calculate_verifier_cost_messages(
 ) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
     let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     let denom = &verifier.onboarding_denom;
-    // The onboarding_cost is a u128, so attempting to subtract the fee total from it when the fee total is a greater value
-    // will result in an unhandled panic.  Detect this potentiality for a misconfigured verifier and exit early to prevent
-    // future head-scratching (panics are very difficult to debug due to redacted responses)
-    if verifier.fee_amount > verifier.onboarding_cost {
-        return ContractError::generic(
-             format!("misconfigured verifier data! fee total ({}{}) was greater than the total cost of onboarding ({}{})",
-             verifier.fee_amount,
-             denom,
-             verifier.onboarding_cost,
-             denom,
-        )).to_err();
-    }
-    // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-    let verifier_cost = verifier.onboarding_cost - verifier.fee_amount;
-    // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
-    if !verifier_cost.is_zero() {
-        cost_messages.push(bank_send(&verifier.address, verifier_cost.u128(), denom));
-    }
     let mut fee_total: u128 = 0;
     // Append a message for each destination
     verifier.fee_destinations.iter().for_each(|destination| {
@@ -48,15 +30,24 @@ pub fn calculate_verifier_cost_messages(
         ));
         fee_total += destination.fee_amount.u128();
     });
-    if fee_total != verifier.fee_amount.u128() {
+    // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
+    // always reflect the exact total that is taken from the requestor address when onboarding a new
+    // scope.
+    if fee_total > verifier.onboarding_cost.u128() {
         return ContractError::generic(
-            format!("misconfigured fee destinations! fee total ({}{}) was not equal to the specified fee amount ({}{})",
+            format!("misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})",
                 fee_total,
                 denom,
-                verifier.fee_amount.u128(),
+                verifier.onboarding_cost.u128(),
                 denom,
             )
         ).to_err();
+    }
+    // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
+    let verifier_cost = verifier.onboarding_cost.u128() - fee_total;
+    // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
+    if verifier_cost > 0 {
+        cost_messages.push(bank_send(&verifier.address, verifier_cost, denom));
     }
     cost_messages.to_ok()
 }
@@ -84,7 +75,6 @@ mod tests {
             "address",
             Uint128::new(100),
             NHASH,
-            Uint128::new(101),
             vec![FeeDestinationV2::new("fee", Uint128::new(101))],
             get_default_entity_detail().to_some(),
         );
@@ -92,35 +82,7 @@ mod tests {
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured verifier data! fee total (101nhash) was greater than the total cost of onboarding (100nhash)",
-                    msg.as_str(),
-                    "unexpected error message generated",
-                );
-            }
-            _ => panic!(
-                "unexpected error encountered when providing a bad verifier: {:?}",
-                error
-            ),
-        }
-    }
-
-    #[test]
-    fn test_invalid_verifier_fee_destination_sum_mismatch() {
-        let verifier = VerifierDetailV2::new(
-            "address",
-            Uint128::new(100),
-            NHASH,
-            // Take half of the onboarding cost as a fee, but have the destination request more than that
-            Uint128::new(50),
-            // All fee destinations should always add up to the verifier's fee_amount
-            vec![FeeDestinationV2::new("fee", Uint128::new(51))],
-            None,
-        );
-        let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
-        match error {
-            ContractError::GenericError { msg } => {
-                assert_eq!(
-                    "misconfigured fee destinations! fee total (51nhash) was not equal to the specified fee amount (50nhash)",
+                    "misconfigured fee destinations! fee total (101nhash) was greater than the specified onboarding cost (100nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
@@ -134,14 +96,7 @@ mod tests {
 
     #[test]
     fn test_only_send_to_verifier() {
-        let verifier = VerifierDetailV2::new(
-            "verifier",
-            Uint128::new(100),
-            NHASH,
-            Uint128::zero(),
-            vec![],
-            None,
-        );
+        let verifier = VerifierDetailV2::new("verifier", Uint128::new(100), NHASH, vec![], None);
         let messages = calculate_verifier_cost_messages(&verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(
@@ -164,7 +119,6 @@ mod tests {
             "verifier",
             Uint128::new(100),
             NHASH,
-            Uint128::new(100),
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
             None,
         );
@@ -190,7 +144,6 @@ mod tests {
             "verifier",
             Uint128::new(100),
             NHASH,
-            Uint128::new(50),
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
             None,
         );
@@ -219,7 +172,6 @@ mod tests {
             "verifier",
             Uint128::new(200),
             NHASH,
-            Uint128::new(100),
             vec![
                 FeeDestinationV2::new("first", Uint128::new(20)),
                 FeeDestinationV2::new("second", Uint128::new(20)),

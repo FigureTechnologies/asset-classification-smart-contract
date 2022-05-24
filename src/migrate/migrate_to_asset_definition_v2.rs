@@ -10,13 +10,16 @@ pub fn migrate_to_asset_definition_v2(
     deps: DepsMutC,
     options: Option<MigrationOptions>,
 ) -> EntryPointResponse {
-    let asset_definitions = asset_definitions()
+    let v1_asset_definitionns = asset_definitions()
         .range_raw(deps.storage, None, None, Order::Descending)
         .map(|item| item.unwrap().1.to_v2())
         .collect::<Vec<AssetDefinitionV2>>();
-    let migrated_def_count = asset_definitions.len();
-    for definition in asset_definitions.into_iter() {
+    let migrated_def_count = v1_asset_definitionns.len();
+    for definition in v1_asset_definitionns.into_iter() {
+        // Insert the v2 clone of the asset definition
         insert_asset_definition_v2(deps.storage, &definition)?;
+        // Delete the existing v1 definition from storage
+        asset_definitions().remove(deps.storage, &definition.storage_key())?;
     }
     // Pass through the existing migration code to ensure version upgrades also occur
     migrate_contract(deps, options)?
@@ -42,7 +45,7 @@ mod tests {
     };
     use crate::util::traits::OptionExtensions;
     use cosmwasm_std::testing::mock_env;
-    use cosmwasm_std::{Decimal, Uint128};
+    use cosmwasm_std::{Decimal, Order, Uint128};
     use provwasm_mocks::mock_dependencies;
 
     #[test]
@@ -124,6 +127,13 @@ mod tests {
                 },
             )
             .expect("expected the mortgage asset definition to be added to storage");
+        assert_eq!(
+            2,
+            asset_definitions()
+                .keys(deps.as_ref().storage, None, None, Order::Descending)
+                .count(),
+            "sanity check: two asset definitions should be in storage before the migration",
+        );
         let response = migrate(
             deps.as_mut(),
             mock_env(),
@@ -177,11 +187,6 @@ mod tests {
             "nhash", heloc_verifier.onboarding_denom,
             "expected the heloc verifier's onboarding denom to be properly ported",
         );
-        assert_eq!(
-            0,
-            heloc_verifier.fee_amount.u128(),
-            "expected the heloc verifier's fee amount to be properly derived",
-        );
         assert!(
             heloc_verifier.fee_destinations.is_empty(),
             "expected no definitions to exist for the heloc verifier"
@@ -230,11 +235,6 @@ mod tests {
             "mortmoney", mortgage_verifier.onboarding_denom,
             "expected the mortgage verifier's onboarding denom to be properly ported",
         );
-        assert_eq!(
-            250,
-            mortgage_verifier.fee_amount.u128(),
-            "expected the mortgage verifier's fee amount to be properly derived",
-        );
         let fee_destination_1 = assert_single_item_by(
             &mortgage_verifier.fee_destinations,
             "expected a single fee destination to exist for the mortgage verifier with address 'fee-destination-1'",
@@ -266,6 +266,13 @@ mod tests {
         assert!(
             mortgage_verifier.entity_detail.is_none(),
             "expected the lack of entity detail on the mortgage verifier to be properly ported"
+        );
+        assert_eq!(
+            0,
+            asset_definitions()
+                .keys(deps.as_ref().storage, None, None, Order::Descending)
+                .count(),
+            "all of the v1 asset definitions should be deleted from storage after the migration",
         );
     }
 

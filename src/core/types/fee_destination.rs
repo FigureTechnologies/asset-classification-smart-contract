@@ -51,10 +51,10 @@ impl FeeDestination {
 pub struct FeeDestinationV2 {
     /// The Provenance Blockchain bech32 address belonging to the account.
     pub address: String,
-    /// The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount) of the
+    /// The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost) of the
     /// containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).  This number should
-    /// always be less than or equal to the fee amount, and all fee destinations on a verifier
-    /// detail should sum to the specified fee amount.
+    /// always sum with the other fee destinations to be less than or at most equal to the total
+    /// onboarding cost.
     pub fee_amount: Uint128,
     /// An optional set of fields that define the fee destination, including its name and home URL location.
     pub entity_detail: Option<EntityDetail>,
@@ -65,7 +65,7 @@ impl FeeDestinationV2 {
     /// # Parameters
     ///
     /// * `address` The Provenance Blockchain bech32 address belonging to the account.
-    /// * `fee_amount` The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount)
+    /// * `fee_amount` The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost)
     /// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
     pub fn new<S: Into<String>>(address: S, fee_amount: Uint128) -> Self {
         Self {
@@ -80,7 +80,7 @@ impl FeeDestinationV2 {
     /// # Parameters
     ///
     /// * `address` The Provenance Blockchain bech32 address belonging to the account.
-    /// * `fee_amount` The amount to be distributed to this account from the designated total [fee_amount](super::verifier_detail::VerifierDetailV2::fee_amount)
+    /// * `fee_amount` The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost)
     /// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
     /// * `entity_detail` An optional set of fields that define the fee destination, including its
     /// name and home URL location.

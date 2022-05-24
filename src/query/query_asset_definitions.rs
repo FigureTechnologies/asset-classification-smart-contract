@@ -118,7 +118,6 @@ mod tests {
                         DEFAULT_VERIFIER_ADDRESS,
                         Uint128::new(150),
                         "nhash",
-                        Uint128::zero(),
                         vec![],
                         None,
                     )],

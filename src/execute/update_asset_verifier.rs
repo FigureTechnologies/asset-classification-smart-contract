@@ -238,7 +238,6 @@ mod tests {
                     "",
                     Uint128::zero(),
                     NHASH,
-                    Uint128::zero(),
                     vec![],
                     None,
                 ),
@@ -295,14 +294,7 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                VerifierDetailV2::new(
-                    "unknown-address-guy",
-                    Uint128::zero(),
-                    NHASH,
-                    Uint128::zero(),
-                    vec![],
-                    None,
-                ),
+                VerifierDetailV2::new("unknown-address-guy", Uint128::zero(), NHASH, vec![], None),
             ),
         )
         .unwrap_err();
@@ -331,7 +323,6 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(420),
             NHASH,
-            Uint128::new(420),
             vec![
                 FeeDestinationV2::new(
                     "tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx",

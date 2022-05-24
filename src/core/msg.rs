@@ -225,6 +225,20 @@ pub enum ExecuteMsg {
         /// The name to bind to the contract.  Ex: `assetclassificationalias.pb`.
         alias_name: String,
     },
+    /// __This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
+    /// is erroneously added with an incorrect asset type, the scope specification address is unable
+    /// to be used, as it is another unique key of the asset definition.  This route facilitates the
+    /// removal of bad data.
+    /// IMPORTANT: If an asset definition is completely removed, all contract references to it will
+    /// fail to function.  This can cause assets currently in the onboarding process for a deleted
+    /// type to have failures when interactions occur with them.  This functionality should only be
+    /// used for an unused type!
+    DeleteAssetDefinition {
+        /// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible
+        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum) that will map to an
+        /// existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).
+        qualifier: SerializedEnum,
+    },
 }
 
 /// The struct used to migrate the contract from one code instance to another.  Utilized in the core

@@ -52,7 +52,7 @@ impl BindContractAliasV1 {
     }
 }
 
-/// Route implementation for ExecuteMsg::BindContractAlias.
+/// Route implementation for [ExecuteMsg::BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias).
 /// This function allows the contract to bind a name to itself using the admin address.
 /// Note: Due to the way Provenance names work, this route will only work when attempting to self-bind
 /// to an unrestricted parent name.  Binding an alias to a restricted parent name will still require

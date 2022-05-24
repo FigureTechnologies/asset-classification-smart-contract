@@ -134,8 +134,8 @@ pub enum ExecuteMsg {
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
     /// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
     /// two criteria:
-    /// * Its [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value must not yet be registered in a different asset definition.
-    /// * Its [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))
+    /// * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition.
+    /// * Its [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))
     /// must also be unique across asset definitions.
     /// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).
     AddAssetDefinition {
@@ -237,10 +237,6 @@ pub enum MigrateMsg {
     ContractUpgrade {
         /// Various optional values that dictate additional behavior that can occur during a contract
         /// upgrade.
-        options: Option<MigrationOptions>,
-    },
-    // TODO: Remove after removing AssetDefinitionV1
-    MigrateToAssetDefinitionV2 {
         options: Option<MigrationOptions>,
     },
 }

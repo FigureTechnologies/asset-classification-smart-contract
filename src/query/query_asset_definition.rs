@@ -31,7 +31,7 @@ pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetR
 #[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::state::insert_asset_definition_v2;
-    use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionV2};
+    use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::query::query_asset_definition::query_asset_definition;
     use crate::testutil::test_utilities::{
@@ -107,7 +107,7 @@ mod tests {
             AssetQualifier::asset_type("fakeloan"),
         )
         .expect("the query should execute without error");
-        let result = from_binary::<Option<AssetDefinition>>(&binary)
+        let result = from_binary::<Option<AssetDefinitionV2>>(&binary)
             .expect("expected the binary to deserialize appropriately");
         assert!(
             result.is_none(),
@@ -122,7 +122,7 @@ mod tests {
             AssetQualifier::scope_spec_address("fakescopespec"),
         )
         .expect("the query should execute without error");
-        let result = from_binary::<Option<AssetDefinition>>(&binary)
+        let result = from_binary::<Option<AssetDefinitionV2>>(&binary)
             .expect("expected the binary to deserialize appropriately");
         assert!(
             result.is_none(),

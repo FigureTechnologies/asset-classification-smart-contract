@@ -1,4 +1,4 @@
-use crate::core::types::asset_definition::{AssetDefinition, AssetDefinitionV2};
+use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -69,38 +69,6 @@ pub fn config_v2(storage: &mut dyn Storage) -> Singleton<StateV2> {
 /// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).
 pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
     singleton_read(storage, STATE_V2_KEY)
-}
-
-// TODO: Delete after removing all uses of AssetDefinitionV1
-/// Boilerplate implementation of indexes for an IndexMap around state.
-/// This establishes a unique index on the scope spec address to ensure
-/// that saves cannot include duplicate scope specs.
-/// If it becomes a requirement in the future that we have duplicate scope specs,
-/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
-/// will fall apart.
-pub struct AssetDefinitionIndexes<'a> {
-    scope_spec: UniqueIndex<'a, String, AssetDefinition>,
-}
-impl<'a> IndexList<AssetDefinition> for AssetDefinitionIndexes<'a> {
-    fn get_indexes(&'_ self) -> Box<dyn Iterator<Item = &'_ dyn Index<AssetDefinition>> + '_> {
-        let v: Vec<&dyn Index<AssetDefinition>> = vec![&self.scope_spec];
-        Box::new(v.into_iter())
-    }
-}
-
-// TODO: Delete after removing all uses of AssetDefinitionV1
-/// The main entrypoint access for [AssetDefinition](super::types::asset_definition::AssetDefinition) state.
-/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
-/// functionality. Private access to ensure only helper functions below are used.
-pub fn asset_definitions<'a>(
-) -> IndexedMap<'a, &'a [u8], AssetDefinition, AssetDefinitionIndexes<'a>> {
-    let indexes = AssetDefinitionIndexes {
-        scope_spec: UniqueIndex::new(
-            |d: &AssetDefinition| d.scope_spec_address.clone().to_lowercase(),
-            "asset_definitions__scope_spec_address",
-        ),
-    };
-    IndexedMap::new("asset_definitions", indexes)
 }
 
 /// Boilerplate implementation of indexes for an IndexMap around state.

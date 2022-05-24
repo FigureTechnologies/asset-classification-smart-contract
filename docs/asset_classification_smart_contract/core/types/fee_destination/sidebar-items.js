@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["FeeDestination","Defines an external account designated as a recipient of funds during the verification process."],["FeeDestinationV2","Defines an external account designated as a recipient of funds during the verification process."]]});
+initSidebarItems({"struct":[["FeeDestinationV2","Defines an external account designated as a recipient of funds during the verification process."]]});

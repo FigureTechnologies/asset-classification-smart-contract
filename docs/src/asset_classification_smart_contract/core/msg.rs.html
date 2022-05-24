@@ -260,10 +260,6 @@
 <span id="255">255</span>
 <span id="256">256</span>
 <span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
@@ -400,8 +396,8 @@
     <span class="doccomment">/// value to be added to the contract&#39;s internal storage.  These asset definitions dictate which asset types are allowed to</span>
     <span class="doccomment">/// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in</span>
     <span class="doccomment">/// two criteria:</span>
-    <span class="doccomment">/// * Its [asset_type](super::types::asset_definition::AssetDefinition::asset_type) value must not yet be registered in a different asset definition.</span>
-    <span class="doccomment">/// * Its [scope_spec_address](super::types::asset_definition::AssetDefinition::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))</span>
+    <span class="doccomment">/// * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition.</span>
+    <span class="doccomment">/// * Its [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))</span>
     <span class="doccomment">/// must also be unique across asset definitions.</span>
     <span class="doccomment">/// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).</span>
     <span class="ident">AddAssetDefinition</span> {
@@ -503,10 +499,6 @@
     <span class="ident">ContractUpgrade</span> {
         <span class="doccomment">/// Various optional values that dictate additional behavior that can occur during a contract</span>
         <span class="doccomment">/// upgrade.</span>
-        <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span>,
-    },
-    <span class="comment">// TODO: Remove after removing AssetDefinitionV1</span>
-    <span class="ident">MigrateToAssetDefinitionV2</span> {
         <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span>,
     },
 }

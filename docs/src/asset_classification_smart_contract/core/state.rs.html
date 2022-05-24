@@ -442,39 +442,7 @@
 <span id="437">437</span>
 <span id="438">438</span>
 <span id="439">439</span>
-<span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
-<span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
-<span id="454">454</span>
-<span id="455">455</span>
-<span id="456">456</span>
-<span id="457">457</span>
-<span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinition</span>, <span class="ident">AssetDefinitionV2</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV2</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core::msg::InitMsg</span>,
     <span class="ident">util</span>::{
@@ -545,38 +513,6 @@
 <span class="doccomment">/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config_read_v2</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">ReadonlySingleton</span><span class="op">&lt;</span><span class="ident">StateV2</span><span class="op">&gt;</span> {
     <span class="ident">singleton_read</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
-}
-
-<span class="comment">// TODO: Delete after removing all uses of AssetDefinitionV1</span>
-<span class="doccomment">/// Boilerplate implementation of indexes for an IndexMap around state.</span>
-<span class="doccomment">/// This establishes a unique index on the scope spec address to ensure</span>
-<span class="doccomment">/// that saves cannot include duplicate scope specs.</span>
-<span class="doccomment">/// If it becomes a requirement in the future that we have duplicate scope specs,</span>
-<span class="doccomment">/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract</span>
-<span class="doccomment">/// will fall apart.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionIndexes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">String</span>, <span class="ident">AssetDefinition</span><span class="op">&gt;</span>,
-}
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IndexList</span><span class="op">&lt;</span><span class="ident">AssetDefinition</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AssetDefinitionIndexes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">get_indexes</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="self">self</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinition</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinition</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">scope_spec</span>];
-        <span class="ident">Box::new</span>(<span class="ident">v</span>.<span class="ident">into_iter</span>())
-    }
-}
-
-<span class="comment">// TODO: Delete after removing all uses of AssetDefinitionV1</span>
-<span class="doccomment">/// The main entrypoint access for [AssetDefinition](super::types::asset_definition::AssetDefinition) state.</span>
-<span class="doccomment">/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator</span>
-<span class="doccomment">/// functionality. Private access to ensure only helper functions below are used.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">asset_definitions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-) -&gt; <span class="ident">IndexedMap</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">AssetDefinition</span>, <span class="ident">AssetDefinitionIndexes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">indexes</span> <span class="op">=</span> <span class="ident">AssetDefinitionIndexes</span> {
-        <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex::new</span>(
-            <span class="op">|</span><span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinition</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">scope_spec_address</span>.<span class="ident">clone</span>().<span class="ident">to_lowercase</span>(),
-            <span class="string">&quot;asset_definitions__scope_spec_address&quot;</span>,
-        ),
-    };
-    <span class="ident">IndexedMap::new</span>(<span class="string">&quot;asset_definitions&quot;</span>, <span class="ident">indexes</span>)
 }
 
 <span class="doccomment">/// Boilerplate implementation of indexes for an IndexMap around state.</span>

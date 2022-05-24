@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["migrate_to_asset_definition_v2",""]]});

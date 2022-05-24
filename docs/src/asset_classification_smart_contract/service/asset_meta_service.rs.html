@@ -1083,7 +1083,6 @@
 <span id="1078">1078</span>
 <span id="1079">1079</span>
 <span id="1080">1080</span>
-<span id="1081">1081</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
 <span class="kw">use</span> <span class="ident">cosmwasm_std::CosmosMsg</span>;
@@ -1344,13 +1343,14 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-test-utils&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">to_binary</span>, <span class="ident">Addr</span>, <span class="ident">BankMsg</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Decimal</span>, <span class="ident">Uint128</span>};
+    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">to_binary</span>, <span class="ident">Addr</span>, <span class="ident">BankMsg</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
     <span class="kw">use</span> <span class="ident">provwasm_std</span>::{
         <span class="ident">AttributeMsgParams</span>, <span class="ident">AttributeValueType</span>, <span class="ident">ProvenanceMsg</span>, <span class="ident">ProvenanceMsgParams</span>,
     };
     <span class="kw">use</span> <span class="ident">serde_json_wasm::to_string</span>;
 
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::{
         <span class="ident">core</span>::{
             <span class="ident">error::ContractError</span>,
@@ -1362,7 +1362,6 @@
                 <span class="ident">asset_onboarding_status::AssetOnboardingStatus</span>,
                 <span class="ident">asset_scope_attribute::AssetScopeAttribute</span>,
                 <span class="ident">asset_verification_result::AssetVerificationResult</span>,
-                <span class="ident">verifier_detail::VerifierDetail</span>,
             },
         },
         <span class="ident">execute::verify_asset::VerifyAssetV1</span>,
@@ -1374,8 +1373,8 @@
             <span class="ident">onboard_asset_helpers</span>::{<span class="ident">test_onboard_asset</span>, <span class="ident">TestOnboardAsset</span>},
             <span class="ident">test_constants</span>::{
                 <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>,
-                <span class="ident">DEFAULT_FEE_PERCENT</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_ONBOARDING_DENOM</span>,
-                <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+                <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_ONBOARDING_DENOM</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+                <span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             },
             <span class="ident">test_utilities</span>::{
                 <span class="ident">assert_single_item</span>, <span class="ident">get_default_access_routes</span>, <span class="ident">get_default_asset_scope_attribute</span>,
@@ -1646,11 +1645,10 @@
                     <span class="ident">requestor_address</span>: <span class="ident">Addr::unchecked</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
                     <span class="ident">verifier_address</span>: <span class="ident">Addr::unchecked</span>(<span class="ident">DEFAULT_VERIFIER_ADDRESS</span>),
                     <span class="ident">onboarding_status</span>: <span class="ident">AssetOnboardingStatus::Pending</span>,
-                    <span class="ident">latest_verifier_detail</span>: <span class="ident">VerifierDetail</span> {
+                    <span class="ident">latest_verifier_detail</span>: <span class="ident">VerifierDetailV2</span> {
                         <span class="ident">address</span>: <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>.<span class="ident">to_string</span>(),
                         <span class="ident">onboarding_cost</span>: <span class="ident">Uint128::new</span>(<span class="ident">DEFAULT_ONBOARDING_COST</span>),
                         <span class="ident">onboarding_denom</span>: <span class="ident">DEFAULT_ONBOARDING_DENOM</span>.<span class="ident">to_string</span>(),
-                        <span class="ident">fee_percent</span>: <span class="ident">Decimal::percent</span>(<span class="ident">DEFAULT_FEE_PERCENT</span>),
                         <span class="ident">fee_destinations</span>: <span class="macro">vec!</span>[],
                         <span class="ident">entity_detail</span>: <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
                     }

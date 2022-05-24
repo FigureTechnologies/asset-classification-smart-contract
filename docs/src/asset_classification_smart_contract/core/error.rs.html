@@ -367,8 +367,8 @@
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
     },
 
-    <span class="doccomment">/// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinition::asset_type),</span>
-    <span class="doccomment">/// but the [AssetDefinition](super::types::asset_definition::AssetDefinition) for that type</span>
+    <span class="doccomment">/// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type),</span>
+    <span class="doccomment">/// but the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) for that type</span>
     <span class="doccomment">/// has a different Provenance Blockchain Scope Specification bech32 address listed in the</span>
     <span class="doccomment">/// contract&#39;s internal storage.  This is to prevent scopes from being onboarded as a specific</span>
     <span class="doccomment">/// type unless they meet the correct specification listed on the blockchain.</span>
@@ -380,24 +380,24 @@
         <span class="ident">scope_address</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The bech32 scope specification address listed on the scope provided during onboarding.</span>
         <span class="ident">scope_spec_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 scope specification address listed in the [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
+        <span class="doccomment">/// The bech32 scope specification address listed in the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
         <span class="doccomment">/// stored for the given asset type.</span>
         <span class="ident">expected_scope_spec_address</span>: <span class="ident">String</span>,
     },
 
-    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinition::asset_type)</span>
-    <span class="doccomment">/// linked to an [AssetDefinition](super::types::asset_definition::AssetDefinition) that is</span>
-    <span class="doccomment">/// currently not [enabled](super::types::asset_definition::AssetDefinition::enabled)]</span>
+    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+    <span class="doccomment">/// linked to an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) that is</span>
+    <span class="doccomment">/// currently not [enabled](super::types::asset_definition::AssetDefinitionV2::enabled)]</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset type {asset_type} is currently disabled&quot;</span>)]</span>
     <span class="ident">AssetTypeDisabled</span> {
         <span class="doccomment">/// The type of asset that is currently disabled.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
 
-    <span class="doccomment">/// Denotes that an existing [VerifierDetail](super::types::verifier_detail::VerifierDetail)</span>
-    <span class="doccomment">/// has the same [address](super::types::verifier_detail::VerifierDetail::address) property</span>
-    <span class="doccomment">/// as the provided [VerifierDetail](super::types::verifier_detail::VerifierDetail) to be</span>
-    <span class="doccomment">/// added to an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
+    <span class="doccomment">/// Denotes that an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
+    <span class="doccomment">/// has the same [address](super::types::verifier_detail::VerifierDetailV2::address) property</span>
+    <span class="doccomment">/// as the provided [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to be</span>
+    <span class="doccomment">/// added to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;duplicate/existing verifier address provided as input&quot;</span>)]</span>
     <span class="ident">DuplicateVerifierProvided</span>,
 
@@ -478,9 +478,9 @@
     },
 
     <span class="doccomment">/// An error that occurs when a lookup is attempted for a contract resource but the resource</span>
-    <span class="doccomment">/// does not exist.  For instance, when an [AssetDefinition](super::types::asset_definition::AssetDefinition)</span>
-    <span class="doccomment">/// does not contain a [VerifierDetail](super::types::verifier_detail::VerifierDetail) with a</span>
-    <span class="doccomment">/// specified bech32 [address](super::types::verifier_detail::VerifierDetail::address), this</span>
+    <span class="doccomment">/// does not exist.  For instance, when an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// does not contain a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) with a</span>
+    <span class="doccomment">/// specified bech32 [address](super::types::verifier_detail::VerifierDetailV2::address), this</span>
     <span class="doccomment">/// error will occur.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Resource not found: {explanation}&quot;</span>)]</span>
     <span class="ident">NotFound</span> {
@@ -558,14 +558,14 @@
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
 
-    <span class="doccomment">/// This error can occur when a target [VerifierDetail](super::types::verifier_detail::VerifierDetail)</span>
-    <span class="doccomment">/// does not exist in an [AssetDefinition](super::types::asset_definition::AssetDefinition) during</span>
+    <span class="doccomment">/// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
+    <span class="doccomment">/// does not exist in an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) during</span>
     <span class="doccomment">/// the onboarding process.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unsupported verifier [{verifier_address}] for asset type [{asset_type}]&quot;</span>)]</span>
     <span class="ident">UnsupportedVerifier</span> {
         <span class="doccomment">/// The bech32 address of the target verifier.</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinition::asset_type) selected</span>
+        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) selected</span>
         <span class="doccomment">/// during onboarding.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },

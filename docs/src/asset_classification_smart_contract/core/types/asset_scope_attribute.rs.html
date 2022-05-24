@@ -372,10 +372,12 @@
 <span id="367">367</span>
 <span id="368">368</span>
 <span id="369">369</span>
+<span id="370">370</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::Addr</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">types::access_definition::AccessDefinitionType</span>},
     <span class="ident">util</span>::{
@@ -389,7 +391,7 @@
 <span class="kw">use</span> <span class="kw">super</span>::{
     <span class="ident">access_definition::AccessDefinition</span>, <span class="ident">access_route::AccessRoute</span>,
     <span class="ident">asset_identifier::AssetIdentifier</span>, <span class="ident">asset_onboarding_status::AssetOnboardingStatus</span>,
-    <span class="ident">asset_verification_result::AssetVerificationResult</span>, <span class="ident">verifier_detail::VerifierDetail</span>,
+    <span class="ident">asset_verification_result::AssetVerificationResult</span>,
 };
 
 <span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly</span>
@@ -415,7 +417,7 @@
     <span class="doccomment">/// verifier address chosen by the requestor is added to the scope attribute.  This ensures that</span>
     <span class="doccomment">/// if the verifier values change due to an external update, the original fee structure will be</span>
     <span class="doccomment">/// honored for the onboarding task placed originally.</span>
-    <span class="kw">pub</span> <span class="ident">latest_verifier_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VerifierDetail</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">latest_verifier_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
     <span class="doccomment">/// The most recent verification is kept on the scope attribute.  If the verifier determines that</span>
     <span class="doccomment">/// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.</span>
     <span class="kw">pub</span> <span class="ident">latest_verification_result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetVerificationResult</span><span class="op">&gt;</span>,
@@ -452,7 +454,7 @@
         <span class="ident">requestor_address</span>: <span class="ident">S2</span>,
         <span class="ident">verifier_address</span>: <span class="ident">S3</span>,
         <span class="ident">onboarding_status</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetOnboardingStatus</span><span class="op">&gt;</span>,
-        <span class="ident">latest_verifier_detail</span>: <span class="ident">VerifierDetail</span>,
+        <span class="ident">latest_verifier_detail</span>: <span class="ident">VerifierDetailV2</span>,
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">identifiers</span> <span class="op">=</span> <span class="ident">identifier</span>.<span class="ident">to_identifiers</span>()<span class="question-mark">?</span>;

@@ -348,19 +348,10 @@
 <span id="343">343</span>
 <span id="344">344</span>
 <span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">load_asset_definition_by_type</span>, <span class="ident">replace_asset_definition</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetail</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">load_asset_definition_v2_by_type</span>, <span class="ident">replace_asset_definition_v2</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers</span>::{<span class="ident">check_admin_only</span>, <span class="ident">check_funds_are_empty</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
@@ -373,29 +364,29 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
-<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
-<span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)</span>
+<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),</span>
+<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+<span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)</span>
 <span class="doccomment">/// property.</span>
 <span class="doccomment">/// * `verifier` The verifier detail that will be updated.  All values within this provided struct</span>
-<span class="doccomment">/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
+<span class="doccomment">/// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAssetVerifierV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>,
+    <span class="kw">pub</span> <span class="ident">verifier</span>: <span class="ident">VerifierDetailV2</span>,
 }
 <span class="kw">impl</span> <span class="ident">UpdateAssetVerifierV1</span> {
     <span class="doccomment">/// Constructs a new instance of this struct.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
-    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
-    <span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinition::verifiers)</span>
+    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),</span>
+    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+    <span class="doccomment">/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)</span>
     <span class="doccomment">/// property.</span>
     <span class="doccomment">/// * `verifier` The verifier detail that will be updated.  All values within this provided struct</span>
-    <span class="doccomment">/// will replace the existing detail on the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_type</span>: <span class="ident">S</span>, <span class="ident">verifier</span>: <span class="ident">VerifierDetail</span>) -&gt; <span class="self">Self</span> {
+    <span class="doccomment">/// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_type</span>: <span class="ident">S</span>, <span class="ident">verifier</span>: <span class="ident">VerifierDetailV2</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">UpdateAssetVerifierV1</span> {
             <span class="ident">asset_type</span>: <span class="ident">asset_type</span>.<span class="ident">into</span>(),
             <span class="ident">verifier</span>,
@@ -425,8 +416,8 @@
 }
 
 <span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)</span>
-<span class="doccomment">/// message is provided.  Replaces an existing [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail)</span>
-<span class="doccomment">/// on an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition).</span>
+<span class="doccomment">/// message is provided.  Replaces an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)</span>
+<span class="doccomment">/// on an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
@@ -443,7 +434,7 @@
 ) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="ident">check_admin_only</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
     <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">verifier_address</span> <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">verifier</span>.<span class="ident">address</span>.<span class="ident">clone</span>();
     <span class="comment">// If a single verifier for the given address cannot be found, data is either corrupt, or the</span>
     <span class="comment">// verifier does not exist.  Given validation upfront prevents multiple verifiers with the</span>
@@ -471,7 +462,7 @@
         <span class="ident">replace_single_matching_vec_element</span>(<span class="ident">asset_definition</span>.<span class="ident">verifiers</span>, <span class="ident">msg</span>.<span class="ident">verifier</span>, <span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
             <span class="ident">v</span>.<span class="ident">address</span> <span class="op">==</span> <span class="ident">verifier_address</span>
         })<span class="question-mark">?</span>;
-    <span class="ident">replace_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
+    <span class="ident">replace_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
     <span class="comment">// Respond with emitted attributes</span>
     <span class="ident">Response::new</span>().<span class="ident">add_attributes</span>(<span class="ident">attributes</span>).<span class="ident">to_ok</span>()
 }
@@ -482,9 +473,9 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::contract::execute</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_by_type</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestination</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_v2_by_type</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::update_asset_verifier</span>::{<span class="ident">update_asset_verifier</span>, <span class="ident">UpdateAssetVerifierV1</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
         <span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
@@ -501,7 +492,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg::validate_verifier</span>;
     <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">mock_info</span>};
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Decimal</span>, <span class="ident">Uint128</span>};
+    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -592,12 +583,11 @@
             <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
             <span class="ident">ExecuteMsg::UpdateAssetVerifier</span> {
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">to_string</span>(),
-                <span class="ident">verifier</span>: <span class="ident">VerifierDetail::new</span>(
+                <span class="ident">verifier</span>: <span class="ident">VerifierDetailV2::new</span>(
                     <span class="comment">// Invalid because the address is blank</span>
                     <span class="string">&quot;&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">0</span>),
+                    <span class="ident">Uint128::zero</span>(),
                     <span class="ident">NHASH</span>,
-                    <span class="ident">Decimal::percent</span>(<span class="number">0</span>),
                     <span class="macro">vec!</span>[],
                     <span class="prelude-val">None</span>,
                 ),
@@ -654,14 +644,7 @@
             <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
             <span class="ident">UpdateAssetVerifierV1::new</span>(
                 <span class="ident">DEFAULT_ASSET_TYPE</span>,
-                <span class="ident">VerifierDetail::new</span>(
-                    <span class="string">&quot;unknown-address-guy&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                    <span class="ident">NHASH</span>,
-                    <span class="ident">Decimal::percent</span>(<span class="number">0</span>),
-                    <span class="macro">vec!</span>[],
-                    <span class="prelude-val">None</span>,
-                ),
+                <span class="ident">VerifierDetailV2::new</span>(<span class="string">&quot;unknown-address-guy&quot;</span>, <span class="ident">Uint128::zero</span>(), <span class="ident">NHASH</span>, <span class="macro">vec!</span>[], <span class="prelude-val">None</span>),
             ),
         )
         .<span class="ident">unwrap_err</span>();
@@ -672,8 +655,8 @@
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_default_verifier_was_updated</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetail</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
-        <span class="kw">let</span> <span class="ident">state_def</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
+    <span class="kw">fn</span> <span class="ident">test_default_verifier_was_updated</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
+        <span class="kw">let</span> <span class="ident">state_def</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the default asset type to be stored in the state&quot;</span>);
         <span class="kw">let</span> <span class="ident">target_verifier</span> <span class="op">=</span> <span class="ident">state_def</span>.<span class="ident">verifiers</span>.<span class="ident">into_iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">address</span> <span class="op">==</span> <span class="ident">verifier</span>.<span class="ident">address</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected a single verifier to be produced when searching for the updated verifier&#39;s address&quot;</span>);
@@ -685,20 +668,19 @@
 
     <span class="comment">// This builds off of the existing default asset verifier in test_utilities and adds/tweaks</span>
     <span class="comment">// details.  The fee addresses are randomly-generated bech32 provenance testnet addresses</span>
-    <span class="kw">fn</span> <span class="ident">get_valid_update_verifier</span>() -&gt; <span class="ident">VerifierDetail</span> {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetail::new</span>(
+    <span class="kw">fn</span> <span class="ident">get_valid_update_verifier</span>() -&gt; <span class="ident">VerifierDetailV2</span> {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">Uint128::new</span>(<span class="number">420</span>),
             <span class="ident">NHASH</span>,
-            <span class="ident">Decimal::percent</span>(<span class="number">100</span>),
             <span class="macro">vec!</span>[
-                <span class="ident">FeeDestination::new</span>(
+                <span class="ident">FeeDestinationV2::new</span>(
                     <span class="string">&quot;tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx&quot;</span>,
-                    <span class="ident">Decimal::percent</span>(<span class="number">50</span>),
+                    <span class="ident">Uint128::new</span>(<span class="number">210</span>),
                 ),
-                <span class="ident">FeeDestination::new</span>(
+                <span class="ident">FeeDestinationV2::new</span>(
                     <span class="string">&quot;tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8&quot;</span>,
-                    <span class="ident">Decimal::percent</span>(<span class="number">50</span>),
+                    <span class="ident">Uint128::new</span>(<span class="number">210</span>),
                 ),
             ],
             <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),

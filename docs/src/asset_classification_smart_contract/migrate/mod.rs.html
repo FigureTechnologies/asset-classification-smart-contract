@@ -10,10 +10,14 @@
 <span id="5">5</span>
 <span id="6">6</span>
 <span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Contains the functionality used in the [contract file](crate::contract) to perform a contract migration.</span>
 
 <span class="doccomment">/// The main entrypoint function for running a code migration.  Referred to in the [contract file](crate::contract).</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">migrate_contract</span>;
+<span class="comment">// TODO: Remove after removing AssetDefinitionV1</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">migrate_to_asset_definition_v2</span>;
 <span class="doccomment">/// Module for structs and helper functions containing the version information stored for contract</span>
 <span class="doccomment">/// migrations.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">version_info</span>;

@@ -423,9 +423,9 @@
     <span class="doccomment">/// * `event_type` All events should denote their type for external consumers of Provenance</span>
     <span class="doccomment">/// Blockchain Event Stream, so this value is required for any new instance and appends the</span>
     <span class="doccomment">/// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).</span>
-    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
     <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
-    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
     <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_asset_event</span><span class="op">&lt;</span><span class="ident">T1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">T2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">event_type</span>: <span class="ident">EventType</span>,
@@ -442,7 +442,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
     <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_asset_type</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">asset_type</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
@@ -455,7 +455,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
     <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scope_address</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scope_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>
@@ -468,8 +468,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetail::address)</span>
-    <span class="doccomment">/// for a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) that uses the</span>
+    <span class="doccomment">/// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetailV2::address)</span>
+    <span class="doccomment">/// for a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) that uses the</span>
     <span class="doccomment">/// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_verifier</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">verifier_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>

@@ -315,11 +315,10 @@
 <span id="310">310</span>
 <span id="311">311</span>
 <span id="312">312</span>
-<span id="313">313</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::replace_asset_definition</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinition</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::replace_asset_definition_v2</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers</span>::{<span class="ident">check_admin_only</span>, <span class="ident">check_funds_are_empty</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
@@ -331,20 +330,20 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
 <span class="doccomment">/// property that matches an existing asset definition in contract storage.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAssetDefinitionV1</span> {
-    <span class="kw">pub</span> <span class="ident">asset_definition</span>: <span class="ident">AssetDefinition</span>,
+    <span class="kw">pub</span> <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV2</span>,
 }
 <span class="kw">impl</span> <span class="ident">UpdateAssetDefinitionV1</span> {
     <span class="doccomment">/// Constructs a new instance of this struct.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+    <span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
     <span class="doccomment">/// property that matches an existing asset definition in contract storage.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">asset_definition</span>: <span class="ident">AssetDefinition</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV2</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">UpdateAssetDefinitionV1</span> { <span class="ident">asset_definition</span> }
     }
 
@@ -371,8 +370,8 @@
 }
 
 <span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)</span>
-<span class="doccomment">/// message is provided.  Attempts to replace an existing [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
-<span class="doccomment">/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// message is provided.  Attempts to replace an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
 <span class="doccomment">/// property.  If no matching type is present, the request will be rejected.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
@@ -391,7 +390,7 @@
     <span class="ident">check_admin_only</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
     <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
     <span class="comment">// Overwrite the existing asset definition with the new one</span>
-    <span class="ident">replace_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
+    <span class="ident">replace_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
     <span class="ident">Response::new</span>()
         .<span class="ident">add_attributes</span>(
             <span class="ident">EventAttributes::new</span>(<span class="ident">EventType::UpdateAssetDefinition</span>)
@@ -406,11 +405,11 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::contract::execute</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_by_type</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinition</span>, <span class="ident">AssetDefinitionInput</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestination</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_v2_by_type</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV2</span>, <span class="ident">AssetDefinitionV2</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::scope_spec_identifier::ScopeSpecIdentifier</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::update_asset_definition</span>::{
         <span class="ident">update_asset_definition</span>, <span class="ident">UpdateAssetDefinitionV1</span>,
     };
@@ -428,7 +427,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg::validate_asset_definition_input</span>;
     <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">mock_info</span>};
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Decimal</span>, <span class="ident">Uint128</span>};
+    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -486,7 +485,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> {
-            <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInput::new</span>(
+            <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV2::new</span>(
                 <span class="ident">DEFAULT_ASSET_TYPE</span>,
                 <span class="ident">ScopeSpecIdentifier::address</span>(<span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>).<span class="ident">to_serialized_enum</span>(),
                 <span class="macro">vec!</span>[],
@@ -547,15 +546,14 @@
     <span class="kw">fn</span> <span class="ident">test_invalid_update_asset_definition_for_missing_loan_type</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">missing_asset_definition</span> <span class="op">=</span> <span class="ident">AssetDefinition::new</span>(
+        <span class="kw">let</span> <span class="ident">missing_asset_definition</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(
             <span class="string">&quot;nonexistent-type&quot;</span>,
             <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>,
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetail::new</span>(
+            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;verifier&quot;</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">100</span>),
                 <span class="ident">NHASH</span>,
-                <span class="ident">Decimal::percent</span>(<span class="number">25</span>),
-                <span class="macro">vec!</span>[<span class="ident">FeeDestination::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="ident">Decimal::percent</span>(<span class="number">100</span>))],
+                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">25</span>))],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             )],
         );
@@ -572,7 +570,7 @@
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated_for_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInput</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
+    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated_for_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV2</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
         <span class="ident">test_asset_definition_was_updated</span>(
             <span class="kw-2">&amp;</span><span class="ident">input</span>
                 .<span class="ident">as_asset_definition</span>()
@@ -581,9 +579,10 @@
         )
     }
 
-    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinition</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
-        <span class="kw">let</span> <span class="ident">state_def</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">asset_type</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the updated asset definition to be stored in the state&quot;</span>);
+    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
+        <span class="kw">let</span> <span class="ident">state_def</span> <span class="op">=</span>
+            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">asset_type</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;expected the updated asset definition to be stored in the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">asset_definition</span>, <span class="kw-2">&amp;</span><span class="ident">state_def</span>,
             <span class="string">&quot;the value in state should directly equate to the added value&quot;</span>,
@@ -593,23 +592,22 @@
     <span class="comment">// This builds off of the existing default asset definition in test_utilities and adds/tweaks</span>
     <span class="comment">// details.  This uses randomly-generated bech32 provenance testnet addresses to be different than</span>
     <span class="comment">// the default values</span>
-    <span class="kw">fn</span> <span class="ident">get_update_asset_definition</span>() -&gt; <span class="ident">AssetDefinitionInput</span> {
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInput::new</span>(
+    <span class="kw">fn</span> <span class="ident">get_update_asset_definition</span>() -&gt; <span class="ident">AssetDefinitionInputV2</span> {
+        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV2::new</span>(
             <span class="ident">DEFAULT_ASSET_TYPE</span>,
             <span class="ident">ScopeSpecIdentifier::address</span>(<span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>).<span class="ident">to_serialized_enum</span>(),
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetail::new</span>(
+            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs&quot;</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">1500000</span>),
                 <span class="ident">NHASH</span>,
-                <span class="ident">Decimal::percent</span>(<span class="number">50</span>),
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestination::new</span>(
+                    <span class="ident">FeeDestinationV2::new</span>(
                         <span class="string">&quot;tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7&quot;</span>,
-                        <span class="ident">Decimal::percent</span>(<span class="number">70</span>),
+                        <span class="ident">Uint128::new</span>(<span class="number">450000</span>),
                     ),
-                    <span class="ident">FeeDestination::new</span>(
+                    <span class="ident">FeeDestinationV2::new</span>(
                         <span class="string">&quot;tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52&quot;</span>,
-                        <span class="ident">Decimal::percent</span>(<span class="number">30</span>),
+                        <span class="ident">Uint128::new</span>(<span class="number">300000</span>),
                     ),
                 ],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),

@@ -15,12 +15,12 @@ for ease of use in the underlying <a href="fn.onboard_asset.html">onboard_asset<
 <ul>
 <li><code>identifier</code> An instance of the asset identifier enum that helps the contract identify which
 scope that the requestor is referring to in the request.</li>
-<li><code>asset_type</code> <a href="../../core/types/asset_definition/struct.AssetDefinition.html">AssetDefinition’s</a> unique
-<a href="../../core/types/asset_definition/struct.AssetDefinition.html#structfield.asset_type">asset_type</a> value.  This
+<li><code>asset_type</code> <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2’s</a> unique
+<a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html#structfield.asset_type">asset_type</a> value.  This
 value must correspond to an existing type in the contract’s internal storage, or the request
 for onboarding will be rejected.</li>
-<li><code>verifier_address</code> The bech32 Provenance Blockchain <a href="../../core/types/verifier_detail/struct.VerifierDetail.html#structfield.address">address</a>
-of a <a href="../../core/types/verifier_detail/struct.VerifierDetail.html">VerifierDetail</a> on the <a href="../../core/types/asset_definition/struct.AssetDefinition.html">AssetDefinition</a>
+<li><code>verifier_address</code> The bech32 Provenance Blockchain <a href="../../core/types/verifier_detail/struct.VerifierDetailV2.html#structfield.address">address</a>
+of a <a href="../../core/types/verifier_detail/struct.VerifierDetailV2.html">VerifierDetailV2</a> on the <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>
 referred to by the <a href="struct.OnboardAssetV1.html#structfield.asset_type">asset_type</a> property. If the address does
 not refer to any existing verifier detail, the request will be rejected.</li>
 <li><code>access_routes</code> A vector of access routes to be added to the generated <a href="../../core/types/asset_scope_attribute/struct.AssetScopeAttribute.html">AssetScopeAttribute’s</a>

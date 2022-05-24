@@ -341,16 +341,11 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">load_asset_definition_v2_by_type</span>, <span class="ident">replace_asset_definition_v2</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">core</span>::{
-        <span class="ident">error::ContractError</span>,
-        <span class="ident">msg::ExecuteMsg</span>,
-        <span class="ident">state</span>::{<span class="ident">load_asset_definition_by_type</span>, <span class="ident">replace_asset_definition</span>},
-    },
+    <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">msg::ExecuteMsg</span>},
     <span class="ident">util</span>::{
         <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>},
         <span class="ident">contract_helpers</span>::{<span class="ident">check_admin_only</span>, <span class="ident">check_funds_are_empty</span>},
@@ -364,10 +359,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
-<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+<span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinitionV2),</span>
+<span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
 <span class="doccomment">/// property.</span>
-<span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+<span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)</span>
 <span class="doccomment">/// after the toggle takes place.  This value is required to ensure that multiple toggles executed</span>
 <span class="doccomment">/// in succession (either by accident or by various unrelated callers) will only be honored if</span>
 <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
@@ -381,10 +376,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinition),</span>
-    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type)</span>
+    <span class="doccomment">/// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),</span>
+    <span class="doccomment">/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
     <span class="doccomment">/// property.</span>
-    <span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+    <span class="doccomment">/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)</span>
     <span class="doccomment">/// after the toggle takes place.  This value is required to ensure that multiple toggles executed</span>
     <span class="doccomment">/// in succession (either by accident or by various unrelated callers) will only be honored if</span>
     <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
@@ -418,7 +413,7 @@
 }
 
 <span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)</span>
-<span class="doccomment">/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinition::enabled)</span>
+<span class="doccomment">/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)</span>
 <span class="doccomment">/// property from true to false, or false to true.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
@@ -436,7 +431,7 @@
 ) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="ident">check_admin_only</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
     <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>)<span class="question-mark">?</span>;
     <span class="comment">// Never toggle the state if the caller didn&#39;t expect the target result</span>
     <span class="comment">// If current state == expected result, then the requestor wants to change TO the current state. So this is a no-op.</span>
     <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">enabled</span> <span class="op">==</span> <span class="ident">msg</span>.<span class="ident">expected_result</span> {
@@ -450,7 +445,7 @@
     }
     <span class="comment">// Simply negate the current value in state to swap it</span>
     <span class="ident">asset_definition</span>.<span class="ident">enabled</span> <span class="op">=</span> <span class="op">!</span><span class="ident">asset_definition</span>.<span class="ident">enabled</span>;
-    <span class="ident">replace_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
+    <span class="ident">replace_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
     <span class="ident">Response::new</span>()
         .<span class="ident">add_attributes</span>(
             <span class="ident">EventAttributes::new</span>(<span class="ident">EventType::ToggleAssetDefinition</span>)
@@ -466,9 +461,10 @@
     <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">mock_info</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
 
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_v2_by_type</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::{
         <span class="ident">contract::execute</span>,
-        <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">msg::ExecuteMsg</span>, <span class="ident">state::load_asset_definition_by_type</span>},
+        <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">msg::ExecuteMsg</span>},
         <span class="ident">testutil</span>::{
             <span class="ident">test_constants</span>::{<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>},
             <span class="ident">test_utilities</span>::{
@@ -523,7 +519,7 @@
             <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">NEW_VALUE_KEY</span>),
             <span class="string">&quot;the new value key should indicate that the asset definition has been set to enabled = false&quot;</span>,
         );
-        <span class="ident">test_toggle_has_succesfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
+        <span class="ident">test_toggle_has_successfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -531,7 +527,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
         <span class="ident">toggle_default_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="bool-val">false</span>);
-        <span class="ident">test_toggle_has_succesfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
+        <span class="ident">test_toggle_has_successfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -540,10 +536,10 @@
         <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
         <span class="comment">// First toggle should disable the automagically enabled default asset type</span>
         <span class="ident">toggle_default_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="bool-val">false</span>);
-        <span class="ident">test_toggle_has_succesfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
+        <span class="ident">test_toggle_has_successfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">false</span>);
         <span class="comment">// Second toggle should re-enable it</span>
         <span class="ident">toggle_default_asset_definition</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="bool-val">true</span>);
-        <span class="ident">test_toggle_has_succesfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">true</span>);
+        <span class="ident">test_toggle_has_successfully_occurred</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="bool-val">true</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -665,8 +661,8 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">test_toggle_has_succesfully_occurred</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">expected_enabled_value</span>: <span class="ident">bool</span>) {
-        <span class="kw">let</span> <span class="ident">asset_def</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
+    <span class="kw">fn</span> <span class="ident">test_toggle_has_successfully_occurred</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">expected_enabled_value</span>: <span class="ident">bool</span>) {
+        <span class="kw">let</span> <span class="ident">asset_def</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the default asset definition should exist in storage&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">expected_enabled_value</span>, <span class="ident">asset_def</span>.<span class="ident">enabled</span>,

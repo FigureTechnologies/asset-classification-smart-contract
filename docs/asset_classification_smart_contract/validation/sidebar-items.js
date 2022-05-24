@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["validate_execute_msg","Validates the integrity of an intercepted ExecuteMsg variant."],["validate_init_msg","Validates the integrity of an intercepted InitMsg and its associated AssetDefinition values."]]});
+initSidebarItems({"mod":[["validate_execute_msg","Validates the integrity of an intercepted ExecuteMsg variant."],["validate_init_msg","Validates the integrity of an intercepted InitMsg and its associated AssetDefinitionV2 values."]]});

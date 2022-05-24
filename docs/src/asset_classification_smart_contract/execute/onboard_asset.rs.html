@@ -1072,9 +1072,10 @@
 <span id="1067">1067</span>
 <span id="1068">1068</span>
 <span id="1069">1069</span>
+<span id="1070">1070</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_by_type</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_v2_by_type</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus</span>;
@@ -1095,12 +1096,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `identifier` An instance of the asset identifier enum that helps the contract identify which</span>
 <span class="doccomment">/// scope that the requestor is referring to in the request.</span>
-<span class="doccomment">/// * `asset_type` [AssetDefinition&#39;s](crate::core::types::asset_definition::AssetDefinition) unique</span>
-<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinition::asset_type) value.  This</span>
+<span class="doccomment">/// * `asset_type` [AssetDefinitionV2&#39;s](crate::core::types::asset_definition::AssetDefinitionV2) unique</span>
+<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type) value.  This</span>
 <span class="doccomment">/// value must correspond to an existing type in the contract&#39;s internal storage, or the request</span>
 <span class="doccomment">/// for onboarding will be rejected.</span>
-<span class="doccomment">/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetail::address)</span>
-<span class="doccomment">/// of a [VerifierDetail](crate::core::types::verifier_detail::VerifierDetail) on the [AssetDefinition](crate::core::types::asset_definition::AssetDefinition)</span>
+<span class="doccomment">/// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetailV2::address)</span>
+<span class="doccomment">/// of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
 <span class="doccomment">/// referred to by the [asset_type](self::OnboardAssetV1::asset_type) property. If the address does</span>
 <span class="doccomment">/// not refer to any existing verifier detail, the request will be rejected.</span>
 <span class="doccomment">/// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute&#39;s](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
@@ -1168,24 +1169,25 @@
 {
     <span class="kw">let</span> <span class="ident">asset_identifiers</span> <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">identifier</span>.<span class="ident">to_identifiers</span>()<span class="question-mark">?</span>;
     <span class="comment">// get asset definition config for type, or error if not present</span>
-    <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span>
-        <span class="kw">match</span> <span class="ident">repository</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">load_asset_definition_by_type</span>(<span class="ident">d</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>)) {
-            <span class="prelude-val">Ok</span>(<span class="ident">state</span>) =&gt; {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">state</span>.<span class="ident">enabled</span> {
-                    <span class="kw">return</span> <span class="ident">ContractError::AssetTypeDisabled</span> {
-                        <span class="ident">asset_type</span>: <span class="ident">msg</span>.<span class="ident">asset_type</span>,
-                    }
-                    .<span class="ident">to_err</span>();
-                }
-                <span class="ident">state</span>
-            }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                <span class="kw">return</span> <span class="ident">ContractError::UnsupportedAssetType</span> {
+    <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">repository</span>
+        .<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">d</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_type</span>))
+    {
+        <span class="prelude-val">Ok</span>(<span class="ident">state</span>) =&gt; {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">state</span>.<span class="ident">enabled</span> {
+                <span class="kw">return</span> <span class="ident">ContractError::AssetTypeDisabled</span> {
                     <span class="ident">asset_type</span>: <span class="ident">msg</span>.<span class="ident">asset_type</span>,
                 }
-                .<span class="ident">to_err</span>()
+                .<span class="ident">to_err</span>();
             }
-        };
+            <span class="ident">state</span>
+        }
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+            <span class="kw">return</span> <span class="ident">ContractError::UnsupportedAssetType</span> {
+                <span class="ident">asset_type</span>: <span class="ident">msg</span>.<span class="ident">asset_type</span>,
+            }
+            .<span class="ident">to_err</span>()
+        }
+    };
 
     <span class="comment">// verify prescribed verifier is present as a verifier in asset definition</span>
     <span class="kw">let</span> <span class="ident">verifier_config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">asset_definition</span>

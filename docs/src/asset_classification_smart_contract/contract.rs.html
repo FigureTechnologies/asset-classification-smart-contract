@@ -159,6 +159,10 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg</span>::{<span class="ident">ExecuteMsg</span>, <span class="ident">InitMsg</span>, <span class="ident">MigrateMsg</span>, <span class="ident">QueryMsg</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_definition</span>::{<span class="ident">add_asset_definition</span>, <span class="ident">AddAssetDefinitionV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_verifier</span>::{<span class="ident">add_asset_verifier</span>, <span class="ident">AddAssetVerifierV1</span>};
@@ -171,6 +175,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::verify_asset</span>::{<span class="ident">verify_asset</span>, <span class="ident">VerifyAssetV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::instantiate::init_contract::init_contract</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::migrate_contract::migrate_contract</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::migrate_to_asset_definition_v2::migrate_to_asset_definition_v2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_definition::query_asset_definition</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_definitions::query_asset_definitions</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_scope_attribute::query_asset_scope_attribute</span>;
@@ -313,6 +318,9 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>, <span class="ident">_env</span>: <span class="ident">Env</span>, <span class="ident">msg</span>: <span class="ident">MigrateMsg</span>) -&gt; <span class="ident">EntryPointResponse</span> {
     <span class="kw">match</span> <span class="ident">msg</span> {
         <span class="ident">MigrateMsg::ContractUpgrade</span> { <span class="ident">options</span> } =&gt; <span class="ident">migrate_contract</span>(<span class="ident">deps</span>, <span class="ident">options</span>),
+        <span class="ident">MigrateMsg::MigrateToAssetDefinitionV2</span> { <span class="ident">options</span> } =&gt; {
+            <span class="ident">migrate_to_asset_definition_v2</span>(<span class="ident">deps</span>, <span class="ident">options</span>)
+        }
     }
 }
 </code></pre></div>

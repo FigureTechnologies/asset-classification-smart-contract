@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["query_asset_definition","A query that fetches a target AssetDefinition from the contract’s internal storage."]]});
+initSidebarItems({"fn":[["query_asset_definition","A query that fetches a target AssetDefinitionV2 from the contract’s internal storage."]]});

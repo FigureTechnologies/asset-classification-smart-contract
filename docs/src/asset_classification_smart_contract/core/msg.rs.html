@@ -260,6 +260,20 @@
 <span id="255">255</span>
 <span id="256">256</span>
 <span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
@@ -486,6 +500,20 @@
     <span class="ident">BindContractAlias</span> {
         <span class="doccomment">/// The name to bind to the contract.  Ex: `assetclassificationalias.pb`.</span>
         <span class="ident">alias_name</span>: <span class="ident">String</span>,
+    },
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// is erroneously added with an incorrect asset type, the scope specification address is unable</span>
+    <span class="doccomment">/// to be used, as it is another unique key of the asset definition.  This route facilitates the</span>
+    <span class="doccomment">/// removal of bad data.</span>
+    <span class="doccomment">/// IMPORTANT: If an asset definition is completely removed, all contract references to it will</span>
+    <span class="doccomment">/// fail to function.  This can cause assets currently in the onboarding process for a deleted</span>
+    <span class="doccomment">/// type to have failures when interactions occur with them.  This functionality should only be</span>
+    <span class="doccomment">/// used for an unused type!</span>
+    <span class="ident">DeleteAssetDefinition</span> {
+        <span class="doccomment">/// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum) that will map to an</span>
+        <span class="doccomment">/// existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).</span>
+        <span class="ident">qualifier</span>: <span class="ident">SerializedEnum</span>,
     },
 }
 

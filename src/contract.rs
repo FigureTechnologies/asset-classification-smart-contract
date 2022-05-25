@@ -2,6 +2,7 @@ use crate::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
 use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
 use crate::execute::bind_contract_alias::{bind_contract_alias, BindContractAliasV1};
+use crate::execute::delete_asset_definition::{delete_asset_definition, DeleteAssetDefinitionV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1};
 use crate::execute::update_access_routes::{update_access_routes, UpdateAccessRoutesV1};
@@ -131,6 +132,9 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ),
         ExecuteMsg::BindContractAlias { .. } => {
             bind_contract_alias(deps, env, info, BindContractAliasV1::from_execute_msg(msg)?)
+        }
+        ExecuteMsg::DeleteAssetDefinition { .. } => {
+            delete_asset_definition(deps, info, DeleteAssetDefinitionV1::from_execute_msg(msg)?)
         }
     }
 }

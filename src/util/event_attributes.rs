@@ -30,6 +30,8 @@ pub enum EventType {
     UpdateAccessRoutes,
     /// Occurs when the contract is [executed](crate::contract::execute) to [bind a contract alias](crate::execute::bind_contract_alias).
     BindContractAlias,
+    /// Occurs when the contract is [executed](crate::contract::execute) to [delete an asset definition](crate::execute::delete_asset_definition).
+    DeleteAssetDefinition,
 }
 #[allow(clippy::from_over_into)]
 impl Into<String> for EventType {
@@ -46,6 +48,7 @@ impl Into<String> for EventType {
             EventType::UpdateAssetVerifier => "update_asset_verifier",
             EventType::UpdateAccessRoutes => "update_access_routes",
             EventType::BindContractAlias => "bind_contract_alias",
+            EventType::DeleteAssetDefinition => "delete_asset_definition",
         }
         .into()
     }

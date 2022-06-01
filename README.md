@@ -123,8 +123,8 @@ underlying record values.  This should never be set to true in a mainnet environ
 #### Request Sample
 ```json
 {
-  "base_contract_name": "testasset",
-  "bind_base_name": "true",
+  "base_contract_name": "testasset.pb",
+  "bind_base_name": true,
   "asset_definitions": [
     {
       "asset_type": "cat",
@@ -155,11 +155,11 @@ underlying record values.  This should never be set to true in a mainnet environ
           }
         }
       ],
-      "enabled": "true",
-      "bind_name": "false"
+      "enabled": true,
+      "bind_name": false
     }
   ],
-  "is_test": "false"
+  "is_test": false
 }
 ```
 
@@ -423,8 +423,8 @@ asset definition.
           }
         }
       ],
-      "enabled": "true",
-      "bind_name": "true"
+      "enabled": true,
+      "bind_name": true
     }
   }
 }
@@ -480,7 +480,7 @@ ensures that after the update, all scope specification addresses contained in as
           }
         }
       ],
-      "enabled": "true"
+      "enabled": true
     }
   }
 }
@@ -516,7 +516,7 @@ the asset definition is in the intended state during the execution of the route.
 {
   "toggle_asset_definition": {
     "asset_type": "airplane",
-    "expected_result": "false"
+    "expected_result": false
   }
 }
 ```
@@ -811,7 +811,7 @@ OR
         }
       }
     ],
-    "enabled": "true"
+    "enabled": true
   }
 }
 ```
@@ -863,7 +863,7 @@ No parameters are used for the `QueryAssetDefinitions` route.
             }
           }
         ],
-        "enabled": "true"
+        "enabled": true
       }
     ]
   }
@@ -1069,7 +1069,9 @@ provenanced tx wasm store <your-path-here>/asset-classification-smart-contract/a
 ```
 
 5. Find the `code_id` output from the previous command.  If you're following this guide from a fresh install, the value
-   should just be 1.  Let's assume it is for this next command.  Time to instantiate the contract!
+   should just be 1.  Let's assume it is for this next command.  Time to instantiate the contract!  Note: In some localnet
+   environments, `pio` is a restricted root name and `pb` is unrestricted.  If this command fails due to a restricted
+   name issue, try using `"base_contract_name": "asset.pb"` instead.
 
 ```shell
 provenanced tx wasm instantiate 1 \

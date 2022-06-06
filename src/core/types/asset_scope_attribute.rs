@@ -1,15 +1,14 @@
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Storage};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::core::state::latest_verifier_detail_store_ro;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
-        aliases::AssetResult,
-        functions::filter_valid_access_routes,
-        scope_address_utils::bech32_string_to_addr,
-        traits::{OptionExtensions, ResultExtensions},
+        aliases::AssetResult, functions::filter_valid_access_routes,
+        scope_address_utils::bech32_string_to_addr, traits::ResultExtensions,
     },
 };
 
@@ -79,7 +78,7 @@ impl AssetScopeAttribute {
         requestor_address: S2,
         verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
-        latest_verifier_detail: VerifierDetailV2,
+        latest_verifier_detail: &VerifierDetailV2,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
@@ -107,11 +106,19 @@ impl AssetScopeAttribute {
             requestor_address: req_addr,
             verifier_address: ver_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            latest_verifier_detail: latest_verifier_detail.to_some(),
+            latest_verifier_detail: None,
             latest_verification_result: None,
             access_definitions,
         }
         .to_ok()
+    }
+
+    pub fn get_latest_verifier_detail(&self, storage: &dyn Storage) -> Option<VerifierDetailV2> {
+        self.latest_verifier_detail.clone().or_else(|| {
+            latest_verifier_detail_store_ro(storage)
+                .may_load(self.scope_address.as_bytes())
+                .unwrap_or(None)
+        })
     }
 }
 
@@ -141,7 +148,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_only("    "),
                 AccessRoute::route_only("  "),
@@ -172,7 +179,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_only("    "),
                 AccessRoute::route_only("  "),
@@ -194,7 +201,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
@@ -212,7 +219,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![AccessRoute::route_and_name(
                 "   test-route   ",
                 "my cool name                 ",
@@ -248,7 +255,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route", "name1"),
                 AccessRoute::route_and_name("test-route", "name2"),
@@ -295,7 +302,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route", "hey look at my name right here"),
                 AccessRoute::route_only("test-route"),
@@ -342,7 +349,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route     ", "myname"),
                 AccessRoute::route_and_name("test-route", "myname    "),

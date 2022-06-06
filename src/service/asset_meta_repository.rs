@@ -1,3 +1,4 @@
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::types::{access_route::AccessRoute, asset_scope_attribute::AssetScopeAttribute},
     util::aliases::AssetResult,
@@ -21,9 +22,17 @@ pub trait AssetMetaRepository {
     ///
     /// * `attribute` The scope attribute to be appended to the Provenance Metadata Scope as a result
     /// of a successful onboarding process.
+    /// * `latest_verifier_detail` The verifier detail currently in storage when this scope is
+    /// onboarded.  Stored in contract storage until a verification has been completed to ensure that
+    /// the proper fee distribution is made when verification completes.
     /// * `is_retry` Indicates that this onboarding action was attempted before, and the scope has
     /// an existing scope attribute with a failed verification on it.
-    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> AssetResult<()>;
+    fn onboard_asset(
+        &self,
+        attribute: &AssetScopeAttribute,
+        latest_verifier_detail: &VerifierDetailV2,
+        is_retry: bool,
+    ) -> AssetResult<()>;
 
     /// Alters the internal values of the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
     /// currently attached to a Provenance Metadata Scope with the provided values.

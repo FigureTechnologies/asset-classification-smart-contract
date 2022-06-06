@@ -1,5 +1,6 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::core::types::asset_qualifier::AssetQualifier;
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -8,7 +9,10 @@ use crate::{
     },
 };
 use cosmwasm_std::{Addr, Storage};
-use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
+use cosmwasm_storage::{
+    bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
+    Singleton,
+};
 use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -17,6 +21,7 @@ use super::error::ContractError;
 
 pub static STATE_V2_KEY: &[u8] = b"state_v2";
 pub static ASSET_META_KEY: &[u8] = b"asset_meta";
+pub static LATEST_VERIFIER_DETAIL_KEY: &[u8] = b"latest_verifier_detail";
 
 /// Stores the main configurations for the contract internally.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -287,6 +292,33 @@ pub fn delete_asset_definition_v2_by_qualifier(
     .asset_type;
     asset_definitions_v2().remove(storage, existing_asset_type.to_lowercase().as_bytes())?;
     Ok(existing_asset_type)
+}
+
+pub fn latest_verifier_detail_store(storage: &mut dyn Storage) -> Bucket<VerifierDetailV2> {
+    bucket(storage, LATEST_VERIFIER_DETAIL_KEY)
+}
+
+pub fn latest_verifier_detail_store_ro(storage: &dyn Storage) -> ReadonlyBucket<VerifierDetailV2> {
+    bucket_read(storage, LATEST_VERIFIER_DETAIL_KEY)
+}
+
+pub fn insert_latest_verifier_detail<S: Into<String>>(
+    storage: &mut dyn Storage,
+    scope_address: S,
+    verifier_detail: &VerifierDetailV2,
+) -> AssetResult<()> {
+    latest_verifier_detail_store(storage)
+        .save(scope_address.into().as_bytes(), verifier_detail)
+        .map_err(|err| ContractError::Std(err))
+}
+
+pub fn delete_latest_verifier_detail<S: Into<String>>(
+    storage: &mut dyn Storage,
+    scope_address: S,
+) -> AssetResult<()> {
+    latest_verifier_detail_store(storage)
+        .remove(scope_address.into().as_bytes())
+        .to_ok()
 }
 
 #[cfg(test)]

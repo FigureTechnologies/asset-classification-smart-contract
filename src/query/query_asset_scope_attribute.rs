@@ -116,8 +116,9 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
     scope_address: S,
 ) -> AssetResult<Option<AssetScopeAttribute>> {
     let querier = ProvenanceQuerier::new(&deps.querier);
+    let scope_address_str: String = scope_address.into();
     // First, query up the scope in order to find the asset definition's type
-    let scope = querier.get_scope(scope_address.into())?;
+    let scope = querier.get_scope(&scope_address_str)?;
     // Second, query up the asset definition by the scope spec, which is a unique characteristic to the scope spec
     let asset_definition =
         load_asset_definition_v2_by_scope_spec(deps.storage, scope.specification_id)?;
@@ -139,8 +140,15 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
         ))
         .to_err();
     }
-    // Retain ownership of the first and verified only scope attribute and return it
-    scope_attributes.first().map(|a| a.to_owned()).to_ok()
+    // Retain ownership of the first and verified only scope attribute
+    scope_attributes
+        .first()
+        .map(|a| a.to_owned())
+        .map(|mut a| {
+            a.latest_verifier_detail = a.get_latest_verifier_detail(deps.storage);
+            a
+        })
+        .to_ok()
 }
 
 #[cfg(test)]
@@ -190,7 +198,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             None, // No onboarding status will default to pending
-            asset_def
+            &asset_def
                 .verifiers
                 .first()
                 .expect("the default asset definition should have a single verifier")

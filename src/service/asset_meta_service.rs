@@ -287,7 +287,10 @@ mod tests {
     };
     use serde_json_wasm::to_string;
 
-    use crate::core::state::{delete_latest_verifier_detail, insert_latest_verifier_detail};
+    use crate::core::state::{
+        delete_latest_verifier_detail, insert_latest_verifier_detail,
+        latest_verifier_detail_store_ro,
+    };
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_utilities::get_default_asset_scope_attribute_and_detail;
     use crate::{
@@ -391,12 +394,9 @@ mod tests {
 
         let repository = AssetMetaService::new(deps.as_mut());
 
+        let verifier_detail = get_default_verifier_detail();
         repository
-            .onboard_asset(
-                &get_default_test_attribute(),
-                &get_default_verifier_detail(),
-                false,
-            )
+            .onboard_asset(&get_default_test_attribute(), &verifier_detail, false)
             .unwrap();
 
         let messages = repository.get_messages();
@@ -443,6 +443,13 @@ mod tests {
                 message
             ),
         }
+        let latest_verifier_detail = latest_verifier_detail_store_ro(deps.as_ref().storage)
+            .load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+            .expect("the verifier detail should be in storage after onboarding completes");
+        assert_eq!(
+            verifier_detail, latest_verifier_detail,
+            "expected the value in storage to equate to the value passed into the onboard function",
+        );
     }
 
     #[test]
@@ -1001,6 +1008,13 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        assert!(
+            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+                .expect("attempting a may_load on the latest verifier detail should succeed")
+                .is_some(),
+            "the latest verifier detail should successfully load and be populated after a successful onboard",
+        );
+
         let repository = AssetMetaService::new(deps.as_mut());
         repository
             .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
@@ -1102,6 +1116,12 @@ mod tests {
                 third_message
             ),
         }
+        assert!(
+            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+                .expect("attempting a may_load on the default scope address should succeed")
+                .is_none(),
+            "the latest verifier detail should not be present in contract storage after verification completes",
+        );
     }
 
     fn get_default_test_attribute() -> AssetScopeAttribute {

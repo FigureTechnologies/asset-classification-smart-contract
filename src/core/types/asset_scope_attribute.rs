@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::state::latest_verifier_detail_store_ro;
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::util::traits::OptionExtensions;
 use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
@@ -41,7 +40,10 @@ pub struct AssetScopeAttribute {
     /// When the onboarding process runs, the verifier detail currently in contract storage for the
     /// verifier address chosen by the requestor is added to the scope attribute.  This ensures that
     /// if the verifier values change due to an external update, the original fee structure will be
-    /// honored for the onboarding task placed originally.
+    /// honored for the onboarding task placed originally.  This value should never be accessed
+    /// directly in the contract, and instead the [get_latest_verifier_detail](self::AssetScopeAttribute::get_latest_verifier_detail)
+    /// function should be used.  This field only exists in order for this value to be reflected
+    /// accurately during queries.
     pub latest_verifier_detail: Option<VerifierDetailV2>,
     /// The most recent verification is kept on the scope attribute.  If the verifier determines that
     /// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.
@@ -114,30 +116,27 @@ impl AssetScopeAttribute {
         .to_ok()
     }
 
-    /// Fetches the latest verifier detail, either from the struct itself, if populated, or from
-    /// the contract storage.
+    /// Fetches the latest verifier detail from contract storage.  The local field, latest_verifier_detail,
+    /// should never be used directly.  Only the contract storage should have the most recent data.
     ///
     /// # Parameters
     ///
     /// * `storage` An instance of the Cosmwasm storage that allows internally-stored values to be
     /// fetched.
     pub fn get_latest_verifier_detail(&self, storage: &dyn Storage) -> Option<VerifierDetailV2> {
-        // If a value is already set on self for the latest detail, then it's been populated by a
-        // query and exists.  Otherwise, it's important that we fall back to local storage and
-        // ensure that no value exists within
-        if let Some(verifier_detail) = &self.latest_verifier_detail {
-            verifier_detail.to_owned().to_some()
-        } else {
-            latest_verifier_detail_store_ro(storage)
-                .may_load(self.scope_address.as_bytes())
-                .unwrap_or(None)
-        }
+        latest_verifier_detail_store_ro(storage)
+            .may_load(self.scope_address.as_bytes())
+            .unwrap_or(None)
     }
 }
 
 #[cfg(test)]
 #[cfg(feature = "enable-test-utils")]
 mod tests {
+    use crate::core::state::insert_latest_verifier_detail;
+    use crate::testutil::test_utilities::{
+        get_default_asset_scope_attribute, get_default_asset_scope_attribute_and_detail,
+    };
     use crate::{
         core::types::{
             access_route::AccessRoute, asset_identifier::AssetIdentifier,
@@ -152,6 +151,7 @@ mod tests {
         },
         util::traits::OptionExtensions,
     };
+    use provwasm_mocks::mock_dependencies;
 
     #[test]
     fn test_new_asset_scope_attribute_filters_bad_access_routes() {
@@ -385,6 +385,52 @@ mod tests {
             "myname",
             access_route.name.expect("the name should be set"),
             "the trimmed name should be produced correctly",
+        );
+    }
+
+    #[test]
+    fn test_get_latest_verifier_detail_none_found() {
+        let deps = mock_dependencies(&[]);
+        // Get and populate an attribute with a latest verifier detail
+        let attribute = get_default_asset_scope_attribute_and_detail(true);
+        assert!(
+            attribute.latest_verifier_detail.is_some(),
+            "sanity check: the scope attribute should include a latest verifier detail",
+        );
+        // Proves the local field has no bearing on the result
+        assert!(
+            attribute.get_latest_verifier_detail(deps.as_ref().storage).is_none(),
+            "with no latest verifier detail in storage, get_latest_verifier_detail should return no result",
+        );
+    }
+
+    #[test]
+    fn test_get_latest_verifier_detail_with_detail_in_storage() {
+        let mut deps = mock_dependencies(&[]);
+        let attribute = get_default_asset_scope_attribute();
+        assert!(
+            attribute.latest_verifier_detail.is_none(),
+            "sanity check: the scope attribute should not include a latest verifier detail",
+        );
+        assert!(
+            attribute
+                .get_latest_verifier_detail(deps.as_ref().storage)
+                .is_none(),
+            "sanity check: with no verifier detail in storage, the value should be none",
+        );
+        let verifier_detail = get_default_verifier_detail();
+        insert_latest_verifier_detail(
+            deps.as_mut().storage,
+            &attribute.scope_address,
+            &verifier_detail,
+        )
+        .expect("inserting a verifier detail to storage for this scope should succeed");
+        assert_eq!(
+            verifier_detail,
+            attribute
+                .get_latest_verifier_detail(deps.as_ref().storage)
+                .expect("the verifier detail should be fetched from storage successfully"),
+            "expected the verifier detail to match the stored value",
         );
     }
 }

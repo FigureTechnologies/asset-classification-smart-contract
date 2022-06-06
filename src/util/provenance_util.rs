@@ -17,6 +17,8 @@ pub fn get_add_attribute_to_scope_msg(
     attribute: &AssetScopeAttribute,
     base_contract_name: impl Into<String>,
 ) -> AssetResult<CosmosMsg<ProvenanceMsg>> {
+    // Pre-declare the primary functionality as a closure, allowing faster operations to be performed
+    // when the scope attribute's latest_verifier_detail is not populated.
     let get_msg = |attribute: &AssetScopeAttribute| {
         add_json_attribute(
             // Until there's a way to parse a scope address as an Addr, we must use Addr::unchecked.
@@ -42,17 +44,4 @@ pub fn get_add_attribute_to_scope_msg(
     } else {
         get_msg(attribute)
     }
-}
-
-/// Helper function to ensure that an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
-/// has all of its large fields removed for storage on the Provenance Blockchain.  This is to ensure
-/// that it does not get rejected from the Attribute metadata module for being too large.
-///
-/// # Parameters
-///
-/// * `attribute` An attribute that may or may not have
-pub fn trim_attribute_for_storage(attribute: &AssetScopeAttribute) -> AssetScopeAttribute {
-    let mut filtered_attribute = attribute.clone();
-    filtered_attribute.latest_verifier_detail = None;
-    filtered_attribute
 }

@@ -58,8 +58,7 @@ impl StateV2 {
     }
 }
 
-/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC) or
-/// a [DepsC](crate::util::aliases::DepsC).
+/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC).
 ///
 /// # Parameters
 ///
@@ -294,14 +293,57 @@ pub fn delete_asset_definition_v2_by_qualifier(
     Ok(existing_asset_type)
 }
 
+/// Fetches a mutable reference to the latest verifier detail storage from a [DepsMutC](crate::util::aliases::DepsMutC).
+/// This storage exists for the purpose of maintaining an accurate record of the [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// each scope has when it is onboarded.  As those values can technically change between the time at
+/// which an asset is onboarded versus when it is verified, it is important that the values are
+/// stored until verification is complete in order to generate the correct fees to match the
+/// onboarding cost that is held in contract escrow during onboarding.
+///
+/// The other reason for this value being stored in contract storage versus on the scope attribute
+/// itself is because attributes written to the Provenance Blockchain have a set size limit.  Storing
+/// the entire [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the
+/// attribute is a massive bloat to its size and can cause rejected attribute writes in certain
+/// circumstances.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
 pub fn latest_verifier_detail_store(storage: &mut dyn Storage) -> Bucket<VerifierDetailV2> {
     bucket(storage, LATEST_VERIFIER_DETAIL_KEY)
 }
 
+/// Fetches a read-only cosmwasm storage bucket instance for loading verifier details for scope
+/// attributes.  This storage exists for the purpose of maintaining
+/// an accurate record of the VerifierDetailV2 each scope has when it is onboarded.  As those values
+/// can technically change between the time at which an asset is onboarded versus when it is verified,
+/// it is important that the values are stored until verification is complete in order to generate
+/// the correct fees to match the onboarding cost that is held in contract escrow during onboarding.
+///
+/// The other reason for this value being stored in contract storage versus on the scope attribute
+/// itself is because attributes written to the Provenance Blockchain have a set size limit.  Storing
+/// the entire [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the
+/// attribute is a massive bloat to its size and can cause rejected attribute writes in certain
+/// circumstances.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC) or
+/// [DepsMutC](crate::util::aliases::DepsMutC).
 pub fn latest_verifier_detail_store_ro(storage: &dyn Storage) -> ReadonlyBucket<VerifierDetailV2> {
     bucket_read(storage, LATEST_VERIFIER_DETAIL_KEY)
 }
 
+/// Inserts a verifier detail into the contract's storage, leveraging the
+/// [latest_verifier_detail_store](self::latest_verifier_detail_store) function.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
+/// * `scope_address` The scope address of the asset for which to store the detail.  This serves
+/// as the primary key for this bucket.
+/// * `verifier_detail` The verifier detail to store.  This represents the latest version of the
+/// verifier detail that was used when the asset was onboarded into the contract for verification.
 pub fn insert_latest_verifier_detail<S: Into<String>>(
     storage: &mut dyn Storage,
     scope_address: S,
@@ -312,6 +354,18 @@ pub fn insert_latest_verifier_detail<S: Into<String>>(
         .map_err(|err| ContractError::Std(err))
 }
 
+/// Deletes an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// from the contract's internal latest verifier detail storage.  This leverages the
+/// [latest_verifier_detail_store](self::latest_verifier_detail_store) function.  This function is
+/// important, as contract storage should not retain any bloat.  All verifier details should be
+/// deleted after a verification has been completed successfully, as they are a historical record
+/// that is not relevant.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
+/// * `scope_address` The scope address of the asset for which to store the detail.  This serves
+/// as the primary key for this bucket.
 pub fn delete_latest_verifier_detail<S: Into<String>>(
     storage: &mut dyn Storage,
     scope_address: S,
@@ -327,13 +381,15 @@ mod tests {
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_qualifier, insert_asset_definition_v2,
+        delete_asset_definition_v2_by_qualifier, delete_latest_verifier_detail,
+        insert_asset_definition_v2, insert_latest_verifier_detail, latest_verifier_detail_store_ro,
         load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
         may_load_asset_definition_v2_by_scope_spec, may_load_asset_definition_v2_by_type,
         replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
+    use crate::testutil::test_utilities::get_default_verifier_detail;
 
     #[test]
     fn test_insert_asset_definition() {
@@ -643,6 +699,54 @@ mod tests {
             matches!(err, ContractError::RecordNotFound { .. }),
             "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",
             err,
+        );
+    }
+
+    #[test]
+    fn test_insert_latest_verifier_detail() {
+        let mut deps = mock_dependencies(&[]);
+        let mut verifier_detail = get_default_verifier_detail();
+        let scope_address = "test-address";
+        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
+            .expect("expected inserting the verifier detail to succeed");
+        let mut detail_from_storage = latest_verifier_detail_store_ro(deps.as_ref().storage)
+            .load(scope_address.as_bytes())
+            .expect("expected the verifier detail to be fetched successfully from storage");
+        assert_eq!(
+            verifier_detail, detail_from_storage,
+            "expected the verifier detail from storage to match the inserted value",
+        );
+        verifier_detail.address = "different address".to_string();
+        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
+            .expect("expected the modified verifier detail to be stored to overwrite the original");
+        detail_from_storage = latest_verifier_detail_store_ro(deps.as_ref().storage)
+            .load(scope_address.as_bytes())
+            .expect(
+                "expected the modified verifier detail to be fetched successfully from storage",
+            );
+        assert_eq!(
+            verifier_detail, detail_from_storage,
+            "expected the modified verifier detail to match its stored counterpart",
+        );
+    }
+
+    #[test]
+    fn test_delete_latest_verifier_detail() {
+        let mut deps = mock_dependencies(&[]);
+        let verifier_detail = get_default_verifier_detail();
+        let scope_address = "test-address";
+        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
+            .expect("expected inserting the verifier detail to succeed");
+        latest_verifier_detail_store_ro(deps.as_ref().storage)
+            .load(scope_address.as_bytes())
+            .expect("expected loading the verifier detail from storage after an insert to succeed");
+        delete_latest_verifier_detail(deps.as_mut().storage, scope_address)
+            .expect("expected deleting an existing verifier detail from storage to succeed");
+        assert!(
+            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(scope_address.as_bytes())
+                .expect("expected the may_load call on the storage to succeed")
+                .is_none(),
+            "expected an attempt to load a verifier detail after it is deleted to provide a None option",
         );
     }
 }

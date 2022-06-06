@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::state::latest_verifier_detail_store_ro;
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::util::traits::OptionExtensions;
 use crate::{
     core::{error::ContractError, types::access_definition::AccessDefinitionType},
     util::{
@@ -113,12 +114,24 @@ impl AssetScopeAttribute {
         .to_ok()
     }
 
+    /// Fetches the latest verifier detail, either from the struct itself, if populated, or from
+    /// the contract storage.
+    ///
+    /// # Parameters
+    ///
+    /// * `storage` An instance of the Cosmwasm storage that allows internally-stored values to be
+    /// fetched.
     pub fn get_latest_verifier_detail(&self, storage: &dyn Storage) -> Option<VerifierDetailV2> {
-        self.latest_verifier_detail.clone().or_else(|| {
+        // If a value is already set on self for the latest detail, then it's been populated by a
+        // query and exists.  Otherwise, it's important that we fall back to local storage and
+        // ensure that no value exists within
+        if let Some(verifier_detail) = &self.latest_verifier_detail {
+            verifier_detail.to_owned().to_some()
+        } else {
             latest_verifier_detail_store_ro(storage)
                 .may_load(self.scope_address.as_bytes())
                 .unwrap_or(None)
-        })
+        }
     }
 }
 

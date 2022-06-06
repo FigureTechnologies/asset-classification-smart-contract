@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use cosmwasm_std::CosmosMsg;
 use provwasm_std::{delete_attributes, ProvenanceMsg};
 
+use crate::core::state::{delete_latest_verifier_detail, insert_latest_verifier_detail};
+use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::{
         error::ContractError,
@@ -67,7 +69,12 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         .to_ok()
     }
 
-    fn onboard_asset(&self, attribute: &AssetScopeAttribute, is_retry: bool) -> AssetResult<()> {
+    fn onboard_asset(
+        &self,
+        attribute: &AssetScopeAttribute,
+        latest_verifier_detail: &VerifierDetailV2,
+        is_retry: bool,
+    ) -> AssetResult<()> {
         // Verify that the attribute does or does not exist.  This check verifies that the value equivalent to is_retry:
         // If the asset exists, this should be a retry, because a subsequent onboard should only occur for that purpose
         // If the asset does not exist, this should not be a retry, because this is the first time the attribute is being attempted
@@ -96,6 +103,16 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 contract_base_name,
             )?);
         }
+
+        // Store the latest verifier detail for use when verification occurs, ensuring that the
+        // proper fees from when onboarding occurred are used
+        self.use_deps(|deps| {
+            insert_latest_verifier_detail(
+                deps.storage,
+                &attribute.scope_address,
+                latest_verifier_detail,
+            )
+        })?;
         Ok(())
     }
 
@@ -151,8 +168,9 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             }
             .to_string()
         });
-        if let Some(verifier_detail) = attribute.latest_verifier_detail {
-            attribute.latest_verifier_detail = None;
+        if let Some(verifier_detail) =
+            self.use_deps(|deps| attribute.get_latest_verifier_detail(deps.storage))
+        {
             attribute.latest_verification_result =
                 Some(AssetVerificationResult { message, success });
 
@@ -212,6 +230,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
             // distribute fees now that verification has happened
             self.append_messages(&calculate_verifier_cost_messages(&verifier_detail)?);
+
+            // Remove the latest verifier detail from storage - it's only needed for discovering
+            // fees, so its existence is no longer relevant after verification completes.
+            self.use_deps(|deps| delete_latest_verifier_detail(deps.storage, &scope_address_str))?;
         } else {
             return ContractError::UnexpectedState {
                 explanation: format!(
@@ -265,7 +287,12 @@ mod tests {
     };
     use serde_json_wasm::to_string;
 
+    use crate::core::state::{
+        delete_latest_verifier_detail, insert_latest_verifier_detail,
+        latest_verifier_detail_store_ro,
+    };
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_utilities::get_default_asset_scope_attribute_and_detail;
     use crate::{
         core::{
             error::ContractError,
@@ -338,11 +365,15 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
-            .onboard_asset(&get_default_test_attribute(), false)
+            .onboard_asset(
+                &get_default_test_attribute(),
+                &get_default_verifier_detail(),
+                false,
+            )
             .unwrap_err();
 
         match err {
-            crate::core::error::ContractError::AssetAlreadyOnboarded { scope_address } => {
+            ContractError::AssetAlreadyOnboarded { scope_address } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS.to_string(),
                     scope_address,
@@ -363,8 +394,9 @@ mod tests {
 
         let repository = AssetMetaService::new(deps.as_mut());
 
+        let verifier_detail = get_default_verifier_detail();
         repository
-            .onboard_asset(&get_default_test_attribute(), false)
+            .onboard_asset(&get_default_test_attribute(), &verifier_detail, false)
             .unwrap();
 
         let messages = repository.get_messages();
@@ -411,6 +443,13 @@ mod tests {
                 message
             ),
         }
+        let latest_verifier_detail = latest_verifier_detail_store_ro(deps.as_ref().storage)
+            .load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+            .expect("the verifier detail should be in storage after onboarding completes");
+        assert_eq!(
+            verifier_detail, latest_verifier_detail,
+            "expected the value in storage to equate to the value passed into the onboard function",
+        );
     }
 
     #[test]
@@ -446,7 +485,7 @@ mod tests {
         let attribute = repository.get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
 
         assert_eq!(
-            get_default_asset_scope_attribute(),
+            get_default_asset_scope_attribute_and_detail(true),
             attribute,
             "Attribute returned from get_asset should match what is expected"
         );
@@ -479,7 +518,7 @@ mod tests {
             .expect("encapsulated asset should be present in the Option");
 
         assert_eq!(
-            get_default_asset_scope_attribute(),
+            get_default_asset_scope_attribute_and_detail(true),
             result,
             "try_get_asset should return attribute for an onboarded asset"
         );
@@ -560,14 +599,7 @@ mod tests {
                     requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
                     verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
                     onboarding_status: AssetOnboardingStatus::Pending,
-                    latest_verifier_detail: VerifierDetailV2 {
-                        address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                        onboarding_cost: Uint128::new(DEFAULT_ONBOARDING_COST),
-                        onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
-                        fee_destinations: vec![],
-                        entity_detail: get_default_entity_detail().to_some(),
-                    }
-                    .to_some(),
+                    latest_verifier_detail: None,
                     latest_verification_result: None,
                     access_definitions: vec![
                         AccessDefinition {
@@ -587,6 +619,19 @@ mod tests {
                 "json",
             )],
         );
+
+        insert_latest_verifier_detail(
+            deps.as_mut().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            &VerifierDetailV2 {
+                address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                onboarding_cost: Uint128::new(DEFAULT_ONBOARDING_COST),
+                onboarding_denom: DEFAULT_ONBOARDING_DENOM.to_string(),
+                fee_destinations: vec![],
+                entity_detail: get_default_entity_detail().to_some(),
+            },
+        )
+        .expect("expected the latest verifier detail to be properly stored");
 
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
@@ -963,6 +1008,13 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        assert!(
+            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+                .expect("attempting a may_load on the latest verifier detail should succeed")
+                .is_some(),
+            "the latest verifier detail should successfully load and be populated after a successful onboard",
+        );
+
         let repository = AssetMetaService::new(deps.as_mut());
         repository
             .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
@@ -1005,7 +1057,8 @@ mod tests {
                 ..
             }) => {
                 let mut value = get_default_asset_scope_attribute();
-                value.latest_verifier_detail = None;
+                delete_latest_verifier_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS)
+                    .expect("latest verifier detail deletion should succeed");
                 value.latest_verification_result = AssetVerificationResult {
                     message: message
                         .unwrap_or_else(|| match result {
@@ -1063,6 +1116,12 @@ mod tests {
                 third_message
             ),
         }
+        assert!(
+            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(DEFAULT_SCOPE_ADDRESS.as_bytes())
+                .expect("attempting a may_load on the default scope address should succeed")
+                .is_none(),
+            "the latest verifier detail should not be present in contract storage after verification completes",
+        );
     }
 
     fn get_default_test_attribute() -> AssetScopeAttribute {
@@ -1072,7 +1131,7 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            get_default_verifier_detail(),
+            &get_default_verifier_detail(),
             get_default_access_routes(),
         )
         .expect("failed to instantiate default asset scope attribute")

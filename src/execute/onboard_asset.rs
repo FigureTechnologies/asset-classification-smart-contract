@@ -220,7 +220,7 @@ where
         &info.sender,
         &msg.verifier_address,
         AssetOnboardingStatus::Pending.to_some(),
-        verifier_config,
+        &verifier_config,
         msg.access_routes,
     )?;
 
@@ -240,7 +240,7 @@ where
             AssetOnboardingStatus::Pending => {
                 // Attributes in pending status should always have a verifier detail on them. Use it in the error message to show
                 // which verifier may or may not be misbehaving
-                return if let Some(verifier_detail) = scope_attribute.latest_verifier_detail {
+                return if let Some(verifier_detail) = repository.use_deps(|deps| scope_attribute.get_latest_verifier_detail(deps.storage)) {
                     ContractError::AssetPendingVerification { scope_address: scope_attribute.scope_address, verifier_address: verifier_detail.address }
                 } else {
                     // If a verifier detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
@@ -257,7 +257,7 @@ where
     };
 
     // store asset metadata in contract storage, with assigned verifier and provided fee (in case fee changes between onboarding and verification)
-    repository.onboard_asset(&new_asset_attribute, is_retry)?;
+    repository.onboard_asset(&new_asset_attribute, &verifier_config, is_retry)?;
 
     Ok(Response::new()
         .add_attributes(

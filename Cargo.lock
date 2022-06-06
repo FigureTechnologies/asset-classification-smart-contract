@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "asset-classification-smart-contract"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "bech32",
  "cosmwasm-schema",
@@ -96,9 +96,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-schema"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f95658fed27bc64d4547da6fdbd2f7375bbf84e2f4c6ee6f0cab544294ecaca"
+checksum = "772e80bbad231a47a2068812b723a1ff81dd4a0d56c9391ac748177bea3a61da"
 dependencies = [
  "schemars",
  "serde_json",
@@ -106,9 +106,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-std"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb107e3de4e3f67e8b02f3345a26a21c909ed10aa5981d1ae95e3fcf03093eeb"
+checksum = "875994993c2082a6fcd406937bf0fca21c349e4a624f3810253a14fa83a3a195"
 dependencies = [
  "base64",
  "cosmwasm-crypto",
@@ -123,9 +123,9 @@ dependencies = [
 
 [[package]]
 name = "cosmwasm-storage"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d4b68ea4e5e9e13e1af12f248305d462089683c26f146f9fa66c4f7a3a866d1"
+checksum = "d18403b07304d15d304dad11040d45bbcaf78d603b4be3fb5e2685c16f9229b5"
 dependencies = [
  "cosmwasm-std",
  "serde",
@@ -357,9 +357,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.125"
+version = "0.2.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5916d2ae698f6de9bfb891ad7a8d65c09d232dc58cc4ac433c7da3b2fd84bc2b"
+checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
 
 [[package]]
 name = "opaque-debug"
@@ -389,9 +389,9 @@ dependencies = [
 
 [[package]]
 name = "provwasm-mocks"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69f5ac444a89b1ee622d2667eff35984d89d544ac7d1f3236f0613042a54113f"
+checksum = "2d50a6b2160bfd9be6f31b6460a8d0a2a5e46bb2c5ef84299b91573760f6699f"
 dependencies = [
  "cosmwasm-std",
  "provwasm-std",
@@ -401,9 +401,9 @@ dependencies = [
 
 [[package]]
 name = "provwasm-std"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f29b4a0e966f628e439b6ba3fb806b96668920b411ba01be82a2a928310e6b8c"
+checksum = "d0e11a20ee310c90a0cd5f903125ed10195b32e725cc08a18a1d3fb3a4caf110"
 dependencies = [
  "cosmwasm-std",
  "schemars",
@@ -595,13 +595,13 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.92"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ff7c592601f11445996a06f8ad0c27f094a58857c2f89e97974ab9235b92c52"
+checksum = "0748dd251e24453cb8717f0354206b91557e4ec8703673a4b30208f2abaf1ebf"
 dependencies = [
  "proc-macro2",
  "quote",
- "unicode-xid",
+ "unicode-ident",
 ]
 
 [[package]]
@@ -647,12 +647,6 @@ name = "unicode-ident"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d22af068fba1eb5edcb4aea19d382b2a3deb4c8f9d475c589b6ada9e0fd493ee"
-
-[[package]]
-name = "unicode-xid"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "957e51f3646910546462e67d5f7599b9e4fb8acdd304b087a6494730f9eebf04"
 
 [[package]]
 name = "uuid"

@@ -36,7 +36,7 @@ pub fn get_add_attribute_to_scope_msg(
     if attribute.latest_verifier_detail.is_some() {
         // Ensures that the large latest_verifier_detail field is never populated when an
         // attribute is stored on the Provenance Blockchain.  The Attribute Metadata Module will
-        // reject large payments (currently > 1kb as of the time of writing), so this verifier
+        // reject large payloads (currently > 1kb as of the time of writing), so this verifier
         // detail value should be trimmed from all storage.
         let mut filtered_attribute = attribute.clone();
         filtered_attribute.latest_verifier_detail = None;

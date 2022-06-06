@@ -351,7 +351,7 @@ pub fn insert_latest_verifier_detail<S: Into<String>>(
 ) -> AssetResult<()> {
     latest_verifier_detail_store(storage)
         .save(scope_address.into().as_bytes(), verifier_detail)
-        .map_err(|err| ContractError::Std(err))
+        .map_err(ContractError::Std)
 }
 
 /// Deletes an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
@@ -370,9 +370,8 @@ pub fn delete_latest_verifier_detail<S: Into<String>>(
     storage: &mut dyn Storage,
     scope_address: S,
 ) -> AssetResult<()> {
-    latest_verifier_detail_store(storage)
-        .remove(scope_address.into().as_bytes())
-        .to_ok()
+    latest_verifier_detail_store(storage).remove(scope_address.into().as_bytes());
+    Ok(())
 }
 
 #[cfg(test)]

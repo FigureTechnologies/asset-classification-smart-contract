@@ -157,7 +157,9 @@ mod tests {
     use cosmwasm_std::{from_binary, StdError};
     use provwasm_mocks::mock_dependencies;
 
-    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::testutil::onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset};
+    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_utilities::setup_test_suite;
     use crate::{
         core::{
             error::ContractError,
@@ -166,15 +168,9 @@ mod tests {
             },
         },
         testutil::{
-            test_constants::{
-                DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
-            },
-            test_utilities::{
-                mock_scope, mock_scope_attribute, test_instantiate_success, InstArgs,
-            },
+            test_constants::{DEFAULT_ASSET_UUID, DEFAULT_SCOPE_SPEC_ADDRESS},
+            test_utilities::{mock_scope, test_instantiate_success, InstArgs},
         },
-        util::scope_address_utils::asset_uuid_to_scope_address,
     };
 
     use super::query_asset_scope_attribute;
@@ -182,56 +178,23 @@ mod tests {
     #[test]
     fn test_successful_query_result() {
         let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let asset_uuid = "0caf9164-9f16-11ec-9a49-2b2175f69a81".to_string();
-        let scope_address = asset_uuid_to_scope_address(&asset_uuid)
-            .expect("expected uuid to scope address conversion to work properly");
-        // TDOO: Use the onboard_asset code here when it's ready with mock attribute tracking and such
-        let asset_def = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
-            .expect(
-                "the default asset definition should be available in storage after instantiation",
-            );
-        // Simulate an asset onboard by building our own attribute
-        let asset_attribute = AssetScopeAttribute::new(
-            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            DEFAULT_ASSET_TYPE,
-            DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VERIFIER_ADDRESS,
-            None, // No onboarding status will default to pending
-            &asset_def
-                .verifiers
-                .first()
-                .expect("the default asset definition should have a single verifier")
-                .to_owned(),
-            vec![],
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("expected the asset onboard to succeed");
+        let binary_from_asset_uuid = query_asset_scope_attribute(
+            &deps.as_ref(),
+            AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
         )
-        .expect("expected asset attribute to be created properly");
-        // Setup mocks
-        mock_scope(
-            &mut deps,
-            &scope_address,
-            // Important - scope spec address must be default because we instantiated the default asset definition with this value
-            // during the call to test_instantiate_success
-            DEFAULT_SCOPE_SPEC_ADDRESS,
-            "test-owner",
-        );
-        mock_scope_attribute(&mut deps, &asset_attribute, &scope_address);
-        let binary_from_asset_uuid =
-            query_asset_scope_attribute(&deps.as_ref(), AssetIdentifier::asset_uuid(&asset_uuid))
-                .expect("expected the scope attribute to be fetched as binary by asset uuid");
+        .expect("expected the scope attribute to be fetched as binary by asset uuid");
         let scope_attribute_from_asset_uuid =
             from_binary::<Option<AssetScopeAttribute>>(&binary_from_asset_uuid)
                 .expect(
                     "expected the asset attribute fetched by asset uuid to deserialize properly",
                 )
                 .expect("expected the asset attribute to be present in the resulting Option");
-        assert_eq!(
-            asset_attribute, scope_attribute_from_asset_uuid,
-            "expected the value fetched by asset uuid to equate to the original value appended to the scope",
-        );
         let binary_from_scope_address = query_asset_scope_attribute(
             &deps.as_ref(),
-            AssetIdentifier::scope_address(&scope_address),
+            AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
         )
         .expect("expected the scope attribute to be fetched as binary by scope address");
         let scope_attribute_from_scope_address = from_binary::<Option<AssetScopeAttribute>>(
@@ -240,7 +203,7 @@ mod tests {
         .expect("expected the asset attribute fetched by scope address to deserialize properly")
         .expect("expected the asset attribute fetched by scope address to be present in the resulting Option");
         assert_eq!(
-            asset_attribute, scope_attribute_from_scope_address,
+            scope_attribute_from_asset_uuid, scope_attribute_from_scope_address,
             "expected the value fetched by scope address to equate to the original value appeneded to the scope",
         );
     }

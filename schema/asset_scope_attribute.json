@@ -40,7 +40,7 @@
       ]
     },
     "latest_verifier_detail": {
-      "description": "When the onboarding process runs, the verifier detail currently in contract storage for the verifier address chosen by the requestor is added to the scope attribute.  This ensures that if the verifier values change due to an external update, the original fee structure will be honored for the onboarding task placed originally.",
+      "description": "When the onboarding process runs, the verifier detail currently in contract storage for the verifier address chosen by the requestor is added to the scope attribute.  This ensures that if the verifier values change due to an external update, the original fee structure will be honored for the onboarding task placed originally.  This value should never be accessed directly in the contract, and instead the [get_latest_verifier_detail](self::AssetScopeAttribute::get_latest_verifier_detail) function should be used.  This field only exists in order for this value to be reflected accurately during queries.",
       "anyOf": [
         {
           "$ref": "#/definitions/VerifierDetailV2"

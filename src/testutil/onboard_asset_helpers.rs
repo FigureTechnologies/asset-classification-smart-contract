@@ -10,7 +10,7 @@ use super::test_constants::{
     DEFAULT_ASSET_TYPE, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
     DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
-use super::test_utilities::{get_default_access_routes, intercept_add_attribute};
+use super::test_utilities::{get_default_access_routes, intercept_add_or_update_attribute};
 
 pub struct TestOnboardAsset {
     pub info: MessageInfo,
@@ -70,6 +70,6 @@ pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> En
         msg.info,
         msg.onboard_asset,
     );
-    intercept_add_attribute(deps, &response, "failure occurred for test_onboard_asset");
+    intercept_add_or_update_attribute(deps, &response, "failure occurred for test_onboard_asset");
     response
 }

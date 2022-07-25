@@ -86,7 +86,6 @@ fn check_valid_migration_versioning(storage: &mut dyn Storage) -> AssetResult<()
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use provwasm_mocks::mock_dependencies;
 

@@ -20,7 +20,6 @@ pub fn query_state(deps: &DepsC) -> AssetResult<Binary> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::from_binary;
     use provwasm_mocks::mock_dependencies;

@@ -9,7 +9,7 @@ use crate::{
 
 use super::{
     test_constants::{DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS, DEFAULT_VERIFIER_ADDRESS},
-    test_utilities::{get_default_access_routes, intercept_add_attribute, MockOwnedDeps},
+    test_utilities::{get_default_access_routes, intercept_add_or_update_attribute, MockOwnedDeps},
 };
 
 pub struct TestVerifyAsset {
@@ -53,6 +53,6 @@ pub fn test_verify_asset(deps: &mut MockOwnedDeps, msg: TestVerifyAsset) -> Entr
         msg.info,
         msg.verify_asset,
     );
-    intercept_add_attribute(deps, &response, "failure occurred for test_verify_asset");
+    intercept_add_or_update_attribute(deps, &response, "failure occurred for test_verify_asset");
     response
 }

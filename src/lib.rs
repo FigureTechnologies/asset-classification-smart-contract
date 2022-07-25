@@ -17,6 +17,6 @@ pub mod util;
 pub mod validation;
 
 // Conditional modules
-#[cfg(feature = "enable-test-utils")]
+#[cfg(test)]
 /// A special module only used for facilitating test code, not included in the compiled wasm.
 pub mod testutil;

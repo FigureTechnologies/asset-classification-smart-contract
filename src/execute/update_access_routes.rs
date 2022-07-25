@@ -177,7 +177,6 @@ where
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use super::*;
     use crate::contract::execute;
@@ -198,7 +197,7 @@ mod tests {
     use crate::util::functions::generate_asset_attribute_name;
     use crate::util::traits::OptionExtensions;
     use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, CosmosMsg};
+    use cosmwasm_std::{coin, from_binary, CosmosMsg};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, ProvenanceMsg, ProvenanceMsgParams,
@@ -353,54 +352,54 @@ mod tests {
         )
         .expect("expected the update to complete successfully");
         assert_eq!(
-            2,
+            1,
             response.messages.len(),
             "expected the update to emit the correct number of messages"
         );
         let expected_attribute_name =
             generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
+        let attribute_after_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect("expected to retrieve the attribute successfully after the access route update is completed");
         response.messages.iter().for_each(|msg| match &msg.msg {
             CosmosMsg::Custom(ProvenanceMsg {
                 params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::DeleteAttribute {
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
                         address,
                         name,
+                        original_value,
+                        original_value_type,
+                        update_value,
+                        update_value_type,
                     }),
                 ..
             }) => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     address.to_string(),
-                    "the DeleteAttribute should target the scope's address",
+                    "the UpdateAttribute should target the scope's address",
                 );
                 assert_eq!(
                     &expected_attribute_name, name,
-                    "the DeleteAttribute should target the default attribute name",
-                );
-            }
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                        address,
-                        name,
-                        value_type,
-                        ..
-                    }),
-                ..
-            }) => {
-                assert_eq!(
-                    DEFAULT_SCOPE_ADDRESS,
-                    address.to_string(),
-                    "the AddAttribute should target the scope's address",
+                    "the UpdateAttribute should target the default attribute name",
                 );
                 assert_eq!(
-                    &expected_attribute_name, name,
-                    "the AddAttribute should target the default attribute name",
+                    attribute_before_update,
+                    from_binary(original_value).expect("original value deserialization failure"),
+                    "the attribute before the update should be equivalent to the serialized original_value",
                 );
                 assert_eq!(
                     &AttributeValueType::Json,
-                    value_type,
-                    "the AddAttribute should add a Json attribute",
+                    original_value_type,
+                    "the original_value_type should always be json",
+                );
+                assert_eq!(
+                    attribute_after_update,
+                    from_binary(update_value).expect("update value deserialization failure"),
+                    "the attribute after the update should be equivalent to the serialized update_value",
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    update_value_type,
+                    "the update_value_type should always be json",
                 );
             }
             _ => panic!(
@@ -428,7 +427,6 @@ mod tests {
             single_attribute_for_key(&response, ASSET_SCOPE_ADDRESS_KEY),
             "expected the correct scope address to be emitted",
         );
-        let attribute_after_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect("expected to retrieve the attribute successfully after the access route update is completed");
         assert_eq!(
             attribute_before_update.access_definitions.len(),
             attribute_after_update.access_definitions.len(),

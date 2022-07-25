@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::CosmosMsg;
-use provwasm_std::{delete_attributes, ProvenanceMsg};
+use cosmwasm_std::{to_binary, CosmosMsg};
+use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
 
 use crate::core::state::{delete_latest_verifier_detail, insert_latest_verifier_detail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -116,19 +116,25 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> AssetResult<()> {
+    fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()> {
         let contract_base_name = self
             .use_deps(|d| config_read_v2(d.storage).load())?
             .base_contract_name;
-        let attribute_name =
-            generate_asset_attribute_name(&attribute.asset_type, &contract_base_name);
-        self.add_message(delete_attributes(
-            bech32_string_to_addr(&attribute.scope_address)?,
-            &attribute_name,
-        )?);
-        self.add_message(get_add_attribute_to_scope_msg(
-            attribute,
-            &contract_base_name,
+        let original_attribute = self.get_asset(&updated_attribute.scope_address)?;
+        self.add_message(update_attribute(
+            // address: Target address - the scope with the attribute on it
+            bech32_string_to_addr(&original_attribute.scope_address)?,
+            // name: Attribute name - use the same value as before
+            generate_asset_attribute_name(&original_attribute.asset_type, &contract_base_name),
+            // original_value: The unmodified original attribute
+            to_binary(&original_attribute)?,
+            // original_value_type
+            AttributeValueType::Json,
+            // update_value: The attribute with changes
+            to_binary(updated_attribute)?,
+            // update_value_type: Maintain Json typing. it's awesome that this can change between updates,
+            // but this code doesn't want that
+            AttributeValueType::Json,
         )?);
         Ok(())
     }
@@ -278,7 +284,6 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
     use provwasm_mocks::mock_dependencies;

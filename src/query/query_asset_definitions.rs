@@ -48,7 +48,6 @@ pub fn query_asset_definitions(deps: &DepsC) -> AssetResult<Binary> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{from_binary, Uint128};
     use provwasm_mocks::mock_dependencies;

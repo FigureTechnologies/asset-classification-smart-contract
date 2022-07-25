@@ -53,7 +53,6 @@ pub fn calculate_verifier_cost_messages(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
     use provwasm_std::ProvenanceMsg;

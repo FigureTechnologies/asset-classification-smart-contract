@@ -152,7 +152,6 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{from_binary, StdError};
     use provwasm_mocks::mock_dependencies;

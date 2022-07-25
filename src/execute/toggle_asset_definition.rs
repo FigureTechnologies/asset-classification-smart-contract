@@ -113,7 +113,6 @@ pub fn toggle_asset_definition(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::testing::{mock_env, mock_info};
     use provwasm_mocks::mock_dependencies;

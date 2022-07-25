@@ -118,7 +118,6 @@ pub fn update_asset_verifier(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;

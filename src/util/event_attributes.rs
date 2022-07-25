@@ -255,7 +255,6 @@ impl Default for EventAdditionalMetadata {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::Response;
 

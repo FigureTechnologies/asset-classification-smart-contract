@@ -28,7 +28,6 @@ pub fn query_asset_definition(deps: &DepsC, qualifier: AssetQualifier) -> AssetR
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::state::insert_asset_definition_v2;
     use crate::core::types::asset_definition::AssetDefinitionV2;

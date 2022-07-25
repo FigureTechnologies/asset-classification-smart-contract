@@ -147,7 +147,6 @@ pub fn filter_valid_access_routes(routes: Vec<AccessRoute>) -> Vec<AccessRoute> 
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::{error::ContractError, types::access_route::AccessRoute};
     use crate::testutil::test_utilities::assert_single_item;

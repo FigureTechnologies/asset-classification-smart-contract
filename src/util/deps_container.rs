@@ -51,7 +51,6 @@ impl<'a> DepsContainer<'a> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use provwasm_mocks::mock_dependencies;
 

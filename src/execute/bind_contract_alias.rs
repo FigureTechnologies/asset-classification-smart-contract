@@ -89,7 +89,6 @@ pub fn bind_contract_alias(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;

@@ -131,7 +131,6 @@ impl AssetScopeAttribute {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::core::state::insert_latest_verifier_detail;
     use crate::testutil::test_utilities::{

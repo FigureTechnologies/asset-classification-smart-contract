@@ -73,7 +73,6 @@ pub fn migrate_version_info(storage: &mut dyn Storage) -> AssetResult<VersionInf
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::migrate::version_info::{
         get_version_info, migrate_version_info, set_version_info, VersionInfoV1, CONTRACT_NAME,

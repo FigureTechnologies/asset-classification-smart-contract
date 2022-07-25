@@ -74,7 +74,6 @@ pub fn init_contract(
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use crate::contract::instantiate;
     use crate::core::error::ContractError;

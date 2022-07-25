@@ -40,7 +40,7 @@ pub trait AssetMetaRepository {
     ///
     /// # Parameters
     ///
-    /// * `updated_attribute` The new attribute to attach to the scope.  The original values will be 
+    /// * `updated_attribute` The new attribute to attach to the scope.  The original values will be
     /// entirely replaced with the values contained within this struct.
     fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()>;
 

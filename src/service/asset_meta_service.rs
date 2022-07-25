@@ -120,7 +120,14 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         let contract_base_name = self
             .use_deps(|d| config_read_v2(d.storage).load())?
             .base_contract_name;
-        let original_attribute = self.get_asset(&updated_attribute.scope_address)?;
+        let mut original_attribute = self.get_asset(&updated_attribute.scope_address)?;
+        // Clear latest verifier detail from the attribute, because it will never be saved on the chain,
+        // so updates must also not include it
+        original_attribute.latest_verifier_detail = None;
+        // Never save latest_verifier_detail to the chain, as it is too large and causes attribute
+        // write failures in certain circumstances
+        let mut updated_attribute = updated_attribute.to_owned();
+        updated_attribute.latest_verifier_detail = None;
         self.add_message(update_attribute(
             // address: Target address - the scope with the attribute on it
             bech32_string_to_addr(&original_attribute.scope_address)?,
@@ -131,7 +138,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             // original_value_type
             AttributeValueType::Json,
             // update_value: The attribute with changes
-            to_binary(updated_attribute)?,
+            to_binary(&updated_attribute)?,
             // update_value_type: Maintain Json typing. it's awesome that this can change between updates,
             // but this code doesn't want that
             AttributeValueType::Json,
@@ -1026,7 +1033,7 @@ mod tests {
         );
 
         let repository = AssetMetaService::new(deps.as_mut());
-        let original_attribute_value = repository.get_asset(DEFAULT_SCOPE_ADDRESS).expect(
+        let mut original_attribute_value = repository.get_asset(DEFAULT_SCOPE_ADDRESS).expect(
             "original attribute value should load from Provenance Blockchain without issue",
         );
         repository
@@ -1066,6 +1073,9 @@ mod tests {
                 } else {
                     AssetOnboardingStatus::Denied
                 };
+                // Updates never include the latest verifier detail in the original or the update value
+                original_attribute_value.latest_verifier_detail = None;
+                value.latest_verifier_detail = None;
                 assert_eq!(
                     AttributeMsgParams::UpdateAttribute {
                         address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),

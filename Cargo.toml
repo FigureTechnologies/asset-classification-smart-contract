@@ -35,7 +35,7 @@ backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
 [dependencies]
-bech32 = "0.8.1"
+bech32 = "=0.8.1"
 provwasm-std = { version = "=1.1.0" }
 cosmwasm-std = { version = "=1.0.0" }
 cosmwasm-storage = { version = "=1.0.0" }

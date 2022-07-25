@@ -323,7 +323,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
-        let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect(
+        let mut attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect(
             "expected a scope attribute to be available for the default address after onboarding",
         );
         assert!(
@@ -358,7 +358,9 @@ mod tests {
         );
         let expected_attribute_name =
             generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
-        let attribute_after_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect("expected to retrieve the attribute successfully after the access route update is completed");
+        let mut attribute_after_update = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("expected to retrieve the attribute successfully after the access route update is completed");
         response.messages.iter().for_each(|msg| match &msg.msg {
             CosmosMsg::Custom(ProvenanceMsg {
                 params:
@@ -381,6 +383,8 @@ mod tests {
                     &expected_attribute_name, name,
                     "the UpdateAttribute should target the default attribute name",
                 );
+                // Update values never include the latest verifier detail
+                attribute_before_update.latest_verifier_detail = None;
                 assert_eq!(
                     attribute_before_update,
                     from_binary(original_value).expect("original value deserialization failure"),
@@ -391,6 +395,8 @@ mod tests {
                     original_value_type,
                     "the original_value_type should always be json",
                 );
+                // Update values never include the latest verifier detail
+                attribute_after_update.latest_verifier_detail = None;
                 assert_eq!(
                     attribute_after_update,
                     from_binary(update_value).expect("update value deserialization failure"),

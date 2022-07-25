@@ -5,7 +5,10 @@ authors = [
   "Jake Schwartz <jschwartz@figure.com>",
   "Pierce Trey <ptrey@figure.com>",
 ]
-edition = "2018"
+edition = "2021"
+# Resolver v2 can exclude uuid v4 feature from the compiled wasm (which includes illegal random code).  Without this,
+# a custom feature is required to ensure test code exclusively includes the uuid/v4 feature, which is not ideal
+resolver = "2"
 
 exclude = [
   # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication"
@@ -47,4 +50,4 @@ uuid = "=0.8.2"
 [dev-dependencies]
 provwasm-mocks = { version = "=1.1.0" }
 cosmwasm-schema = { version = "=1.0.0" }
-uuid = { features = ["v4"] }
+uuid = { version = "=0.8.2", features = ["v4"] }

@@ -1064,15 +1064,6 @@
 <span id="1059">1059</span>
 <span id="1060">1060</span>
 <span id="1061">1061</span>
-<span id="1062">1062</span>
-<span id="1063">1063</span>
-<span id="1064">1064</span>
-<span id="1065">1065</span>
-<span id="1066">1066</span>
-<span id="1067">1067</span>
-<span id="1068">1068</span>
-<span id="1069">1069</span>
-<span id="1070">1070</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_v2_by_type</span>};
@@ -1348,7 +1339,6 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-test-utils&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">StdError</span>, <span class="ident">SubMsg</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
@@ -2060,29 +2050,38 @@
         <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
         <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">service</span>
+        <span class="kw">let</span> <span class="ident">original_attribute</span> <span class="op">=</span> <span class="ident">service</span>
             .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the attribute should be present after all default steps&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">AssetOnboardingStatus::Approved</span>, <span class="ident">attribute</span>.<span class="ident">onboarding_status</span>, <span class="string">&quot;sanity check: the onboarding status should be approved after all proper steps have been completed&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">AssetOnboardingStatus::Approved</span>,
+            <span class="ident">original_attribute</span>.<span class="ident">onboarding_status</span>,
+            <span class="string">&quot;sanity check: the onboarding status should be approved after all proper steps have been completed&quot;</span>,
+        );
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">updated_attribute</span> <span class="op">=</span> <span class="ident">original_attribute</span>.<span class="ident">clone</span>();
         <span class="comment">// Manually override the onboarding status to pending to test</span>
-        <span class="ident">attribute</span>.<span class="ident">onboarding_status</span> <span class="op">=</span> <span class="ident">AssetOnboardingStatus::Pending</span>;
+        <span class="ident">updated_attribute</span>.<span class="ident">onboarding_status</span> <span class="op">=</span> <span class="ident">AssetOnboardingStatus::Pending</span>;
         <span class="ident">service</span>
-            .<span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>)
+            .<span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="ident">updated_attribute</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;update attribute should work as intended&quot;</span>);
         <span class="kw">let</span> <span class="ident">generated_messages</span> <span class="op">=</span> <span class="ident">service</span>.<span class="ident">get_messages</span>();
         <span class="macro">assert_eq!</span>(
-            <span class="number">2</span>,
+            <span class="number">1</span>,
             <span class="ident">generated_messages</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;the service should generate two messages when updating an asset&quot;</span>
+            <span class="string">&quot;the service should generate one message when updating an attribute&quot;</span>
         );
         <span class="kw">let</span> <span class="ident">target_attribute_name</span> <span class="op">=</span>
             <span class="ident">generate_asset_attribute_name</span>(<span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>);
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">generated_messages</span>[<span class="number">0</span>] {
             <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
                 <span class="ident">params</span>:
-                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::DeleteAttribute</span> {
+                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::UpdateAttribute</span> {
                         <span class="ident">address</span>,
                         <span class="ident">name</span>,
+                        <span class="ident">original_value</span>,
+                        <span class="ident">original_value_type</span>,
+                        <span class="ident">update_value</span>,
+                        <span class="ident">update_value_type</span>,
                     }),
                 ..
             }) =&gt; {
@@ -2096,53 +2095,36 @@
                     <span class="ident">name</span>,
                     <span class="string">&quot;expected the default attribute name to be the target used when deleting the attribute&quot;</span>,
                 );
+                <span class="macro">assert_eq!</span>(
+                    <span class="ident">original_attribute</span>,
+                    <span class="ident">from_binary</span>(<span class="ident">original_value</span>)
+                        .<span class="ident">expect</span>(<span class="string">&quot;the original_value should deserialize to an AssetScopeAttribute&quot;</span>),
+                    <span class="string">&quot;the original_value binary should reflect the original state of the attribute&quot;</span>,
+                );
+                <span class="macro">assert_eq!</span>(
+                    <span class="kw-2">&amp;</span><span class="ident">AttributeValueType::Json</span>,
+                    <span class="ident">original_value_type</span>,
+                    <span class="string">&quot;the original_value_type should always be json&quot;</span>,
+                );
+                <span class="macro">assert_eq!</span>(
+                    <span class="ident">updated_attribute</span>,
+                    <span class="ident">from_binary</span>(<span class="ident">update_value</span>)
+                        .<span class="ident">expect</span>(<span class="string">&quot;the update_value should deserialize to an AssetScopeAttribute&quot;</span>),
+                    <span class="string">&quot;the update_value binary should reflect the updated state of the attribute&quot;</span>,
+                );
+                <span class="macro">assert_eq!</span>(
+                    <span class="kw-2">&amp;</span><span class="ident">AttributeValueType::Json</span>,
+                    <span class="ident">update_value_type</span>,
+                    <span class="string">&quot;the update_value_type should always be json&quot;</span>,
+                );
             }
             <span class="ident">msg</span> =&gt; <span class="macro">panic!</span>(
                 <span class="string">&quot;unexpected first message generated during update attribute: {:?}&quot;</span>,
                 <span class="ident">msg</span>
             ),
         };
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">generated_messages</span>[<span class="number">1</span>] {
-            <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
-                <span class="ident">params</span>:
-                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::AddAttribute</span> {
-                        <span class="ident">address</span>,
-                        <span class="ident">name</span>,
-                        <span class="ident">value</span>,
-                        <span class="ident">value_type</span>,
-                    }),
-                ..
-            }) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-                    <span class="ident">address</span>.<span class="ident">as_str</span>(),
-                    <span class="string">&quot;expected the add attribute message to target the default scope address&quot;</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">target_attribute_name</span>,
-                    <span class="ident">name</span>,
-                    <span class="string">&quot;expected the default attribute name to be the target used when adding the attribute&quot;</span>,
-                );
-                <span class="kw">let</span> <span class="ident">added_attribute</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="ident">AssetScopeAttribute</span><span class="op">&gt;</span>(<span class="ident">value</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;expected the attribute value to deserialize to a scope attribute&quot;</span>);
-                <span class="macro">assert_eq!</span>(
-                    <span class="ident">attribute</span>,
-                    <span class="ident">added_attribute</span>,
-                    <span class="string">&quot;expected the added attribute to directly equate to the value passed into the function&quot;</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">AttributeValueType::Json</span>,
-                    <span class="ident">value_type</span>,
-                    <span class="string">&quot;expected the value type used to be json&quot;</span>,
-                );
-            }
-            <span class="ident">msg</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected second message generated during update attribute; {:?}&quot;</span>,
-                <span class="ident">msg</span>,
-            ),
-        };
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

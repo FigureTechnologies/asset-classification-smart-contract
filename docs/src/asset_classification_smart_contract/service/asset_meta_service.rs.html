@@ -1142,10 +1142,12 @@
 <span id="1137">1137</span>
 <span id="1138">1138</span>
 <span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std::CosmosMsg</span>;
-<span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">delete_attributes</span>, <span class="ident">ProvenanceMsg</span>};
+<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">CosmosMsg</span>};
+<span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">update_attribute</span>, <span class="ident">AttributeValueType</span>, <span class="ident">ProvenanceMsg</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">delete_latest_verifier_detail</span>, <span class="ident">insert_latest_verifier_detail</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
@@ -1260,19 +1262,32 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">attribute</span>: <span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">updated_attribute</span>: <span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">contract_base_name</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">config_read_v2</span>(<span class="ident">d</span>.<span class="ident">storage</span>).<span class="ident">load</span>())<span class="question-mark">?</span>
             .<span class="ident">base_contract_name</span>;
-        <span class="kw">let</span> <span class="ident">attribute_name</span> <span class="op">=</span>
-            <span class="ident">generate_asset_attribute_name</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">asset_type</span>, <span class="kw-2">&amp;</span><span class="ident">contract_base_name</span>);
-        <span class="self">self</span>.<span class="ident">add_message</span>(<span class="ident">delete_attributes</span>(
-            <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>)<span class="question-mark">?</span>,
-            <span class="kw-2">&amp;</span><span class="ident">attribute_name</span>,
-        )<span class="question-mark">?</span>);
-        <span class="self">self</span>.<span class="ident">add_message</span>(<span class="ident">get_add_attribute_to_scope_msg</span>(
-            <span class="ident">attribute</span>,
-            <span class="kw-2">&amp;</span><span class="ident">contract_base_name</span>,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">original_attribute</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_asset</span>(<span class="kw-2">&amp;</span><span class="ident">updated_attribute</span>.<span class="ident">scope_address</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Clear latest verifier detail from the attribute, because it will never be saved on the chain,</span>
+        <span class="comment">// so updates must also not include it</span>
+        <span class="ident">original_attribute</span>.<span class="ident">latest_verifier_detail</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="comment">// Never save latest_verifier_detail to the chain, as it is too large and causes attribute</span>
+        <span class="comment">// write failures in certain circumstances</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">updated_attribute</span> <span class="op">=</span> <span class="ident">updated_attribute</span>.<span class="ident">to_owned</span>();
+        <span class="ident">updated_attribute</span>.<span class="ident">latest_verifier_detail</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="self">self</span>.<span class="ident">add_message</span>(<span class="ident">update_attribute</span>(
+            <span class="comment">// address: Target address - the scope with the attribute on it</span>
+            <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">original_attribute</span>.<span class="ident">scope_address</span>)<span class="question-mark">?</span>,
+            <span class="comment">// name: Attribute name - use the same value as before</span>
+            <span class="ident">generate_asset_attribute_name</span>(<span class="kw-2">&amp;</span><span class="ident">original_attribute</span>.<span class="ident">asset_type</span>, <span class="kw-2">&amp;</span><span class="ident">contract_base_name</span>),
+            <span class="comment">// original_value: The unmodified original attribute</span>
+            <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">original_attribute</span>)<span class="question-mark">?</span>,
+            <span class="comment">// original_value_type</span>
+            <span class="ident">AttributeValueType::Json</span>,
+            <span class="comment">// update_value: The attribute with changes</span>
+            <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">updated_attribute</span>)<span class="question-mark">?</span>,
+            <span class="comment">// update_value_type: Maintain Json typing. it&#39;s awesome that this can change between updates,</span>
+            <span class="comment">// but this code doesn&#39;t want that</span>
+            <span class="ident">AttributeValueType::Json</span>,
         )<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(())
     }
@@ -1422,7 +1437,6 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-test-utils&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">to_binary</span>, <span class="ident">Addr</span>, <span class="ident">BankMsg</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
@@ -1791,21 +1805,26 @@
 
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">repository</span>.<span class="ident">messages</span>.<span class="ident">get</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="number">3</span>, <span class="ident">messages</span>.<span class="ident">len</span>(),
-        <span class="string">&quot;verify asset should produce 3 messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="number">2</span>, <span class="ident">messages</span>.<span class="ident">len</span>(),
+            <span class="string">&quot;verify asset should produce 2 messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)&quot;</span>
+        );
 
-        <span class="kw">let</span> <span class="ident">second_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">1</span>];
-        <span class="kw">match</span> <span class="ident">second_message</span> {
+        <span class="kw">let</span> <span class="ident">first_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">0</span>];
+        <span class="kw">match</span> <span class="ident">first_message</span> {
             <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
                 <span class="ident">params</span>:
-                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::AddAttribute</span> { <span class="ident">value</span>, .. }),
+                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::UpdateAttribute</span> {
+                        <span class="ident">update_value</span>,
+                        ..
+                    }),
                 ..
             }) =&gt; {
-                <span class="kw">let</span> <span class="ident">deserialized</span>: <span class="ident">AssetScopeAttribute</span> <span class="op">=</span> <span class="ident">from_binary</span>(<span class="ident">value</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">deserialized</span>: <span class="ident">AssetScopeAttribute</span> <span class="op">=</span> <span class="ident">from_binary</span>(<span class="ident">update_value</span>).<span class="ident">unwrap</span>();
                 <span class="macro">assert_eq!</span>(
                     <span class="number">2</span>,
                     <span class="ident">deserialized</span>.<span class="ident">access_definitions</span>.<span class="ident">len</span>(),
-                    <span class="string">&quot;Modified scope attribute should only have 2 access route groups listed&quot;</span>
+                    <span class="string">&quot;Modified scope attribute should only have 2 access route groups listed&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span><span class="ident">AccessDefinition</span> {
@@ -1818,7 +1837,7 @@
                         .<span class="ident">iter</span>()
                         .<span class="ident">find</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">owner_address</span> <span class="op">==</span> <span class="ident">DEFAULT_SENDER_ADDRESS</span>)
                         .<span class="ident">unwrap</span>(),
-                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>
+                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span><span class="ident">AccessDefinition</span> {
@@ -1834,12 +1853,12 @@
                         .<span class="ident">iter</span>()
                         .<span class="ident">find</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">owner_address</span> <span class="op">==</span> <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>)
                         .<span class="ident">unwrap</span>(),
-                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>
+                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>,
                 );
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected second message type for verify_asset: {:?}&quot;</span>,
-                <span class="ident">second_message</span>
+                <span class="string">&quot;Unexpected first message type for verify_asset: {:?}&quot;</span>,
+                <span class="ident">first_message</span>,
             ),
         }
     }
@@ -2160,6 +2179,9 @@
         );
 
         <span class="kw">let</span> <span class="ident">repository</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">original_attribute_value</span> <span class="op">=</span> <span class="ident">repository</span>.<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">expect</span>(
+            <span class="string">&quot;original attribute value should load from Provenance Blockchain without issue&quot;</span>,
+        );
         <span class="ident">repository</span>
             .<span class="ident">verify_asset</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">result</span>, <span class="ident">message</span>, <span class="macro">vec!</span>[])
             .<span class="ident">unwrap</span>();
@@ -2167,9 +2189,9 @@
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">repository</span>.<span class="ident">get_messages</span>();
 
         <span class="macro">assert_eq!</span>(
-            <span class="number">3</span>,
+            <span class="number">2</span>,
             <span class="ident">messages</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;verify asset should produce three messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)&quot;</span>
+            <span class="string">&quot;verify asset should produce two messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)&quot;</span>
         );
         <span class="kw">let</span> <span class="ident">first_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">0</span>];
         <span class="kw">match</span> <span class="ident">first_message</span> {
@@ -2177,30 +2199,7 @@
                 <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">msg</span>),
                 ..
             }) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    <span class="ident">AttributeMsgParams::DeleteAttribute</span> {
-                        <span class="ident">address</span>: <span class="ident">Addr::unchecked</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
-                        <span class="ident">name</span>: <span class="ident">generate_asset_attribute_name</span>(
-                            <span class="ident">DEFAULT_ASSET_TYPE</span>,
-                            <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>
-                        )
-                    },
-                    <span class="ident">msg</span>.<span class="ident">to_owned</span>(),
-                    <span class="string">&quot;delete attribute message should match what is expected&quot;</span>
-                );
-            }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected first message type for verify_asset: {:?}&quot;</span>,
-                <span class="ident">first_message</span>,
-            ),
-        }
-        <span class="kw">let</span> <span class="ident">second_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">1</span>];
-        <span class="kw">match</span> <span class="ident">second_message</span> {
-            <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
-                <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">msg</span>),
-                ..
-            }) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">get_default_asset_scope_attribute</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">original_attribute_value</span>.<span class="ident">clone</span>();
                 <span class="ident">delete_latest_verifier_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
                     .<span class="ident">expect</span>(<span class="string">&quot;latest verifier detail deletion should succeed&quot;</span>);
                 <span class="ident">value</span>.<span class="ident">latest_verification_result</span> <span class="op">=</span> <span class="ident">AssetVerificationResult</span> {
@@ -2220,27 +2219,32 @@
                 } <span class="kw">else</span> {
                     <span class="ident">AssetOnboardingStatus::Denied</span>
                 };
+                <span class="comment">// Updates never include the latest verifier detail in the original or the update value</span>
+                <span class="ident">original_attribute_value</span>.<span class="ident">latest_verifier_detail</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                <span class="ident">value</span>.<span class="ident">latest_verifier_detail</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 <span class="macro">assert_eq!</span>(
-                    <span class="ident">AttributeMsgParams::AddAttribute</span> {
+                    <span class="ident">AttributeMsgParams::UpdateAttribute</span> {
                         <span class="ident">address</span>: <span class="ident">Addr::unchecked</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                         <span class="ident">name</span>: <span class="ident">generate_asset_attribute_name</span>(
                             <span class="ident">DEFAULT_ASSET_TYPE</span>,
                             <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>
                         ),
-                        <span class="ident">value</span>: <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>).<span class="ident">unwrap</span>(),
-                        <span class="ident">value_type</span>: <span class="ident">AttributeValueType::Json</span>
+                        <span class="ident">original_value</span>: <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">original_attribute_value</span>).<span class="ident">unwrap</span>(),
+                        <span class="ident">original_value_type</span>: <span class="ident">AttributeValueType::Json</span>,
+                        <span class="ident">update_value</span>: <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>).<span class="ident">unwrap</span>(),
+                        <span class="ident">update_value_type</span>: <span class="ident">AttributeValueType::Json</span>
                     },
                     <span class="ident">msg</span>.<span class="ident">to_owned</span>(),
                     <span class="string">&quot;add attribute message should match what is expected&quot;</span>
                 );
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected second message type for verify_asset: {:?}&quot;</span>,
-                <span class="ident">second_message</span>
+                <span class="string">&quot;Unexpected first message type for verify_asset: {:?}&quot;</span>,
+                <span class="ident">first_message</span>
             ),
         }
-        <span class="kw">let</span> <span class="ident">third_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">2</span>];
-        <span class="kw">match</span> <span class="ident">third_message</span> {
+        <span class="kw">let</span> <span class="ident">second_message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">messages</span>[<span class="number">1</span>];
+        <span class="kw">match</span> <span class="ident">second_message</span> {
             <span class="ident">CosmosMsg::Bank</span>(<span class="ident">BankMsg::Send</span> { <span class="ident">to_address</span>, <span class="ident">amount</span> }) =&gt; {
                 <span class="macro">assert_eq!</span>(
                     <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>, <span class="ident">to_address</span>,
@@ -2256,8 +2260,8 @@
                 )
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected third message type for verify_asset: {:?}&quot;</span>,
-                <span class="ident">third_message</span>
+                <span class="string">&quot;Unexpected second message type for verify_asset: {:?}&quot;</span>,
+                <span class="ident">second_message</span>
             ),
         }
         <span class="macro">assert!</span>(
@@ -2282,5 +2286,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

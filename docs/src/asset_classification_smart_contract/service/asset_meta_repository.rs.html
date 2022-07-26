@@ -90,6 +90,7 @@
 <span id="85">85</span>
 <span id="86">86</span>
 <span id="87">87</span>
+<span id="88">88</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core::types</span>::{<span class="ident">access_route::AccessRoute</span>, <span class="ident">asset_scope_attribute::AssetScopeAttribute</span>},
@@ -127,13 +128,14 @@
     ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Alters the internal values of the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
-    <span class="doccomment">/// currently attached to a Provenance Metadata Scope with the provided values.</span>
+    <span class="doccomment">/// currently attached to a Provenance Metadata Scope with the provided values.  This function</span>
+    <span class="doccomment">/// will fail if no attribute exists on the target scope.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parameters</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `attribute` The new attribute to attach to the scope.  The original values will be entirely</span>
-    <span class="doccomment">/// removed and replaced with the values contained within this struct.</span>
-    <span class="kw">fn</span> <span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">attribute</span>: <span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="doccomment">/// * `updated_attribute` The new attribute to attach to the scope.  The original values will be</span>
+    <span class="doccomment">/// entirely replaced with the values contained within this struct.</span>
+    <span class="kw">fn</span> <span class="ident">update_attribute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">updated_attribute</span>: <span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Attempts to fetch a scope attribute currently attached to a scope.  Returns an error if no</span>
     <span class="doccomment">/// scope exists or no scope atttribute is attached to the existing scope.</span>
@@ -178,5 +180,5 @@
     ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

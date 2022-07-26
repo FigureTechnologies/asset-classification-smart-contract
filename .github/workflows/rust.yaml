@@ -40,7 +40,7 @@ jobs:
         with:
           version: '0.19.1'
           out-type: Xml
-          args: '--ignore-config --ignore-tests --features enable-test-utils'
+          args: '--ignore-config --ignore-tests'
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@v1

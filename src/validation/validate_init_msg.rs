@@ -185,7 +185,6 @@ fn validate_destination_internal(destination: &FeeDestinationV2) -> Vec<String> 
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 pub mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;

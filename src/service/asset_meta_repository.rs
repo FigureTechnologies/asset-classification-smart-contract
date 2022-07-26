@@ -35,13 +35,14 @@ pub trait AssetMetaRepository {
     ) -> AssetResult<()>;
 
     /// Alters the internal values of the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
-    /// currently attached to a Provenance Metadata Scope with the provided values.
+    /// currently attached to a Provenance Metadata Scope with the provided values.  This function
+    /// will fail if no attribute exists on the target scope.
     ///
     /// # Parameters
     ///
-    /// * `attribute` The new attribute to attach to the scope.  The original values will be entirely
-    /// removed and replaced with the values contained within this struct.
-    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> AssetResult<()>;
+    /// * `updated_attribute` The new attribute to attach to the scope.  The original values will be
+    /// entirely replaced with the values contained within this struct.
+    fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()>;
 
     /// Attempts to fetch a scope attribute currently attached to a scope.  Returns an error if no
     /// scope exists or no scope atttribute is attached to the existing scope.

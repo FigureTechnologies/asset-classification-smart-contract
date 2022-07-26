@@ -5,7 +5,9 @@ use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_constants::{
     DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
 };
-use crate::testutil::test_utilities::{empty_mock_info, intercept_add_attribute, MockOwnedDeps};
+use crate::testutil::test_utilities::{
+    empty_mock_info, intercept_add_or_update_attribute, MockOwnedDeps,
+};
 use crate::util::aliases::EntryPointResponse;
 use crate::util::traits::OptionExtensions;
 use cosmwasm_std::MessageInfo;
@@ -44,7 +46,7 @@ pub fn test_update_access_routes(
         msg.info,
         msg.update_access_routes,
     );
-    intercept_add_attribute(
+    intercept_add_or_update_attribute(
         deps,
         &response,
         "failure occurred for test_update_access_routes",

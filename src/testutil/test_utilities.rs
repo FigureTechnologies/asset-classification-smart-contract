@@ -1,7 +1,7 @@
 use cosmwasm_std::{
     from_binary,
     testing::{mock_env, mock_info, MockApi, MockStorage},
-    Addr, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
+    Addr, Binary, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
 use provwasm_mocks::ProvenanceMockQuerier;
 use provwasm_std::{
@@ -355,11 +355,26 @@ pub fn assert_single_item_by<T: Clone, S: Into<String>, F: FnMut(&&T) -> bool>(
     filtered_slice.first().unwrap().clone().to_owned()
 }
 
+struct AddOrUpdateAttributeParams<'a> {
+    address: &'a Addr,
+    name: &'a String,
+    binary: &'a Binary,
+}
+impl<'a> AddOrUpdateAttributeParams<'a> {
+    pub fn new(address: &'a Addr, name: &'a String, binary: &'a Binary) -> Self {
+        Self {
+            address,
+            name,
+            binary,
+        }
+    }
+}
+
 /// Crawls the vector of messages contained in the provided response, and, if an add attribute message
 /// is contained therein, will set the attribute in the MockOwnedDeps' ProvenanceMockQuerier, which
 /// will cause downstream consumers in the rest of the test structure to see that attribute as the latest
 /// value for the given address.
-pub fn intercept_add_attribute<S: Into<String>>(
+pub fn intercept_add_or_update_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
     response: &EntryPointResponse,
     failure_description: S,
@@ -368,7 +383,7 @@ pub fn intercept_add_attribute<S: Into<String>>(
     match response {
         Ok(ref res) => {
             for m in res.messages.iter() {
-                match &m.msg {
+                let params = match &m.msg {
                     CosmosMsg::Custom(ProvenanceMsg {
                         params:
                             ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
@@ -378,22 +393,42 @@ pub fn intercept_add_attribute<S: Into<String>>(
                                 ..
                             }),
                         ..
-                    }) => {
-                        // inject bound name into provmock querier
-                        let deserialized = from_binary::<AssetScopeAttribute>(&value).unwrap();
-                        deps.querier.with_attributes(
-                            address.as_str(),
-                            &[(
-                                name.as_str(),
-                                to_string(&deserialized).unwrap().as_str(),
-                                "json",
-                            )],
-                        );
-                        // After finding the add attribute message, exit to avoid panics
-                        return;
-                    }
-                    _ => (),
+                    }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
+                    CosmosMsg::Custom(ProvenanceMsg {
+                        params:
+                            ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
+                                address,
+                                name,
+                                update_value,
+                                ..
+                            }),
+                        ..
+                    }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
+                    _ => None,
                 };
+                if let Some(AddOrUpdateAttributeParams {
+                    address,
+                    name,
+                    binary,
+                }) = params
+                {
+                    // inject bound name into provmock querier
+                    let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
+                    deps.querier.with_attributes(
+                        address.as_str(),
+                        &[(
+                            name.as_str(),
+                            to_string(&deserialized)
+                                .expect(
+                                    "expected the scope attribute to convert to json without error",
+                                )
+                                .as_str(),
+                            "json",
+                        )],
+                    );
+                    // After finding the an add or update attribute message, exit to avoid panics
+                    return;
+                }
             }
             panic!("{}: message provided did not contain an add attribute message. Full response: {:?}", failure_msg, response);
         }

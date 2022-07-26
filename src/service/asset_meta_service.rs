@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::CosmosMsg;
-use provwasm_std::{delete_attributes, ProvenanceMsg};
+use cosmwasm_std::{to_binary, CosmosMsg};
+use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
 
 use crate::core::state::{delete_latest_verifier_detail, insert_latest_verifier_detail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -116,19 +116,32 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn update_attribute(&self, attribute: &AssetScopeAttribute) -> AssetResult<()> {
+    fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()> {
         let contract_base_name = self
             .use_deps(|d| config_read_v2(d.storage).load())?
             .base_contract_name;
-        let attribute_name =
-            generate_asset_attribute_name(&attribute.asset_type, &contract_base_name);
-        self.add_message(delete_attributes(
-            bech32_string_to_addr(&attribute.scope_address)?,
-            &attribute_name,
-        )?);
-        self.add_message(get_add_attribute_to_scope_msg(
-            attribute,
-            &contract_base_name,
+        let mut original_attribute = self.get_asset(&updated_attribute.scope_address)?;
+        // Clear latest verifier detail from the attribute, because it will never be saved on the chain,
+        // so updates must also not include it
+        original_attribute.latest_verifier_detail = None;
+        // Never save latest_verifier_detail to the chain, as it is too large and causes attribute
+        // write failures in certain circumstances
+        let mut updated_attribute = updated_attribute.to_owned();
+        updated_attribute.latest_verifier_detail = None;
+        self.add_message(update_attribute(
+            // address: Target address - the scope with the attribute on it
+            bech32_string_to_addr(&original_attribute.scope_address)?,
+            // name: Attribute name - use the same value as before
+            generate_asset_attribute_name(&original_attribute.asset_type, &contract_base_name),
+            // original_value: The unmodified original attribute
+            to_binary(&original_attribute)?,
+            // original_value_type
+            AttributeValueType::Json,
+            // update_value: The attribute with changes
+            to_binary(&updated_attribute)?,
+            // update_value_type: Maintain Json typing. it's awesome that this can change between updates,
+            // but this code doesn't want that
+            AttributeValueType::Json,
         )?);
         Ok(())
     }
@@ -278,7 +291,6 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "enable-test-utils")]
 mod tests {
     use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
     use provwasm_mocks::mock_dependencies;
@@ -647,21 +659,26 @@ mod tests {
 
         let messages = repository.messages.get();
 
-        assert_eq!(3, messages.len(),
-        "verify asset should produce 3 messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)");
+        assert_eq!(
+            2, messages.len(),
+            "verify asset should produce 2 messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)"
+        );
 
-        let second_message = &messages[1];
-        match second_message {
+        let first_message = &messages[0];
+        match first_message {
             CosmosMsg::Custom(ProvenanceMsg {
                 params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute { value, .. }),
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
+                        update_value,
+                        ..
+                    }),
                 ..
             }) => {
-                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                let deserialized: AssetScopeAttribute = from_binary(update_value).unwrap();
                 assert_eq!(
                     2,
                     deserialized.access_definitions.len(),
-                    "Modified scope attribute should only have 2 access route groups listed"
+                    "Modified scope attribute should only have 2 access route groups listed",
                 );
                 assert_eq!(
                     &AccessDefinition {
@@ -674,7 +691,7 @@ mod tests {
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
                         .unwrap(),
-                    "sender access route should be unchanged after verifier routes updated"
+                    "sender access route should be unchanged after verifier routes updated",
                 );
                 assert_eq!(
                     &AccessDefinition {
@@ -690,12 +707,12 @@ mod tests {
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
                         .unwrap(),
-                    "sender access route should be unchanged after verifier routes updated"
+                    "sender access route should be unchanged after verifier routes updated",
                 );
             }
             _ => panic!(
-                "Unexpected second message type for verify_asset: {:?}",
-                second_message
+                "Unexpected first message type for verify_asset: {:?}",
+                first_message,
             ),
         }
     }
@@ -1016,6 +1033,9 @@ mod tests {
         );
 
         let repository = AssetMetaService::new(deps.as_mut());
+        let mut original_attribute_value = repository.get_asset(DEFAULT_SCOPE_ADDRESS).expect(
+            "original attribute value should load from Provenance Blockchain without issue",
+        );
         repository
             .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
             .unwrap();
@@ -1023,9 +1043,9 @@ mod tests {
         let messages = repository.get_messages();
 
         assert_eq!(
-            3,
+            2,
             messages.len(),
-            "verify asset should produce three messages (attribute delete/update combo and fee distribution to default verifier w/ no additional fee destinations)"
+            "verify asset should produce two messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)"
         );
         let first_message = &messages[0];
         match first_message {
@@ -1033,30 +1053,7 @@ mod tests {
                 params: ProvenanceMsgParams::Attribute(msg),
                 ..
             }) => {
-                assert_eq!(
-                    AttributeMsgParams::DeleteAttribute {
-                        address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),
-                        name: generate_asset_attribute_name(
-                            DEFAULT_ASSET_TYPE,
-                            DEFAULT_CONTRACT_BASE_NAME
-                        )
-                    },
-                    msg.to_owned(),
-                    "delete attribute message should match what is expected"
-                );
-            }
-            _ => panic!(
-                "Unexpected first message type for verify_asset: {:?}",
-                first_message,
-            ),
-        }
-        let second_message = &messages[1];
-        match second_message {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params: ProvenanceMsgParams::Attribute(msg),
-                ..
-            }) => {
-                let mut value = get_default_asset_scope_attribute();
+                let mut value = original_attribute_value.clone();
                 delete_latest_verifier_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS)
                     .expect("latest verifier detail deletion should succeed");
                 value.latest_verification_result = AssetVerificationResult {
@@ -1076,27 +1073,32 @@ mod tests {
                 } else {
                     AssetOnboardingStatus::Denied
                 };
+                // Updates never include the latest verifier detail in the original or the update value
+                original_attribute_value.latest_verifier_detail = None;
+                value.latest_verifier_detail = None;
                 assert_eq!(
-                    AttributeMsgParams::AddAttribute {
+                    AttributeMsgParams::UpdateAttribute {
                         address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),
                         name: generate_asset_attribute_name(
                             DEFAULT_ASSET_TYPE,
                             DEFAULT_CONTRACT_BASE_NAME
                         ),
-                        value: to_binary(&value).unwrap(),
-                        value_type: AttributeValueType::Json
+                        original_value: to_binary(&original_attribute_value).unwrap(),
+                        original_value_type: AttributeValueType::Json,
+                        update_value: to_binary(&value).unwrap(),
+                        update_value_type: AttributeValueType::Json
                     },
                     msg.to_owned(),
                     "add attribute message should match what is expected"
                 );
             }
             _ => panic!(
-                "Unexpected second message type for verify_asset: {:?}",
-                second_message
+                "Unexpected first message type for verify_asset: {:?}",
+                first_message
             ),
         }
-        let third_message = &messages[2];
-        match third_message {
+        let second_message = &messages[1];
+        match second_message {
             CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
                 assert_eq!(
                     DEFAULT_VERIFIER_ADDRESS, to_address,
@@ -1112,8 +1114,8 @@ mod tests {
                 )
             }
             _ => panic!(
-                "Unexpected third message type for verify_asset: {:?}",
-                third_message
+                "Unexpected second message type for verify_asset: {:?}",
+                second_message
             ),
         }
         assert!(

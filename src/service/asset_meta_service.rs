@@ -253,7 +253,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // not have to pay any fees!
         if let Ok(verifier_detail) = self.use_deps(|deps| {
             load_asset_definition_v2_by_type(deps.storage, &attribute.asset_type)
-                .and_then(|asset_def| asset_def.get_verifier_detail(&attribute.scope_address))
+                .and_then(|asset_def| asset_def.get_verifier_detail(&attribute.verifier_address))
         }) {
             // Pay the verifier detail fees after verification has successfully been completed
             self.append_messages(&calculate_verifier_cost_messages(env, &verifier_detail)?);
@@ -293,7 +293,13 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::testutil::test_constants::DEFAULT_TRUST_VERIFIER;
+    use crate::execute::update_asset_definition::{
+        update_asset_definition, UpdateAssetDefinitionV1,
+    };
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM, DEFAULT_TRUST_VERIFIER,
+    };
+    use crate::testutil::test_utilities::{empty_mock_info, get_default_asset_definition};
     use crate::{
         core::{
             error::ContractError,
@@ -316,8 +322,8 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_ONBOARDING_COST, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+                DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
                 assert_single_item, get_default_access_routes, get_default_asset_scope_attribute,
@@ -328,7 +334,7 @@ mod tests {
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, Uint128};
+    use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, ProvenanceMsg,
@@ -1115,5 +1121,162 @@ mod tests {
             trust_verifier,
         )
         .expect("failed to instantiate default asset scope attribute")
+    }
+
+    #[test]
+    fn test_finalize_classification_success_with_retained_verifier() {
+        assert_finalize_classification_success(false);
+    }
+
+    #[test]
+    fn test_finalize_classification_success_with_deleted_verifier() {
+        assert_finalize_classification_success(true);
+    }
+
+    fn assert_finalize_classification_success(simulate_deleted_verifier: bool) {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        // Overwrite the default asset definition with a new verifier detail that's identical to the
+        // original value, with the exception of having a new address.  This will effectively
+        // simulate the situation where a verifier "disappears" after an asset has been verified.
+        if simulate_deleted_verifier {
+            let mut definition = get_default_asset_definition();
+            definition.verifiers.clear();
+            let mut verifier = get_default_verifier_detail();
+            verifier.address = "otheraddress".to_string();
+            definition.verifiers.push(verifier);
+            update_asset_definition(
+                deps.as_mut(),
+                empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+                UpdateAssetDefinitionV1::new(definition),
+            )
+            .expect("updating the asset definition to remove the verifier should succeed");
+        }
+        let service = AssetMetaService::new(deps.as_mut());
+        let asset = service
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the asset should be available after verification");
+        assert_eq!(
+            AssetOnboardingStatus::AwaitingFinalization,
+            asset.onboarding_status,
+            "sanity check: the asset should be in AwaitingFinalization status",
+        );
+        service
+            .finalize_classification(&mock_env(), &asset)
+            .expect("finalize classification should succeed");
+        let messages = service.get_messages();
+        assert_eq!(
+            2 - if simulate_deleted_verifier { 1 } else { 0 },
+            messages.len(),
+            "the correct number of messages should be generated",
+        );
+        let update_attribute_msg = &messages[0];
+        match update_attribute_msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
+                        address,
+                        name,
+                        original_value,
+                        original_value_type,
+                        update_value,
+                        update_value_type,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_SCOPE_ADDRESS,
+                    address.as_str(),
+                    "the update attribute message should target the scope",
+                );
+                assert_eq!(
+                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    name,
+                    "the correct attribute name should be included in the update",
+                );
+                assert_eq!(
+                    asset,
+                    from_binary(original_value).expect("the original_value should deserialize without error"),
+                    "the asset value before the update was made should be used as the original_value",
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    original_value_type,
+                    "the json value type should be used for the original_value_type",
+                );
+                let mut updated_asset = from_binary::<AssetScopeAttribute>(update_value)
+                    .expect("the update_value should deserialize without error");
+                assert_eq!(
+                    AssetOnboardingStatus::Approved,
+                    updated_asset.onboarding_status,
+                    "the updated asset's onboarding status should be changed to approve",
+                );
+                updated_asset.onboarding_status = AssetOnboardingStatus::AwaitingFinalization;
+                assert_eq!(
+                    asset, updated_asset,
+                    "the only field that should change in the update is the onboarding status",
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    update_value_type,
+                    "the json value type should be used for the update_value_type",
+                );
+            }
+            msg => panic!(
+                "the first message generated should be an update attribute msg, but got: {:?}",
+                msg
+            ),
+        };
+        // If the verifier was deleted before the asset was finalized, no fee can be charged
+        if simulate_deleted_verifier {
+            return;
+        }
+        let fee_payment_msg = &messages[1];
+        match fee_payment_msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
+                        amount,
+                        name,
+                        from,
+                        recipient,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_ONBOARDING_COST * 2,
+                    amount.amount.u128(),
+                    "the fee amount should equate to double the onboarding cost to cover provenance's fee cut",
+                );
+                assert_eq!(
+                    DEFAULT_ONBOARDING_DENOM, amount.denom,
+                    "the fee should use the correct denom",
+                );
+                assert!(name.is_some(), "the name should be set on the fee",);
+                assert_eq!(
+                    MOCK_CONTRACT_ADDR,
+                    from.as_str(),
+                    "the contract address should always be set in the 'from' field",
+                );
+                assert_eq!(
+                    DEFAULT_VERIFIER_ADDRESS,
+                    recipient
+                        .to_owned()
+                        .expect("a recipient should be set")
+                        .as_str(),
+                    "the recipient of the fee should be the verifier",
+                );
+            }
+            msg => panic!(
+                "the second message generated should be a custom fee msg, but got: {:?}",
+                msg,
+            ),
+        };
     }
 }

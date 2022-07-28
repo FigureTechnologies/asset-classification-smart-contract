@@ -50,6 +50,16 @@ impl TestOnboardAsset {
     pub fn default_with_denom(denom: &str) -> Self {
         Self::default_full_sender(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST, denom)
     }
+
+    pub fn default_with_trust_verifier(trust_verifier: bool) -> Self {
+        Self {
+            onboard_asset: OnboardAssetV1 {
+                trust_verifier,
+                ..Self::default_onboard_asset()
+            },
+            ..Self::default()
+        }
+    }
 }
 impl Default for TestOnboardAsset {
     fn default() -> Self {

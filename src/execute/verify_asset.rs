@@ -131,7 +131,7 @@ where
     )?;
 
     // construct/emit verification attribute
-    Ok(Response::new()
+    Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::VerifyAsset,
@@ -140,7 +140,8 @@ where
             )
             .set_verifier(info.sender),
         )
-        .add_messages(repository.get_messages()))
+        .add_messages(repository.get_messages())
+        .to_ok()
 }
 
 #[cfg(test)]

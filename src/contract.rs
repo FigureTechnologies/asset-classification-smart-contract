@@ -3,6 +3,7 @@ use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinit
 use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
 use crate::execute::bind_contract_alias::{bind_contract_alias, BindContractAliasV1};
 use crate::execute::delete_asset_definition::{delete_asset_definition, DeleteAssetDefinitionV1};
+use crate::execute::finalize_classification::{finalize_classification, FinalizeClassificationV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1};
 use crate::execute::update_access_routes::{update_access_routes, UpdateAccessRoutesV1};
@@ -99,6 +100,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
     match msg {
         ExecuteMsg::OnboardAsset { .. } => onboard_asset(
             AssetMetaService::new(deps),
+            env,
             info,
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
@@ -106,6 +108,12 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             AssetMetaService::new(deps),
             info,
             VerifyAssetV1::from_execute_msg(msg)?,
+        ),
+        ExecuteMsg::FinalizeClassification { .. } => finalize_classification(
+            AssetMetaService::new(deps),
+            env,
+            info,
+            FinalizeClassificationV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::AddAssetDefinition { .. } => add_asset_definition(
             deps,

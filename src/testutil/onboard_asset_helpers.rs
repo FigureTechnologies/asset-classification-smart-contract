@@ -1,9 +1,9 @@
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::service::asset_meta_service::AssetMetaService;
-use crate::testutil::test_utilities::MockOwnedDeps;
+use crate::testutil::test_utilities::{empty_mock_info, MockOwnedDeps};
 use crate::util::aliases::EntryPointResponse;
-use cosmwasm_std::testing::mock_info;
+use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{coin, MessageInfo};
 
 use super::test_constants::{
@@ -23,6 +23,7 @@ impl TestOnboardAsset {
             asset_type: DEFAULT_ASSET_TYPE.to_string(),
             verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
             access_routes: get_default_access_routes(),
+            trust_verifier: false,
         }
     }
 
@@ -52,13 +53,7 @@ impl TestOnboardAsset {
 impl Default for TestOnboardAsset {
     fn default() -> Self {
         TestOnboardAsset {
-            info: mock_info(
-                DEFAULT_SENDER_ADDRESS,
-                &[coin(
-                    DEFAULT_ONBOARDING_COST,
-                    DEFAULT_ONBOARDING_DENOM.to_string(),
-                )],
-            ),
+            info: empty_mock_info(DEFAULT_SENDER_ADDRESS),
             onboard_asset: TestOnboardAsset::default_onboard_asset(),
         }
     }
@@ -67,6 +62,7 @@ impl Default for TestOnboardAsset {
 pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> EntryPointResponse {
     let response = onboard_asset(
         AssetMetaService::new(deps.as_mut()),
+        mock_env(),
         msg.info,
         msg.onboard_asset,
     );

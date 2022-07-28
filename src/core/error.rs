@@ -147,6 +147,9 @@ pub enum ContractError {
         migration_version: String,
     },
 
+    #[error("Finalization cannot proceed: {explanation}")]
+    InvalidFinalization { explanation: String },
+
     /// A generic error that specifies that some form of provided or utilized coin was invalid.
     #[error("{0}")]
     InvalidFunds(

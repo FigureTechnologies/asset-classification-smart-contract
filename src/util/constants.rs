@@ -35,3 +35,9 @@ pub const ADDITIONAL_METADATA_KEY: &str = "asset_additional_metadata";
 /// A constant declaration to ensure the word "nhash" does not have typos when used throughout the
 /// contract's source.
 pub const NHASH: &str = "nhash";
+/// A constant declaration to ensure the word "usd" does not have typos when used throughout the
+/// contract's source.
+pub const USD: &str = "usd";
+/// All denominations of coin that are valid for a verifier detail to include in its [onboarding_denom](crate::core::types::verifier_detail::VerifierDetailV2::onboarding_denom)
+/// field.
+pub const VALID_VERIFIER_DENOMS: [&str; 2] = [NHASH, USD];

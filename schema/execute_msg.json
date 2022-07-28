@@ -15,6 +15,7 @@
           "required": [
             "asset_type",
             "identifier",
+            "trust_verifier",
             "verifier_address"
           ],
           "properties": {
@@ -39,6 +40,10 @@
                   "$ref": "#/definitions/SerializedEnum"
                 }
               ]
+            },
+            "trust_verifier": {
+              "description": "If true, the account that onboards the asset is consenting to pay all required fees before the verifier completes its verification process.  If false, the onboarding account will pay using the finalize classification route after verification has completed.",
+              "type": "boolean"
             },
             "verifier_address": {
               "description": "The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2), within its nested vector of [VerifierDetailV2s](super::types::verifier_detail::VerifierDetailV2).",
@@ -91,6 +96,26 @@
             "success": {
               "description": "A boolean indicating whether or not verification was successful.  A value of `false` either indicates that the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as this incurs additional cost to the onboarding account.  Instead, it is recommended that verification implement some process that retries logic when exceptions or other code execution issues cause a failed verification.",
               "type": "boolean"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "finalize_classification"
+      ],
+      "properties": {
+        "finalize_classification": {
+          "type": "object",
+          "required": [
+            "identifier"
+          ],
+          "properties": {
+            "identifier": {
+              "$ref": "#/definitions/SerializedEnum"
             }
           }
         }

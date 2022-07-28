@@ -4,6 +4,7 @@ use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefiniti
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
+use crate::util::constants::VALID_VERIFIER_DENOMS;
 use crate::util::functions::distinct_count_by_property;
 use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::ResultExtensions;
@@ -149,8 +150,11 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
     if bech32_string_to_addr(&verifier.address).is_err() {
         invalid_fields.push("verifier:address: must be a valid address".to_string());
     }
-    if verifier.onboarding_denom.is_empty() {
-        invalid_fields.push("verifier:onboarding_denom: must not be blank".to_string());
+    if !VALID_VERIFIER_DENOMS.contains(&verifier.onboarding_denom.as_str()) {
+        invalid_fields.push(format!(
+            "verifier:onboarding_denom: must be one of [{}]",
+            VALID_VERIFIER_DENOMS.join(", "),
+        ));
     }
     if !verifier.fee_destinations.is_empty()
         && verifier.get_fee_total() > verifier.onboarding_cost.u128()
@@ -194,7 +198,7 @@ pub mod tests {
     use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_utilities::get_default_entity_detail;
-    use crate::util::constants::NHASH;
+    use crate::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_input_internal, validate_asset_definition_internal,
@@ -581,6 +585,11 @@ pub mod tests {
 
     #[test]
     fn test_invalid_verifier_onboarding_denom() {
+        let expected_error_text = format!(
+            "verifier:onboarding_denom: must be one of [{}]",
+            VALID_VERIFIER_DENOMS.join(", ")
+        );
+        // Verify that a blank value produces an error
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
@@ -589,8 +598,19 @@ pub mod tests {
                 vec![],
                 get_default_entity_detail().to_some(),
             ),
-            "verifier:onboarding_denom: must not be blank",
+            &expected_error_text,
         );
+        // Verify that a value not in VALID_VERIFIER_DENOMS produces an error
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                "someotherdenom",
+                vec![],
+                get_default_entity_detail().to_some(),
+            ),
+            &expected_error_text,
+        )
     }
 
     #[test]

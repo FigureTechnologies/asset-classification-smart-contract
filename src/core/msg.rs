@@ -100,6 +100,10 @@ pub enum ExecuteMsg {
         /// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)
         /// parameter, as well, to indicate the reason for the route, but this is entirely optional.
         access_routes: Option<Vec<AccessRoute>>,
+        /// If true, the account that onboards the asset is consenting to pay all required fees
+        /// before the verifier completes its verification process.  If false, the onboarding account will
+        /// pay using the finalize classification route after verification has completed.
+        trust_verifier: bool,
     },
     /// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
     /// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to
@@ -129,6 +133,9 @@ pub enum ExecuteMsg {
         /// data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
+    },
+    FinalizeClassification {
+        identifier: SerializedEnum,
     },
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to

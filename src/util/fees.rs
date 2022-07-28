@@ -1,35 +1,53 @@
-use cosmwasm_std::CosmosMsg;
-use provwasm_std::ProvenanceMsg;
+use cosmwasm_std::{coin, Addr, CosmosMsg, Env};
+use provwasm_std::{assess_custom_fee, ProvenanceMsg};
 
 use crate::core::error::ContractError;
+use crate::core::types::entity_detail::EntityDetail;
+use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::util::traits::OptionExtensions;
 
-use super::{aliases::AssetResult, functions::bank_send, traits::ResultExtensions};
+use super::{aliases::AssetResult, traits::ResultExtensions};
 
 /// This function distributes funds from the sender address to the targets defined by a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2).
 /// It breaks down all percentages defined in the verifier detail's fee destinations and core onboarding
-/// cost to derive a variable sized vector of destination messages.
+/// cost to derive a variable sized vector of destination messages as custom Provenance Blockchain
+/// MsgFees.
 /// Important: The response type is of [ProvenanceMsg](provwasm_std::ProvenanceMsg), which allows
 /// these bank send messages to match the type used for contract execution routes.
 ///
 /// # Parameters
 ///
 /// * `verifier` The verifier detail from which to extract fee information.
+/// * `env` The environment value provided when calling execute routes.  Used to guaranteed retrieval
+/// of the correct contract address for custom msg fees.
 pub fn calculate_verifier_cost_messages(
+    env: &Env,
     verifier: &VerifierDetailV2,
 ) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
     let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
     let denom = &verifier.onboarding_denom;
     let mut fee_total: u128 = 0;
     // Append a message for each destination
-    verifier.fee_destinations.iter().for_each(|destination| {
-        cost_messages.push(bank_send(
-            &destination.address,
-            destination.fee_amount.u128(),
-            denom,
-        ));
+    for destination in verifier.fee_destinations.iter() {
+        cost_messages.push(assess_custom_fee(
+            coin(
+                // Always multiply the fee amount by 2.  This is because the Provenance Fee Module
+                // takes 50% of the value provided.  Doubling the value in this way will ensure that
+                // all fee destinations get exactly the amount requested in the FeeDestination.
+                destination.fee_amount.u128() * 2,
+                denom,
+            ),
+            generate_destination_fee_name(destination),
+            // The "from" field must always be the contract's address to ensure that message
+            // execution failures do not occur
+            env.contract.address.to_owned(),
+            // All FeeDestination addresses are verified as valid bech32 addresses when they are
+            // added to the contract, so this conversion is inherently fine to do
+            Some(Addr::unchecked(&destination.address)),
+        )?);
         fee_total += destination.fee_amount.u128();
-    });
+    }
     // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
     // always reflect the exact total that is taken from the requestor address when onboarding a new
     // scope.
@@ -47,13 +65,39 @@ pub fn calculate_verifier_cost_messages(
     let verifier_cost = verifier.onboarding_cost.u128() - fee_total;
     // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
     if verifier_cost > 0 {
-        cost_messages.push(bank_send(&verifier.address, verifier_cost, denom));
+        cost_messages.push(assess_custom_fee(
+            coin(verifier_cost, denom),
+            generate_verifier_fee_name(verifier),
+            env.contract.address.to_owned(),
+            Some(Addr::unchecked(&verifier.address)),
+        )?);
     }
     cost_messages.to_ok()
 }
 
+fn generate_destination_fee_name(destination: &FeeDestinationV2) -> Option<String> {
+    format!(
+        "Fee for {}",
+        generate_entity_detail_name(&destination.entity_detail)
+            .unwrap_or_else(|| destination.address.to_owned()),
+    )
+    .to_some()
+}
+
+fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> Option<String> {
+    generate_entity_detail_name(&verifier.entity_detail)
+        .map(|detail_name| format!("{} Fee", detail_name))
+        .unwrap_or_else(|| "Verifier Fee".to_string())
+        .to_some()
+}
+
+fn generate_entity_detail_name(entity_detail: &Option<EntityDetail>) -> Option<String> {
+    entity_detail.to_owned().and_then(|detail| detail.name)
+}
+
 #[cfg(test)]
 mod tests {
+    use cosmwasm_std::testing::mock_env;
     use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
     use provwasm_std::ProvenanceMsg;
 
@@ -77,7 +121,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee", Uint128::new(101))],
             get_default_entity_detail().to_some(),
         );
-        let error = calculate_verifier_cost_messages(&verifier).unwrap_err();
+        let error = calculate_verifier_cost_messages(&mock_env(), &verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
@@ -96,7 +140,7 @@ mod tests {
     #[test]
     fn test_only_send_to_verifier() {
         let verifier = VerifierDetailV2::new("verifier", Uint128::new(100), NHASH, vec![], None);
-        let messages = calculate_verifier_cost_messages(&verifier)
+        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(
             1,
@@ -121,7 +165,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&verifier)
+        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(
             1,
@@ -146,7 +190,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&verifier)
+        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(2, messages.len(), "expected two messages to be sent",);
         test_messages_contains_send_for_address(
@@ -180,7 +224,7 @@ mod tests {
             ],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&verifier)
+        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(6, messages.len(), "expected six messages to be sent");
         test_messages_contains_send_for_address(

@@ -16,6 +16,7 @@ pub mod bind_contract_alias;
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.
 pub mod delete_asset_definition;
+pub mod finalize_classification;
 /// Contains the functionality used by the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.

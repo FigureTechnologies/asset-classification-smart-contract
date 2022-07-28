@@ -287,9 +287,9 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            2,
+            1,
             result.messages.len(),
-            "verify asset should produce two messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)"
+            "verify asset should produce a single message: update attribute msg to new status"
         );
     }
 

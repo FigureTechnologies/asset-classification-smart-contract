@@ -13,6 +13,7 @@ use serde_json_wasm::to_string;
 
 use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::testutil::test_constants::DEFAULT_TRUST_VERIFIER;
 use crate::{
     contract::instantiate,
     core::{
@@ -121,7 +122,7 @@ pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
             access_routes: get_default_access_routes(),
             definition_type: AccessDefinitionType::Requestor,
         }],
-        trust_verifier: false,
+        trust_verifier: DEFAULT_TRUST_VERIFIER,
     }
 }
 

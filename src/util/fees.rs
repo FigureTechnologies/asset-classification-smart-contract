@@ -2,7 +2,6 @@ use cosmwasm_std::{coin, Addr, CosmosMsg, Env};
 use provwasm_std::{assess_custom_fee, ProvenanceMsg};
 
 use crate::core::error::ContractError;
-use crate::core::types::entity_detail::EntityDetail;
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::traits::OptionExtensions;
@@ -38,7 +37,7 @@ pub fn calculate_verifier_cost_messages(
                 destination.fee_amount.u128() * 2,
                 denom,
             ),
-            generate_destination_fee_name(destination),
+            generate_fee_destination_fee_name(destination),
             // The "from" field must always be the contract's address to ensure that message
             // execution failures do not occur
             env.contract.address.to_owned(),
@@ -66,43 +65,51 @@ pub fn calculate_verifier_cost_messages(
     // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
     if verifier_cost > 0 {
         cost_messages.push(assess_custom_fee(
-            coin(verifier_cost, denom),
+            // Always double charge to ensure the expected fee amount reaches the verifier
+            coin(verifier_cost * 2, denom),
             generate_verifier_fee_name(verifier),
+            // Always use the contract address as the 'from' value
             env.contract.address.to_owned(),
+            // The verifier gets the remaining coin
             Some(Addr::unchecked(&verifier.address)),
         )?);
     }
     cost_messages.to_ok()
 }
 
-fn generate_destination_fee_name(destination: &FeeDestinationV2) -> Option<String> {
+fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> Option<String> {
     format!(
         "Fee for {}",
-        generate_entity_detail_name(&destination.entity_detail)
+        destination
+            .entity_detail
+            .to_owned()
+            .and_then(|detail| detail.name)
             .unwrap_or_else(|| destination.address.to_owned()),
     )
     .to_some()
 }
 
 fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> Option<String> {
-    generate_entity_detail_name(&verifier.entity_detail)
-        .map(|detail_name| format!("{} Fee", detail_name))
+    verifier
+        .entity_detail
+        .to_owned()
+        .and_then(|detail| detail.name)
+        .map(|detail_name| format!("{} Verifier Fee", detail_name))
         .unwrap_or_else(|| "Verifier Fee".to_string())
         .to_some()
 }
 
-fn generate_entity_detail_name(entity_detail: &Option<EntityDetail>) -> Option<String> {
-    entity_detail.to_owned().and_then(|detail| detail.name)
-}
-
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
-    use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
-    use provwasm_std::ProvenanceMsg;
+    use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
+    use cosmwasm_std::{CosmosMsg, Uint128};
+    use provwasm_std::{MsgFeesMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
+    use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::util::constants::USD;
+    use crate::util::fees::{generate_fee_destination_fee_name, generate_verifier_fee_name};
     use crate::{
         core::error::ContractError,
         testutil::test_utilities::get_default_entity_detail,
@@ -147,7 +154,7 @@ mod tests {
             messages.len(),
             "expected only a single message to be sent"
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "verifier",
             100,
@@ -172,7 +179,7 @@ mod tests {
             messages.len(),
             "expected only a single message to be sent",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "fee-destination",
             100,
@@ -193,14 +200,14 @@ mod tests {
         let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(2, messages.len(), "expected two messages to be sent",);
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "verifier",
             50,
             NHASH,
             "expected half of the funds to be sent to the verifier",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "fee-destination",
             50,
@@ -227,42 +234,42 @@ mod tests {
         let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
             .expect("validation should pass and messages should be returned");
         assert_eq!(6, messages.len(), "expected six messages to be sent");
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "verifier",
             100,
             NHASH,
             "expected half of all funds to be sent to the verifier",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "first",
             20,
             NHASH,
             "expected 20 nhash of the fee to be sent to the first fee destination",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "second",
             20,
             NHASH,
             "expected 20 nhash of the fee to be sent to the second fee destination",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "third",
             40,
             NHASH,
             "expected 40 nhash of the fee to be sent to the third fee destination",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "fourth",
             5,
             NHASH,
             "expected 5 nhash of the fee to be sent to the fourth fee destination",
         );
-        test_messages_contains_send_for_address(
+        test_messages_contains_fee_for_address(
             &messages,
             "fifth",
             15,
@@ -271,14 +278,73 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_generate_fee_destination_fee_name() {
+        let mut fee_destination = FeeDestinationV2 {
+            address: "someaddress".to_string(),
+            fee_amount: Uint128::new(150),
+            entity_detail: Some(EntityDetail::new("selling fake doors", "", "", "")),
+        };
+        assert_eq!(
+            Some("Fee for selling fake doors".to_string()),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated when an entity detail is set on the fee detail",
+        );
+        if let Some(entity_detail) = &mut fee_destination.entity_detail {
+            entity_detail.name = None;
+        }
+        assert_eq!(
+            Some("Fee for someaddress".to_string()),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated from the destination address when the destination has no entity detail name",
+        );
+        fee_destination.entity_detail = None;
+        assert_eq!(
+            Some("Fee for someaddress".to_string()),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated from the destination address when the destination has no entity detail",
+        );
+    }
+
+    #[test]
+    fn test_generate_verifier_fee_name() {
+        let mut verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            USD,
+            vec![],
+            Some(EntityDetail::new(
+                "Jeff's Frozen Pizza Emporium",
+                "",
+                "",
+                "",
+            )),
+        );
+        assert_eq!(
+            Some("Jeff's Frozen Pizza Emporium Verifier Fee".to_string()),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when an entity detail exists",
+        );
+        if let Some(entity_detail) = &mut verifier.entity_detail {
+            entity_detail.name = None;
+        };
+        assert_eq!(
+            Some("Verifier Fee".to_string()),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when the entity detail has no name",
+        );
+        verifier.entity_detail = None;
+        assert_eq!(
+            Some("Verifier Fee".to_string()),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when the entity detail does not exist",
+        );
+    }
+
     /// Loops through all messages contained in the input slice until it finds a message with the given address,
     /// ensuring that the expected amount was sent in the expected denom to that address.  All output errors are
     /// prefixed with the input error_message string.
-    fn test_messages_contains_send_for_address<
-        S: Into<String>,
-        D: Into<String>,
-        M: Into<String>,
-    >(
+    fn test_messages_contains_fee_for_address<S: Into<String>, D: Into<String>, M: Into<String>>(
         messages: &[CosmosMsg<ProvenanceMsg>],
         address: S,
         expected_amount: u128,
@@ -291,44 +357,51 @@ mod tests {
         messages
             .iter()
             .find(|msg| match msg {
-                CosmosMsg::Bank(bank_msg) => match bank_msg {
-                    BankMsg::Send { to_address, amount } => {
-                        if to_address == &target_address {
-                            assert_eq!(
-                                1,
-                                amount.len(),
-                                "{}: only one coin should be appended per message",
-                                err_msg,
-                            );
-                            let coin = amount.first().unwrap();
-                            assert_eq!(
-                                expected_amount,
-                                coin.amount.u128(),
-                                "{}: incorrect amount sent to address",
-                                err_msg,
-                            );
-                            assert_eq!(
-                                target_denom, coin.denom,
-                                "{}: incorrect denom in bank send message",
-                                err_msg,
-                            );
-                            // Return true - this is the correct address and has passed assertions
-                            true
-                        } else {
-                            // Return false - this is a bank send message, but not to the expected address
-                            false
-                        }
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params:
+                        ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
+                            amount,
+                            name,
+                            from,
+                            recipient,
+                        }),
+                    ..
+                }) => {
+                    if recipient
+                        .to_owned()
+                        .expect("all recipients should be set in generated fees")
+                        .as_str()
+                        == target_address
+                    {
+                        assert_eq!(
+                            expected_amount * 2,
+                            amount.amount.u128(),
+                            "the fee amount should always be double the specified number",
+                        );
+                        assert_eq!(
+                            target_denom, amount.denom,
+                            "the correct denom should be specified in the fee",
+                        );
+                        assert!(name.is_some(), "fee names should always be set",);
+                        assert_eq!(
+                            MOCK_CONTRACT_ADDR,
+                            from.as_str(),
+                            "the contract address should always bet set in the from field",
+                        );
+                        // Return true - this is the correct address and has passed assertions
+                        true
+                    } else {
+                        // Return false - this is a custom fee message, but not to the expected address
+                        false
                     }
-                    _ => false,
-                },
+                }
                 _ => false,
             })
-            .expect(
-                format!(
-                    "{}: could not find address {} in any send messages",
+            .unwrap_or_else(|| {
+                panic!(
+                    "{}: could not find address {} in any custom fee messages",
                     err_msg, target_address,
                 )
-                .as_str(),
-            );
+            });
     }
 }

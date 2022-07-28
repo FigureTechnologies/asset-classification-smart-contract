@@ -22,6 +22,8 @@ pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespec1q323khk2jgw5hfada5ukdv3y
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
 /// This is the default denom expected by the default verifier for onboarding
 pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
+/// Default to trusting the verifier and paying upfront. This is a shorter flow for simpler tests.
+pub const DEFAULT_TRUST_VERIFIER: bool = true;
 /// This is the default value that test_instantiate uses to create the contract's base name
 pub const DEFAULT_CONTRACT_BASE_NAME: &str = "asset";
 /// This is the default access route name to be set for the onboarding address

@@ -250,7 +250,7 @@ mod tests {
         ProvenanceMsg, ProvenanceMsgParams, Record, Records,
     };
 
-    use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
+    use crate::testutil::test_constants::{DEFAULT_ONBOARDING_COST, DEFAULT_TRUST_VERIFIER};
     use crate::util::constants::NHASH;
     use crate::{
         core::{
@@ -306,7 +306,7 @@ mod tests {
                 asset_type: "bogus".into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -344,7 +344,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -369,7 +369,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string() + "bogus".into(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -410,7 +410,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -445,7 +445,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -480,7 +480,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -551,7 +551,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -598,7 +598,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .expect("onboarding should succeed due to test mode being enabled");
@@ -639,7 +639,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -691,7 +691,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .expect("onboarding should succeed due to test mode being enabled");
@@ -718,7 +718,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
-                trust_verifier: true,
+                trust_verifier: DEFAULT_TRUST_VERIFIER,
             },
         )
         .unwrap_err();
@@ -938,9 +938,9 @@ mod tests {
                     panic!("if the verifier is not trusted, a custom fee should not be generated, but it was: {:?}", msg);
                 }
                 assert_eq!(
-                    DEFAULT_ONBOARDING_COST,
+                    DEFAULT_ONBOARDING_COST * 2,
                     amount.amount.u128(),
-                    "the default verifier cost should be included in the fee msg",
+                    "double the default verifier cost should be included in the fee msg to account for the provenance cut",
                 );
                 assert!(
                     name.is_some(),

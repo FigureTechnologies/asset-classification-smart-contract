@@ -711,33 +711,6 @@ referred to by the `identifier` parameter passed into the execution message.
 }
 ```
 
-#### [Bind Contract Alias](src/execute/bind_contract_alias.rs)
-__This route is only accessible to the contract's admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)
-offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route
-allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name
-module works, public names can only be bound by the requesting account (in this case, the contract) or by the name
-owner.  In most cases, users won't have access to the root name owner of an unrestricted name, but will want to bind a
-name to the contract in order to facilitate lookups.  This allows any unrestricted name to be bound to the contract with
-ease.  This route will fail execution if a name is provided that stems from a restricted parent.
-
-##### Request Parameters
-
-* `alias_name`: The name to bind to the contract.  Ex: `assetclassificationalias.pb`.
-
-##### Emitted Attributes
-* `asset_event_type`: This value will always be populated as `bind_contract_alias`.
-
-* `asset_new_value`: This value will be the value of the `alias_name` passed into the execution message.
-
-##### Request Sample
-```json
-{
-  "bind_contract_alias": {
-    "alias_name": "assetclassificationalias.pb"
-  }
-}
-```
-
 ### [Query Routes](src/query)
 
 The contract exposes various query routes by which data retrieval is possible.  All query route enum variants are

@@ -221,17 +221,6 @@ pub enum ExecuteMsg {
         /// routes need to be included in the request alongside the new route(s).
         access_routes: Vec<AccessRoute>,
     },
-    /// __This route is only accessible to the contract's admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)
-    /// offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route
-    /// allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name
-    /// module works, public names can only be bound by the requesting account (in this case, the contract) or by the name
-    /// owner.  In most cases, users won't have access to the root name owner of an unrestricted name, but will want to bind a
-    /// name to the contract in order to facilitate lookups.  This allows any unrestricted name to be bound to the contract with
-    /// ease.  This route will fail execution if a name is provided that stems from a restricted parent.
-    BindContractAlias {
-        /// The name to bind to the contract.  Ex: `assetclassificationalias.pb`.
-        alias_name: String,
-    },
     /// __This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// is erroneously added with an incorrect asset type, the scope specification address is unable
     /// to be used, as it is another unique key of the asset definition.  This route facilitates the

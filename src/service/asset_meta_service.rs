@@ -4,6 +4,7 @@ use cosmwasm_std::{to_binary, CosmosMsg, Env};
 use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
 
 use crate::core::state::load_asset_definition_v2_by_type;
+use crate::core::types::fee_payments::FeePaymentDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::{
@@ -22,8 +23,8 @@ use crate::{
     },
     util::aliases::{AssetResult, DepsMutC},
     util::deps_container::DepsContainer,
+    util::functions::generate_asset_attribute_name,
     util::vec_container::VecContainer,
-    util::{fees::calculate_verifier_cost_messages, functions::generate_asset_attribute_name},
     util::{functions::filter_valid_access_routes, traits::ResultExtensions},
     util::{
         provenance_util::get_add_attribute_to_scope_msg, scope_address_utils::bech32_string_to_addr,
@@ -106,7 +107,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             // If the onboarding account trusts the verifier, then the verifier gets paid in
             // Provenance Blockchain FeeMsg messages upfront
             if attribute.trust_verifier {
-                self.append_messages(&calculate_verifier_cost_messages(env, verifier_detail)?);
+                self.append_messages(
+                    &FeePaymentDetail::new(&attribute.scope_address, &verifier_detail)?
+                        .to_fee_msgs(env)?,
+                )
             }
         }
         Ok(())
@@ -256,7 +260,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 .and_then(|asset_def| asset_def.get_verifier_detail(&attribute.verifier_address))
         }) {
             // Pay the verifier detail fees after verification has successfully been completed
-            self.append_messages(&calculate_verifier_cost_messages(env, &verifier_detail)?);
+            self.append_messages(
+                &FeePaymentDetail::new(&attribute.scope_address, &verifier_detail)?
+                    .to_fee_msgs(env)?,
+            );
         }
         ().to_ok()
     }

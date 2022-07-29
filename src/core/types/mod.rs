@@ -28,3 +28,4 @@ pub mod scope_spec_identifier;
 pub mod serialized_enum;
 /// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](self::asset_definition::AssetDefinitionV2).
 pub mod verifier_detail;
+pub mod fee_payments;

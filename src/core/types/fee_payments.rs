@@ -1,83 +1,94 @@
-use cosmwasm_std::{coin, Addr, CosmosMsg, Env};
-use provwasm_std::{assess_custom_fee, ProvenanceMsg};
-
 use crate::core::error::ContractError;
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::util::traits::OptionExtensions;
+use crate::util::aliases::AssetResult;
+use crate::util::traits::{OptionExtensions, ResultExtensions};
+use cosmwasm_std::{coin, Addr, Coin, CosmosMsg, Env};
+use provwasm_std::{assess_custom_fee, ProvenanceMsg};
+use serde::{Deserialize, Serialize};
 
-use super::{aliases::AssetResult, traits::ResultExtensions};
-
-/// This function distributes funds from the sender address to the targets defined by a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2).
-/// It breaks down all percentages defined in the verifier detail's fee destinations and core onboarding
-/// cost to derive a variable sized vector of destination messages as custom Provenance Blockchain
-/// MsgFees.
-/// Important: The response type is of [ProvenanceMsg](provwasm_std::ProvenanceMsg), which allows
-/// these bank send messages to match the type used for contract execution routes.
-///
-/// # Parameters
-///
-/// * `verifier` The verifier detail from which to extract fee information.
-/// * `env` The environment value provided when calling execute routes.  Used to guaranteed retrieval
-/// of the correct contract address for custom msg fees.
-pub fn calculate_verifier_cost_messages(
-    env: &Env,
-    verifier: &VerifierDetailV2,
-) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
-    let mut cost_messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
-    let denom = &verifier.onboarding_denom;
-    let mut fee_total: u128 = 0;
-    // Append a message for each destination
-    for destination in verifier.fee_destinations.iter() {
-        cost_messages.push(assess_custom_fee(
-            coin(
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct FeePaymentDetail {
+    pub scope_address: String,
+    pub payments: Vec<FeePayment>,
+}
+impl FeePaymentDetail {
+    pub fn new<S: Into<String>>(
+        scope_address: S,
+        verifier: &VerifierDetailV2,
+    ) -> AssetResult<Self> {
+        let mut payments = vec![];
+        let mut fee_total: u128 = 0;
+        // Append a message for each destination
+        for destination in verifier.fee_destinations.iter() {
+            payments.push(FeePayment {
                 // Always multiply the fee amount by 2.  This is because the Provenance Fee Module
                 // takes 50% of the value provided.  Doubling the value in this way will ensure that
                 // all fee destinations get exactly the amount requested in the FeeDestination.
-                destination.fee_amount.u128() * 2,
-                denom,
-            ),
-            generate_fee_destination_fee_name(destination),
-            // The "from" field must always be the contract's address to ensure that message
-            // execution failures do not occur
-            env.contract.address.to_owned(),
-            // All FeeDestination addresses are verified as valid bech32 addresses when they are
-            // added to the contract, so this conversion is inherently fine to do
-            Some(Addr::unchecked(&destination.address)),
-        )?);
-        fee_total += destination.fee_amount.u128();
+                amount: coin(
+                    destination.fee_amount.u128() * 2,
+                    &verifier.onboarding_denom,
+                ),
+                name: generate_fee_destination_fee_name(destination),
+                // All FeeDestination addresses are verified as valid bech32 addresses when they are
+                // added to the contract, so this conversion is inherently fine to do
+                recipient: Addr::unchecked(&destination.address),
+            });
+            fee_total += destination.fee_amount.u128();
+        }
+        // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
+        // always reflect the exact total that is taken from the requestor address when onboarding a new
+        // scope.
+        if fee_total > verifier.onboarding_cost.u128() {
+            return ContractError::generic(
+                format!("misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})",
+                        fee_total,
+                        &verifier.onboarding_denom,
+                        verifier.onboarding_cost.u128(),
+                        verifier.onboarding_denom,
+                )
+            ).to_err();
+        }
+        // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
+        let verifier_cost = verifier.onboarding_cost.u128() - fee_total;
+        // Only append payment info for the verifier if it actually has a cost
+        if verifier_cost > 0 {
+            payments.push(FeePayment {
+                // Always double charge to ensure the expected fee amount reaches the verifier
+                amount: coin(verifier_cost * 2, &verifier.onboarding_denom),
+                name: generate_verifier_fee_name(verifier),
+                recipient: Addr::unchecked(&verifier.address),
+            });
+        }
+        FeePaymentDetail {
+            scope_address: scope_address.into(),
+            payments,
+        }
+        .to_ok()
     }
-    // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
-    // always reflect the exact total that is taken from the requestor address when onboarding a new
-    // scope.
-    if fee_total > verifier.onboarding_cost.u128() {
-        return ContractError::generic(
-            format!("misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})",
-                fee_total,
-                denom,
-                verifier.onboarding_cost.u128(),
-                denom,
-            )
-        ).to_err();
+
+    pub fn to_fee_msgs(&self, env: &Env) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
+        let mut messages = vec![];
+        for payment in self.payments.iter().cloned() {
+            messages.push(assess_custom_fee(
+                payment.amount,
+                payment.name.to_some(),
+                env.contract.address.to_owned(),
+                Some(payment.recipient),
+            )?);
+        }
+        messages.to_ok()
     }
-    // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-    let verifier_cost = verifier.onboarding_cost.u128() - fee_total;
-    // Append a bank send message from the contract to the verifier for the cost if the verifier receives funds
-    if verifier_cost > 0 {
-        cost_messages.push(assess_custom_fee(
-            // Always double charge to ensure the expected fee amount reaches the verifier
-            coin(verifier_cost * 2, denom),
-            generate_verifier_fee_name(verifier),
-            // Always use the contract address as the 'from' value
-            env.contract.address.to_owned(),
-            // The verifier gets the remaining coin
-            Some(Addr::unchecked(&verifier.address)),
-        )?);
-    }
-    cost_messages.to_ok()
 }
 
-fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> Option<String> {
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct FeePayment {
+    pub amount: Coin,
+    pub name: String,
+    pub recipient: Addr,
+}
+
+fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> String {
     format!(
         "Fee for {}",
         destination
@@ -86,37 +97,96 @@ fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> Option<S
             .and_then(|detail| detail.name)
             .unwrap_or_else(|| destination.address.to_owned()),
     )
-    .to_some()
 }
 
-fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> Option<String> {
+fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
     verifier
         .entity_detail
         .to_owned()
         .and_then(|detail| detail.name)
         .map(|detail_name| format!("{} Verifier Fee", detail_name))
         .unwrap_or_else(|| "Verifier Fee".to_string())
-        .to_some()
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::core::error::ContractError;
+    use crate::core::types::entity_detail::EntityDetail;
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::fee_payments::{
+        generate_fee_destination_fee_name, generate_verifier_fee_name, FeePaymentDetail,
+    };
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_utilities::get_default_entity_detail;
+    use crate::util::constants::{NHASH, USD};
+    use crate::util::traits::OptionExtensions;
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
     use cosmwasm_std::{CosmosMsg, Uint128};
     use provwasm_std::{MsgFeesMsgParams, ProvenanceMsg, ProvenanceMsgParams};
 
-    use crate::core::types::entity_detail::EntityDetail;
-    use crate::core::types::fee_destination::FeeDestinationV2;
-    use crate::core::types::verifier_detail::VerifierDetailV2;
-    use crate::util::constants::USD;
-    use crate::util::fees::{generate_fee_destination_fee_name, generate_verifier_fee_name};
-    use crate::{
-        core::error::ContractError,
-        testutil::test_utilities::get_default_entity_detail,
-        util::{constants::NHASH, traits::OptionExtensions},
-    };
+    #[test]
+    fn test_generate_fee_destination_fee_name() {
+        let mut fee_destination = FeeDestinationV2 {
+            address: "someaddress".to_string(),
+            fee_amount: Uint128::new(150),
+            entity_detail: Some(EntityDetail::new("selling fake doors", "", "", "")),
+        };
+        assert_eq!(
+            "Fee for selling fake doors".to_string(),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated when an entity detail is set on the fee detail",
+        );
+        if let Some(entity_detail) = &mut fee_destination.entity_detail {
+            entity_detail.name = None;
+        }
+        assert_eq!(
+            "Fee for someaddress".to_string(),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated from the destination address when the destination has no entity detail name",
+        );
+        fee_destination.entity_detail = None;
+        assert_eq!(
+            "Fee for someaddress".to_string(),
+            generate_fee_destination_fee_name(&fee_destination),
+            "the correct fee name should be generated from the destination address when the destination has no entity detail",
+        );
+    }
 
-    use super::calculate_verifier_cost_messages;
+    #[test]
+    fn test_generate_verifier_fee_name() {
+        let mut verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            USD,
+            vec![],
+            Some(EntityDetail::new(
+                "Jeff's Frozen Pizza Emporium",
+                "",
+                "",
+                "",
+            )),
+        );
+        assert_eq!(
+            "Jeff's Frozen Pizza Emporium Verifier Fee".to_string(),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when an entity detail exists",
+        );
+        if let Some(entity_detail) = &mut verifier.entity_detail {
+            entity_detail.name = None;
+        };
+        assert_eq!(
+            "Verifier Fee".to_string(),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when the entity detail has no name",
+        );
+        verifier.entity_detail = None;
+        assert_eq!(
+            "Verifier Fee".to_string(),
+            generate_verifier_fee_name(&verifier),
+            "the correct fee name should be used when the entity detail does not exist",
+        );
+    }
 
     #[test]
     fn test_invalid_verifier_greater_fee_than_onboarding_cost() {
@@ -128,7 +198,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee", Uint128::new(101))],
             get_default_entity_detail().to_some(),
         );
-        let error = calculate_verifier_cost_messages(&mock_env(), &verifier).unwrap_err();
+        let error = FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &verifier).unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
@@ -147,8 +217,7 @@ mod tests {
     #[test]
     fn test_only_send_to_verifier() {
         let verifier = VerifierDetailV2::new("verifier", Uint128::new(100), NHASH, vec![], None);
-        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
-            .expect("validation should pass and messages should be returned");
+        let messages = test_get_messages(&verifier);
         assert_eq!(
             1,
             messages.len(),
@@ -172,8 +241,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
-            .expect("validation should pass and messages should be returned");
+        let messages = test_get_messages(&verifier);
         assert_eq!(
             1,
             messages.len(),
@@ -197,8 +265,7 @@ mod tests {
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
-            .expect("validation should pass and messages should be returned");
+        let messages = test_get_messages(&verifier);
         assert_eq!(2, messages.len(), "expected two messages to be sent",);
         test_messages_contains_fee_for_address(
             &messages,
@@ -231,8 +298,7 @@ mod tests {
             ],
             None,
         );
-        let messages = calculate_verifier_cost_messages(&mock_env(), &verifier)
-            .expect("validation should pass and messages should be returned");
+        let messages = test_get_messages(&verifier);
         assert_eq!(6, messages.len(), "expected six messages to be sent");
         test_messages_contains_fee_for_address(
             &messages,
@@ -278,67 +344,11 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_generate_fee_destination_fee_name() {
-        let mut fee_destination = FeeDestinationV2 {
-            address: "someaddress".to_string(),
-            fee_amount: Uint128::new(150),
-            entity_detail: Some(EntityDetail::new("selling fake doors", "", "", "")),
-        };
-        assert_eq!(
-            Some("Fee for selling fake doors".to_string()),
-            generate_fee_destination_fee_name(&fee_destination),
-            "the correct fee name should be generated when an entity detail is set on the fee detail",
-        );
-        if let Some(entity_detail) = &mut fee_destination.entity_detail {
-            entity_detail.name = None;
-        }
-        assert_eq!(
-            Some("Fee for someaddress".to_string()),
-            generate_fee_destination_fee_name(&fee_destination),
-            "the correct fee name should be generated from the destination address when the destination has no entity detail name",
-        );
-        fee_destination.entity_detail = None;
-        assert_eq!(
-            Some("Fee for someaddress".to_string()),
-            generate_fee_destination_fee_name(&fee_destination),
-            "the correct fee name should be generated from the destination address when the destination has no entity detail",
-        );
-    }
-
-    #[test]
-    fn test_generate_verifier_fee_name() {
-        let mut verifier = VerifierDetailV2::new(
-            "address",
-            Uint128::new(100),
-            USD,
-            vec![],
-            Some(EntityDetail::new(
-                "Jeff's Frozen Pizza Emporium",
-                "",
-                "",
-                "",
-            )),
-        );
-        assert_eq!(
-            Some("Jeff's Frozen Pizza Emporium Verifier Fee".to_string()),
-            generate_verifier_fee_name(&verifier),
-            "the correct fee name should be used when an entity detail exists",
-        );
-        if let Some(entity_detail) = &mut verifier.entity_detail {
-            entity_detail.name = None;
-        };
-        assert_eq!(
-            Some("Verifier Fee".to_string()),
-            generate_verifier_fee_name(&verifier),
-            "the correct fee name should be used when the entity detail has no name",
-        );
-        verifier.entity_detail = None;
-        assert_eq!(
-            Some("Verifier Fee".to_string()),
-            generate_verifier_fee_name(&verifier),
-            "the correct fee name should be used when the entity detail does not exist",
-        );
+    fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {
+        FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, verifier)
+            .expect("fee payment detail should generate without error")
+            .to_fee_msgs(&mock_env())
+            .expect("fee messages should generate without error")
     }
 
     /// Loops through all messages contained in the input slice until it finds a message with the given address,

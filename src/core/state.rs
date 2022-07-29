@@ -1,5 +1,6 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::core::types::asset_qualifier::AssetQualifier;
+use crate::core::types::fee_payments::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -9,14 +10,16 @@ use crate::{
 };
 use cosmwasm_std::{Addr, Storage};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
-use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
+use cw_storage_plus::{Index, IndexList, IndexedMap, Map, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::error::ContractError;
 
-pub static STATE_V2_KEY: &[u8] = b"state_v2";
-pub static ASSET_META_KEY: &[u8] = b"asset_meta";
+static STATE_V2_KEY: &[u8] = b"state_v2";
+const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
+
+const FEE_PAYMENT_DETAILS: Map<String, FeePaymentDetail> = Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
 /// Stores the main configurations for the contract internally.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -286,6 +289,41 @@ pub fn delete_asset_definition_v2_by_qualifier(
     .asset_type;
     asset_definitions_v2().remove(storage, existing_asset_type.to_lowercase().as_bytes())?;
     Ok(existing_asset_type)
+}
+
+pub fn insert_fee_payment_detail(
+    storage: &mut dyn Storage,
+    fee_payment_detail: &FeePaymentDetail,
+) -> AssetResult<()> {
+    FEE_PAYMENT_DETAILS
+        .save(
+            storage,
+            fee_payment_detail.scope_address.to_owned(),
+            fee_payment_detail,
+        )?
+        .to_ok()
+}
+
+pub fn load_fee_payment_detail<S: Into<String>>(
+    storage: &dyn Storage,
+    scope_address: S,
+) -> AssetResult<FeePaymentDetail> {
+    FEE_PAYMENT_DETAILS
+        .load(storage, scope_address.into())?
+        .to_ok()
+}
+
+pub fn delete_fee_payment_detail<S: Into<String>>(
+    storage: &mut dyn Storage,
+    scope_address: S,
+) -> AssetResult<()> {
+    let scope_address = scope_address.into();
+    // Verify the detail exists before allowing its deletion.  The standard "remove" function will
+    // not produce an error if no target value exists, but it is very informative of bad code to
+    // reveal when unnecessary operations occur.
+    load_fee_payment_detail(storage, &scope_address)?;
+    FEE_PAYMENT_DETAILS.remove(storage, scope_address);
+    ().to_ok()
 }
 
 #[cfg(test)]

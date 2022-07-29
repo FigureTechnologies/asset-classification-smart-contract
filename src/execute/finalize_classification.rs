@@ -77,6 +77,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::error::ContractError;
+    use crate::core::state::load_fee_payment_detail;
     use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
     use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
     use crate::service::asset_meta_repository::AssetMetaRepository;
@@ -224,6 +225,9 @@ mod tests {
             TestOnboardAsset::default_with_trust_verifier(false),
         )
         .unwrap();
+        load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect(
+            "a fee payment detail should be created after onboarding with no trust for verifier",
+        );
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let asset_before_update = get_asset(&mut deps);
         assert_eq!(
@@ -361,6 +365,14 @@ mod tests {
                 msg
             ),
         });
+        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when trying to fetch payment detail after finalization",
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur for the fee payment detail after finalization completes, but got: {:?}",
+            err,
+        );
     }
 
     fn get_asset(deps: &mut MockOwnedDeps) -> AssetScopeAttribute {

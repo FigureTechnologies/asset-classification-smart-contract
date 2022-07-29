@@ -3,8 +3,10 @@ use std::collections::HashSet;
 use cosmwasm_std::{to_binary, CosmosMsg, Env};
 use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
 
-use crate::core::state::{insert_fee_payment_detail, load_fee_payment_detail};
-use crate::core::types::fee_payments::FeePaymentDetail;
+use crate::core::state::{
+    delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail,
+};
+use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::{
@@ -258,6 +260,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             self.use_deps(|deps| load_fee_payment_detail(deps.storage, &attribute.scope_address))?;
         // Pay the verifier detail fees after verification has successfully been completed
         self.append_messages(&payment_detail.to_fee_msgs(env)?);
+        // Remove the fee payment detail after it has been successfully used for finalization.
+        // Stored fee payment amounts are no longer needed after the custom fee messages have been
+        // used, as it can easily become outdated in the future
+        self.use_deps(|deps| delete_fee_payment_detail(deps.storage, &attribute.scope_address))?;
         ().to_ok()
     }
 }
@@ -335,7 +341,7 @@ mod tests {
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg};
+    use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg, StdError};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, ProvenanceMsg,
@@ -1279,5 +1285,15 @@ mod tests {
                 msg,
             ),
         };
+        let err = service
+            .use_deps(|deps| load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS))
+            .expect_err(
+                "an error should occur when trying to fetch payment detail after finalization",
+            );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur for the fee payment detail after finalization completes, but got: {:?}",
+            err,
+        );
     }
 }

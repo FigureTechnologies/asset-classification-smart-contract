@@ -1,6 +1,6 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::core::types::asset_qualifier::AssetQualifier;
-use crate::core::types::fee_payments::FeePaymentDetail;
+use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -112,6 +112,7 @@ pub fn asset_definitions_v2<'a>(
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
+/// * `definition` The asset definition to insert into storage and derive the unique keys.
 pub fn insert_asset_definition_v2(
     storage: &mut dyn Storage,
     definition: &AssetDefinitionV2,
@@ -291,10 +292,26 @@ pub fn delete_asset_definition_v2_by_qualifier(
     Ok(existing_asset_type)
 }
 
+/// Inserts a new payment detail into storage.  If a value already exists, an error will be returned.
+/// Note: Each payment detail must contain a unique [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// value, or the insert will be rejected with an error.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
+/// * `fee_payment_detail` The detail to insert into storage and derive the unique scope address key.
 pub fn insert_fee_payment_detail(
     storage: &mut dyn Storage,
     fee_payment_detail: &FeePaymentDetail,
 ) -> AssetResult<()> {
+    if load_fee_payment_detail(storage, &fee_payment_detail.scope_address).is_ok() {
+        return ContractError::RecordAlreadyExists {
+            explanation: format!(
+                "cannot insert payment detail for scope [{}] because a record already exists with that address",
+                &fee_payment_detail.scope_address
+            )
+        }.to_err();
+    }
     FEE_PAYMENT_DETAILS
         .save(
             storage,
@@ -304,6 +321,13 @@ pub fn insert_fee_payment_detail(
         .to_ok()
 }
 
+/// Finds an existing fee payment detail by scope address, or returns an error if no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
 pub fn load_fee_payment_detail<S: Into<String>>(
     storage: &dyn Storage,
     scope_address: S,
@@ -313,6 +337,14 @@ pub fn load_fee_payment_detail<S: Into<String>>(
         .to_ok()
 }
 
+/// Attempts to delete an existing payment detail by scope address.  Returns an error if the detail
+/// does not exist or if deletion fails.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract's internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// of the detail to delete.
 pub fn delete_fee_payment_detail<S: Into<String>>(
     storage: &mut dyn Storage,
     scope_address: S,
@@ -328,17 +360,22 @@ pub fn delete_fee_payment_detail<S: Into<String>>(
 
 #[cfg(test)]
 mod tests {
+    use cosmwasm_std::{coin, Addr, StdError};
     use provwasm_mocks::mock_dependencies;
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_qualifier, insert_asset_definition_v2,
+        delete_asset_definition_v2_by_qualifier, delete_fee_payment_detail,
+        insert_asset_definition_v2, insert_fee_payment_detail,
         load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
-        may_load_asset_definition_v2_by_scope_spec, may_load_asset_definition_v2_by_type,
-        replace_asset_definition_v2,
+        load_fee_payment_detail, may_load_asset_definition_v2_by_scope_spec,
+        may_load_asset_definition_v2_by_type, replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
+    use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
+    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_ADDRESS};
+    use crate::util::constants::NHASH;
 
     #[test]
     fn test_insert_asset_definition() {
@@ -649,5 +686,85 @@ mod tests {
             "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",
             err,
         );
+    }
+
+    #[test]
+    fn test_insert_and_load_fee_payment_detail() {
+        let mut deps = mock_dependencies(&[]);
+        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when trying to load a payment detail that does not exist",
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is not found, but got: {:?}",
+            err,
+        );
+        let payment_detail = get_test_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a new fee payment detail should succeed");
+        let loaded_payment_detail =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("loading the stored payment detail should succeed");
+        assert_eq!(
+            payment_detail, loaded_payment_detail,
+            "the loaded payment detail should equate to the stored value",
+        );
+        let err = insert_fee_payment_detail(deps.as_mut().storage, &loaded_payment_detail)
+            .expect_err(
+                "an error should occur when attempting to insert a duplicate payment detail",
+            );
+        assert!(
+            matches!(err, ContractError::RecordAlreadyExists { .. }),
+            "a record already exists error should occur, but got: {:?}",
+            err,
+        );
+    }
+
+    #[test]
+    fn test_delete_fee_payment_detail() {
+        let mut deps = mock_dependencies(&[]);
+        let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when attempting to delete a fee payment detail that does not exist"
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is not found, but got: {:?}",
+            err,
+        );
+        let payment_detail = get_test_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a payment detail should succeed");
+        assert!(
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_ok(),
+            "sanity check: fee payment detail should be available after insert",
+        );
+        delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS)
+            .expect("deleting a payment detail should succeed");
+        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when trying to load a payment detail after it has been deleted",
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
+            err,
+        );
+    }
+
+    fn get_test_payment_detail<S: Into<String>>(scope_address: S) -> FeePaymentDetail {
+        FeePaymentDetail {
+            scope_address: scope_address.into(),
+            payments: vec![
+                FeePayment {
+                    amount: coin(150, NHASH),
+                    name: "Fee for admin".to_string(),
+                    recipient: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                },
+                FeePayment {
+                    amount: coin(250, NHASH),
+                    name: "Fee for some other person".to_string(),
+                    recipient: Addr::unchecked("other person"),
+                },
+            ],
+        }
     }
 }

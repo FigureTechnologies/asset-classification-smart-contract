@@ -113,7 +113,7 @@ mod tests {
     use crate::core::error::ContractError;
     use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
-    use crate::core::types::fee_payments::{
+    use crate::core::types::fee_payment_detail::{
         generate_fee_destination_fee_name, generate_verifier_fee_name, FeePaymentDetail,
     };
     use crate::core::types::verifier_detail::VerifierDetailV2;

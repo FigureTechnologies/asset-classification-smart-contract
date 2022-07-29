@@ -21,6 +21,9 @@ pub mod asset_verification_result;
 pub mod entity_detail;
 /// Defines an external account designated as a recipient of funds during the verification process.
 pub mod fee_destination;
+/// Defines a stored set of values for charging fees to the onboarding account during the finalize
+/// classification process.
+pub mod fee_payment_detail;
 /// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.
 pub mod scope_spec_identifier;
 /// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:
@@ -28,4 +31,3 @@ pub mod scope_spec_identifier;
 pub mod serialized_enum;
 /// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](self::asset_definition::AssetDefinitionV2).
 pub mod verifier_detail;
-pub mod fee_payments;

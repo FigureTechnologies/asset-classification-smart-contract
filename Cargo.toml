@@ -31,7 +31,7 @@ incremental = false
 overflow-checks = true
 
 [features]
-# backtraces = ["cosmwasm-std/backtraces"]
+backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
 [dependencies]

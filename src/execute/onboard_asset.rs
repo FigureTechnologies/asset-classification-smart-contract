@@ -1,6 +1,8 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, load_asset_definition_v2_by_type};
+use crate::core::state::{
+    config_read_v2, delete_fee_payment_detail, load_asset_definition_v2_by_type,
+};
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
@@ -196,10 +198,10 @@ where
     )?;
 
     // check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one
-    let is_retry = if let Some(scope_attribute) =
+    let is_retry = if let Some(existing_attribute) =
         repository.try_get_asset(&asset_identifiers.scope_address)?
     {
-        match scope_attribute.onboarding_status {
+        match existing_attribute.onboarding_status {
             // If the attribute indicates that the asset is approved, then it's already fully onboarded and verified
             AssetOnboardingStatus::Approved | AssetOnboardingStatus::AwaitingFinalization => {
                 return ContractError::AssetAlreadyOnboarded {
@@ -210,14 +212,25 @@ where
             // If the attribute indicates that the asset is pending, then it's currently waiting for verification
             AssetOnboardingStatus::Pending => {
                 return ContractError::AssetPendingVerification {
-                    scope_address: scope_attribute.scope_address,
-                    verifier_address: scope_attribute.verifier_address.to_string(),
+                    scope_address: existing_attribute.scope_address,
+                    verifier_address: existing_attribute.verifier_address.to_string(),
                 }
                 .to_err()
             }
             // If the attribute indicates that the asset is pending, then it's been denied by a verifier, and this is a secondary
             // attempt to onboard the asset
-            AssetOnboardingStatus::Denied => true,
+            AssetOnboardingStatus::Denied => {
+                // If the original onboarding process was trustless, remove the fee payment detail
+                // originally stored.  The new attribute may point to a wholly new verifier, or the
+                // fees may have changed.  Deleting the existing fee payment detail ensures that a
+                // new one with the correct values may be saved.
+                if !existing_attribute.trust_verifier {
+                    repository.use_deps(|deps| {
+                        delete_fee_payment_detail(deps.storage, &existing_attribute.scope_address)
+                    })?;
+                }
+                true
+            }
         }
     } else {
         // If no scope attribute exists, it's safe to simply add the attribute to the scope
@@ -243,16 +256,20 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{coins, from_binary, CosmosMsg, StdError};
+    use cosmwasm_std::{coins, from_binary, CosmosMsg, StdError, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, Process, ProcessId,
         ProvenanceMsg, ProvenanceMsgParams, Record, Records,
     };
 
-    use crate::core::state::load_fee_payment_detail;
+    use crate::core::state::{load_fee_payment_detail, may_load_fee_payment_detail};
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::fee_payment_detail::FeePaymentDetail;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::{DEFAULT_ONBOARDING_COST, DEFAULT_TRUST_VERIFIER};
-    use crate::util::constants::NHASH;
+    use crate::util::constants::{NHASH, USD};
     use crate::{
         core::{
             error::ContractError,
@@ -754,7 +771,7 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_retry_success() {
+    fn test_onboard_asset_retry_success_trusting_verifier_and_then_trusting_again() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
@@ -769,7 +786,34 @@ mod tests {
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
         // Try to do a retry on onboarding
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        assert_eq!(
+            2,
+            response.messages.len(),
+            "two messages should be emitted in the retry.  one for an attribute update and one for a fee charge",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        assert!(
+            matches!(
+                response.messages[1].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
+                    ..
+                })
+            ),
+            "the second emitted message should charge a fee due to trusting the verifier",
+        );
         let attribute = AssetMetaService::new(deps.as_mut())
         .get_asset(DEFAULT_SCOPE_ADDRESS)
         .expect("the default scope address should still contain an attribute after onboarding for a second time");
@@ -777,6 +821,285 @@ mod tests {
             attribute.onboarding_status,
             AssetOnboardingStatus::Pending,
             "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success_trusting_verifier_and_then_not_trusting() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        // Verify the asset to denied status
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        // Try to do a retry on onboarding
+        let response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        assert_eq!(
+            1,
+            response.messages.len(),
+            "one message should be emitted in the retry.  one for an attribute update",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+            .expect("a fee payment detail should be stored for the asset after retrying with a trustless transaction");
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success_not_trusting_verifier_and_then_trusting_verifier() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect(
+            "a fee payment detail should be stored for the asset due to a trustless transaction",
+        );
+        let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        assert_eq!(
+            2,
+            response.messages.len(),
+            "two messages should be emitted in the retry.  one for an attribute update and one for a fee charge",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        assert!(
+            matches!(
+                response.messages[1].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
+                    ..
+                })
+            ),
+            "the second emitted message should charge a fee due to trusting the verifier",
+        );
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        assert!(
+            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_none(),
+            "the previous fee payment detail should have been removed",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success_not_trusting_verifier_and_then_not_trusting_verifier() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        let payment_detail_before_retry = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+        )
+        .expect(
+            "a fee payment detail should be stored for the asset due to a trustless transaction",
+        );
+        let response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        assert_eq!(
+            1,
+            response.messages.len(),
+            "one message should be emitted in the retry.  one for an attribute update",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        let payment_detail_after_retry = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+            .expect("a fee payment detail should still be present after updating due to not trusting the verifier again");
+        assert_eq!(
+            payment_detail_before_retry, payment_detail_after_retry,
+            "the payment details should be identical due to choosing the same, unchanged verifier",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success_changing_verifiers() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let other_verifier = VerifierDetailV2::new(
+            "tp17szfvgwgx9c9kwvyp9megryft3zm77am6x9gal",
+            Uint128::new(300),
+            USD,
+            vec![
+                FeeDestinationV2::new("feeperson1", Uint128::new(100)),
+                FeeDestinationV2::new("feeperson2", Uint128::new(50)),
+            ],
+            None,
+        );
+        add_asset_verifier(
+            deps.as_mut(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetVerifierV1 {
+                asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                verifier: other_verifier.clone(),
+            },
+        )
+        .expect("adding the second verifier should succeed without error");
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset::default_with_trust_verifier(false),
+        )
+        .unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        let payment_detail_before = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+        )
+        .expect(
+            "a fee payment detail should be stored for the asset due to a trustless transaction",
+        );
+        let response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    verifier_address: other_verifier.address.clone(),
+                    trust_verifier: false,
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            1,
+            response.messages.len(),
+            "one message should be emitted in the retry.  one for an attribute update",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        assert_eq!(
+            attribute.verifier_address, other_verifier.address,
+            "the attribute should be updated to the other verifier's address",
+        );
+        let payment_detail_after = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+        )
+        .expect(
+            "a fee payment detail should be stored for the asset due to a trustless transaction",
+        );
+        assert_ne!(
+            payment_detail_before, payment_detail_after,
+            "the payment details should not match due to changing verifiers",
+        );
+        assert_eq!(
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier).expect("the other verifier should be successfully converted to a fee payment detail"),
+            payment_detail_after,
+            "the fee payment detail after the retry should equate to the new verifier's fee definitions",
         );
     }
 

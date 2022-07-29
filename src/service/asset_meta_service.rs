@@ -106,16 +106,16 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 attribute,
                 contract_base_name,
             )?);
-            let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
-            if attribute.trust_verifier {
-                // If the onboarding account trusts the verifier, then the verifier gets paid in
-                // Provenance Blockchain FeeMsg messages upfront
-                self.append_messages(&payment_detail.to_fee_msgs(env)?)
-            } else {
-                // If the onboarding account does not trust the verifier, the current fee detail is
-                // saved for when the finalization process occurs
-                self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
-            }
+        }
+        let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
+        if attribute.trust_verifier {
+            // If the onboarding account trusts the verifier, then the verifier gets paid in
+            // Provenance Blockchain FeeMsg messages upfront
+            self.append_messages(&payment_detail.to_fee_msgs(env)?)
+        } else {
+            // If the onboarding account does not trust the verifier, the current fee detail is
+            // saved for when the finalization process occurs
+            self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
         }
         Ok(())
     }

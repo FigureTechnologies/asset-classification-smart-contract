@@ -11,10 +11,22 @@ use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 
+/// A transformation of [ExecuteMsg::FinalizeClassification](crate::core::msg::ExecuteMsg::FinalizeClassification)
+/// for ease of use in the underlying [finalize_classification](self::finalize_classification) function.
 pub struct FinalizeClassificationV1 {
+    /// An instance of the asset identifier enum that helps the contract identify which
+    /// scope that the requestor is referring to in the request.
     pub identifier: AssetIdentifier,
 }
 impl FinalizeClassificationV1 {
+    /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [FinalizeClassification](crate::core::msg::ExecuteMsg::FinalizeClassification)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<FinalizeClassificationV1> {
         match msg {
             ExecuteMsg::FinalizeClassification { identifier } => FinalizeClassificationV1 {
@@ -29,6 +41,28 @@ impl FinalizeClassificationV1 {
     }
 }
 
+/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::FinalizeClassification](crate::core::msg::ExecuteMsg::FinalizeClassification)
+/// message is provided.  This route is to be used exclusively in the circumstance when a requestor
+/// chooses a [trust_verifier](crate::core::types::asset_scope_attribute::AssetScopeAttribute::trust_verifier)
+/// value of `false`.  After the verification process is completed when trust verifier is `false`,
+/// the scope attribute will be moved to an [onboarding_status](crate::core::types::asset_scope_attribute::AssetScopeAttribute::onboarding_status)
+/// of [AwaitingFinalization](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::AwaitingFinalization).
+/// This route charges the requestor funds equivalent to the stored [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
+/// in the form of Provenance Blockchain custom MsgFees, and then changes the status from awaiting
+/// finalization to [Approved](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::Approved),
+/// effectively classifying the asset.
+///
+/// # Parameters
+///
+/// * `repository` A helper collection of traits that allows complex lookups of scope values and
+/// emits messages to construct the process of finalization as a collection of messages to produce
+/// in the function's result.
+/// * `env` The environment value provided during message execution, used to derive the contract's
+/// bech32 address for use in custom message fees.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the finalize classification v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn finalize_classification<'a, T>(
     repository: T,
     env: Env,

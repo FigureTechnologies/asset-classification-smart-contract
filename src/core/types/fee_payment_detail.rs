@@ -5,14 +5,35 @@ use crate::util::aliases::AssetResult;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{coin, Addr, Coin, CosmosMsg, Env};
 use provwasm_std::{assess_custom_fee, ProvenanceMsg};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+/// Defines a fee established from a [VerifierDetailV2](super::verifier_detail::VerifierDetailV2)
+/// and its contained [FeeDestinations](super::fee_destination::FeeDestinationV2).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct FeePaymentDetail {
+    /// The bech32 address of the onboarded scope related to the fee.  This address is used as the
+    /// unique identifier for the fee, and to retrieve the associated [AssetScopeAttribute](super::asset_scope_attribute::AssetScopeAttribute)
+    /// for finding the [requestor's address](super::asset_scope_attribute::AssetScopeAttribute::requestor_address)
+    /// to which the fee is charged.
     pub scope_address: String,
+    /// The breakdown of each fee charge.  This vector will always at least contain a single charge,
+    /// which will be to send a payment to the verifier.
     pub payments: Vec<FeePayment>,
 }
 impl FeePaymentDetail {
+    /// Constructs a new instance of this struct by deriving all required fees from the associated
+    /// verifier.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` The bech32 address of the scope owned by the requestor, to which the fees
+    /// will be charged.
+    /// * `verifier` The verifier detail chosen by the  requestor.  Defines the verifier fee, as
+    /// well as any additional fees encapsulated in fee destinations.
+    /// IMPORTANT: All costs defined in the verifier's detail are multiplied by 2 to ensure that the
+    /// 50% cut that Provenance takes for MsgFees does not impact the expected amount transferred
+    /// to each target account.
     pub fn new<S: Into<String>>(
         scope_address: S,
         verifier: &VerifierDetailV2,
@@ -67,12 +88,21 @@ impl FeePaymentDetail {
         .to_ok()
     }
 
+    /// Converts all the [payments](self::FeePaymentDetail::payments) into Provenance Blockchain
+    /// custom MsgFee messages in order to charge them to their respective recipients.
+    ///
+    /// # Parameters
+    ///
+    /// * `env` The environment value provided during message execution.  This is used to derive
+    /// the contract address, which is required in the "from" value of the custom fee.
     pub fn to_fee_msgs(&self, env: &Env) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
         let mut messages = vec![];
         for payment in self.payments.iter().cloned() {
             messages.push(assess_custom_fee(
                 payment.amount,
                 payment.name.to_some(),
+                // The contract address must always be used as the "from" value to ensure that
+                // permission issues do not occur when submitting the message.
                 env.contract.address.to_owned(),
                 Some(payment.recipient),
             )?);
@@ -81,10 +111,19 @@ impl FeePaymentDetail {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+/// Defines an individual fee to be charged to an account during the finalize classification
+/// process.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct FeePayment {
+    /// The amount to be charged during the finalize classification process.  The denom will always
+    /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
+    /// amount.  The coin's amount will be double the amount specified in the verifier detail to
+    /// account for Provenance MsgFees 50% charge.
     pub amount: Coin,
+    /// A name describing to the end user (requestor) the purpose and target of the fee.
     pub name: String,
+    /// The bech32 address of the recipient of the fee, derived from various fields in the
+    /// [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
     pub recipient: Addr,
 }
 

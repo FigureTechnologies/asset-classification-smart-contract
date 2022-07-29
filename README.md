@@ -37,7 +37,11 @@ to the contract essentially means that the account that owns the scope has reque
 data within the scope and mark the scope as a "classified asset," indicating its authenticity as a properly-formed
 object that the Provenance Blockchain recognizes.  The process of a successful onboarding will create and store an
 [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) struct value, serialized as JSON in a [Provenance Metadata Attribute](https://docs.provenance.io/modules/account)
-on the scope.
+on the scope.  During the onboarding process, the onboarding account has the option of choosing whether or not to trust
+the verifier to complete its work.  If the onboarding account chooses to trust the verifier, the onboarding account
+will be prompted to pay all verification fees upfront.  If the onboarding account chooses to not trust the verifier,
+an additional step, Finalization, will be needed after verification is completed.  The onboarding account will pay fees
+during the finalization step instead.
 
 * __Verification__: This is the process of downloading or otherwise accessing the underlying data of a Provenance Metadata Scope,
 determining that its contents meet the organization's requirements for its specified asset type, and signaling to the
@@ -46,7 +50,14 @@ indicating to external consumers and the contract itself whether or not the scop
 requested asset type.  The verification statuses are indicated in the code as an [AssetOnboardingStatus](src/core/types/asset_onboarding_status.rs),
 and the most recent verification result is always stored as an [AssetVerificationResult](src/core/types/asset_verification_result.rs)
 on the scope's [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs).  On a failed verification, the process can
-always be retried, at the cost of paying another onboarding fee.
+always be retried, at the cost of paying another onboarding fee.  In a trustless scenario, the verification process
+updates the status of the scope to [AwaitingFinalization](src/core/types/asset_onboarding_status.rs), indicating that
+it is ready for finalization.
+
+* __Finalization__: This process is used to move a Provenance Metadata Scope that has been used in a trustless verification
+process from the [AwaitingFinalization](src/core/types/asset_onboarding_status.rs) onboarding status to the [Approved](src/core/types/asset_onboarding_status.rs)
+status.  In this scenario, no fee is charged to the account that requested classification until the finalization step
+runs.
 
 ## Account Roles
 
@@ -258,6 +269,14 @@ can be leveraged to easily determine the source of the underlying data.  If thes
 they can always be added by using the `UpdateAccessRoutes` execution route.  Note: Access routes can specify a `name`
 parameter, as well, to indicate the reason for the route, but this is entirely optional.
 
+* `trust_verifier`: A boolean flag parameter that designates whether or not the onboarding account trusts the verifier
+to complete its work.  If true, the onboarding account will be prompted to pay all verifier fees immediately upon the
+execution of this route.  If false, the onboarding account will need to execute the `FinalizeClassification` execution
+route after verification has been completed; at that point, the onboarding account will be prompted to pay the verifier
+fees.  Note: fees at the time of onboarding are recorded and stored until the `FinalizeClassification` step, ensuring
+that any changes made between onboarding and finalization will not affect the onboarding account's payment at the end
+of the process.
+
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `onboard_asset`.
 
@@ -324,7 +343,13 @@ OR
 the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred
 during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as
 this incurs additional cost to the onboarding account.  Instead, it is recommended that verification implement some
-process that retries logic when exceptions or other code execution issues cause a failed verification.
+process that retries logic when exceptions or other code execution issues cause a failed verification.  A value of `true`
+will move the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) to one of two statuses:
+  * If the onboarding account chose a value of `true` for `trust_verifier`, the scope attribute's `onboarding_status`
+    will be moved to `Approved`.
+  * If the onboarding account chose a value of `false` for `trust_verifier`, the scope attribute's `onboarding_status`
+    will be moved to `AwaitingFinalization`.  The onboarding account must then use the `FinalizeClassification` route to
+    pay verifier fees and move the scope attribute to the `Approved` status, which indicates a classified asset.
 
 * `message`: An optional string describing the result of the verification process.  If omitted, a standard message
 describing success or failure based on the value of `success` will be displayed in the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs).
@@ -360,6 +385,53 @@ attached to the scope that was previously onboarded before verification.
         "route": "https://www.myverifierhost.verifier/api/v2/asset/417556d2-d6ec-11ec-88d8-8be6d7728b01"
       }
     ]
+  }
+}
+```
+
+#### [Finalize Classification](src/execute/finalize_classification.rs)
+
+This route exists for scopes/assets that are entered into the contract with the `OnboardAsset` process, choosing a
+`trust_verifier` value of `false`.  This is effectively the third and final step in the classification process when a
+trustless transaction is required.  This step charges the onboarding account the verifier costs calculated in the
+`OnboardAsset` step, and then moves the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) from the
+`AwaitingFinalization` `onboarding_status` to the `Approved` `onboarding_status`, effectively confirming the asset as
+classified.  This step can only be invoked by the onboarding account, and only after the `VerifyAsset` step has been
+completed with a `success` value of `true`, which will cause the scope attribute to enter `AwaitingFinalization` status.
+
+##### Request Parameters
+
+* `identifier`: A serialized version of an [AssetIdentifier](src/core/types/asset_identifier.rs) enum.  Indicates the
+  scope being verified.  The following json is an example of what this might look like in a request:
+```json
+{"identifier": {"type": "asset_uuid", "value": "8f9cea0a-d6e7-11ec-be71-dbbe1d4d92be"}}
+```
+OR
+```json
+{"identifier": {"type": "scope_address", "value": "scope1qzj8tjp76mn3rmyvz49c5738k2asm824ga"}}
+```
+
+##### Emitted Attributes
+* `asset_event_type`: This value will always be populated as `finalize_classification`.
+
+* `asset_type`: This value will correspond to `asset_type` parameter stored in the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs)
+attached to the scope that was previously onboarded and verified.
+
+* `asset_scope_address`: This value will be the bech32 address of the scope modified during this process.
+
+* `asset_verifier_address`: This value will be the bech32 address of the verifier that was used for the verification
+step.
+
+* `asset_scope_owner_address`: This value will be the bech32 address of the sender of the execution route.
+
+##### Request Sample
+```json
+{
+  "finalize_classification": {
+    "identifier": {
+      "type": "asset_uuid",
+      "value": "0af406fa-0f7f-11ed-9f94-8bcd6cc1b7e0"
+    }
   }
 }
 ```
@@ -909,6 +981,65 @@ OR
           }
         ],
         "definition_type": "Verifier"
+      }
+    ],
+    "trust_verifier": true
+  }
+}
+```
+
+#### [Query Fee Payments](src/query/query_fee_payments.rs)
+
+This route can be used to retrieve an existing [FeePaymentDetail](src/core/types/fee_payment_detail.rs) that has been
+stored from a [VerifierDetailV2](src/core/types/verifier_detail.rs) during the [OnboardAsset](src/execute/onboard_asset.rs)
+execution route's processes.  This route is useful in showing the expected fees to be paid when the
+[FinalizeClassification](src/execute/finalize_classification.rs) route is executed.
+
+##### Request Parameters
+
+* `identifier`: A serialized version of an [AssetIdentifier](src/core/types/asset_identifier.rs) enum.  Indicates the
+  target scope for the search.  The following json is an example of what this might look like in a request:
+```json
+{"identifier": {"type": "asset_uuid", "value": "8f9cea0a-d6e7-11ec-be71-dbbe1d4d92be"}}
+```
+OR
+```json
+{"identifier": {"type": "scope_address", "value": "scope1qzj8tjp76mn3rmyvz49c5738k2asm824ga"}}
+```
+
+##### Request Sample
+```json
+{
+  "query_asset_scope_attribute": {
+    "identifier": {
+      "type": "scope_address",
+      "value": "scope1qrr0argjp7p3rmv96xh62x8e8tksaue3we"
+    }
+  }
+}
+```
+
+##### Response Sample
+```json
+{
+  "data": {
+    "scope_address": "scope1qrr0argjp7p3rmv96xh62x8e8tksaue3we",
+    "payments": [
+      {
+        "amount": {
+          "amount": "150",
+          "denom": "nhash"
+        },
+        "name": "Fee for Contract Admin",
+        "recipient": "tp1ren9rf5yshqen6zp598ux3sl2pyrzamgpua790"
+      },
+      {
+        "amount": {
+          "amount": "220",
+          "denom": "nhash"
+        },
+        "name": "Ferret Inc. Verifier Fee",
+        "recipient": "tp1zf2lct9m90nm5hrffhs2dhp3v8vr4ll4dfw3kr"
       }
     ]
   }

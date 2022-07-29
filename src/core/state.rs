@@ -337,6 +337,23 @@ pub fn load_fee_payment_detail<S: Into<String>>(
         .to_ok()
 }
 
+/// Attempts to find an existing fee payment detail by scope address, or returns a None variant if
+/// an error occurs or no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
+pub fn may_load_fee_payment_detail<S: Into<String>>(
+    storage: &dyn Storage,
+    scope_address: S,
+) -> Option<FeePaymentDetail> {
+    FEE_PAYMENT_DETAILS
+        .may_load(storage, scope_address.into())
+        .unwrap_or(None)
+}
+
 /// Attempts to delete an existing payment detail by scope address.  Returns an error if the detail
 /// does not exist or if deletion fails.
 ///
@@ -360,7 +377,7 @@ pub fn delete_fee_payment_detail<S: Into<String>>(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{coin, Addr, StdError};
+    use cosmwasm_std::StdError;
     use provwasm_mocks::mock_dependencies;
 
     use crate::core::error::ContractError;
@@ -369,13 +386,13 @@ mod tests {
         insert_asset_definition_v2, insert_fee_payment_detail,
         load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
         load_fee_payment_detail, may_load_asset_definition_v2_by_scope_spec,
-        may_load_asset_definition_v2_by_type, replace_asset_definition_v2,
+        may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
+        replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
-    use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
-    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_ADDRESS};
-    use crate::util::constants::NHASH;
+    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_utilities::get_duped_fee_payment_detail;
 
     #[test]
     fn test_insert_asset_definition() {
@@ -699,7 +716,7 @@ mod tests {
             "a not found error should occur when the payment detail is not found, but got: {:?}",
             err,
         );
-        let payment_detail = get_test_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
             .expect("inserting a new fee payment detail should succeed");
         let loaded_payment_detail =
@@ -721,6 +738,25 @@ mod tests {
     }
 
     #[test]
+    fn test_may_load_fee_payment_detail() {
+        let mut deps = mock_dependencies(&[]);
+        assert!(
+            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_none(),
+            "attempting to load a detail that does not exist should produce a None variant",
+        );
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a new fee payment detail should succeed");
+        let loaded_payment_detail =
+            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("the fee payment detail should load successfully");
+        assert_eq!(
+            payment_detail, loaded_payment_detail,
+            "the loaded payment detail should equate to the inserted value",
+        );
+    }
+
+    #[test]
     fn test_delete_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
         let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
@@ -731,7 +767,7 @@ mod tests {
             "a not found error should occur when the payment detail is not found, but got: {:?}",
             err,
         );
-        let payment_detail = get_test_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
             .expect("inserting a payment detail should succeed");
         assert!(
@@ -748,23 +784,5 @@ mod tests {
             "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
             err,
         );
-    }
-
-    fn get_test_payment_detail<S: Into<String>>(scope_address: S) -> FeePaymentDetail {
-        FeePaymentDetail {
-            scope_address: scope_address.into(),
-            payments: vec![
-                FeePayment {
-                    amount: coin(150, NHASH),
-                    name: "Fee for admin".to_string(),
-                    recipient: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
-                },
-                FeePayment {
-                    amount: coin(250, NHASH),
-                    name: "Fee for some other person".to_string(),
-                    recipient: Addr::unchecked("other person"),
-                },
-            ],
-        }
     }
 }

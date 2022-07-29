@@ -147,6 +147,9 @@ pub enum ContractError {
         migration_version: String,
     },
 
+    /// An error that can occur during the finalize classification process.  This indicates that
+    /// the request made for finalization is invalid due to the state of the target
+    /// [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute).
     #[error("Finalization cannot proceed: {explanation}")]
     InvalidFinalization { explanation: String },
 

@@ -56,6 +56,16 @@ pub enum QueryMsg {
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
     },
+    /// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)
+    /// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This
+    /// route is useful in showing the expected fees to be paid when the [FinalizeClassification](self::ExecuteMsg::FinalizeClassification)
+    /// route is executed.
+    QueryFeePayments {
+        /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
+        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
+        identifier: SerializedEnum,
+    },
     /// This route can be used to retrieve the internal contract state values.  These are core configurations that denote how
     /// the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It
     /// responds with a [StateV2](super::state::StateV2) struct value.
@@ -134,7 +144,17 @@ pub enum ExecuteMsg {
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
     },
+    /// This route is designed to let the requestor for an asset onboard that chose a [trust_verifier](super::types::asset_scope_attribute::AssetScopeAttribute::trust_verifier)
+    /// value of `false` to move the scope attribute from [AwaitingFinalization](super::types::asset_onboarding_status::AssetOnboardingStatus::AwaitingFinalization)
+    /// status to [Approved](super::types::asset_onboarding_status::AssetOnboardingStatus::Approved) status.  This will
+    /// cause the requestor to be charged the verifier's fee amounts.  This route is only necessary
+    /// when trust verifier is `false`.  When trust verifier is `true`, the asset will be moved to
+    /// the approved status during the verify asset step.  The sender of this step must be listed as
+    /// the requestor on the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
+    /// referenced in the [identifier](self::ExecuteMsg::FinalizeClassification::identifier).
     FinalizeClassification {
+        /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
+        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
     },
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)

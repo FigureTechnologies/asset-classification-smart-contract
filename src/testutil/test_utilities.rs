@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    from_binary,
+    coin, from_binary,
     testing::{mock_env, mock_info, MockApi, MockStorage},
     Addr, Binary, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
@@ -12,8 +12,10 @@ use provwasm_std::{
 use serde_json_wasm::to_string;
 
 use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::testutil::test_constants::DEFAULT_TRUST_VERIFIER;
+use crate::util::constants::NHASH;
 use crate::{
     contract::instantiate,
     core::{
@@ -281,6 +283,24 @@ where
                 status: ResultStatus::Pass,
             }],
         }],
+    }
+}
+
+pub fn get_duped_fee_payment_detail<S: Into<String>>(scope_address: S) -> FeePaymentDetail {
+    FeePaymentDetail {
+        scope_address: scope_address.into(),
+        payments: vec![
+            FeePayment {
+                amount: coin(150, NHASH),
+                name: "Fee for admin".to_string(),
+                recipient: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+            },
+            FeePayment {
+                amount: coin(250, NHASH),
+                name: "Fee for verifier".to_string(),
+                recipient: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
+            },
+        ],
     }
 }
 

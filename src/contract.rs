@@ -14,6 +14,7 @@ use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_definitions::query_asset_definitions;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
+use crate::query::query_fee_payments::query_fee_payments;
 use crate::query::query_state::query_state;
 use crate::query::query_version::query_version;
 use crate::service::asset_meta_service::AssetMetaService;
@@ -70,6 +71,9 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
         QueryMsg::QueryAssetScopeAttribute { identifier } => {
             query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)
+        }
+        QueryMsg::QueryFeePayments { identifier } => {
+            query_fee_payments(&deps, identifier.to_asset_identifier()?)
         }
         QueryMsg::QueryState {} => query_state(&deps),
         QueryMsg::QueryVersion {} => query_version(&deps),

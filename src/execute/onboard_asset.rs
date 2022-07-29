@@ -250,6 +250,7 @@ mod tests {
         ProvenanceMsg, ProvenanceMsgParams, Record, Records,
     };
 
+    use crate::core::state::load_fee_payment_detail;
     use crate::testutil::test_constants::{DEFAULT_ONBOARDING_COST, DEFAULT_TRUST_VERIFIER};
     use crate::util::constants::NHASH;
     use crate::{
@@ -878,6 +879,20 @@ mod tests {
             },
         )
         .unwrap();
+
+        let fee_payment_result =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS);
+
+        match fee_payment_result {
+            Ok(_) => assert!(
+                !trust_verifier,
+                "fee payment info should only be saved during a trustless onboarding process"
+            ),
+            Err(_) => assert!(
+                trust_verifier,
+                "fee payment info should not be saved during a trusted onboarding processing"
+            ),
+        };
 
         assert_eq!(
             1 + if trust_verifier { 1 } else { 0 },

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use cosmwasm_std::{to_binary, CosmosMsg, Env};
 use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
 
-use crate::core::state::load_asset_definition_v2_by_type;
+use crate::core::state::{insert_fee_payment_detail, load_fee_payment_detail};
 use crate::core::types::fee_payments::FeePaymentDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
@@ -104,13 +104,15 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 attribute,
                 contract_base_name,
             )?);
-            // If the onboarding account trusts the verifier, then the verifier gets paid in
-            // Provenance Blockchain FeeMsg messages upfront
+            let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
             if attribute.trust_verifier {
-                self.append_messages(
-                    &FeePaymentDetail::new(&attribute.scope_address, &verifier_detail)?
-                        .to_fee_msgs(env)?,
-                )
+                // If the onboarding account trusts the verifier, then the verifier gets paid in
+                // Provenance Blockchain FeeMsg messages upfront
+                self.append_messages(&payment_detail.to_fee_msgs(env)?)
+            } else {
+                // If the onboarding account does not trust the verifier, the current fee detail is
+                // saved for when the finalization process occurs
+                self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
             }
         }
         Ok(())
@@ -249,22 +251,13 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         let mut attribute = attribute.to_owned();
         attribute.onboarding_status = AssetOnboardingStatus::Approved;
         self.update_attribute(&attribute)?;
-        // If the target verifier detail still exists when the finalize classification step is
-        // reached, then the verifier and all other fee destinations are subsequently paid by the
-        // requestor.  This route can only be reached if the requestor decides NOT to trust the
-        // verifier to complete its work.  Due to this, if a verifier detail ceases to exist after
-        // these processes have been completed, then the untrusting requestor lucked out and does
-        // not have to pay any fees!
-        if let Ok(verifier_detail) = self.use_deps(|deps| {
-            load_asset_definition_v2_by_type(deps.storage, &attribute.asset_type)
-                .and_then(|asset_def| asset_def.get_verifier_detail(&attribute.verifier_address))
-        }) {
-            // Pay the verifier detail fees after verification has successfully been completed
-            self.append_messages(
-                &FeePaymentDetail::new(&attribute.scope_address, &verifier_detail)?
-                    .to_fee_msgs(env)?,
-            );
-        }
+        // When the onboarding account does not trust the verifier, the original state of the fees
+        // to charge the account is stored for the finalization process.  Retrieve it and use it
+        // to emit message fees
+        let payment_detail =
+            self.use_deps(|deps| load_fee_payment_detail(deps.storage, &attribute.scope_address))?;
+        // Pay the verifier detail fees after verification has successfully been completed
+        self.append_messages(&payment_detail.to_fee_msgs(env)?);
         ().to_ok()
     }
 }
@@ -300,6 +293,7 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::core::state::load_fee_payment_detail;
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
@@ -962,6 +956,16 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_finalize_classification_success_with_retained_verifier() {
+        assert_finalize_classification_success(false);
+    }
+
+    #[test]
+    fn test_finalize_classification_success_with_deleted_verifier() {
+        assert_finalize_classification_success(true);
+    }
+
     fn test_add_asset_message_generation(trust_verifier: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
@@ -1130,16 +1134,6 @@ mod tests {
         .expect("failed to instantiate default asset scope attribute")
     }
 
-    #[test]
-    fn test_finalize_classification_success_with_retained_verifier() {
-        assert_finalize_classification_success(false);
-    }
-
-    #[test]
-    fn test_finalize_classification_success_with_deleted_verifier() {
-        assert_finalize_classification_success(true);
-    }
-
     fn assert_finalize_classification_success(simulate_deleted_verifier: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
@@ -1148,10 +1142,14 @@ mod tests {
             TestOnboardAsset::default_with_trust_verifier(false),
         )
         .unwrap();
+        load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+            .expect("fee payment detail should be stored after a trustless onboarding");
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         // Overwrite the default asset definition with a new verifier detail that's identical to the
         // original value, with the exception of having a new address.  This will effectively
         // simulate the situation where a verifier "disappears" after an asset has been verified.
+        // This situation, due to stored fee information, should still be identical to the scenario
+        // where the verifier remains in storage
         if simulate_deleted_verifier {
             let mut definition = get_default_asset_definition();
             definition.verifiers.clear();
@@ -1179,7 +1177,7 @@ mod tests {
             .expect("finalize classification should succeed");
         let messages = service.get_messages();
         assert_eq!(
-            2 - if simulate_deleted_verifier { 1 } else { 0 },
+            2,
             messages.len(),
             "the correct number of messages should be generated",
         );
@@ -1240,10 +1238,6 @@ mod tests {
                 msg
             ),
         };
-        // If the verifier was deleted before the asset was finalized, no fee can be charged
-        if simulate_deleted_verifier {
-            return;
-        }
         let fee_payment_msg = &messages[1];
         match fee_payment_msg {
             CosmosMsg::Custom(ProvenanceMsg {

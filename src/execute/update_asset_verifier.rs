@@ -325,11 +325,11 @@ mod tests {
             vec![
                 FeeDestinationV2::new(
                     "tp1av6u8yp70mf4f62vx6mzf68pkhut4ets5k4sgx",
-                    Uint128::new(210),
+                    Uint128::new(105),
                 ),
                 FeeDestinationV2::new(
                     "tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8",
-                    Uint128::new(210),
+                    Uint128::new(105),
                 ),
             ],
             get_default_entity_detail().to_some(),

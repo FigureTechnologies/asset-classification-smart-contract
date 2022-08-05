@@ -156,11 +156,15 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
             VALID_VERIFIER_DENOMS.join(", "),
         ));
     }
+    // onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly
+    if verifier.onboarding_cost.u128() % 2 != 0 {
+        invalid_fields.push("verifier:onboarding_cost must be an even number".to_string());
+    }
     if !verifier.fee_destinations.is_empty()
-        && verifier.get_fee_total() > verifier.onboarding_cost.u128()
+        && verifier.get_fee_total() > verifier.onboarding_cost.u128() / 2
     {
         invalid_fields.push(
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost".to_string(),
+            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost".to_string(),
         );
     }
     if distinct_count_by_property(&verifier.fee_destinations, |dest| &dest.address)
@@ -228,7 +232,7 @@ pub mod tests {
                     .to_serialized_enum(),
                 vec![VerifierDetailV2::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
-                    Uint128::new(100),
+                    Uint128::new(200),
                     NHASH,
                     vec![FeeDestinationV2::new(
                         "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
@@ -255,7 +259,7 @@ pub mod tests {
                         .to_serialized_enum(),
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
-                        Uint128::new(100),
+                        Uint128::new(200),
                         NHASH,
                         vec![FeeDestinationV2::new(
                             "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
@@ -309,7 +313,7 @@ pub mod tests {
                         ),
                         VerifierDetailV2::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
-                            Uint128::new(1000000),
+                            Uint128::new(2000000),
                             NHASH,
                             vec![
                                 FeeDestinationV2::new(
@@ -418,7 +422,7 @@ pub mod tests {
             "scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz",
             vec![VerifierDetailV2::new(
                 "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
-                Uint128::new(100),
+                Uint128::new(200),
                 NHASH,
                 vec![FeeDestinationV2::new(
                     "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
@@ -538,7 +542,7 @@ pub mod tests {
     fn test_valid_verifier_with_multiple_fee_destinations() {
         let verifier = VerifierDetailV2::new(
             "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
-            Uint128::new(2000),
+            Uint128::new(4000),
             NHASH,
             vec![
                 FeeDestinationV2::new(
@@ -618,12 +622,12 @@ pub mod tests {
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
-                Uint128::new(1010),
+                Uint128::new(2020),
                 NHASH,
                 vec![FeeDestinationV2::new("fee", Uint128::new(1011))],
                 get_default_entity_detail().to_some(),
             ),
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost",
+            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
         );
     }
 

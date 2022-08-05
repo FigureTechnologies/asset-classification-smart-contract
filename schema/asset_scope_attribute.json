@@ -10,7 +10,6 @@
     "onboarding_status",
     "requestor_address",
     "scope_address",
-    "trust_verifier",
     "verifier_address"
   ],
   "properties": {
@@ -59,10 +58,6 @@
     "scope_address": {
       "description": "The bech32 address with a prefix of \"scope\" that uniquely defines the scope.",
       "type": "string"
-    },
-    "trust_verifier": {
-      "description": "Indicates whether or not the onboarding account trusts the verifier and has consented to paying before verification has completed, allowing the finalize classification step to be skipped.",
-      "type": "boolean"
     },
     "verifier_address": {
       "description": "The bech32 address of the account that the requestor selected to perform verification of the underlying data within the scope.  This account decides whether or not the asset should be classified.",
@@ -142,8 +137,7 @@
       "enum": [
         "pending",
         "denied",
-        "approved",
-        "awaiting_finalization"
+        "approved"
       ]
     },
     "AssetVerificationResult": {

@@ -69,7 +69,7 @@
       "additionalProperties": false
     },
     {
-      "description": "This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail) that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This route is useful in showing the expected fees to be paid when the [FinalizeClassification](self::ExecuteMsg::FinalizeClassification) route is executed.",
+      "description": "This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail) that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset) route is executed.",
       "type": "object",
       "required": [
         "query_fee_payments"

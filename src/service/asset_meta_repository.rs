@@ -67,9 +67,6 @@ pub trait AssetMetaRepository {
     /// Attempts to generate the [CosmosMsg](cosmwasm_std::CosmosMsg) values required to verify an
     /// asset with the contract.  Moves the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
     /// to [Approved](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::Approved)
-    /// status if [trust_verifier](crate::core::types::asset_scope_attribute::AssetScopeAttribute::trust_verifier)
-    /// was set to true, or to [AwaitingFinalization](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::AwaitingFinalization)
-    /// status if the trust verifier flag was set to false.
     ///
     /// # Parameters
     ///
@@ -88,29 +85,5 @@ pub trait AssetMetaRepository {
         success: bool,
         verification_message: Option<S2>,
         access_routes: Vec<AccessRoute>,
-    ) -> AssetResult<()>;
-
-    /// The third step in the classification process.  This is only necessary when the
-    /// [trust_verifier](crate::core::types::asset_scope_attribute::AssetScopeAttribute::trust_verifier)
-    /// flag is used during the onboarding process.  This function will mark the scope attribute's
-    /// [onboarding_status](crate::core::types::asset_scope_attribute::AssetScopeAttribute::onboarding_status)
-    /// as [Approved](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::Approved),
-    /// generate custom Provenance Blockchain MsgFees to pay for the verifier's work from a stored
-    /// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail), and then
-    /// delete the payment detail.  If the trust verifier flag was set to true, this step will be
-    /// skipped, and the asset will be moved to approved status at the end of the [verify_asset](self::AssetMetaRepository::verify_asset)
-    /// step.
-    ///
-    /// # Parameters
-    ///
-    /// * `env` The environment value supplied during contract execution, used to derive the
-    /// contract's address for custom MsgFees.
-    /// * `attribute` The attribute attached to an asset scope that is currently in the
-    /// [AwaitingFinalization](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::AwaitingFinalization)
-    /// onboarding status.
-    fn finalize_classification(
-        &self,
-        env: &Env,
-        attribute: &AssetScopeAttribute,
     ) -> AssetResult<()>;
 }

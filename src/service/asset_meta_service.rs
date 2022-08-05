@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{to_binary, CosmosMsg, Env};
-use provwasm_std::{update_attribute, AttributeValueType, ProvenanceMsg};
+use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env};
+use provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
 
 use crate::core::state::{
     delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail,
@@ -107,16 +107,20 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
                 contract_base_name,
             )?);
         }
+
         let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
-        if attribute.trust_verifier {
-            // If the onboarding account trusts the verifier, then the verifier gets paid in
-            // Provenance Blockchain FeeMsg messages upfront
-            self.append_messages(&payment_detail.to_fee_msgs(env)?)
-        } else {
-            // If the onboarding account does not trust the verifier, the current fee detail is
-            // saved for when the finalization process occurs
-            self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
-        }
+        self.append_messages(&[assess_custom_fee(
+            Coin {
+                denom: verifier_detail.onboarding_denom.clone(),
+                amount: verifier_detail.onboarding_cost,
+            },
+            Some("Asset Classification Onboarding Fee"),
+            // The contract address must always be used as the "from" value to ensure that
+            // permission issues do not occur when submitting the message.
+            env.contract.address.to_owned(),
+            Some(env.contract.address.to_owned()),
+        )?]);
+        self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
         Ok(())
     }
 
@@ -183,16 +187,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
         // change the onboarding status based on how the verifier specified the success status
         attribute.onboarding_status = match success {
-            true => {
-                // if the verifier has been trusted, then the process is over as of verification.
-                // if not, the finalize classification step needs to run before approval can be
-                // solidified
-                if attribute.trust_verifier {
-                    AssetOnboardingStatus::Approved
-                } else {
-                    AssetOnboardingStatus::AwaitingFinalization
-                }
-            }
+            true => AssetOnboardingStatus::Approved,
             false => AssetOnboardingStatus::Denied,
         };
 
@@ -242,29 +237,22 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // with the changes made to the attribute
         self.update_attribute(&attribute)?;
 
-        Ok(())
-    }
-
-    fn finalize_classification(
-        &self,
-        env: &Env,
-        attribute: &AssetScopeAttribute,
-    ) -> AssetResult<()> {
-        let mut attribute = attribute.to_owned();
-        attribute.onboarding_status = AssetOnboardingStatus::Approved;
-        self.update_attribute(&attribute)?;
-        // When the onboarding account does not trust the verifier, the original state of the fees
-        // to charge the account is stored for the finalization process.  Retrieve it and use it
-        // to emit message fees
+        // Retrieve fee breakdown and use it to emit message fees
         let payment_detail =
             self.use_deps(|deps| load_fee_payment_detail(deps.storage, &attribute.scope_address))?;
         // Pay the verifier detail fees after verification has successfully been completed
-        self.append_messages(&payment_detail.to_fee_msgs(env)?);
-        // Remove the fee payment detail after it has been successfully used for finalization.
-        // Stored fee payment amounts are no longer needed after the custom fee messages have been
-        // used, as it can easily become outdated in the future
-        self.use_deps(|deps| delete_fee_payment_detail(deps.storage, &attribute.scope_address))?;
-        ().to_ok()
+        self.append_messages(&payment_detail.to_bank_send_msgs()?);
+
+        if success {
+            // Remove the fee payment detail after it has been successfully used for verification.
+            // Stored fee payment amounts are no longer needed after the custom bank send messages have been
+            // used, as it can easily become outdated in the future
+            self.use_deps(|deps| {
+                delete_fee_payment_detail(deps.storage, &attribute.scope_address)
+            })?;
+        }
+
+        Ok(())
     }
 }
 impl<'a> DepsManager<'a> for AssetMetaService<'a> {
@@ -299,14 +287,14 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::state::load_fee_payment_detail;
+    use crate::core::state::{insert_fee_payment_detail, load_fee_payment_detail};
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
-    use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM, DEFAULT_TRUST_VERIFIER,
+    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM};
+    use crate::testutil::test_utilities::{
+        empty_mock_info, get_default_asset_definition, get_duped_fee_payment_detail,
     };
-    use crate::testutil::test_utilities::{empty_mock_info, get_default_asset_definition};
     use crate::{
         core::{
             error::ContractError,
@@ -341,7 +329,7 @@ mod tests {
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{from_binary, to_binary, Addr, CosmosMsg, StdError};
+    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, StdError};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, ProvenanceMsg,
@@ -388,7 +376,7 @@ mod tests {
         let err = repository
             .onboard_asset(
                 &mock_env(),
-                &get_default_test_attribute(false),
+                &get_default_test_attribute(),
                 &get_default_verifier_detail(),
                 false,
             )
@@ -410,13 +398,92 @@ mod tests {
     }
 
     #[test]
-    fn add_asset_generates_proper_attribute_message_with_trust_verifier() {
-        test_add_asset_message_generation(true);
-    }
+    fn add_asset_generates_proper_messages() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
 
-    #[test]
-    fn add_asset_generates_proper_messages_with_dont_trust_verifier() {
-        test_add_asset_message_generation(false);
+        let repository = AssetMetaService::new(deps.as_mut());
+
+        let verifier_detail = get_default_verifier_detail();
+        repository
+            .onboard_asset(
+                &mock_env(),
+                &get_default_test_attribute(),
+                &verifier_detail,
+                false,
+            )
+            .unwrap();
+
+        let messages = repository.get_messages();
+
+        assert_eq!(
+            2,
+            messages.len(),
+            "add_asset should generate the correct number of messages"
+        );
+        messages.iter().for_each(|msg| match &msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        name,
+                        value,
+                        value_type,
+                        ..
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    name,
+                    "attribute name should match what is expected"
+                );
+                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                let expected = get_default_asset_scope_attribute();
+                assert_eq!(
+                    expected, deserialized,
+                    "attribute should contain proper values"
+                );
+                assert_eq!(
+                    &AttributeValueType::Json,
+                    value_type,
+                    "generated attribute value_type should be Json"
+                );
+            }
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
+                        amount,
+                        name,
+                        from,
+                        recipient,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_ONBOARDING_COST,
+                    amount.amount.u128(),
+                    "double the onboarding cost should be charged to account for provenance fees",
+                );
+                assert!(name.is_some(), "a fee name should be provided",);
+                assert_eq!(
+                    MOCK_CONTRACT_ADDR,
+                    from.as_str(),
+                    "the contract address should be set as the from value",
+                );
+                assert_eq!(
+                    MOCK_CONTRACT_ADDR,
+                    recipient
+                        .to_owned()
+                        .expect("a recipient should be defined")
+                        .as_str(),
+                    "the verifier should receive the fees",
+                );
+            }
+            msg => panic!(
+                "Unexpected message type resulting from add_asset: {:?}",
+                msg
+            ),
+        });
     }
 
     #[test]
@@ -579,7 +646,6 @@ mod tests {
                             definition_type: AccessDefinitionType::Verifier,
                         },
                     ],
-                    trust_verifier: DEFAULT_TRUST_VERIFIER,
                 })
                 .unwrap()
                 .as_str(),
@@ -588,6 +654,12 @@ mod tests {
         );
 
         setup_test_suite(&mut deps, InstArgs::default());
+        let mut fee_payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        fee_payment_detail.payments = vec![fee_payment_detail.payments[0].clone()];
+        fee_payment_detail.payments[0].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
+        fee_payment_detail.payments[0].amount =
+            Coin::new(DEFAULT_ONBOARDING_COST / 2, DEFAULT_ONBOARDING_DENOM);
+        insert_fee_payment_detail(&mut deps.storage, &fee_payment_detail).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
         repository
@@ -602,9 +674,9 @@ mod tests {
         let messages = repository.messages.get();
 
         assert_eq!(
-            1,
+            2,
             messages.len(),
-            "verify asset should produce 1 message (update attribute msg)"
+            "verify asset should produce 2 messages (update attribute msg and 1 bank send msg)"
         );
 
         let first_message = &messages[0];
@@ -656,6 +728,35 @@ mod tests {
             _ => panic!(
                 "Unexpected first message type for verify_asset: {:?}",
                 first_message,
+            ),
+        }
+        let second_message = &messages[1];
+        match second_message {
+            CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
+                assert_eq!(
+                    to_address,
+                    &DEFAULT_VERIFIER_ADDRESS.to_string(),
+                    "fee message should go to default verifier address"
+                );
+                assert_eq!(
+                    1,
+                    amount.len(),
+                    "exactly one coin type should be present on bank send fee message"
+                );
+                assert_eq!(
+                    amount.first().unwrap().amount.u128(),
+                    DEFAULT_ONBOARDING_COST / 2,
+                    "bank send fee message should be half the default onboarding cost"
+                );
+                assert_eq!(
+                    amount.first().unwrap().denom,
+                    DEFAULT_ONBOARDING_DENOM.to_string(),
+                    "bank send fee message should use the default onboarding denom"
+                );
+            }
+            _ => panic!(
+                "Unexpected second message type for verify_asset: {:?}",
+                second_message
             ),
         }
     }
@@ -964,100 +1065,12 @@ mod tests {
 
     #[test]
     fn test_finalize_classification_success_with_retained_verifier() {
-        assert_finalize_classification_success(false);
+        assert_verify_classification_success(false);
     }
 
     #[test]
     fn test_finalize_classification_success_with_deleted_verifier() {
-        assert_finalize_classification_success(true);
-    }
-
-    fn test_add_asset_message_generation(trust_verifier: bool) {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-
-        let repository = AssetMetaService::new(deps.as_mut());
-
-        let verifier_detail = get_default_verifier_detail();
-        repository
-            .onboard_asset(
-                &mock_env(),
-                &get_default_test_attribute(trust_verifier),
-                &verifier_detail,
-                false,
-            )
-            .unwrap();
-
-        let messages = repository.get_messages();
-
-        assert_eq!(
-            1 + if trust_verifier { 1 } else { 0 },
-            messages.len(),
-            "add_asset should generate the correct number of messages"
-        );
-        messages.iter().for_each(|msg| match &msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                                  params:
-                                  ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                                                                     name,
-                                                                     value,
-                                                                     value_type,
-                                                                     ..
-                                                                 }),
-                                  ..
-                              }) => {
-                assert_eq!(
-                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-                    name,
-                    "attribute name should match what is expected"
-                );
-                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
-                let mut expected = get_default_asset_scope_attribute();
-                expected.trust_verifier = trust_verifier;
-                assert_eq!(
-                    expected, deserialized,
-                    "attribute should contain proper values"
-                );
-                assert_eq!(
-                    &AttributeValueType::Json,
-                    value_type,
-                    "generated attribute value_type should be Json"
-                );
-            }
-            CosmosMsg::Custom(ProvenanceMsg {
-                                  params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                                                                           amount,
-                                                                           name,
-                                                                           from,
-                                                                           recipient,
-                                                                       }),
-                                  ..
-                              }) => {
-                if !trust_verifier {
-                    panic!("a custom fee message should not be generated when the sender does not trust the verifier, but got: {:?}", msg);
-                }
-                assert_eq!(
-                    DEFAULT_ONBOARDING_COST * 2,
-                    amount.amount.u128(),
-                    "double the onboarding cost should be charged to account for provenance fees",
-                );
-                assert!(
-                    name.is_some(),
-                    "a fee name should be provided",
-                );
-                assert_eq!(
-                    MOCK_CONTRACT_ADDR,
-                    from.as_str(),
-                    "the contract address should be set as the from value",
-                );
-                assert_eq!(
-                    DEFAULT_VERIFIER_ADDRESS,
-                    recipient.to_owned().expect("a recipient should be defined").as_str(),
-                    "the verifier should receive the fees",
-                );
-            }
-            msg => panic!("Unexpected message type resulting from add_asset: {:?}", msg),
-        });
+        assert_verify_classification_success(true);
     }
 
     fn test_verification_result(message: Option<&str>, result: bool) {
@@ -1075,9 +1088,9 @@ mod tests {
         let messages = repository.get_messages();
 
         assert_eq!(
-            1,
+            2,
             messages.len(),
-            "verify asset should produce one message (update attribute msg)"
+            "verify asset should produce two message (update attribute msg and one bank send message)"
         );
         let first_message = &messages[0];
         match first_message {
@@ -1125,9 +1138,31 @@ mod tests {
                 first_message
             ),
         }
+        let second_message = &messages[1];
+        match second_message {
+            CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
+                assert_eq!(
+                    &DEFAULT_VERIFIER_ADDRESS.to_string(),
+                    to_address,
+                    "fee message should go to the verifier"
+                );
+                assert_eq!(
+                    &vec![Coin::new(
+                        DEFAULT_ONBOARDING_COST / 2,
+                        DEFAULT_ONBOARDING_DENOM
+                    )],
+                    amount,
+                    "fee message should be of the proper amount"
+                );
+            }
+            _ => panic!(
+                "Unexpected second message type for verify_asset: {:?}",
+                second_message
+            ),
+        }
     }
 
-    fn get_default_test_attribute(trust_verifier: bool) -> AssetScopeAttribute {
+    fn get_default_test_attribute() -> AssetScopeAttribute {
         AssetScopeAttribute::new(
             &AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
             DEFAULT_ASSET_TYPE,
@@ -1135,22 +1170,17 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             get_default_access_routes(),
-            trust_verifier,
         )
         .expect("failed to instantiate default asset scope attribute")
     }
 
-    fn assert_finalize_classification_success(simulate_deleted_verifier: bool) {
+    fn assert_verify_classification_success(simulate_deleted_verifier: bool) {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(
-            &mut deps,
-            TestOnboardAsset::default_with_trust_verifier(false),
-        )
-        .unwrap();
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-            .expect("fee payment detail should be stored after a trustless onboarding");
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+            .expect("fee payment detail should be stored");
+        // test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         // Overwrite the default asset definition with a new verifier detail that's identical to the
         // original value, with the exception of having a new address.  This will effectively
         // simulate the situation where a verifier "disappears" after an asset has been verified.
@@ -1174,12 +1204,17 @@ mod tests {
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("the asset should be available after verification");
         assert_eq!(
-            AssetOnboardingStatus::AwaitingFinalization,
+            AssetOnboardingStatus::Pending,
             asset.onboarding_status,
-            "sanity check: the asset should be in AwaitingFinalization status",
+            "sanity check: the asset should be in Pending status",
         );
         service
-            .finalize_classification(&mock_env(), &asset)
+            .verify_asset(
+                DEFAULT_SCOPE_ADDRESS,
+                true,
+                Some("great jaerb there hamstar"),
+                get_default_access_routes(),
+            )
             .expect("finalize classification should succeed");
         let messages = service.get_messages();
         assert_eq!(
@@ -1221,17 +1256,12 @@ mod tests {
                     original_value_type,
                     "the json value type should be used for the original_value_type",
                 );
-                let mut updated_asset = from_binary::<AssetScopeAttribute>(update_value)
+                let updated_asset = from_binary::<AssetScopeAttribute>(update_value)
                     .expect("the update_value should deserialize without error");
                 assert_eq!(
                     AssetOnboardingStatus::Approved,
                     updated_asset.onboarding_status,
                     "the updated asset's onboarding status should be changed to approve",
-                );
-                updated_asset.onboarding_status = AssetOnboardingStatus::AwaitingFinalization;
-                assert_eq!(
-                    asset, updated_asset,
-                    "the only field that should change in the update is the onboarding status",
                 );
                 assert_eq!(
                     &AttributeValueType::Json,
@@ -1246,42 +1276,30 @@ mod tests {
         };
         let fee_payment_msg = &messages[1];
         match fee_payment_msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                        amount,
-                        name,
-                        from,
-                        recipient,
-                    }),
-                ..
-            }) => {
+            CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
                 assert_eq!(
-                    DEFAULT_ONBOARDING_COST * 2,
-                    amount.amount.u128(),
-                    "the fee amount should equate to double the onboarding cost to cover provenance's fee cut",
+                    1,
+                    amount.len(),
+                    "exactly one coin amount should be present on bank send message"
                 );
                 assert_eq!(
-                    DEFAULT_ONBOARDING_DENOM, amount.denom,
+                    DEFAULT_ONBOARDING_COST / 2,
+                    amount.first().unwrap().amount.u128(),
+                    "the fee amount should equate to half the onboarding cost due to provenance's 50% fee cut",
+                );
+                assert_eq!(
+                    DEFAULT_ONBOARDING_DENOM,
+                    amount.first().unwrap().denom,
                     "the fee should use the correct denom",
-                );
-                assert!(name.is_some(), "the name should be set on the fee",);
-                assert_eq!(
-                    MOCK_CONTRACT_ADDR,
-                    from.as_str(),
-                    "the contract address should always be set in the 'from' field",
                 );
                 assert_eq!(
                     DEFAULT_VERIFIER_ADDRESS,
-                    recipient
-                        .to_owned()
-                        .expect("a recipient should be set")
-                        .as_str(),
+                    to_address.as_str(),
                     "the recipient of the fee should be the verifier",
                 );
             }
             msg => panic!(
-                "the second message generated should be a custom fee msg, but got: {:?}",
+                "the second message generated should be a bank send msg, but got: {:?}",
                 msg,
             ),
         };

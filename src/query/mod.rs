@@ -11,7 +11,7 @@ pub mod query_asset_definitions;
 pub mod query_asset_scope_attribute;
 /// A query that attempts to find a [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
 /// stored for an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
-/// that has not yet finished its finalize classification step.
+/// that has not yet finished its asset verification step.
 pub mod query_fee_payments;
 /// A query that directly returns the contract's stored [StateV2](crate::core::state::StateV2) value.
 pub mod query_state;

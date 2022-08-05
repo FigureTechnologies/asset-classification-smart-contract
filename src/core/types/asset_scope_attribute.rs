@@ -41,10 +41,6 @@ pub struct AssetScopeAttribute {
     /// All provided access definitions are stored in the attribute for external consumers, and can
     /// be externally manipulated by admin routes or verification tasks.
     pub access_definitions: Vec<AccessDefinition>,
-    /// Indicates whether or not the onboarding account trusts the verifier and has consented to
-    /// paying before verification has completed, allowing the finalize classification step to be
-    /// skipped.
-    pub trust_verifier: bool,
 }
 impl AssetScopeAttribute {
     /// Constructs a new instance of AssetScopeAttribute from the input params
@@ -66,9 +62,6 @@ impl AssetScopeAttribute {
     /// currently is.  If omitted, this value is populated as [Pending](super::asset_onboarding_status::AssetOnboardingStatus::Pending).
     /// * `access_routes` The initial access routes for the scope attribute.  These values are
     /// implicitly assumed to be from the requestor, and are wrapped in an initial [AccessDefinition](super::access_definition::AccessDefinition).
-    /// * `trust_verifier` Indicates whether or not the onboarding account trusts the verifier and
-    /// has consented to paying before verification has completed, allowing the finalize
-    /// classification step to be skipped.
     pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         identifier: &AssetIdentifier,
         asset_type: S1,
@@ -76,7 +69,6 @@ impl AssetScopeAttribute {
         verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
         access_routes: Vec<AccessRoute>,
-        trust_verifier: bool,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
@@ -102,7 +94,6 @@ impl AssetScopeAttribute {
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
             latest_verification_result: None,
             access_definitions,
-            trust_verifier,
         }
         .to_ok()
     }
@@ -139,7 +130,6 @@ mod tests {
                 AccessRoute::route_only(""),
                 AccessRoute::route_only("good route"),
             ],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         let access_definition = assert_single_item(
@@ -169,7 +159,6 @@ mod tests {
                 AccessRoute::route_only("  "),
                 AccessRoute::route_only(""),
             ],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         assert!(
@@ -187,7 +176,6 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             vec![],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         assert!(
@@ -208,7 +196,6 @@ mod tests {
                 "   test-route   ",
                 "my cool name                 ",
             )],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         let access_definition = assert_single_item(
@@ -244,7 +231,6 @@ mod tests {
                 AccessRoute::route_and_name("test-route", "name1"),
                 AccessRoute::route_and_name("test-route", "name2"),
             ],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         assert_eq!(
@@ -291,7 +277,6 @@ mod tests {
                 AccessRoute::route_and_name("test-route", "hey look at my name right here"),
                 AccessRoute::route_only("test-route"),
             ],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         assert_eq!(
@@ -338,7 +323,6 @@ mod tests {
                 AccessRoute::route_and_name("test-route     ", "myname"),
                 AccessRoute::route_and_name("test-route", "myname    "),
             ],
-            true,
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
         let access_definition = assert_single_item(

@@ -12,10 +12,6 @@ pub mod add_asset_verifier;
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.
 pub mod delete_asset_definition;
-/// Contains the functionality used by the [FinalizeClassification](crate::core::msg::ExecuteMsg::FinalizeClassification)
-/// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
-/// function.
-pub mod finalize_classification;
 /// Contains the functionality used by the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.

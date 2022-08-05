@@ -2,9 +2,10 @@ use crate::core::error::ContractError;
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
-use crate::util::traits::{OptionExtensions, ResultExtensions};
-use cosmwasm_std::{coin, Addr, Coin, CosmosMsg, Env};
-use provwasm_std::{assess_custom_fee, ProvenanceMsg};
+use crate::util::functions::bank_send;
+use crate::util::traits::ResultExtensions;
+use cosmwasm_std::{coin, Addr, Coin, CosmosMsg};
+use provwasm_std::ProvenanceMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -43,13 +44,7 @@ impl FeePaymentDetail {
         // Append a message for each destination
         for destination in verifier.fee_destinations.iter() {
             payments.push(FeePayment {
-                // Always multiply the fee amount by 2.  This is because the Provenance Fee Module
-                // takes 50% of the value provided.  Doubling the value in this way will ensure that
-                // all fee destinations get exactly the amount requested in the FeeDestination.
-                amount: coin(
-                    destination.fee_amount.u128() * 2,
-                    &verifier.onboarding_denom,
-                ),
+                amount: coin(destination.fee_amount.u128(), &verifier.onboarding_denom),
                 name: generate_fee_destination_fee_name(destination),
                 // All FeeDestination addresses are verified as valid bech32 addresses when they are
                 // added to the contract, so this conversion is inherently fine to do
@@ -60,23 +55,24 @@ impl FeePaymentDetail {
         // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
-        if fee_total > verifier.onboarding_cost.u128() {
+        if fee_total > verifier.onboarding_cost.u128() / 2 {
             return ContractError::generic(
-                format!("misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})",
+                format!("misconfigured fee destinations! fee total ({}{}) was greater than half the specified onboarding cost ({}{} / 2 = {}{})",
                         fee_total,
                         &verifier.onboarding_denom,
                         verifier.onboarding_cost.u128(),
+                        verifier.onboarding_denom,
+                        verifier.onboarding_cost.u128() / 2,
                         verifier.onboarding_denom,
                 )
             ).to_err();
         }
         // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-        let verifier_cost = verifier.onboarding_cost.u128() - fee_total;
+        let verifier_cost = (verifier.onboarding_cost.u128() / 2) - fee_total;
         // Only append payment info for the verifier if it actually has a cost
         if verifier_cost > 0 {
             payments.push(FeePayment {
-                // Always double charge to ensure the expected fee amount reaches the verifier
-                amount: coin(verifier_cost * 2, &verifier.onboarding_denom),
+                amount: coin(verifier_cost, &verifier.onboarding_denom),
                 name: generate_verifier_fee_name(verifier),
                 recipient: Addr::unchecked(&verifier.address),
             });
@@ -89,33 +85,27 @@ impl FeePaymentDetail {
     }
 
     /// Converts all the [payments](self::FeePaymentDetail::payments) into Provenance Blockchain
-    /// custom MsgFee messages in order to charge them to their respective recipients.
-    ///
-    /// # Parameters
-    ///
-    /// * `env` The environment value provided during message execution.  This is used to derive
-    /// the contract address, which is required in the "from" value of the custom fee.
-    pub fn to_fee_msgs(&self, env: &Env) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
-        let mut messages = vec![];
-        for payment in self.payments.iter().cloned() {
-            messages.push(assess_custom_fee(
-                payment.amount,
-                payment.name.to_some(),
-                // The contract address must always be used as the "from" value to ensure that
-                // permission issues do not occur when submitting the message.
-                env.contract.address.to_owned(),
-                Some(payment.recipient),
-            )?);
-        }
-        messages.to_ok()
+    /// bank send messages in order to charge them to their respective recipients.
+    pub fn to_bank_send_msgs(&self) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
+        self.payments
+            .iter()
+            .map(
+                |FeePayment {
+                     amount: Coin { denom, amount },
+                     recipient,
+                     ..
+                 }| { bank_send(recipient, amount.u128(), denom) },
+            )
+            .collect::<Vec<_>>()
+            .to_ok()
     }
 }
 
-/// Defines an individual fee to be charged to an account during the finalize classification
+/// Defines an individual fee to be charged to an account during the asset verification
 /// process.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct FeePayment {
-    /// The amount to be charged during the finalize classification process.  The denom will always
+    /// The amount to be charged during the asset verification process.  The denom will always
     /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
     /// amount.  The coin's amount will be double the amount specified in the verifier detail to
     /// account for Provenance MsgFees 50% charge.
@@ -160,9 +150,8 @@ mod tests {
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::{NHASH, USD};
     use crate::util::traits::OptionExtensions;
-    use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{CosmosMsg, Uint128};
-    use provwasm_std::{MsgFeesMsgParams, ProvenanceMsg, ProvenanceMsgParams};
+    use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
+    use provwasm_std::ProvenanceMsg;
 
     #[test]
     fn test_generate_fee_destination_fee_name() {
@@ -232,7 +221,7 @@ mod tests {
         // This verifier tries to send 150% of the fee to the fee destination. NO BUENO!
         let verifier = VerifierDetailV2::new(
             "address",
-            Uint128::new(100),
+            Uint128::new(200),
             NHASH,
             vec![FeeDestinationV2::new("fee", Uint128::new(101))],
             get_default_entity_detail().to_some(),
@@ -241,7 +230,7 @@ mod tests {
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured fee destinations! fee total (101nhash) was greater than the specified onboarding cost (100nhash)",
+                    "misconfigured fee destinations! fee total (101nhash) was greater than half the specified onboarding cost (200nhash / 2 = 100nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
@@ -255,7 +244,7 @@ mod tests {
 
     #[test]
     fn test_only_send_to_verifier() {
-        let verifier = VerifierDetailV2::new("verifier", Uint128::new(100), NHASH, vec![], None);
+        let verifier = VerifierDetailV2::new("verifier", Uint128::new(200), NHASH, vec![], None);
         let messages = test_get_messages(&verifier);
         assert_eq!(
             1,
@@ -275,7 +264,7 @@ mod tests {
     fn test_only_send_to_single_fee_destination() {
         let verifier = VerifierDetailV2::new(
             "verifier",
-            Uint128::new(100),
+            Uint128::new(200),
             NHASH,
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
             None,
@@ -299,7 +288,7 @@ mod tests {
     fn test_even_split_between_verifier_and_single_fee_destination() {
         let verifier = VerifierDetailV2::new(
             "verifier",
-            Uint128::new(100),
+            Uint128::new(200),
             NHASH,
             vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
             None,
@@ -326,7 +315,7 @@ mod tests {
     fn test_many_fee_destinations_and_some_to_verifier() {
         let verifier = VerifierDetailV2::new(
             "verifier",
-            Uint128::new(200),
+            Uint128::new(400),
             NHASH,
             vec![
                 FeeDestinationV2::new("first", Uint128::new(20)),
@@ -386,7 +375,7 @@ mod tests {
     fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {
         FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, verifier)
             .expect("fee payment detail should generate without error")
-            .to_fee_msgs(&mock_env())
+            .to_bank_send_msgs()
             .expect("fee messages should generate without error")
     }
 
@@ -406,36 +395,22 @@ mod tests {
         messages
             .iter()
             .find(|msg| match msg {
-                CosmosMsg::Custom(ProvenanceMsg {
-                    params:
-                        ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                            amount,
-                            name,
-                            from,
-                            recipient,
-                        }),
-                    ..
-                }) => {
-                    if recipient
-                        .to_owned()
-                        .expect("all recipients should be set in generated fees")
-                        .as_str()
-                        == target_address
-                    {
+                CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {
+                    if to_address.to_owned() == target_address {
                         assert_eq!(
-                            expected_amount * 2,
-                            amount.amount.u128(),
-                            "the fee amount should always be double the specified number",
+                            1,
+                            amount.len(),
+                            "exactly one coin should be set on fee bank send message"
                         );
                         assert_eq!(
-                            target_denom, amount.denom,
+                            expected_amount,
+                            amount.first().unwrap().amount.u128(),
+                            "the fee amount should always equal the specified number",
+                        );
+                        assert_eq!(
+                            target_denom,
+                            amount.first().unwrap().denom,
                             "the correct denom should be specified in the fee",
-                        );
-                        assert!(name.is_some(), "fee names should always be set",);
-                        assert_eq!(
-                            MOCK_CONTRACT_ADDR,
-                            from.as_str(),
-                            "the contract address should always bet set in the from field",
                         );
                         // Return true - this is the correct address and has passed assertions
                         true

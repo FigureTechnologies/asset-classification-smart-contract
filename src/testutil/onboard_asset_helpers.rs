@@ -1,7 +1,6 @@
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::service::asset_meta_service::AssetMetaService;
-use crate::testutil::test_constants::DEFAULT_TRUST_VERIFIER;
 use crate::testutil::test_utilities::{empty_mock_info, MockOwnedDeps};
 use crate::util::aliases::EntryPointResponse;
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -24,7 +23,6 @@ impl TestOnboardAsset {
             asset_type: DEFAULT_ASSET_TYPE.to_string(),
             verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
             access_routes: get_default_access_routes(),
-            trust_verifier: DEFAULT_TRUST_VERIFIER,
         }
     }
 
@@ -49,16 +47,6 @@ impl TestOnboardAsset {
 
     pub fn default_with_denom(denom: &str) -> Self {
         Self::default_full_sender(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST, denom)
-    }
-
-    pub fn default_with_trust_verifier(trust_verifier: bool) -> Self {
-        Self {
-            onboard_asset: OnboardAssetV1 {
-                trust_verifier,
-                ..Self::default_onboard_asset()
-            },
-            ..Self::default()
-        }
     }
 }
 impl Default for TestOnboardAsset {

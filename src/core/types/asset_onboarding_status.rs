@@ -16,10 +16,6 @@ pub enum AssetOnboardingStatus {
     /// Indicates that the asset has been verified and has been successfully classified as its
     /// designated asset type.
     Approved,
-    /// Indicates that the onboarding account has chosen to not trust the verifier, and the
-    /// verification process has been completed.  At this point, the onboarding account must now
-    /// execute the finalize_classification route to pay all required fees and complete classification.
-    AwaitingFinalization,
 }
 impl Display for AssetOnboardingStatus {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -30,7 +26,6 @@ impl Display for AssetOnboardingStatus {
                 Self::Pending => "pending",
                 Self::Denied => "denied",
                 Self::Approved => "approved",
-                Self::AwaitingFinalization => "awaiting_finalization",
             }
         )
     }

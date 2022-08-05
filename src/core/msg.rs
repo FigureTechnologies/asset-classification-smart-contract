@@ -59,7 +59,7 @@ pub enum QueryMsg {
     /// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)
     /// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
     /// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This
-    /// route is useful in showing the expected fees to be paid when the [FinalizeClassification](self::ExecuteMsg::FinalizeClassification)
+    /// route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset)
     /// route is executed.
     QueryFeePayments {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
@@ -110,10 +110,6 @@ pub enum ExecuteMsg {
         /// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)
         /// parameter, as well, to indicate the reason for the route, but this is entirely optional.
         access_routes: Option<Vec<AccessRoute>>,
-        /// If true, the account that onboards the asset is consenting to pay all required fees
-        /// before the verifier completes its verification process.  If false, the onboarding account will
-        /// pay using the finalize classification route after verification has completed.
-        trust_verifier: bool,
     },
     /// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
     /// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to
@@ -143,19 +139,6 @@ pub enum ExecuteMsg {
         /// data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
-    },
-    /// This route is designed to let the requestor for an asset onboard that chose a [trust_verifier](super::types::asset_scope_attribute::AssetScopeAttribute::trust_verifier)
-    /// value of `false` to move the scope attribute from [AwaitingFinalization](super::types::asset_onboarding_status::AssetOnboardingStatus::AwaitingFinalization)
-    /// status to [Approved](super::types::asset_onboarding_status::AssetOnboardingStatus::Approved) status.  This will
-    /// cause the requestor to be charged the verifier's fee amounts.  This route is only necessary
-    /// when trust verifier is `false`.  When trust verifier is `true`, the asset will be moved to
-    /// the approved status during the verify asset step.  The sender of this step must be listed as
-    /// the requestor on the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
-    /// referenced in the [identifier](self::ExecuteMsg::FinalizeClassification::identifier).
-    FinalizeClassification {
-        /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
-        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
-        identifier: SerializedEnum,
     },
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to

@@ -288,55 +288,20 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            1,
+            2,
             result.messages.len(),
-            "verify asset should produce a single message: update attribute msg to new status"
+            "verify asset should produce two messages: update attribute msg to new status and bank send to default verifier"
         );
     }
 
     #[test]
-    fn test_verify_errors_on_already_verified_success_true_trust_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
-        let err = verify_asset(
-            AssetMetaService::new(deps.as_mut()),
-            empty_mock_info(DEFAULT_VERIFIER_ADDRESS),
-            TestVerifyAsset::default_verify_asset(),
-        )
-        .unwrap_err();
-        match err {
-            ContractError::AssetAlreadyVerified {
-                scope_address,
-                status,
-            } => {
-                assert_eq!(
-                    DEFAULT_SCOPE_ADDRESS, scope_address,
-                    "the response message should contain the expected scope address",
-                );
-                assert_eq!(
-                    status,
-                    AssetOnboardingStatus::Approved,
-                    "the response message should indicate that the asset was already approved by the verifier",
-                );
-            }
-            _ => panic!(
-                "unexpected error encountered when submitting duplicate verification: {:?}",
-                err
-            ),
-        };
-    }
-
-    #[test]
-    fn test_verify_errors_on_already_verified_success_true_dont_trust_verifier() {
+    fn test_verify_errors_on_already_verified_success_true() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
                 onboard_asset: OnboardAssetV1 {
-                    trust_verifier: false,
                     ..TestOnboardAsset::default_onboard_asset()
                 },
                 ..TestOnboardAsset::default()
@@ -361,8 +326,8 @@ mod tests {
                 );
                 assert_eq!(
                     status,
-                    AssetOnboardingStatus::AwaitingFinalization,
-                    "the response message should indicate that the asset was already approved by the verifier and is awaiting finalization",
+                    AssetOnboardingStatus::Approved,
+                    "the response message should indicate that the asset was already approved by the verifier",
                 );
             }
             _ => panic!(
@@ -407,30 +372,13 @@ mod tests {
     }
 
     #[test]
-    fn test_verify_asset_success_true_produces_correct_onboarding_status_trust_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
-        let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
-            .expect("after validating the asset, the scope attribute should be present");
-        assert_eq!(
-            AssetOnboardingStatus::Approved,
-            attribute.onboarding_status,
-            "the asset should be in approved status after onboarding with a status of success = true and trust_verifier = true",
-        );
-    }
-
-    #[test]
-    fn test_verify_asset_success_true_produces_correct_onboarding_status_dont_trust_verifier() {
+    fn test_verify_asset_success_true_produces_correct_onboarding_status() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
                 onboard_asset: OnboardAssetV1 {
-                    trust_verifier: false,
                     ..TestOnboardAsset::default_onboard_asset()
                 },
                 ..TestOnboardAsset::default()
@@ -442,9 +390,9 @@ mod tests {
             .get_asset(DEFAULT_SCOPE_ADDRESS)
             .expect("after validating the asset, the scope attribute should be present");
         assert_eq!(
-            AssetOnboardingStatus::AwaitingFinalization,
+            AssetOnboardingStatus::Approved,
             attribute.onboarding_status,
-            "the asset should be in awaiting finalization status after onboarding with a status of success = true and trust_verifier = false",
+            "the asset should be in approved status after onboarding with a status of success = true",
         );
     }
 

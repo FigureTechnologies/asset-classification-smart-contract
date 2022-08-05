@@ -25,9 +25,6 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
             ..
         } => validate_onboard_asset(identifier, asset_type, verifier_address),
         ExecuteMsg::VerifyAsset { identifier, .. } => validate_verify_asset(identifier),
-        ExecuteMsg::FinalizeClassification { identifier } => {
-            validate_finalize_classification(identifier)
-        }
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
             validate_asset_definition(&asset_definition.as_asset_definition()?)
         }
@@ -103,23 +100,6 @@ fn validate_verify_asset(identifier: &SerializedEnum) -> AssetResult<()> {
         invalid_fields.push(message);
     }
     gen_validation_response("ExecuteMsg::VerifyAsset", invalid_fields)
-}
-
-/// Validates the [FinalizeClassification](crate::core::msg::ExecuteMsg::FinalizeClassification)
-/// variant of the [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on
-/// success, or an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
-/// error when invalid fields are found.
-///
-/// # Parameters
-///
-/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
-/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
-fn validate_finalize_classification(identifier: &SerializedEnum) -> AssetResult<()> {
-    let mut invalid_fields: Vec<String> = vec![];
-    if let Some(message) = get_asset_identifier_invalid_message(identifier) {
-        invalid_fields.push(message);
-    }
-    gen_validation_response("ExecuteMsg::FinalizeClassification", invalid_fields)
 }
 
 /// Validates the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition) variant of the
@@ -313,8 +293,7 @@ mod tests {
     use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::core::types::serialized_enum::SerializedEnum;
     use crate::validation::validate_execute_msg::{
-        validate_delete_asset_definition, validate_finalize_classification,
-        validate_update_access_routes,
+        validate_delete_asset_definition, validate_update_access_routes,
     };
     use crate::{
         core::{error::ContractError, types::asset_identifier::AssetIdentifier},
@@ -490,94 +469,6 @@ mod tests {
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::VerifyAsset",
-                message_type.as_str(),
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "identifier: received type [incompatible_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]",
-                invalid_fields.first().unwrap().as_str(),
-                "expected the appropriate error message to be returned",
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_finalize_classification_success_for_asset_uuid() {
-        validate_finalize_classification(
-            &AssetIdentifier::asset_uuid("8fb0cc16-0eb7-11ed-b200-8fe726e4a262")
-                .to_serialized_enum(),
-        )
-        .expect("expected the validation to pass when all fields are correctly supplied");
-    }
-
-    #[test]
-    fn test_validate_finalize_classification_success_for_scope_address() {
-        validate_finalize_classification(
-            &AssetIdentifier::scope_address("scope1qzwvh5y7p6m3rmd4dk9a7legsc5suyx3cu")
-                .to_serialized_enum(),
-        )
-        .expect("expected the validation to pass when all fields are correctly supplied");
-    }
-
-    #[test]
-    fn test_validate_finalize_classification_invalid_asset_uuid() {
-        let result =
-            validate_finalize_classification(&AssetIdentifier::asset_uuid("").to_serialized_enum());
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::FinalizeClassification",
-                message_type.as_str(),
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "identifier:asset_uuid: must not be blank",
-                invalid_fields.first().unwrap().as_str(),
-                "expected the appropriate error message to be returned",
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_finalize_classification_invalid_scope_address() {
-        let result = validate_finalize_classification(
-            &AssetIdentifier::scope_address("").to_serialized_enum(),
-        );
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::FinalizeClassification",
-                message_type.as_str(),
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "identifier:scope_address: must not be blank",
-                invalid_fields.first().unwrap().as_str(),
-                "expected the appropriate error message to be returned",
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_finalize_classification_invalid_identifier() {
-        let result =
-            validate_finalize_classification(&SerializedEnum::new("incompatible_variant", "value"));
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::FinalizeClassification",
                 message_type.as_str(),
                 "incorrect message type for error",
             );

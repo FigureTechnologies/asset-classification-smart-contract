@@ -16,8 +16,6 @@ pub enum EventType {
     OnboardAsset,
     /// Occurs when the contract is [executed](crate::contract::execute) to [verify an asset](crate::execute::verify_asset).
     VerifyAsset,
-    /// Occurs when the contract is [executed](crate::contract::execute) to [finalize asset classification](crate::execute::finalize_classification).
-    FinalizeClassification,
     /// Occurs when the contract is [executed](crate::contract::execute) to [add an asset definition](crate::execute::add_asset_definition).
     AddAssetDefinition,
     /// Occurs when the contract is [executed](crate::contract::execute) to [update an asset definition](crate::execute::update_asset_definition).
@@ -41,7 +39,6 @@ impl Into<String> for EventType {
             EventType::MigrateContract => "migrate_contract",
             EventType::OnboardAsset => "onboard_asset",
             EventType::VerifyAsset => "verify_asset",
-            EventType::FinalizeClassification => "finalize_classification",
             EventType::AddAssetDefinition => "add_asset_definition",
             EventType::UpdateAssetDefinition => "update_asset_definition",
             EventType::ToggleAssetDefinition => "toggle_asset_definition",

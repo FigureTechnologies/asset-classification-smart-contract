@@ -41,7 +41,7 @@
       }
     },
     "FeePayment": {
-      "description": "Defines an individual fee to be charged to an account during the finalize classification process.",
+      "description": "Defines an individual fee to be charged to an account during the asset verification process.",
       "type": "object",
       "required": [
         "amount",
@@ -50,7 +50,7 @@
       ],
       "properties": {
         "amount": {
-          "description": "The amount to be charged during the finalize classification process.  The denom will always match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom) amount.  The coin's amount will be double the amount specified in the verifier detail to account for Provenance MsgFees 50% charge.",
+          "description": "The amount to be charged during the asset verification process.  The denom will always match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom) amount.  The coin's amount will be double the amount specified in the verifier detail to account for Provenance MsgFees 50% charge.",
           "allOf": [
             {
               "$ref": "#/definitions/Coin"

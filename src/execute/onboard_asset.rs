@@ -259,7 +259,7 @@ mod tests {
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
-    use crate::util::constants::{NHASH, USD};
+    use crate::util::constants::NHASH;
     use crate::{
         core::{
             error::ContractError,
@@ -740,7 +740,7 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_not_trusting_verifier() {
+    fn test_onboard_asset_success() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
 
@@ -922,7 +922,7 @@ mod tests {
         let other_verifier = VerifierDetailV2::new(
             "tp17szfvgwgx9c9kwvyp9megryft3zm77am6x9gal",
             Uint128::new(300),
-            USD,
+            NHASH,
             vec![
                 FeeDestinationV2::new("feeperson1", Uint128::new(100)),
                 FeeDestinationV2::new("feeperson2", Uint128::new(50)),

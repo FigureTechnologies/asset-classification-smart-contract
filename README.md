@@ -37,11 +37,7 @@ to the contract essentially means that the account that owns the scope has reque
 data within the scope and mark the scope as a "classified asset," indicating its authenticity as a properly-formed
 object that the Provenance Blockchain recognizes.  The process of a successful onboarding will create and store an
 [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) struct value, serialized as JSON in a [Provenance Metadata Attribute](https://docs.provenance.io/modules/account)
-on the scope.  During the onboarding process, the onboarding account has the option of choosing whether or not to trust
-the verifier to complete its work.  If the onboarding account chooses to trust the verifier, the onboarding account
-will be prompted to pay all verification fees upfront.  If the onboarding account chooses to not trust the verifier,
-an additional step, Finalization, will be needed after verification is completed.  The onboarding account will pay fees
-during the finalization step instead.
+on the scope.
 
 * __Verification__: This is the process of downloading or otherwise accessing the underlying data of a Provenance Metadata Scope,
 determining that its contents meet the organization's requirements for its specified asset type, and signaling to the
@@ -50,14 +46,7 @@ indicating to external consumers and the contract itself whether or not the scop
 requested asset type.  The verification statuses are indicated in the code as an [AssetOnboardingStatus](src/core/types/asset_onboarding_status.rs),
 and the most recent verification result is always stored as an [AssetVerificationResult](src/core/types/asset_verification_result.rs)
 on the scope's [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs).  On a failed verification, the process can
-always be retried, at the cost of paying another onboarding fee.  In a trustless scenario, the verification process
-updates the status of the scope to [AwaitingFinalization](src/core/types/asset_onboarding_status.rs), indicating that
-it is ready for finalization.
-
-* __Finalization__: This process is used to move a Provenance Metadata Scope that has been used in a trustless verification
-process from the [AwaitingFinalization](src/core/types/asset_onboarding_status.rs) onboarding status to the [Approved](src/core/types/asset_onboarding_status.rs)
-status.  In this scenario, no fee is charged to the account that requested classification until the finalization step
-runs.
+always be retried, at the cost of paying another onboarding fee.
 
 ## Account Roles
 

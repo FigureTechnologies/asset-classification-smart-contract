@@ -148,7 +148,7 @@ mod tests {
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
     use crate::testutil::test_utilities::get_default_entity_detail;
-    use crate::util::constants::{NHASH, USD};
+    use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
     use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
     use provwasm_std::ProvenanceMsg;
@@ -186,7 +186,7 @@ mod tests {
         let mut verifier = VerifierDetailV2::new(
             "address",
             Uint128::new(100),
-            USD,
+            NHASH,
             vec![],
             Some(EntityDetail::new(
                 "Jeff's Frozen Pizza Emporium",

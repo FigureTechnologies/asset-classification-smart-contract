@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    from_binary,
+    coin, from_binary,
     testing::{mock_env, mock_info, MockApi, MockStorage},
     Addr, Binary, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
@@ -12,7 +12,9 @@ use provwasm_std::{
 use serde_json_wasm::to_string;
 
 use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::util::constants::NHASH;
 use crate::{
     contract::instantiate,
     core::{
@@ -108,16 +110,6 @@ pub fn get_default_access_routes() -> Vec<AccessRoute> {
 }
 
 pub fn get_default_asset_scope_attribute() -> AssetScopeAttribute {
-    get_default_asset_scope_attribute_and_detail(false)
-}
-
-/// Provides the same values as get_default_asset_scope_attribute, but also allows a verifier
-/// detail to be populated.  In all circumstances in normal runtime, the latest_verifier_detail
-/// will be None, because it's only populated in query results.  However, tests will sometimes need
-/// to check against the default values after an onboard occurs.
-pub fn get_default_asset_scope_attribute_and_detail(
-    populate_verifier_detail: bool,
-) -> AssetScopeAttribute {
     AssetScopeAttribute {
         asset_uuid: DEFAULT_ASSET_UUID.to_string(),
         scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
@@ -125,11 +117,6 @@ pub fn get_default_asset_scope_attribute_and_detail(
         requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS.to_string()),
         verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS.to_string()),
         onboarding_status: AssetOnboardingStatus::Pending,
-        latest_verifier_detail: if populate_verifier_detail {
-            get_default_verifier_detail().to_some()
-        } else {
-            None
-        },
         latest_verification_result: None,
         access_definitions: vec![AccessDefinition {
             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
@@ -294,6 +281,24 @@ where
                 status: ResultStatus::Pass,
             }],
         }],
+    }
+}
+
+pub fn get_duped_fee_payment_detail<S: Into<String>>(scope_address: S) -> FeePaymentDetail {
+    FeePaymentDetail {
+        scope_address: scope_address.into(),
+        payments: vec![
+            FeePayment {
+                amount: coin(150, NHASH),
+                name: "Fee for admin".to_string(),
+                recipient: Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+            },
+            FeePayment {
+                amount: coin(250, NHASH),
+                name: "Fee for verifier".to_string(),
+                recipient: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
+            },
+        ],
     }
 }
 

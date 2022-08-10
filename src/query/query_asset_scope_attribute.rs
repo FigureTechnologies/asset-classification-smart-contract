@@ -141,14 +141,7 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
         .to_err();
     }
     // Retain ownership of the first and verified only scope attribute
-    scope_attributes
-        .first()
-        .map(|a| a.to_owned())
-        .map(|mut a| {
-            a.latest_verifier_detail = a.get_latest_verifier_detail(deps.storage);
-            a
-        })
-        .to_ok()
+    scope_attributes.first().map(|a| a.to_owned()).to_ok()
 }
 
 #[cfg(test)]

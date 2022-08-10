@@ -3,6 +3,7 @@ use crate::{
     core::types::{access_route::AccessRoute, asset_scope_attribute::AssetScopeAttribute},
     util::aliases::AssetResult,
 };
+use cosmwasm_std::Env;
 
 /// A trait used for fetching and interacting with asset (Provenance Metadata Scope) values.
 pub trait AssetMetaRepository {
@@ -22,15 +23,14 @@ pub trait AssetMetaRepository {
     ///
     /// * `attribute` The scope attribute to be appended to the Provenance Metadata Scope as a result
     /// of a successful onboarding process.
-    /// * `latest_verifier_detail` The verifier detail currently in storage when this scope is
-    /// onboarded.  Stored in contract storage until a verification has been completed to ensure that
-    /// the proper fee distribution is made when verification completes.
+    /// * `verifier_detail` The verifier chosen by the onboarding account.
     /// * `is_retry` Indicates that this onboarding action was attempted before, and the scope has
     /// an existing scope attribute with a failed verification on it.
     fn onboard_asset(
         &self,
+        env: &Env,
         attribute: &AssetScopeAttribute,
-        latest_verifier_detail: &VerifierDetailV2,
+        verifier_detail: &VerifierDetailV2,
         is_retry: bool,
     ) -> AssetResult<()>;
 
@@ -45,7 +45,7 @@ pub trait AssetMetaRepository {
     fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()>;
 
     /// Attempts to fetch a scope attribute currently attached to a scope.  Returns an error if no
-    /// scope exists or no scope atttribute is attached to the existing scope.
+    /// scope exists or no scope attribute is attached to the existing scope.
     ///
     /// # Parameters
     ///
@@ -65,7 +65,8 @@ pub trait AssetMetaRepository {
     ) -> AssetResult<Option<AssetScopeAttribute>>;
 
     /// Attempts to generate the [CosmosMsg](cosmwasm_std::CosmosMsg) values required to verify an
-    /// asset with the contract.
+    /// asset with the contract.  Moves the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+    /// to [Approved](crate::core::types::asset_onboarding_status::AssetOnboardingStatus::Approved)
     ///
     /// # Parameters
     ///

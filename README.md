@@ -324,7 +324,8 @@ OR
 the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred
 during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as
 this incurs additional cost to the onboarding account.  Instead, it is recommended that verification implement some
-process that retries logic when exceptions or other code execution issues cause a failed verification.
+process that retries logic when exceptions or other code execution issues cause a failed verification.  A value of `true`
+will move the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs) to the `Approved` status, which indicates a classified asset.
 
 * `message`: An optional string describing the result of the verification process.  If omitted, a standard message
 describing success or failure based on the value of `success` will be displayed in the [AssetScopeAttribute](src/core/types/asset_scope_attribute.rs).
@@ -711,33 +712,6 @@ referred to by the `identifier` parameter passed into the execution message.
 }
 ```
 
-#### [Bind Contract Alias](src/execute/bind_contract_alias.rs)
-__This route is only accessible to the contract's admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)
-offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route
-allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name
-module works, public names can only be bound by the requesting account (in this case, the contract) or by the name
-owner.  In most cases, users won't have access to the root name owner of an unrestricted name, but will want to bind a
-name to the contract in order to facilitate lookups.  This allows any unrestricted name to be bound to the contract with
-ease.  This route will fail execution if a name is provided that stems from a restricted parent.
-
-##### Request Parameters
-
-* `alias_name`: The name to bind to the contract.  Ex: `assetclassificationalias.pb`.
-
-##### Emitted Attributes
-* `asset_event_type`: This value will always be populated as `bind_contract_alias`.
-
-* `asset_new_value`: This value will be the value of the `alias_name` passed into the execution message.
-
-##### Request Sample
-```json
-{
-  "bind_contract_alias": {
-    "alias_name": "assetclassificationalias.pb"
-  }
-}
-```
-
 ### [Query Routes](src/query)
 
 The contract exposes various query routes by which data retrieval is possible.  All query route enum variants are
@@ -936,6 +910,64 @@ OR
           }
         ],
         "definition_type": "Verifier"
+      }
+    ]
+  }
+}
+```
+
+#### [Query Fee Payments](src/query/query_fee_payments.rs)
+
+This route can be used to retrieve an existing [FeePaymentDetail](src/core/types/fee_payment_detail.rs) that has been
+stored from a [VerifierDetailV2](src/core/types/verifier_detail.rs) during the [OnboardAsset](src/execute/onboard_asset.rs)
+execution route's processes.  This route is useful in showing the expected fees to be paid when the
+[VerifyAsset](src/execute/verify_asset.rs) route is executed.
+
+##### Request Parameters
+
+* `identifier`: A serialized version of an [AssetIdentifier](src/core/types/asset_identifier.rs) enum.  Indicates the
+  target scope for the search.  The following json is an example of what this might look like in a request:
+```json
+{"identifier": {"type": "asset_uuid", "value": "8f9cea0a-d6e7-11ec-be71-dbbe1d4d92be"}}
+```
+OR
+```json
+{"identifier": {"type": "scope_address", "value": "scope1qzj8tjp76mn3rmyvz49c5738k2asm824ga"}}
+```
+
+##### Request Sample
+```json
+{
+  "query_asset_scope_attribute": {
+    "identifier": {
+      "type": "scope_address",
+      "value": "scope1qrr0argjp7p3rmv96xh62x8e8tksaue3we"
+    }
+  }
+}
+```
+
+##### Response Sample
+```json
+{
+  "data": {
+    "scope_address": "scope1qrr0argjp7p3rmv96xh62x8e8tksaue3we",
+    "payments": [
+      {
+        "amount": {
+          "amount": "150",
+          "denom": "nhash"
+        },
+        "name": "Fee for Contract Admin",
+        "recipient": "tp1ren9rf5yshqen6zp598ux3sl2pyrzamgpua790"
+      },
+      {
+        "amount": {
+          "amount": "220",
+          "denom": "nhash"
+        },
+        "name": "Ferret Inc. Verifier Fee",
+        "recipient": "tp1zf2lct9m90nm5hrffhs2dhp3v8vr4ll4dfw3kr"
       }
     ]
   }

@@ -69,6 +69,32 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail) that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset) route is executed.",
+      "type": "object",
+      "required": [
+        "query_fee_payments"
+      ],
+      "properties": {
+        "query_fee_payments": {
+          "type": "object",
+          "required": [
+            "identifier"
+          ],
+          "properties": {
+            "identifier": {
+              "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "This route can be used to retrieve the internal contract state values.  These are core configurations that denote how the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It responds with a [StateV2](super::state::StateV2) struct value.",
       "type": "object",
       "required": [

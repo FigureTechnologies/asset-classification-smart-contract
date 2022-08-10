@@ -4,6 +4,7 @@ use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefiniti
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
+use crate::util::constants::VALID_VERIFIER_DENOMS;
 use crate::util::functions::distinct_count_by_property;
 use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::ResultExtensions;
@@ -149,14 +150,21 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
     if bech32_string_to_addr(&verifier.address).is_err() {
         invalid_fields.push("verifier:address: must be a valid address".to_string());
     }
-    if verifier.onboarding_denom.is_empty() {
-        invalid_fields.push("verifier:onboarding_denom: must not be blank".to_string());
+    if !VALID_VERIFIER_DENOMS.contains(&verifier.onboarding_denom.as_str()) {
+        invalid_fields.push(format!(
+            "verifier:onboarding_denom: must be one of [{}]",
+            VALID_VERIFIER_DENOMS.join(", "),
+        ));
+    }
+    // onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly
+    if verifier.onboarding_cost.u128() % 2 != 0 {
+        invalid_fields.push("verifier:onboarding_cost must be an even number".to_string());
     }
     if !verifier.fee_destinations.is_empty()
-        && verifier.get_fee_total() > verifier.onboarding_cost.u128()
+        && verifier.get_fee_total() > verifier.onboarding_cost.u128() / 2
     {
         invalid_fields.push(
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost".to_string(),
+            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost".to_string(),
         );
     }
     if distinct_count_by_property(&verifier.fee_destinations, |dest| &dest.address)
@@ -194,7 +202,7 @@ pub mod tests {
     use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_utilities::get_default_entity_detail;
-    use crate::util::constants::NHASH;
+    use crate::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::{
         validate_asset_definition_input_internal, validate_asset_definition_internal,
@@ -224,7 +232,7 @@ pub mod tests {
                     .to_serialized_enum(),
                 vec![VerifierDetailV2::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
-                    Uint128::new(100),
+                    Uint128::new(200),
                     NHASH,
                     vec![FeeDestinationV2::new(
                         "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
@@ -251,7 +259,7 @@ pub mod tests {
                         .to_serialized_enum(),
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
-                        Uint128::new(100),
+                        Uint128::new(200),
                         NHASH,
                         vec![FeeDestinationV2::new(
                             "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
@@ -305,7 +313,7 @@ pub mod tests {
                         ),
                         VerifierDetailV2::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
-                            Uint128::new(1000000),
+                            Uint128::new(2000000),
                             NHASH,
                             vec![
                                 FeeDestinationV2::new(
@@ -414,7 +422,7 @@ pub mod tests {
             "scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz",
             vec![VerifierDetailV2::new(
                 "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
-                Uint128::new(100),
+                Uint128::new(200),
                 NHASH,
                 vec![FeeDestinationV2::new(
                     "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
@@ -534,7 +542,7 @@ pub mod tests {
     fn test_valid_verifier_with_multiple_fee_destinations() {
         let verifier = VerifierDetailV2::new(
             "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
-            Uint128::new(2000),
+            Uint128::new(4000),
             NHASH,
             vec![
                 FeeDestinationV2::new(
@@ -581,6 +589,11 @@ pub mod tests {
 
     #[test]
     fn test_invalid_verifier_onboarding_denom() {
+        let expected_error_text = format!(
+            "verifier:onboarding_denom: must be one of [{}]",
+            VALID_VERIFIER_DENOMS.join(", ")
+        );
+        // Verify that a blank value produces an error
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
@@ -589,8 +602,19 @@ pub mod tests {
                 vec![],
                 get_default_entity_detail().to_some(),
             ),
-            "verifier:onboarding_denom: must not be blank",
+            &expected_error_text,
         );
+        // Verify that a value not in VALID_VERIFIER_DENOMS produces an error
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                "someotherdenom",
+                vec![],
+                get_default_entity_detail().to_some(),
+            ),
+            &expected_error_text,
+        )
     }
 
     #[test]
@@ -598,12 +622,12 @@ pub mod tests {
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
-                Uint128::new(1010),
+                Uint128::new(2020),
                 NHASH,
                 vec![FeeDestinationV2::new("fee", Uint128::new(1011))],
                 get_default_entity_detail().to_some(),
             ),
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost",
+            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
         );
     }
 

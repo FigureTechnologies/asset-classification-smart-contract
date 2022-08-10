@@ -52,7 +52,6 @@ impl VerifierDetailV2 {
 
     /// Calculates a sum of all held [fee_destinations](self::VerifierDetailV2::fee_destinations)
     /// respective [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) fields.
-    ///
     pub fn get_fee_total(&self) -> u128 {
         self.fee_destinations
             .iter()

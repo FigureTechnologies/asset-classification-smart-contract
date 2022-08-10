@@ -1,6 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::core::error::ContractError;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
@@ -63,6 +64,32 @@ impl AssetDefinitionV2 {
     pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
         let state = config_read_v2(deps.storage).load()?;
         generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
+    }
+
+    /// Helper functionality to retrieve a verifier detail from the self-contained vector of
+    /// verifiers by matching on the given address.
+    ///
+    /// # Parameters
+    ///
+    /// * `verifier_address` The bech32 address of the verifier to locate within the verifiers
+    /// vector.
+    pub fn get_verifier_detail<S: Into<String>>(
+        &self,
+        verifier_address: S,
+    ) -> Result<VerifierDetailV2, ContractError> {
+        let verifier_address = verifier_address.into();
+        match self
+            .verifiers
+            .iter()
+            .find(|verifier| verifier.address == verifier_address)
+        {
+            Some(verifier) => verifier.to_owned().to_ok(),
+            None => ContractError::UnsupportedVerifier {
+                asset_type: self.asset_type.to_owned(),
+                verifier_address,
+            }
+            .to_err(),
+        }
     }
 }
 

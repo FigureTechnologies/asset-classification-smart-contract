@@ -1,7 +1,6 @@
 use crate::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
 use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
-use crate::execute::bind_contract_alias::{bind_contract_alias, BindContractAliasV1};
 use crate::execute::delete_asset_definition::{delete_asset_definition, DeleteAssetDefinitionV1};
 use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::execute::toggle_asset_definition::{toggle_asset_definition, ToggleAssetDefinitionV1};
@@ -14,6 +13,7 @@ use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_definitions::query_asset_definitions;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
+use crate::query::query_fee_payments::query_fee_payments;
 use crate::query::query_state::query_state;
 use crate::query::query_version::query_version;
 use crate::service::asset_meta_service::AssetMetaService;
@@ -71,6 +71,9 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
         QueryMsg::QueryAssetScopeAttribute { identifier } => {
             query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)
         }
+        QueryMsg::QueryFeePayments { identifier } => {
+            query_fee_payments(&deps, identifier.to_asset_identifier()?)
+        }
         QueryMsg::QueryState {} => query_state(&deps),
         QueryMsg::QueryVersion {} => query_version(&deps),
     }
@@ -99,6 +102,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
     match msg {
         ExecuteMsg::OnboardAsset { .. } => onboard_asset(
             AssetMetaService::new(deps),
+            env,
             info,
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
@@ -130,9 +134,6 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             info,
             UpdateAccessRoutesV1::from_execute_msg(msg)?,
         ),
-        ExecuteMsg::BindContractAlias { .. } => {
-            bind_contract_alias(deps, env, info, BindContractAliasV1::from_execute_msg(msg)?)
-        }
         ExecuteMsg::DeleteAssetDefinition { .. } => {
             delete_asset_definition(deps, info, DeleteAssetDefinitionV1::from_execute_msg(msg)?)
         }

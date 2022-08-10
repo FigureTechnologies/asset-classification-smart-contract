@@ -13,9 +13,6 @@ pub mod deps_container;
 /// Helpers to ensure that emitting event attributes on [execute](crate::contract::execute) calls
 /// occurs with standard values throughout the contract.
 pub mod event_attributes;
-/// Calculation functions for determining how fees should be spent during the [onboarding](crate::execute::onboard_asset::onboard_asset)
-/// process.
-pub mod fees;
 /// Miscellaneous functions to use in various scenarios throughout the contract's execution.
 pub mod functions;
 /// Utility functions that facilitate interaction with Provenance Blockchain modules.

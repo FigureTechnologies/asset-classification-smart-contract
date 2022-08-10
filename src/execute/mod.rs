@@ -8,10 +8,6 @@ pub mod add_asset_definition;
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.
 pub mod add_asset_verifier;
-/// Contains the functionality used by the [BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias)
-/// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
-/// function.
-pub mod bind_contract_alias;
 /// Contains the functionality used by the [DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition)
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg) variant when invoked via the [execute](crate::contract::execute)
 /// function.

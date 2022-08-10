@@ -1,6 +1,8 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, load_asset_definition_v2_by_type};
+use crate::core::state::{
+    config_read_v2, delete_fee_payment_detail, load_asset_definition_v2_by_type,
+};
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
@@ -9,9 +11,10 @@ use crate::service::asset_meta_repository::AssetMetaRepository;
 use crate::service::deps_manager::DepsManager;
 use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{AssetResult, EntryPointResponse};
+use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::traits::{OptionExtensions, ResultExtensions};
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
 
 /// A transformation of [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
@@ -86,6 +89,7 @@ impl OnboardAssetV1 {
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn onboard_asset<'a, T>(
     repository: T,
+    env: Env,
     info: MessageInfo,
     msg: OnboardAssetV1,
 ) -> EntryPointResponse
@@ -115,47 +119,10 @@ where
     };
 
     // verify prescribed verifier is present as a verifier in asset definition
-    let verifier_config = match asset_definition
-        .verifiers
-        .into_iter()
-        .find(|verifier| verifier.address == msg.verifier_address)
-    {
-        Some(verifier) => verifier,
-        None => {
-            return ContractError::UnsupportedVerifier {
-                asset_type: msg.asset_type,
-                verifier_address: msg.verifier_address,
-            }
-            .to_err()
-        }
-    };
+    let verifier_config = asset_definition.get_verifier_detail(&msg.verifier_address)?;
 
-    // verify sent funds match what is specified in the asset state
-    if info.funds.len() != 1 {
-        return ContractError::InvalidFunds(
-            "Exactly one fund type (of nhash) should be sent".to_string(),
-        )
-        .to_err();
-    }
-
-    let sent_fee = match info.funds.iter().find(|funds| funds.denom == "nhash") {
-        Some(funds) => funds,
-        None => {
-            return ContractError::InvalidFunds(format!(
-                "Improper funds supplied for onboarding (expected {}nhash)",
-                verifier_config.onboarding_cost
-            ))
-            .to_err()
-        }
-    };
-
-    if sent_fee.amount != verifier_config.onboarding_cost {
-        return ContractError::InvalidFunds(format!(
-            "Improper fee of {}{} provided (expected {}nhash)",
-            sent_fee.amount, sent_fee.denom, verifier_config.onboarding_cost
-        ))
-        .to_err();
-    };
+    // verify no funds are sent, as msg fee handles fees
+    check_funds_are_empty(&info)?;
 
     // verify asset (scope) exists
     let scope = match repository.use_deps(|d| {
@@ -220,15 +187,14 @@ where
         &info.sender,
         &msg.verifier_address,
         AssetOnboardingStatus::Pending.to_some(),
-        &verifier_config,
         msg.access_routes,
     )?;
 
     // check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one
-    let is_retry = if let Some(scope_attribute) =
+    let is_retry = if let Some(existing_attribute) =
         repository.try_get_asset(&asset_identifiers.scope_address)?
     {
-        match scope_attribute.onboarding_status {
+        match existing_attribute.onboarding_status {
             // If the attribute indicates that the asset is approved, then it's already fully onboarded and verified
             AssetOnboardingStatus::Approved => {
                 return ContractError::AssetAlreadyOnboarded {
@@ -238,18 +204,23 @@ where
             }
             // If the attribute indicates that the asset is pending, then it's currently waiting for verification
             AssetOnboardingStatus::Pending => {
-                // Attributes in pending status should always have a verifier detail on them. Use it in the error message to show
-                // which verifier may or may not be misbehaving
-                return if let Some(verifier_detail) = repository.use_deps(|deps| scope_attribute.get_latest_verifier_detail(deps.storage)) {
-                    ContractError::AssetPendingVerification { scope_address: scope_attribute.scope_address, verifier_address: verifier_detail.address }
-                } else {
-                    // If a verifier detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere
-                    ContractError::generic(format!("scope {} is pending verification, but has no verifier information. this scope needs manual intervention!", scope_attribute.scope_address))
-                }.to_err();
+                return ContractError::AssetPendingVerification {
+                    scope_address: existing_attribute.scope_address,
+                    verifier_address: existing_attribute.verifier_address.to_string(),
+                }
+                .to_err()
             }
             // If the attribute indicates that the asset is pending, then it's been denied by a verifier, and this is a secondary
             // attempt to onboard the asset
-            AssetOnboardingStatus::Denied => true,
+            AssetOnboardingStatus::Denied => {
+                // Remove the fee payment detail originally stored. The new attribute may point to a wholly new verifier, or the
+                // fees may have changed.  Deleting the existing fee payment detail ensures that a
+                // new one with the correct values may be saved.
+                repository.use_deps(|deps| {
+                    delete_fee_payment_detail(deps.storage, &existing_attribute.scope_address)
+                })?;
+                true
+            }
         }
     } else {
         // If no scope attribute exists, it's safe to simply add the attribute to the scope
@@ -257,7 +228,7 @@ where
     };
 
     // store asset metadata in contract storage, with assigned verifier and provided fee (in case fee changes between onboarding and verification)
-    repository.onboard_asset(&new_asset_attribute, &verifier_config, is_retry)?;
+    repository.onboard_asset(&env, &new_asset_attribute, &verifier_config, is_retry)?;
 
     Ok(Response::new()
         .add_attributes(
@@ -274,13 +245,21 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{from_binary, Coin, CosmosMsg, StdError, SubMsg, Uint128};
+    use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
+    use cosmwasm_std::{coins, from_binary, CosmosMsg, StdError, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
-        AttributeMsgParams, AttributeValueType, Process, ProcessId, ProvenanceMsg,
-        ProvenanceMsgParams, Record, Records,
+        AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, Process, ProcessId,
+        ProvenanceMsg, ProvenanceMsgParams, Record, Records,
     };
 
+    use crate::core::state::load_fee_payment_detail;
+    use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::fee_payment_detail::FeePaymentDetail;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
+    use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
+    use crate::util::constants::NHASH;
     use crate::{
         core::{
             error::ContractError,
@@ -300,9 +279,8 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_ONBOARDING_COST, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
-                DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
-                DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+                DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
                 empty_mock_info, get_default_access_routes, get_default_scope, get_duped_scope,
@@ -329,6 +307,7 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
+            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -365,6 +344,7 @@ mod tests {
         .expect("toggling the asset definition to be disabled should succeed");
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
+            mock_env(),
             mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
@@ -388,7 +368,8 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, 1000),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -421,13 +402,14 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_no_funds() {
+    fn test_onboard_asset_errors_on_funds_provided() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            empty_mock_info(DEFAULT_SENDER_ADDRESS),
+            mock_env(),
+            mock_info_with_funds(DEFAULT_SENDER_ADDRESS, &coins(100, NHASH)),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -440,124 +422,8 @@ mod tests {
         match err {
             ContractError::InvalidFunds(message) => {
                 assert_eq!(
-                    "Exactly one fund type (of nhash) should be sent", message,
-                    "the invalid funds message should reflect invalid amount of funds list"
-                );
-            }
-            _ => panic!(
-                "unexpected error when unsupported asset type provided: {:?}",
-                err
-            ),
-        }
-    }
-
-    #[test]
-    fn test_onboard_asset_errors_on_extra_funds() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-
-        let err = onboard_asset(
-            AssetMetaService::new(deps.as_mut()),
-            mock_info_with_funds(
-                DEFAULT_SENDER_ADDRESS,
-                &[
-                    Coin {
-                        denom: "nhash".into(),
-                        amount: Uint128::from(123u128),
-                    },
-                    Coin {
-                        denom: "otherdenom".into(),
-                        amount: Uint128::from(2432u128),
-                    },
-                ],
-            ),
-            OnboardAssetV1 {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
-                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                access_routes: vec![],
-            },
-        )
-        .unwrap_err();
-
-        match err {
-            ContractError::InvalidFunds(message) => {
-                assert_eq!(
-                    "Exactly one fund type (of nhash) should be sent", message,
-                    "the invalid funds message should reflect invalid amount of funds list"
-                );
-            }
-            _ => panic!(
-                "unexpected error when unsupported asset type provided: {:?}",
-                err
-            ),
-        }
-    }
-
-    #[test]
-    fn test_onboard_asset_errors_on_wrong_fund_denom() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-
-        let err = onboard_asset(
-            AssetMetaService::new(deps.as_mut()),
-            mock_info_with_funds(
-                DEFAULT_SENDER_ADDRESS,
-                &[Coin {
-                    denom: "otherdenom".into(),
-                    amount: Uint128::from(2432u128),
-                }],
-            ),
-            OnboardAssetV1 {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
-                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                access_routes: vec![],
-            },
-        )
-        .unwrap_err();
-
-        match err {
-            ContractError::InvalidFunds(message) => {
-                assert_eq!(
-                    "Improper funds supplied for onboarding (expected 1000nhash)", message,
-                    "the invalid funds message should reflect that improper funds were sent"
-                );
-            }
-            _ => panic!(
-                "unexpected error when unsupported asset type provided: {:?}",
-                err
-            ),
-        }
-    }
-
-    #[test]
-    fn test_onboard_asset_errors_on_wrong_fund_amount() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-
-        let err = onboard_asset(
-            AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST + 1),
-            OnboardAssetV1 {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
-                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                access_routes: vec![],
-            },
-        )
-        .unwrap_err();
-
-        match err {
-            ContractError::InvalidFunds(message) => {
-                assert_eq!(
-                    format!(
-                        "Improper fee of {}nhash provided (expected {}nhash)",
-                        DEFAULT_ONBOARDING_COST + 1,
-                        DEFAULT_ONBOARDING_COST
-                    ),
-                    message,
-                    "the invalid funds message should reflect that improper funds were sent"
+                    "route requires no funds be present", message,
+                    "the error should indicate that no funds should be sent when onboarding an asset",
                 );
             }
             _ => panic!(
@@ -576,7 +442,8 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(bogus_scope_address),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -609,7 +476,8 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -650,7 +518,8 @@ mod tests {
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             TestOnboardAsset::default_onboard_asset(),
         )
         .unwrap_err();
@@ -677,7 +546,8 @@ mod tests {
         deps.querier.with_scope(get_default_scope());
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -722,7 +592,8 @@ mod tests {
         deps.querier.with_scope(get_default_scope());
         onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -761,7 +632,8 @@ mod tests {
         );
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -811,7 +683,8 @@ mod tests {
         );
         onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -836,7 +709,8 @@ mod tests {
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -866,13 +740,14 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_succeeds() {
+    fn test_onboard_asset_success() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
 
         let result = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
-            mock_info_with_nhash(DEFAULT_SENDER_ADDRESS, DEFAULT_ONBOARDING_COST),
+            mock_env(),
+            empty_mock_info(DEFAULT_SENDER_ADDRESS),
             OnboardAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
@@ -882,25 +757,24 @@ mod tests {
         )
         .unwrap();
 
+        let fee_payment_result =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS);
+
+        if let Err(_) = fee_payment_result {
+            panic!("fee payment detail should be stored for onboarded asset")
+        }
+
         assert_eq!(
-            1,
+            2,
             result.messages.len(),
-            "Onboarding should produce only one (bind attribute) message"
+            "Onboarding should produce the correct number of messages"
         );
 
-        let msg = result.messages.first();
-
-        match msg {
-            Some(SubMsg {
-                msg:
-                    CosmosMsg::Custom(ProvenanceMsg {
-                        params:
-                            ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                                name,
-                                value,
-                                ..
-                            }),
-                        ..
+        result.messages.iter().for_each(|msg| match &msg.msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        name, value, ..
                     }),
                 ..
             }) => {
@@ -935,9 +809,38 @@ mod tests {
                     "Proper access route should be set upon onboarding"
                 );
             }
-            _ => panic!("Unexpected message from onboard_asset: {:?}", msg),
-        }
-
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
+                        amount,
+                        name,
+                        from,
+                        recipient,
+                    }),
+                ..
+            }) => {
+                assert_eq!(
+                    DEFAULT_ONBOARDING_COST,
+                    amount.amount.u128(),
+                    "double the default verifier cost should be included in the fee msg to account for the provenance cut",
+                );
+                assert!(
+                    name.is_some(),
+                    "the fee message should include a fee name",
+                );
+                assert_eq!(
+                    MOCK_CONTRACT_ADDR,
+                    from.as_str(),
+                    "the fee message should always be sent from the contract's address",
+                );
+                assert_eq!(
+                    MOCK_CONTRACT_ADDR,
+                    recipient.to_owned().expect("a recipient address should be set on the custom fee").as_str(),
+                    "the contract's address should be the recipient of the fee",
+                );
+            }
+            msg => panic!("Unexpected message from onboard_asset: {:?}", msg),
+        });
         assert_eq!(
             vec![
                 (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
@@ -955,7 +858,6 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        // Verify the asset to denied status
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)
@@ -965,15 +867,151 @@ mod tests {
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
-        // Try to do a retry on onboarding
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let payment_detail_before_retry =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("a fee payment detail should be stored for the asset");
+        let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        assert_eq!(
+            2,
+            response.messages.len(),
+            "two messages should be emitted in the retry. One for an attribute update and one for a message fee",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        assert!(
+            matches!(
+                response.messages[1].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
+                    ..
+                })
+            ),
+            "the second emitted message should be the message fee"
+        );
         let attribute = AssetMetaService::new(deps.as_mut())
-        .get_asset(DEFAULT_SCOPE_ADDRESS)
-        .expect("the default scope address should still contain an attribute after onboarding for a second time");
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
         assert_eq!(
             attribute.onboarding_status,
             AssetOnboardingStatus::Pending,
             "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        let payment_detail_after_retry =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("a fee payment detail should still be present after updating");
+        assert_eq!(
+            payment_detail_before_retry, payment_detail_after_retry,
+            "the payment details should be identical due to choosing the same, unchanged verifier",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_retry_success_changing_verifiers() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let other_verifier = VerifierDetailV2::new(
+            "tp17szfvgwgx9c9kwvyp9megryft3zm77am6x9gal",
+            Uint128::new(300),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("feeperson1", Uint128::new(100)),
+                FeeDestinationV2::new("feeperson2", Uint128::new(50)),
+            ],
+            None,
+        );
+        add_asset_verifier(
+            deps.as_mut(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetVerifierV1 {
+                asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                verifier: other_verifier.clone(),
+            },
+        )
+        .expect("adding the second verifier should succeed without error");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        let payment_detail_before =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("a fee payment detail should be stored for the asset");
+        let response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    verifier_address: other_verifier.address.clone(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            2,
+            response.messages.len(),
+            "two messages should be emitted in the retry. One for an attribute update and one for a message fee",
+        );
+        assert!(
+            matches!(
+                response.messages[0].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::Attribute(
+                        AttributeMsgParams::UpdateAttribute { .. }
+                    ),
+                    ..
+                })
+            ),
+            "the first emitted message should update the attribute",
+        );
+        assert!(
+            matches!(
+                response.messages[1].msg,
+                CosmosMsg::Custom(ProvenanceMsg {
+                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
+                    ..
+                })
+            ),
+            "the second emitted message should be the message fee"
+        );
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .expect("the default scope address should still contain an attribute after onboarding for a second time");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Pending,
+            "the onboarding status should now be set to pending after retrying the onboard process",
+        );
+        assert_eq!(
+            attribute.verifier_address, other_verifier.address,
+            "the attribute should be updated to the other verifier's address",
+        );
+        let payment_detail_after =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("a fee payment detail should be stored for the asset");
+        assert_ne!(
+            payment_detail_before, payment_detail_after,
+            "the payment details should not match due to changing verifiers",
+        );
+        assert_eq!(
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier).expect("the other verifier should be successfully converted to a fee payment detail"),
+            payment_detail_after,
+            "the fee payment detail after the retry should equate to the new verifier's fee definitions",
         );
     }
 

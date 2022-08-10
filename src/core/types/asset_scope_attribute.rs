@@ -1,11 +1,9 @@
-use cosmwasm_std::{Addr, Storage};
+use cosmwasm_std::Addr;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::core::state::latest_verifier_detail_store_ro;
-use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
-    core::{error::ContractError, types::access_definition::AccessDefinitionType},
+    core::types::access_definition::AccessDefinitionType,
     util::{
         aliases::AssetResult, functions::filter_valid_access_routes,
         scope_address_utils::bech32_string_to_addr, traits::ResultExtensions,
@@ -37,14 +35,6 @@ pub struct AssetScopeAttribute {
     pub verifier_address: Addr,
     /// Indicates the portion of the classification process at which the scope currently is.
     pub onboarding_status: AssetOnboardingStatus,
-    /// When the onboarding process runs, the verifier detail currently in contract storage for the
-    /// verifier address chosen by the requestor is added to the scope attribute.  This ensures that
-    /// if the verifier values change due to an external update, the original fee structure will be
-    /// honored for the onboarding task placed originally.  This value should never be accessed
-    /// directly in the contract, and instead the [get_latest_verifier_detail](self::AssetScopeAttribute::get_latest_verifier_detail)
-    /// function should be used.  This field only exists in order for this value to be reflected
-    /// accurately during queries.
-    pub latest_verifier_detail: Option<VerifierDetailV2>,
     /// The most recent verification is kept on the scope attribute.  If the verifier determines that
     /// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.
     pub latest_verification_result: Option<AssetVerificationResult>,
@@ -70,9 +60,6 @@ impl AssetScopeAttribute {
     /// the asset should be classified.
     /// * `onboarding_status` Indicates the portion of the classification process at which the scope
     /// currently is.  If omitted, this value is populated as [Pending](super::asset_onboarding_status::AssetOnboardingStatus::Pending).
-    /// * `latest_verifier_detail` The initial verifier detail to be placed onto this scope attribute.
-    /// As this function should always be used to create a new scope attribute, this value does not
-    /// need to be optional.
     /// * `access_routes` The initial access routes for the scope attribute.  These values are
     /// implicitly assumed to be from the requestor, and are wrapped in an initial [AccessDefinition](super::access_definition::AccessDefinition).
     pub fn new<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
@@ -81,15 +68,11 @@ impl AssetScopeAttribute {
         requestor_address: S2,
         verifier_address: S3,
         onboarding_status: Option<AssetOnboardingStatus>,
-        latest_verifier_detail: &VerifierDetailV2,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<Self> {
         let identifiers = identifier.to_identifiers()?;
         let req_addr = bech32_string_to_addr(requestor_address)?;
         let ver_addr = bech32_string_to_addr(verifier_address)?;
-        if ver_addr != latest_verifier_detail.address {
-            return ContractError::generic(format!("provided verifier address [{}] did not match the verifier detail's address [{}]", ver_addr, latest_verifier_detail.address).as_str()).to_err();
-        }
         // Remove all access routes that are empty strings to prevent bad data from being provided
         let filtered_access_routes = filter_valid_access_routes(access_routes);
         // If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
@@ -109,33 +92,15 @@ impl AssetScopeAttribute {
             requestor_address: req_addr,
             verifier_address: ver_addr,
             onboarding_status: onboarding_status.unwrap_or(AssetOnboardingStatus::Pending),
-            latest_verifier_detail: None,
             latest_verification_result: None,
             access_definitions,
         }
         .to_ok()
     }
-
-    /// Fetches the latest verifier detail from contract storage.  The local field, latest_verifier_detail,
-    /// should never be used directly.  Only the contract storage should have the most recent data.
-    ///
-    /// # Parameters
-    ///
-    /// * `storage` An instance of the Cosmwasm storage that allows internally-stored values to be
-    /// fetched.
-    pub fn get_latest_verifier_detail(&self, storage: &dyn Storage) -> Option<VerifierDetailV2> {
-        latest_verifier_detail_store_ro(storage)
-            .may_load(self.scope_address.as_bytes())
-            .unwrap_or(None)
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::core::state::insert_latest_verifier_detail;
-    use crate::testutil::test_utilities::{
-        get_default_asset_scope_attribute, get_default_asset_scope_attribute_and_detail,
-    };
     use crate::{
         core::types::{
             access_route::AccessRoute, asset_identifier::AssetIdentifier,
@@ -146,11 +111,10 @@ mod tests {
             test_constants::{
                 DEFAULT_ASSET_UUID, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
-            test_utilities::{assert_single_item, get_default_verifier_detail},
+            test_utilities::assert_single_item,
         },
         util::traits::OptionExtensions,
     };
-    use provwasm_mocks::mock_dependencies;
 
     #[test]
     fn test_new_asset_scope_attribute_filters_bad_access_routes() {
@@ -160,7 +124,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_only("    "),
                 AccessRoute::route_only("  "),
@@ -191,7 +154,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_only("    "),
                 AccessRoute::route_only("  "),
@@ -213,7 +175,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![],
         )
         .expect("validation should succeed for a properly-formatted asset scope attribute");
@@ -231,7 +192,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![AccessRoute::route_and_name(
                 "   test-route   ",
                 "my cool name                 ",
@@ -267,7 +227,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route", "name1"),
                 AccessRoute::route_and_name("test-route", "name2"),
@@ -314,7 +273,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route", "hey look at my name right here"),
                 AccessRoute::route_only("test-route"),
@@ -361,7 +319,6 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
-            &get_default_verifier_detail(),
             vec![
                 AccessRoute::route_and_name("test-route     ", "myname"),
                 AccessRoute::route_and_name("test-route", "myname    "),
@@ -384,52 +341,6 @@ mod tests {
             "myname",
             access_route.name.expect("the name should be set"),
             "the trimmed name should be produced correctly",
-        );
-    }
-
-    #[test]
-    fn test_get_latest_verifier_detail_none_found() {
-        let deps = mock_dependencies(&[]);
-        // Get and populate an attribute with a latest verifier detail
-        let attribute = get_default_asset_scope_attribute_and_detail(true);
-        assert!(
-            attribute.latest_verifier_detail.is_some(),
-            "sanity check: the scope attribute should include a latest verifier detail",
-        );
-        // Proves the local field has no bearing on the result
-        assert!(
-            attribute.get_latest_verifier_detail(deps.as_ref().storage).is_none(),
-            "with no latest verifier detail in storage, get_latest_verifier_detail should return no result",
-        );
-    }
-
-    #[test]
-    fn test_get_latest_verifier_detail_with_detail_in_storage() {
-        let mut deps = mock_dependencies(&[]);
-        let attribute = get_default_asset_scope_attribute();
-        assert!(
-            attribute.latest_verifier_detail.is_none(),
-            "sanity check: the scope attribute should not include a latest verifier detail",
-        );
-        assert!(
-            attribute
-                .get_latest_verifier_detail(deps.as_ref().storage)
-                .is_none(),
-            "sanity check: with no verifier detail in storage, the value should be none",
-        );
-        let verifier_detail = get_default_verifier_detail();
-        insert_latest_verifier_detail(
-            deps.as_mut().storage,
-            &attribute.scope_address,
-            &verifier_detail,
-        )
-        .expect("inserting a verifier detail to storage for this scope should succeed");
-        assert_eq!(
-            verifier_detail,
-            attribute
-                .get_latest_verifier_detail(deps.as_ref().storage)
-                .expect("the verifier detail should be fetched from storage successfully"),
-            "expected the verifier detail to match the stored value",
         );
     }
 }

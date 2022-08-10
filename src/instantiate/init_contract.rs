@@ -166,7 +166,7 @@ mod tests {
                 DEFAULT_ONBOARDING_DENOM,
                 vec![FeeDestinationV2::new(
                     "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
-                    Uint128::new(DEFAULT_ONBOARDING_COST / 2),
+                    Uint128::new(DEFAULT_ONBOARDING_COST / 4),
                 )],
                 get_default_entity_detail().to_some(),
             )],
@@ -179,7 +179,7 @@ mod tests {
                 .to_serialized_enum(),
             vec![VerifierDetailV2::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
-                Uint128::new(150),
+                Uint128::new(300),
                 NHASH,
                 vec![
                     FeeDestinationV2::new(

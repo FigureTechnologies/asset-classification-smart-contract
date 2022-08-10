@@ -1,6 +1,6 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
 use crate::core::types::asset_qualifier::AssetQualifier;
-use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
     util::{
@@ -9,19 +9,17 @@ use crate::{
     },
 };
 use cosmwasm_std::{Addr, Storage};
-use cosmwasm_storage::{
-    bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
-    Singleton,
-};
-use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
+use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
+use cw_storage_plus::{Index, IndexList, IndexedMap, Map, UniqueIndex};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::error::ContractError;
 
-pub static STATE_V2_KEY: &[u8] = b"state_v2";
-pub static ASSET_META_KEY: &[u8] = b"asset_meta";
-pub static LATEST_VERIFIER_DETAIL_KEY: &[u8] = b"latest_verifier_detail";
+static STATE_V2_KEY: &[u8] = b"state_v2";
+const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
+
+const FEE_PAYMENT_DETAILS: Map<String, FeePaymentDetail> = Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
 /// Stores the main configurations for the contract internally.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -114,6 +112,7 @@ pub fn asset_definitions_v2<'a>(
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
+/// * `definition` The asset definition to insert into storage and derive the unique keys.
 pub fn insert_asset_definition_v2(
     storage: &mut dyn Storage,
     definition: &AssetDefinitionV2,
@@ -293,102 +292,107 @@ pub fn delete_asset_definition_v2_by_qualifier(
     Ok(existing_asset_type)
 }
 
-/// Fetches a mutable reference to the latest verifier detail storage from a [DepsMutC](crate::util::aliases::DepsMutC).
-/// This storage exists for the purpose of maintaining an accurate record of the [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
-/// each scope has when it is onboarded.  As those values can technically change between the time at
-/// which an asset is onboarded versus when it is verified, it is important that the values are
-/// stored until verification is complete in order to generate the correct fees to match the
-/// onboarding cost that is held in contract escrow during onboarding.
-///
-/// The other reason for this value being stored in contract storage versus on the scope attribute
-/// itself is because attributes written to the Provenance Blockchain have a set size limit.  Storing
-/// the entire [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the
-/// attribute is a massive bloat to its size and can cause rejected attribute writes in certain
-/// circumstances.
+/// Inserts a new payment detail into storage.  If a value already exists, an error will be returned.
+/// Note: Each payment detail must contain a unique [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// value, or the insert will be rejected with an error.
 ///
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
-pub fn latest_verifier_detail_store(storage: &mut dyn Storage) -> Bucket<VerifierDetailV2> {
-    bucket(storage, LATEST_VERIFIER_DETAIL_KEY)
-}
-
-/// Fetches a read-only cosmwasm storage bucket instance for loading verifier details for scope
-/// attributes.  This storage exists for the purpose of maintaining
-/// an accurate record of the VerifierDetailV2 each scope has when it is onboarded.  As those values
-/// can technically change between the time at which an asset is onboarded versus when it is verified,
-/// it is important that the values are stored until verification is complete in order to generate
-/// the correct fees to match the onboarding cost that is held in contract escrow during onboarding.
-///
-/// The other reason for this value being stored in contract storage versus on the scope attribute
-/// itself is because attributes written to the Provenance Blockchain have a set size limit.  Storing
-/// the entire [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the
-/// attribute is a massive bloat to its size and can cause rejected attribute writes in certain
-/// circumstances.
-///
-/// # Parameters
-///
-/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC) or
-/// [DepsMutC](crate::util::aliases::DepsMutC).
-pub fn latest_verifier_detail_store_ro(storage: &dyn Storage) -> ReadonlyBucket<VerifierDetailV2> {
-    bucket_read(storage, LATEST_VERIFIER_DETAIL_KEY)
-}
-
-/// Inserts a verifier detail into the contract's storage, leveraging the
-/// [latest_verifier_detail_store](self::latest_verifier_detail_store) function.
-///
-/// # Parameters
-///
-/// * `storage` A mutable reference to the contract's internal storage.
-/// * `scope_address` The scope address of the asset for which to store the detail.  This serves
-/// as the primary key for this bucket.
-/// * `verifier_detail` The verifier detail to store.  This represents the latest version of the
-/// verifier detail that was used when the asset was onboarded into the contract for verification.
-pub fn insert_latest_verifier_detail<S: Into<String>>(
+/// * `fee_payment_detail` The detail to insert into storage and derive the unique scope address key.
+pub fn insert_fee_payment_detail(
     storage: &mut dyn Storage,
-    scope_address: S,
-    verifier_detail: &VerifierDetailV2,
+    fee_payment_detail: &FeePaymentDetail,
 ) -> AssetResult<()> {
-    latest_verifier_detail_store(storage)
-        .save(scope_address.into().as_bytes(), verifier_detail)
-        .map_err(ContractError::Std)
+    if load_fee_payment_detail(storage, &fee_payment_detail.scope_address).is_ok() {
+        return ContractError::RecordAlreadyExists {
+            explanation: format!(
+                "cannot insert payment detail for scope [{}] because a record already exists with that address",
+                &fee_payment_detail.scope_address
+            )
+        }.to_err();
+    }
+    FEE_PAYMENT_DETAILS
+        .save(
+            storage,
+            fee_payment_detail.scope_address.to_owned(),
+            fee_payment_detail,
+        )?
+        .to_ok()
 }
 
-/// Deletes an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
-/// from the contract's internal latest verifier detail storage.  This leverages the
-/// [latest_verifier_detail_store](self::latest_verifier_detail_store) function.  This function is
-/// important, as contract storage should not retain any bloat.  All verifier details should be
-/// deleted after a verification has been completed successfully, as they are a historical record
-/// that is not relevant.
+/// Finds an existing fee payment detail by scope address, or returns an error if no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
+pub fn load_fee_payment_detail<S: Into<String>>(
+    storage: &dyn Storage,
+    scope_address: S,
+) -> AssetResult<FeePaymentDetail> {
+    FEE_PAYMENT_DETAILS
+        .load(storage, scope_address.into())?
+        .to_ok()
+}
+
+/// Attempts to find an existing fee payment detail by scope address, or returns a None variant if
+/// an error occurs or no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract's internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
+pub fn may_load_fee_payment_detail<S: Into<String>>(
+    storage: &dyn Storage,
+    scope_address: S,
+) -> Option<FeePaymentDetail> {
+    FEE_PAYMENT_DETAILS
+        .may_load(storage, scope_address.into())
+        .unwrap_or(None)
+}
+
+/// Attempts to delete an existing payment detail by scope address.  Returns an error if the detail
+/// does not exist or if deletion fails.
 ///
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
-/// * `scope_address` The scope address of the asset for which to store the detail.  This serves
-/// as the primary key for this bucket.
-pub fn delete_latest_verifier_detail<S: Into<String>>(
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// of the detail to delete.
+pub fn delete_fee_payment_detail<S: Into<String>>(
     storage: &mut dyn Storage,
     scope_address: S,
 ) -> AssetResult<()> {
-    latest_verifier_detail_store(storage).remove(scope_address.into().as_bytes());
-    Ok(())
+    let scope_address = scope_address.into();
+    // Verify the detail exists before allowing its deletion.  The standard "remove" function will
+    // not produce an error if no target value exists, but it is very informative of bad code to
+    // reveal when unnecessary operations occur.
+    load_fee_payment_detail(storage, &scope_address)?;
+    FEE_PAYMENT_DETAILS.remove(storage, scope_address);
+    ().to_ok()
 }
 
 #[cfg(test)]
 mod tests {
+    use cosmwasm_std::StdError;
     use provwasm_mocks::mock_dependencies;
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_qualifier, delete_latest_verifier_detail,
-        insert_asset_definition_v2, insert_latest_verifier_detail, latest_verifier_detail_store_ro,
+        delete_asset_definition_v2_by_qualifier, delete_fee_payment_detail,
+        insert_asset_definition_v2, insert_fee_payment_detail,
         load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
-        may_load_asset_definition_v2_by_scope_spec, may_load_asset_definition_v2_by_type,
+        load_fee_payment_detail, may_load_asset_definition_v2_by_scope_spec,
+        may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
         replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
-    use crate::testutil::test_utilities::get_default_verifier_detail;
+    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_utilities::get_duped_fee_payment_detail;
 
     #[test]
     fn test_insert_asset_definition() {
@@ -702,50 +706,83 @@ mod tests {
     }
 
     #[test]
-    fn test_insert_latest_verifier_detail() {
+    fn test_insert_and_load_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
-        let mut verifier_detail = get_default_verifier_detail();
-        let scope_address = "test-address";
-        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
-            .expect("expected inserting the verifier detail to succeed");
-        let mut detail_from_storage = latest_verifier_detail_store_ro(deps.as_ref().storage)
-            .load(scope_address.as_bytes())
-            .expect("expected the verifier detail to be fetched successfully from storage");
-        assert_eq!(
-            verifier_detail, detail_from_storage,
-            "expected the verifier detail from storage to match the inserted value",
+        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when trying to load a payment detail that does not exist",
         );
-        verifier_detail.address = "different address".to_string();
-        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
-            .expect("expected the modified verifier detail to be stored to overwrite the original");
-        detail_from_storage = latest_verifier_detail_store_ro(deps.as_ref().storage)
-            .load(scope_address.as_bytes())
-            .expect(
-                "expected the modified verifier detail to be fetched successfully from storage",
-            );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is not found, but got: {:?}",
+            err,
+        );
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a new fee payment detail should succeed");
+        let loaded_payment_detail =
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("loading the stored payment detail should succeed");
         assert_eq!(
-            verifier_detail, detail_from_storage,
-            "expected the modified verifier detail to match its stored counterpart",
+            payment_detail, loaded_payment_detail,
+            "the loaded payment detail should equate to the stored value",
+        );
+        let err = insert_fee_payment_detail(deps.as_mut().storage, &loaded_payment_detail)
+            .expect_err(
+                "an error should occur when attempting to insert a duplicate payment detail",
+            );
+        assert!(
+            matches!(err, ContractError::RecordAlreadyExists { .. }),
+            "a record already exists error should occur, but got: {:?}",
+            err,
         );
     }
 
     #[test]
-    fn test_delete_latest_verifier_detail() {
+    fn test_may_load_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
-        let verifier_detail = get_default_verifier_detail();
-        let scope_address = "test-address";
-        insert_latest_verifier_detail(deps.as_mut().storage, scope_address, &verifier_detail)
-            .expect("expected inserting the verifier detail to succeed");
-        latest_verifier_detail_store_ro(deps.as_ref().storage)
-            .load(scope_address.as_bytes())
-            .expect("expected loading the verifier detail from storage after an insert to succeed");
-        delete_latest_verifier_detail(deps.as_mut().storage, scope_address)
-            .expect("expected deleting an existing verifier detail from storage to succeed");
         assert!(
-            latest_verifier_detail_store_ro(deps.as_ref().storage).may_load(scope_address.as_bytes())
-                .expect("expected the may_load call on the storage to succeed")
-                .is_none(),
-            "expected an attempt to load a verifier detail after it is deleted to provide a None option",
+            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_none(),
+            "attempting to load a detail that does not exist should produce a None variant",
+        );
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a new fee payment detail should succeed");
+        let loaded_payment_detail =
+            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
+                .expect("the fee payment detail should load successfully");
+        assert_eq!(
+            payment_detail, loaded_payment_detail,
+            "the loaded payment detail should equate to the inserted value",
+        );
+    }
+
+    #[test]
+    fn test_delete_fee_payment_detail() {
+        let mut deps = mock_dependencies(&[]);
+        let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when attempting to delete a fee payment detail that does not exist"
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is not found, but got: {:?}",
+            err,
+        );
+        let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+            .expect("inserting a payment detail should succeed");
+        assert!(
+            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_ok(),
+            "sanity check: fee payment detail should be available after insert",
+        );
+        delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS)
+            .expect("deleting a payment detail should succeed");
+        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+            "an error should occur when trying to load a payment detail after it has been deleted",
+        );
+        assert!(
+            matches!(err, ContractError::Std(StdError::NotFound { .. })),
+            "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
+            err,
         );
     }
 }

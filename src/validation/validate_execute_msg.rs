@@ -47,7 +47,6 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
             owner_address,
             ..
         } => validate_update_access_routes(identifier, owner_address),
-        ExecuteMsg::BindContractAlias { alias_name } => validate_bind_contract_alias(alias_name),
         ExecuteMsg::DeleteAssetDefinition { qualifier } => {
             validate_delete_asset_definition(qualifier)
         }
@@ -161,23 +160,6 @@ fn validate_update_access_routes(
         invalid_fields.push("owner_address: must not be blank".to_string());
     }
     gen_validation_response("ExecuteMsg::UpdateAccessRoutes", invalid_fields)
-}
-
-/// Validates the [BindContractAlias](crate::core::msg::ExecuteMsg::BindContractAlias) variant of the
-/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
-/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
-/// invalid fields are found.
-///
-/// # Parameters
-///
-/// * `alias_name` The fully-qualified Provenance Blockchain Name Module name to bind to the
-/// contract.
-fn validate_bind_contract_alias(alias_name: &str) -> AssetResult<()> {
-    let mut invalid_fields: Vec<String> = vec![];
-    if alias_name.is_empty() {
-        invalid_fields.push("alias_name: must not be blank".to_string());
-    }
-    gen_validation_response("ExecuteMsg::BindContractAlias", invalid_fields)
 }
 
 /// Validates the [DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition) variant of the
@@ -311,8 +293,7 @@ mod tests {
     use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::core::types::serialized_enum::SerializedEnum;
     use crate::validation::validate_execute_msg::{
-        validate_bind_contract_alias, validate_delete_asset_definition,
-        validate_update_access_routes,
+        validate_delete_asset_definition, validate_update_access_routes,
     };
     use crate::{
         core::{error::ContractError, types::asset_identifier::AssetIdentifier},
@@ -624,27 +605,6 @@ mod tests {
             assert_eq!(
                 "identifier: received type [weird_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]",
                 invalid_fields.first().unwrap().as_str(),
-                "expected the appropriate error message to be returned",
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_bind_contract_alias_invalid_alias_name() {
-        let result = validate_bind_contract_alias("");
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::BindContractAlias", message_type,
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "alias_name: must not be blank",
-                invalid_fields.first().unwrap(),
                 "expected the appropriate error message to be returned",
             );
         });

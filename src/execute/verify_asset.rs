@@ -131,7 +131,7 @@ where
     )?;
 
     // construct/emit verification attribute
-    Ok(Response::new()
+    Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::VerifyAsset,
@@ -140,13 +140,15 @@ where
             )
             .set_verifier(info.sender),
         )
-        .add_messages(repository.get_messages()))
+        .add_messages(repository.get_messages())
+        .to_ok()
 }
 
 #[cfg(test)]
 mod tests {
     use provwasm_mocks::mock_dependencies;
 
+    use crate::execute::onboard_asset::OnboardAssetV1;
     use crate::{
         core::{
             error::ContractError,
@@ -288,7 +290,7 @@ mod tests {
         assert_eq!(
             2,
             result.messages.len(),
-            "verify asset should produce two messages (update attribute msg and fee distribution to default verifier w/ no additional fee destinations)"
+            "verify asset should produce two messages: update attribute msg to new status and bank send to default verifier"
         );
     }
 
@@ -296,7 +298,16 @@ mod tests {
     fn test_verify_errors_on_already_verified_success_true() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let err = verify_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -364,7 +375,16 @@ mod tests {
     fn test_verify_asset_success_true_produces_correct_onboarding_status() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
-        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset(DEFAULT_SCOPE_ADDRESS)

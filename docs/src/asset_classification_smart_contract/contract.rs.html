@@ -163,10 +163,10 @@
 <span id="158">158</span>
 <span id="159">159</span>
 <span id="160">160</span>
+<span id="161">161</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg</span>::{<span class="ident">ExecuteMsg</span>, <span class="ident">InitMsg</span>, <span class="ident">MigrateMsg</span>, <span class="ident">QueryMsg</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_definition</span>::{<span class="ident">add_asset_definition</span>, <span class="ident">AddAssetDefinitionV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_verifier</span>::{<span class="ident">add_asset_verifier</span>, <span class="ident">AddAssetVerifierV1</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::bind_contract_alias</span>::{<span class="ident">bind_contract_alias</span>, <span class="ident">BindContractAliasV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::delete_asset_definition</span>::{<span class="ident">delete_asset_definition</span>, <span class="ident">DeleteAssetDefinitionV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::onboard_asset</span>::{<span class="ident">onboard_asset</span>, <span class="ident">OnboardAssetV1</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::toggle_asset_definition</span>::{<span class="ident">toggle_asset_definition</span>, <span class="ident">ToggleAssetDefinitionV1</span>};
@@ -179,6 +179,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_definition::query_asset_definition</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_definitions::query_asset_definitions</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_scope_attribute::query_asset_scope_attribute</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_fee_payments::query_fee_payments</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_state::query_state</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_version::query_version</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::service::asset_meta_service::AssetMetaService</span>;
@@ -236,6 +237,9 @@
         <span class="ident">QueryMsg::QueryAssetScopeAttribute</span> { <span class="ident">identifier</span> } =&gt; {
             <span class="ident">query_asset_scope_attribute</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>, <span class="ident">identifier</span>.<span class="ident">to_asset_identifier</span>()<span class="question-mark">?</span>)
         }
+        <span class="ident">QueryMsg::QueryFeePayments</span> { <span class="ident">identifier</span> } =&gt; {
+            <span class="ident">query_fee_payments</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>, <span class="ident">identifier</span>.<span class="ident">to_asset_identifier</span>()<span class="question-mark">?</span>)
+        }
         <span class="ident">QueryMsg::QueryState</span> {} =&gt; <span class="ident">query_state</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>),
         <span class="ident">QueryMsg::QueryVersion</span> {} =&gt; <span class="ident">query_version</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>),
     }
@@ -264,6 +268,7 @@
     <span class="kw">match</span> <span class="ident">msg</span> {
         <span class="ident">ExecuteMsg::OnboardAsset</span> { .. } =&gt; <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>),
+            <span class="ident">env</span>,
             <span class="ident">info</span>,
             <span class="ident">OnboardAssetV1::from_execute_msg</span>(<span class="ident">msg</span>)<span class="question-mark">?</span>,
         ),
@@ -295,9 +300,6 @@
             <span class="ident">info</span>,
             <span class="ident">UpdateAccessRoutesV1::from_execute_msg</span>(<span class="ident">msg</span>)<span class="question-mark">?</span>,
         ),
-        <span class="ident">ExecuteMsg::BindContractAlias</span> { .. } =&gt; {
-            <span class="ident">bind_contract_alias</span>(<span class="ident">deps</span>, <span class="ident">env</span>, <span class="ident">info</span>, <span class="ident">BindContractAliasV1::from_execute_msg</span>(<span class="ident">msg</span>)<span class="question-mark">?</span>)
-        }
         <span class="ident">ExecuteMsg::DeleteAssetDefinition</span> { .. } =&gt; {
             <span class="ident">delete_asset_definition</span>(<span class="ident">deps</span>, <span class="ident">info</span>, <span class="ident">DeleteAssetDefinitionV1::from_execute_msg</span>(<span class="ident">msg</span>)<span class="question-mark">?</span>)
         }

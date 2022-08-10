@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["query_fee_payments","A query that fetches a target FeePaymentDetail from the contract’s internal storage and serializes it to a Binary struct.  When none is found, a None Option variant is serialized instead, effectively representing a null json payload."]]});

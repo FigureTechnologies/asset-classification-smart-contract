@@ -119,7 +119,6 @@
 <span id="114">114</span>
 <span id="115">115</span>
 <span id="116">116</span>
-<span id="117">117</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
@@ -174,7 +173,6 @@
 
     <span class="doccomment">/// Calculates a sum of all held [fee_destinations](self::VerifierDetailV2::fee_destinations)</span>
     <span class="doccomment">/// respective [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) fields.</span>
-    <span class="doccomment">///</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_fee_total</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u128</span> {
         <span class="self">self</span>.<span class="ident">fee_destinations</span>
             .<span class="ident">iter</span>()

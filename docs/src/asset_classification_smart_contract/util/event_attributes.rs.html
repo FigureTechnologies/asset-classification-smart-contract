@@ -334,9 +334,6 @@
 <span id="329">329</span>
 <span id="330">330</span>
 <span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::constants</span>::{
     <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">NEW_VALUE_KEY</span>, <span class="ident">SCOPE_OWNER_KEY</span>,
     <span class="ident">VERIFIER_ADDRESS_KEY</span>,
@@ -367,8 +364,6 @@
     <span class="ident">UpdateAssetVerifier</span>,
     <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update access routes](crate::execute::update_access_routes).</span>
     <span class="ident">UpdateAccessRoutes</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [bind a contract alias](crate::execute::bind_contract_alias).</span>
-    <span class="ident">BindContractAlias</span>,
     <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [delete an asset definition](crate::execute::delete_asset_definition).</span>
     <span class="ident">DeleteAssetDefinition</span>,
 }
@@ -386,7 +381,6 @@
             <span class="ident">EventType::AddAssetVerifier</span> =&gt; <span class="string">&quot;add_asset_verifier&quot;</span>,
             <span class="ident">EventType::UpdateAssetVerifier</span> =&gt; <span class="string">&quot;update_asset_verifier&quot;</span>,
             <span class="ident">EventType::UpdateAccessRoutes</span> =&gt; <span class="string">&quot;update_access_routes&quot;</span>,
-            <span class="ident">EventType::BindContractAlias</span> =&gt; <span class="string">&quot;bind_contract_alias&quot;</span>,
             <span class="ident">EventType::DeleteAssetDefinition</span> =&gt; <span class="string">&quot;delete_asset_definition&quot;</span>,
         }
         .<span class="ident">into</span>()

@@ -19,6 +19,10 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Contains the functionality used in the [contract file](crate::contract) to perform a contract query.</span>
 
 <span class="doccomment">/// A query that fetches a target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
@@ -30,6 +34,10 @@
 <span class="doccomment">/// A query that attempts to find an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
 <span class="doccomment">/// on a Provenance Blockchain Metadata Scope that was added by this contract.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">query_asset_scope_attribute</span>;
+<span class="doccomment">/// A query that attempts to find a [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)</span>
+<span class="doccomment">/// stored for an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
+<span class="doccomment">/// that has not yet finished its asset verification step.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">query_fee_payments</span>;
 <span class="doccomment">/// A query that directly returns the contract&#39;s stored [StateV2](crate::core::state::StateV2) value.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">query_state</span>;
 <span class="doccomment">/// A query that directly returns the contract&#39;s stored [VersionInfoV1](crate::migrate::version_info::VersionInfoV1)</span>

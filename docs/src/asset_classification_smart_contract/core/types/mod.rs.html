@@ -33,6 +33,9 @@
 <span id="28">28</span>
 <span id="29">29</span>
 <span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Contains all structs used to drive core functionality throughout the contract.</span>
 
 <span class="doccomment">/// Defines a collection of [AccessRoute](self::access_route::AccessRoute) for a specific address.</span>
@@ -56,6 +59,9 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">entity_detail</span>;
 <span class="doccomment">/// Defines an external account designated as a recipient of funds during the verification process.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fee_destination</span>;
+<span class="doccomment">/// Defines a stored set of values for charging fees to the onboarding account during the asset</span>
+<span class="doccomment">/// classification process.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fee_payment_detail</span>;
 <span class="doccomment">/// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">scope_spec_identifier</span>;
 <span class="doccomment">/// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:</span>

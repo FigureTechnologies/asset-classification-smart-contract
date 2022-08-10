@@ -273,7 +273,6 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
-<span id="271">271</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
@@ -328,6 +327,16 @@
     <span class="doccomment">/// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been</span>
     <span class="doccomment">/// successfully classified by a verifier.</span>
     <span class="ident">QueryAssetScopeAttribute</span> {
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
+        <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+    },
+    <span class="doccomment">/// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)</span>
+    <span class="doccomment">/// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
+    <span class="doccomment">/// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route&#39;s processes.  This</span>
+    <span class="doccomment">/// route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset)</span>
+    <span class="doccomment">/// route is executed.</span>
+    <span class="ident">QueryFeePayments</span> {
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
@@ -489,17 +498,6 @@
         <span class="doccomment">/// If other existing routes need to be maintained and the updated is intended to simply add a new route, then the existing</span>
         <span class="doccomment">/// routes need to be included in the request alongside the new route(s).</span>
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
-    },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ The [Provenance Blockchain Name Module](https://docs.provenance.io/modules/name-module)</span>
-    <span class="doccomment">/// offers a very elegant method of lookup for addresses when a name has been bound to an address.  This execution route</span>
-    <span class="doccomment">/// allows for a name to be bound directly to the contract within the contract itself.  Due to the nature of how the name</span>
-    <span class="doccomment">/// module works, public names can only be bound by the requesting account (in this case, the contract) or by the name</span>
-    <span class="doccomment">/// owner.  In most cases, users won&#39;t have access to the root name owner of an unrestricted name, but will want to bind a</span>
-    <span class="doccomment">/// name to the contract in order to facilitate lookups.  This allows any unrestricted name to be bound to the contract with</span>
-    <span class="doccomment">/// ease.  This route will fail execution if a name is provided that stems from a restricted parent.</span>
-    <span class="ident">BindContractAlias</span> {
-        <span class="doccomment">/// The name to bind to the contract.  Ex: `assetclassificationalias.pb`.</span>
-        <span class="ident">alias_name</span>: <span class="ident">String</span>,
     },
     <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
     <span class="doccomment">/// is erroneously added with an incorrect asset type, the scope specification address is unable</span>

@@ -762,12 +762,37 @@
 <span id="757">757</span>
 <span id="758">758</span>
 <span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV2</span>, <span class="ident">AssetDefinitionV2</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::VALID_VERIFIER_DENOMS</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::distinct_count_by_property</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
@@ -913,14 +938,21 @@
     <span class="kw">if</span> <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">address</span>).<span class="ident">is_err</span>() {
         <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier:address: must be a valid address&quot;</span>.<span class="ident">to_string</span>());
     }
-    <span class="kw">if</span> <span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier:onboarding_denom: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>.<span class="ident">as_str</span>()) {
+        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;verifier:onboarding_denom: must be one of [{}]&quot;</span>,
+            <span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>),
+        ));
+    }
+    <span class="comment">// onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly</span>
+    <span class="kw">if</span> <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier:onboarding_cost must be an even number&quot;</span>.<span class="ident">to_string</span>());
     }
     <span class="kw">if</span> <span class="op">!</span><span class="ident">verifier</span>.<span class="ident">fee_destinations</span>.<span class="ident">is_empty</span>()
-        <span class="op">&amp;&amp;</span> <span class="ident">verifier</span>.<span class="ident">get_fee_total</span>() <span class="op">&gt;</span> <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>()
+        <span class="op">&amp;&amp;</span> <span class="ident">verifier</span>.<span class="ident">get_fee_total</span>() <span class="op">&gt;</span> <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>
     {
         <span class="ident">invalid_fields</span>.<span class="ident">push</span>(
-            <span class="string">&quot;verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="string">&quot;verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost&quot;</span>.<span class="ident">to_string</span>(),
         );
     }
     <span class="kw">if</span> <span class="ident">distinct_count_by_property</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">fee_destinations</span>, <span class="op">|</span><span class="ident">dest</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">dest</span>.<span class="ident">address</span>)
@@ -958,7 +990,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::scope_spec_identifier::ScopeSpecIdentifier</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_default_entity_detail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::NHASH</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">NHASH</span>, <span class="ident">VALID_VERIFIER_DENOMS</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg</span>::{
         <span class="ident">validate_asset_definition_input_internal</span>, <span class="ident">validate_asset_definition_internal</span>,
@@ -988,7 +1020,7 @@
                     .<span class="ident">to_serialized_enum</span>(),
                 <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                     <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                    <span class="ident">Uint128::new</span>(<span class="number">200</span>),
                     <span class="ident">NHASH</span>,
                     <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
                         <span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>,
@@ -1015,7 +1047,7 @@
                         .<span class="ident">to_serialized_enum</span>(),
                     <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                         <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                        <span class="ident">Uint128::new</span>(<span class="number">200</span>),
                         <span class="ident">NHASH</span>,
                         <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
                             <span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>,
@@ -1069,7 +1101,7 @@
                         ),
                         <span class="ident">VerifierDetailV2::new</span>(
                             <span class="string">&quot;tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq&quot;</span>,
-                            <span class="ident">Uint128::new</span>(<span class="number">1000000</span>),
+                            <span class="ident">Uint128::new</span>(<span class="number">2000000</span>),
                             <span class="ident">NHASH</span>,
                             <span class="macro">vec!</span>[
                                 <span class="ident">FeeDestinationV2::new</span>(
@@ -1178,7 +1210,7 @@
             <span class="string">&quot;scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz&quot;</span>,
             <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                <span class="ident">Uint128::new</span>(<span class="number">200</span>),
                 <span class="ident">NHASH</span>,
                 <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
                     <span class="string">&quot;tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew&quot;</span>,
@@ -1298,7 +1330,7 @@
     <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_multiple_fee_destinations</span>() {
         <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
             <span class="string">&quot;tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">2000</span>),
+            <span class="ident">Uint128::new</span>(<span class="number">4000</span>),
             <span class="ident">NHASH</span>,
             <span class="macro">vec!</span>[
                 <span class="ident">FeeDestinationV2::new</span>(
@@ -1345,6 +1377,11 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_invalid_verifier_onboarding_denom</span>() {
+        <span class="kw">let</span> <span class="ident">expected_error_text</span> <span class="op">=</span> <span class="macro">format!</span>(
+            <span class="string">&quot;verifier:onboarding_denom: must be one of [{}]&quot;</span>,
+            <span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>)
+        );
+        <span class="comment">// Verify that a blank value produces an error</span>
         <span class="ident">test_invalid_verifier</span>(
             <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;address&quot;</span>,
@@ -1353,8 +1390,19 @@
                 <span class="macro">vec!</span>[],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             ),
-            <span class="string">&quot;verifier:onboarding_denom: must not be blank&quot;</span>,
+            <span class="kw-2">&amp;</span><span class="ident">expected_error_text</span>,
         );
+        <span class="comment">// Verify that a value not in VALID_VERIFIER_DENOMS produces an error</span>
+        <span class="ident">test_invalid_verifier</span>(
+            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+                <span class="string">&quot;address&quot;</span>,
+                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                <span class="string">&quot;someotherdenom&quot;</span>,
+                <span class="macro">vec!</span>[],
+                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            ),
+            <span class="kw-2">&amp;</span><span class="ident">expected_error_text</span>,
+        )
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1362,12 +1410,12 @@
         <span class="ident">test_invalid_verifier</span>(
             <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">1010</span>),
+                <span class="ident">Uint128::new</span>(<span class="number">2020</span>),
                 <span class="ident">NHASH</span>,
                 <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">1011</span>))],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             ),
-            <span class="string">&quot;verifier:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost&quot;</span>,
+            <span class="string">&quot;verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost&quot;</span>,
         );
     }
 

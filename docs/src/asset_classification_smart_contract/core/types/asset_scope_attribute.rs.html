@@ -349,103 +349,12 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
-<span id="391">391</span>
-<span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
-<span id="395">395</span>
-<span id="396">396</span>
-<span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
-<span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
-<span id="423">423</span>
-<span id="424">424</span>
-<span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
-<span id="431">431</span>
-<span id="432">432</span>
-<span id="433">433</span>
-<span id="434">434</span>
-<span id="435">435</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Addr</span>, <span class="ident">Storage</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::Addr</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::latest_verifier_detail_store_ro</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">types::access_definition::AccessDefinitionType</span>},
+    <span class="ident">core::types::access_definition::AccessDefinitionType</span>,
     <span class="ident">util</span>::{
         <span class="ident">aliases::AssetResult</span>, <span class="ident">functions::filter_valid_access_routes</span>,
         <span class="ident">scope_address_utils::bech32_string_to_addr</span>, <span class="ident">traits::ResultExtensions</span>,
@@ -477,14 +386,6 @@
     <span class="kw">pub</span> <span class="ident">verifier_address</span>: <span class="ident">Addr</span>,
     <span class="doccomment">/// Indicates the portion of the classification process at which the scope currently is.</span>
     <span class="kw">pub</span> <span class="ident">onboarding_status</span>: <span class="ident">AssetOnboardingStatus</span>,
-    <span class="doccomment">/// When the onboarding process runs, the verifier detail currently in contract storage for the</span>
-    <span class="doccomment">/// verifier address chosen by the requestor is added to the scope attribute.  This ensures that</span>
-    <span class="doccomment">/// if the verifier values change due to an external update, the original fee structure will be</span>
-    <span class="doccomment">/// honored for the onboarding task placed originally.  This value should never be accessed</span>
-    <span class="doccomment">/// directly in the contract, and instead the [get_latest_verifier_detail](self::AssetScopeAttribute::get_latest_verifier_detail)</span>
-    <span class="doccomment">/// function should be used.  This field only exists in order for this value to be reflected</span>
-    <span class="doccomment">/// accurately during queries.</span>
-    <span class="kw">pub</span> <span class="ident">latest_verifier_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
     <span class="doccomment">/// The most recent verification is kept on the scope attribute.  If the verifier determines that</span>
     <span class="doccomment">/// the asset cannot be classified, this value may be overwritten later by a subsequent onboard.</span>
     <span class="kw">pub</span> <span class="ident">latest_verification_result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetVerificationResult</span><span class="op">&gt;</span>,
@@ -510,9 +411,6 @@
     <span class="doccomment">/// the asset should be classified.</span>
     <span class="doccomment">/// * `onboarding_status` Indicates the portion of the classification process at which the scope</span>
     <span class="doccomment">/// currently is.  If omitted, this value is populated as [Pending](super::asset_onboarding_status::AssetOnboardingStatus::Pending).</span>
-    <span class="doccomment">/// * `latest_verifier_detail` The initial verifier detail to be placed onto this scope attribute.</span>
-    <span class="doccomment">/// As this function should always be used to create a new scope attribute, this value does not</span>
-    <span class="doccomment">/// need to be optional.</span>
     <span class="doccomment">/// * `access_routes` The initial access routes for the scope attribute.  These values are</span>
     <span class="doccomment">/// implicitly assumed to be from the requestor, and are wrapped in an initial [AccessDefinition](super::access_definition::AccessDefinition).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S3</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
@@ -521,15 +419,11 @@
         <span class="ident">requestor_address</span>: <span class="ident">S2</span>,
         <span class="ident">verifier_address</span>: <span class="ident">S3</span>,
         <span class="ident">onboarding_status</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetOnboardingStatus</span><span class="op">&gt;</span>,
-        <span class="ident">latest_verifier_detail</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>,
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">identifiers</span> <span class="op">=</span> <span class="ident">identifier</span>.<span class="ident">to_identifiers</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">req_addr</span> <span class="op">=</span> <span class="ident">bech32_string_to_addr</span>(<span class="ident">requestor_address</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">ver_addr</span> <span class="op">=</span> <span class="ident">bech32_string_to_addr</span>(<span class="ident">verifier_address</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">ver_addr</span> <span class="op">!</span><span class="op">=</span> <span class="ident">latest_verifier_detail</span>.<span class="ident">address</span> {
-            <span class="kw">return</span> <span class="ident">ContractError::generic</span>(<span class="macro">format!</span>(<span class="string">&quot;provided verifier address [{}] did not match the verifier detail&#39;s address [{}]&quot;</span>, <span class="ident">ver_addr</span>, <span class="ident">latest_verifier_detail</span>.<span class="ident">address</span>).<span class="ident">as_str</span>()).<span class="ident">to_err</span>();
-        }
         <span class="comment">// Remove all access routes that are empty strings to prevent bad data from being provided</span>
         <span class="kw">let</span> <span class="ident">filtered_access_routes</span> <span class="op">=</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">access_routes</span>);
         <span class="comment">// If access routes were provided as an empty array, or the array only contains empty strings, don&#39;t create an access definition for the requestor</span>
@@ -549,33 +443,15 @@
             <span class="ident">requestor_address</span>: <span class="ident">req_addr</span>,
             <span class="ident">verifier_address</span>: <span class="ident">ver_addr</span>,
             <span class="ident">onboarding_status</span>: <span class="ident">onboarding_status</span>.<span class="ident">unwrap_or</span>(<span class="ident">AssetOnboardingStatus::Pending</span>),
-            <span class="ident">latest_verifier_detail</span>: <span class="prelude-val">None</span>,
             <span class="ident">latest_verification_result</span>: <span class="prelude-val">None</span>,
             <span class="ident">access_definitions</span>,
         }
         .<span class="ident">to_ok</span>()
     }
-
-    <span class="doccomment">/// Fetches the latest verifier detail from contract storage.  The local field, latest_verifier_detail,</span>
-    <span class="doccomment">/// should never be used directly.  Only the contract storage should have the most recent data.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `storage` An instance of the Cosmwasm storage that allows internally-stored values to be</span>
-    <span class="doccomment">/// fetched.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_latest_verifier_detail</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span> {
-        <span class="ident">latest_verifier_detail_store_ro</span>(<span class="ident">storage</span>)
-            .<span class="ident">may_load</span>(<span class="self">self</span>.<span class="ident">scope_address</span>.<span class="ident">as_bytes</span>())
-            .<span class="ident">unwrap_or</span>(<span class="prelude-val">None</span>)
-    }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::insert_latest_verifier_detail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
-        <span class="ident">get_default_asset_scope_attribute</span>, <span class="ident">get_default_asset_scope_attribute_and_detail</span>,
-    };
     <span class="kw">use</span> <span class="kw">crate</span>::{
         <span class="ident">core::types</span>::{
             <span class="ident">access_route::AccessRoute</span>, <span class="ident">asset_identifier::AssetIdentifier</span>,
@@ -586,11 +462,10 @@
             <span class="ident">test_constants</span>::{
                 <span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             },
-            <span class="ident">test_utilities</span>::{<span class="ident">assert_single_item</span>, <span class="ident">get_default_verifier_detail</span>},
+            <span class="ident">test_utilities::assert_single_item</span>,
         },
         <span class="ident">util::traits::OptionExtensions</span>,
     };
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_new_asset_scope_attribute_filters_bad_access_routes</span>() {
@@ -600,7 +475,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[
                 <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;    &quot;</span>),
                 <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;  &quot;</span>),
@@ -631,7 +505,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[
                 <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;    &quot;</span>),
                 <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;  &quot;</span>),
@@ -653,7 +526,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[],
         )
         .<span class="ident">expect</span>(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
@@ -671,7 +543,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_and_name</span>(
                 <span class="string">&quot;   test-route   &quot;</span>,
                 <span class="string">&quot;my cool name                 &quot;</span>,
@@ -707,7 +578,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[
                 <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name1&quot;</span>),
                 <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name2&quot;</span>),
@@ -754,7 +624,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[
                 <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;hey look at my name right here&quot;</span>),
                 <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;test-route&quot;</span>),
@@ -801,7 +670,6 @@
             <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
             <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">get_default_verifier_detail</span>(),
             <span class="macro">vec!</span>[
                 <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;test-route     &quot;</span>, <span class="string">&quot;myname&quot;</span>),
                 <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;myname    &quot;</span>),
@@ -824,52 +692,6 @@
             <span class="string">&quot;myname&quot;</span>,
             <span class="ident">access_route</span>.<span class="ident">name</span>.<span class="ident">expect</span>(<span class="string">&quot;the name should be set&quot;</span>),
             <span class="string">&quot;the trimmed name should be produced correctly&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_latest_verifier_detail_none_found</span>() {
-        <span class="kw">let</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="comment">// Get and populate an attribute with a latest verifier detail</span>
-        <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">get_default_asset_scope_attribute_and_detail</span>(<span class="bool-val">true</span>);
-        <span class="macro">assert!</span>(
-            <span class="ident">attribute</span>.<span class="ident">latest_verifier_detail</span>.<span class="ident">is_some</span>(),
-            <span class="string">&quot;sanity check: the scope attribute should include a latest verifier detail&quot;</span>,
-        );
-        <span class="comment">// Proves the local field has no bearing on the result</span>
-        <span class="macro">assert!</span>(
-            <span class="ident">attribute</span>.<span class="ident">get_latest_verifier_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>).<span class="ident">is_none</span>(),
-            <span class="string">&quot;with no latest verifier detail in storage, get_latest_verifier_detail should return no result&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_latest_verifier_detail_with_detail_in_storage</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">get_default_asset_scope_attribute</span>();
-        <span class="macro">assert!</span>(
-            <span class="ident">attribute</span>.<span class="ident">latest_verifier_detail</span>.<span class="ident">is_none</span>(),
-            <span class="string">&quot;sanity check: the scope attribute should not include a latest verifier detail&quot;</span>,
-        );
-        <span class="macro">assert!</span>(
-            <span class="ident">attribute</span>
-                .<span class="ident">get_latest_verifier_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>)
-                .<span class="ident">is_none</span>(),
-            <span class="string">&quot;sanity check: with no verifier detail in storage, the value should be none&quot;</span>,
-        );
-        <span class="kw">let</span> <span class="ident">verifier_detail</span> <span class="op">=</span> <span class="ident">get_default_verifier_detail</span>();
-        <span class="ident">insert_latest_verifier_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>,
-            <span class="kw-2">&amp;</span><span class="ident">verifier_detail</span>,
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;inserting a verifier detail to storage for this scope should succeed&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier_detail</span>,
-            <span class="ident">attribute</span>
-                .<span class="ident">get_latest_verifier_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;the verifier detail should be fetched from storage successfully&quot;</span>),
-            <span class="string">&quot;expected the verifier detail to match the stored value&quot;</span>,
         );
     }
 }

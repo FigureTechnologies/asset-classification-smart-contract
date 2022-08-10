@@ -1064,9 +1064,49 @@
 <span id="1059">1059</span>
 <span id="1060">1060</span>
 <span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_v2_by_type</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{
+    <span class="ident">config_read_v2</span>, <span class="ident">delete_fee_payment_detail</span>, <span class="ident">load_asset_definition_v2_by_type</span>,
+};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus</span>;
@@ -1075,9 +1115,10 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::service::deps_manager::DepsManager</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::service::message_gathering_service::MessageGatheringService</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">EntryPointResponse</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits</span>::{<span class="ident">OptionExtensions</span>, <span class="ident">ResultExtensions</span>};
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
+<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Env</span>, <span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceQuerier</span>;
 
 <span class="doccomment">/// A transformation of [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)</span>
@@ -1152,6 +1193,7 @@
 <span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">onboard_asset</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">repository</span>: <span class="ident">T</span>,
+    <span class="ident">env</span>: <span class="ident">Env</span>,
     <span class="ident">info</span>: <span class="ident">MessageInfo</span>,
     <span class="ident">msg</span>: <span class="ident">OnboardAssetV1</span>,
 ) -&gt; <span class="ident">EntryPointResponse</span>
@@ -1181,47 +1223,10 @@
     };
 
     <span class="comment">// verify prescribed verifier is present as a verifier in asset definition</span>
-    <span class="kw">let</span> <span class="ident">verifier_config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">asset_definition</span>
-        .<span class="ident">verifiers</span>
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">find</span>(<span class="op">|</span><span class="ident">verifier</span><span class="op">|</span> <span class="ident">verifier</span>.<span class="ident">address</span> <span class="op">==</span> <span class="ident">msg</span>.<span class="ident">verifier_address</span>)
-    {
-        <span class="prelude-val">Some</span>(<span class="ident">verifier</span>) =&gt; <span class="ident">verifier</span>,
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">return</span> <span class="ident">ContractError::UnsupportedVerifier</span> {
-                <span class="ident">asset_type</span>: <span class="ident">msg</span>.<span class="ident">asset_type</span>,
-                <span class="ident">verifier_address</span>: <span class="ident">msg</span>.<span class="ident">verifier_address</span>,
-            }
-            .<span class="ident">to_err</span>()
-        }
-    };
+    <span class="kw">let</span> <span class="ident">verifier_config</span> <span class="op">=</span> <span class="ident">asset_definition</span>.<span class="ident">get_verifier_detail</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">verifier_address</span>)<span class="question-mark">?</span>;
 
-    <span class="comment">// verify sent funds match what is specified in the asset state</span>
-    <span class="kw">if</span> <span class="ident">info</span>.<span class="ident">funds</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
-        <span class="kw">return</span> <span class="ident">ContractError::InvalidFunds</span>(
-            <span class="string">&quot;Exactly one fund type (of nhash) should be sent&quot;</span>.<span class="ident">to_string</span>(),
-        )
-        .<span class="ident">to_err</span>();
-    }
-
-    <span class="kw">let</span> <span class="ident">sent_fee</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">info</span>.<span class="ident">funds</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">funds</span><span class="op">|</span> <span class="ident">funds</span>.<span class="ident">denom</span> <span class="op">==</span> <span class="string">&quot;nhash&quot;</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">funds</span>) =&gt; <span class="ident">funds</span>,
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">return</span> <span class="ident">ContractError::InvalidFunds</span>(<span class="macro">format!</span>(
-                <span class="string">&quot;Improper funds supplied for onboarding (expected {}nhash)&quot;</span>,
-                <span class="ident">verifier_config</span>.<span class="ident">onboarding_cost</span>
-            ))
-            .<span class="ident">to_err</span>()
-        }
-    };
-
-    <span class="kw">if</span> <span class="ident">sent_fee</span>.<span class="ident">amount</span> <span class="op">!</span><span class="op">=</span> <span class="ident">verifier_config</span>.<span class="ident">onboarding_cost</span> {
-        <span class="kw">return</span> <span class="ident">ContractError::InvalidFunds</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;Improper fee of {}{} provided (expected {}nhash)&quot;</span>,
-            <span class="ident">sent_fee</span>.<span class="ident">amount</span>, <span class="ident">sent_fee</span>.<span class="ident">denom</span>, <span class="ident">verifier_config</span>.<span class="ident">onboarding_cost</span>
-        ))
-        .<span class="ident">to_err</span>();
-    };
+    <span class="comment">// verify no funds are sent, as msg fee handles fees</span>
+    <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// verify asset (scope) exists</span>
     <span class="kw">let</span> <span class="ident">scope</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">repository</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> {
@@ -1286,15 +1291,14 @@
         <span class="kw-2">&amp;</span><span class="ident">info</span>.<span class="ident">sender</span>,
         <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">verifier_address</span>,
         <span class="ident">AssetOnboardingStatus::Pending</span>.<span class="ident">to_some</span>(),
-        <span class="kw-2">&amp;</span><span class="ident">verifier_config</span>,
         <span class="ident">msg</span>.<span class="ident">access_routes</span>,
     )<span class="question-mark">?</span>;
 
     <span class="comment">// check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one</span>
-    <span class="kw">let</span> <span class="ident">is_retry</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">scope_attribute</span>) <span class="op">=</span>
+    <span class="kw">let</span> <span class="ident">is_retry</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">existing_attribute</span>) <span class="op">=</span>
         <span class="ident">repository</span>.<span class="ident">try_get_asset</span>(<span class="kw-2">&amp;</span><span class="ident">asset_identifiers</span>.<span class="ident">scope_address</span>)<span class="question-mark">?</span>
     {
-        <span class="kw">match</span> <span class="ident">scope_attribute</span>.<span class="ident">onboarding_status</span> {
+        <span class="kw">match</span> <span class="ident">existing_attribute</span>.<span class="ident">onboarding_status</span> {
             <span class="comment">// If the attribute indicates that the asset is approved, then it&#39;s already fully onboarded and verified</span>
             <span class="ident">AssetOnboardingStatus::Approved</span> =&gt; {
                 <span class="kw">return</span> <span class="ident">ContractError::AssetAlreadyOnboarded</span> {
@@ -1304,18 +1308,23 @@
             }
             <span class="comment">// If the attribute indicates that the asset is pending, then it&#39;s currently waiting for verification</span>
             <span class="ident">AssetOnboardingStatus::Pending</span> =&gt; {
-                <span class="comment">// Attributes in pending status should always have a verifier detail on them. Use it in the error message to show</span>
-                <span class="comment">// which verifier may or may not be misbehaving</span>
-                <span class="kw">return</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">verifier_detail</span>) <span class="op">=</span> <span class="ident">repository</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">deps</span><span class="op">|</span> <span class="ident">scope_attribute</span>.<span class="ident">get_latest_verifier_detail</span>(<span class="ident">deps</span>.<span class="ident">storage</span>)) {
-                    <span class="ident">ContractError::AssetPendingVerification</span> { <span class="ident">scope_address</span>: <span class="ident">scope_attribute</span>.<span class="ident">scope_address</span>, <span class="ident">verifier_address</span>: <span class="ident">verifier_detail</span>.<span class="ident">address</span> }
-                } <span class="kw">else</span> {
-                    <span class="comment">// If a verifier detail is not present on the attribute, but the status is pending, then a bug has occurred in the contract somewhere</span>
-                    <span class="ident">ContractError::generic</span>(<span class="macro">format!</span>(<span class="string">&quot;scope {} is pending verification, but has no verifier information. this scope needs manual intervention!&quot;</span>, <span class="ident">scope_attribute</span>.<span class="ident">scope_address</span>))
-                }.<span class="ident">to_err</span>();
+                <span class="kw">return</span> <span class="ident">ContractError::AssetPendingVerification</span> {
+                    <span class="ident">scope_address</span>: <span class="ident">existing_attribute</span>.<span class="ident">scope_address</span>,
+                    <span class="ident">verifier_address</span>: <span class="ident">existing_attribute</span>.<span class="ident">verifier_address</span>.<span class="ident">to_string</span>(),
+                }
+                .<span class="ident">to_err</span>()
             }
             <span class="comment">// If the attribute indicates that the asset is pending, then it&#39;s been denied by a verifier, and this is a secondary</span>
             <span class="comment">// attempt to onboard the asset</span>
-            <span class="ident">AssetOnboardingStatus::Denied</span> =&gt; <span class="bool-val">true</span>,
+            <span class="ident">AssetOnboardingStatus::Denied</span> =&gt; {
+                <span class="comment">// Remove the fee payment detail originally stored. The new attribute may point to a wholly new verifier, or the</span>
+                <span class="comment">// fees may have changed.  Deleting the existing fee payment detail ensures that a</span>
+                <span class="comment">// new one with the correct values may be saved.</span>
+                <span class="ident">repository</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">deps</span><span class="op">|</span> {
+                    <span class="ident">delete_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">existing_attribute</span>.<span class="ident">scope_address</span>)
+                })<span class="question-mark">?</span>;
+                <span class="bool-val">true</span>
+            }
         }
     } <span class="kw">else</span> {
         <span class="comment">// If no scope attribute exists, it&#39;s safe to simply add the attribute to the scope</span>
@@ -1323,7 +1332,7 @@
     };
 
     <span class="comment">// store asset metadata in contract storage, with assigned verifier and provided fee (in case fee changes between onboarding and verification)</span>
-    <span class="ident">repository</span>.<span class="ident">onboard_asset</span>(<span class="kw-2">&amp;</span><span class="ident">new_asset_attribute</span>, <span class="kw-2">&amp;</span><span class="ident">verifier_config</span>, <span class="ident">is_retry</span>)<span class="question-mark">?</span>;
+    <span class="ident">repository</span>.<span class="ident">onboard_asset</span>(<span class="kw-2">&amp;</span><span class="ident">env</span>, <span class="kw-2">&amp;</span><span class="ident">new_asset_attribute</span>, <span class="kw-2">&amp;</span><span class="ident">verifier_config</span>, <span class="ident">is_retry</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">Response::new</span>()
         .<span class="ident">add_attributes</span>(
@@ -1340,13 +1349,21 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">StdError</span>, <span class="ident">SubMsg</span>, <span class="ident">Uint128</span>};
+    <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">MOCK_CONTRACT_ADDR</span>};
+    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coins</span>, <span class="ident">from_binary</span>, <span class="ident">CosmosMsg</span>, <span class="ident">StdError</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
     <span class="kw">use</span> <span class="ident">provwasm_std</span>::{
-        <span class="ident">AttributeMsgParams</span>, <span class="ident">AttributeValueType</span>, <span class="ident">Process</span>, <span class="ident">ProcessId</span>, <span class="ident">ProvenanceMsg</span>,
-        <span class="ident">ProvenanceMsgParams</span>, <span class="ident">Record</span>, <span class="ident">Records</span>,
+        <span class="ident">AttributeMsgParams</span>, <span class="ident">AttributeValueType</span>, <span class="ident">MsgFeesMsgParams</span>, <span class="ident">Process</span>, <span class="ident">ProcessId</span>,
+        <span class="ident">ProvenanceMsg</span>, <span class="ident">ProvenanceMsgParams</span>, <span class="ident">Record</span>, <span class="ident">Records</span>,
     };
 
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_fee_payment_detail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::add_asset_verifier</span>::{<span class="ident">add_asset_verifier</span>, <span class="ident">AddAssetVerifierV1</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants::DEFAULT_ONBOARDING_COST</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::NHASH</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::{
         <span class="ident">core</span>::{
             <span class="ident">error::ContractError</span>,
@@ -1366,9 +1383,8 @@
             <span class="ident">onboard_asset_helpers</span>::{<span class="ident">test_onboard_asset</span>, <span class="ident">TestOnboardAsset</span>},
             <span class="ident">test_constants</span>::{
                 <span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>,
-                <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_RECORD_SPEC_ADDRESS</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-                <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>, <span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_SESSION_ADDRESS</span>,
-                <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+                <span class="ident">DEFAULT_RECORD_SPEC_ADDRESS</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>,
+                <span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_SESSION_ADDRESS</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
             },
             <span class="ident">test_utilities</span>::{
                 <span class="ident">empty_mock_info</span>, <span class="ident">get_default_access_routes</span>, <span class="ident">get_default_scope</span>, <span class="ident">get_duped_scope</span>,
@@ -1395,6 +1411,7 @@
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
+            <span class="ident">mock_env</span>(),
             <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="number">1000</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
@@ -1431,6 +1448,7 @@
         .<span class="ident">expect</span>(<span class="string">&quot;toggling the asset definition to be disabled should succeed&quot;</span>);
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
+            <span class="ident">mock_env</span>(),
             <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="number">1000</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
@@ -1454,7 +1472,8 @@
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="number">1000</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1487,13 +1506,14 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_onboard_asset_errors_on_no_funds</span>() {
+    <span class="kw">fn</span> <span class="ident">test_onboard_asset_errors_on_funds_provided</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">mock_info_with_funds</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="kw-2">&amp;</span><span class="ident">coins</span>(<span class="number">100</span>, <span class="ident">NHASH</span>)),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1506,124 +1526,8 @@
         <span class="kw">match</span> <span class="ident">err</span> {
             <span class="ident">ContractError::InvalidFunds</span>(<span class="ident">message</span>) =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;Exactly one fund type (of nhash) should be sent&quot;</span>, <span class="ident">message</span>,
-                    <span class="string">&quot;the invalid funds message should reflect invalid amount of funds list&quot;</span>
-                );
-            }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error when unsupported asset type provided: {:?}&quot;</span>,
-                <span class="ident">err</span>
-            ),
-        }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_onboard_asset_errors_on_extra_funds</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
-
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
-            <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_funds</span>(
-                <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
-                <span class="kw-2">&amp;</span>[
-                    <span class="ident">Coin</span> {
-                        <span class="ident">denom</span>: <span class="string">&quot;nhash&quot;</span>.<span class="ident">into</span>(),
-                        <span class="ident">amount</span>: <span class="ident">Uint128::from</span>(<span class="number">123u128</span>),
-                    },
-                    <span class="ident">Coin</span> {
-                        <span class="ident">denom</span>: <span class="string">&quot;otherdenom&quot;</span>.<span class="ident">into</span>(),
-                        <span class="ident">amount</span>: <span class="ident">Uint128::from</span>(<span class="number">2432u128</span>),
-                    },
-                ],
-            ),
-            <span class="ident">OnboardAssetV1</span> {
-                <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
-                <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
-                <span class="ident">verifier_address</span>: <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>.<span class="ident">to_string</span>(),
-                <span class="ident">access_routes</span>: <span class="macro">vec!</span>[],
-            },
-        )
-        .<span class="ident">unwrap_err</span>();
-
-        <span class="kw">match</span> <span class="ident">err</span> {
-            <span class="ident">ContractError::InvalidFunds</span>(<span class="ident">message</span>) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;Exactly one fund type (of nhash) should be sent&quot;</span>, <span class="ident">message</span>,
-                    <span class="string">&quot;the invalid funds message should reflect invalid amount of funds list&quot;</span>
-                );
-            }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error when unsupported asset type provided: {:?}&quot;</span>,
-                <span class="ident">err</span>
-            ),
-        }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_onboard_asset_errors_on_wrong_fund_denom</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
-
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
-            <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_funds</span>(
-                <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
-                <span class="kw-2">&amp;</span>[<span class="ident">Coin</span> {
-                    <span class="ident">denom</span>: <span class="string">&quot;otherdenom&quot;</span>.<span class="ident">into</span>(),
-                    <span class="ident">amount</span>: <span class="ident">Uint128::from</span>(<span class="number">2432u128</span>),
-                }],
-            ),
-            <span class="ident">OnboardAssetV1</span> {
-                <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
-                <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
-                <span class="ident">verifier_address</span>: <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>.<span class="ident">to_string</span>(),
-                <span class="ident">access_routes</span>: <span class="macro">vec!</span>[],
-            },
-        )
-        .<span class="ident">unwrap_err</span>();
-
-        <span class="kw">match</span> <span class="ident">err</span> {
-            <span class="ident">ContractError::InvalidFunds</span>(<span class="ident">message</span>) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;Improper funds supplied for onboarding (expected 1000nhash)&quot;</span>, <span class="ident">message</span>,
-                    <span class="string">&quot;the invalid funds message should reflect that improper funds were sent&quot;</span>
-                );
-            }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error when unsupported asset type provided: {:?}&quot;</span>,
-                <span class="ident">err</span>
-            ),
-        }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_onboard_asset_errors_on_wrong_fund_amount</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
-
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
-            <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span> <span class="op">+</span> <span class="number">1</span>),
-            <span class="ident">OnboardAssetV1</span> {
-                <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
-                <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
-                <span class="ident">verifier_address</span>: <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>.<span class="ident">to_string</span>(),
-                <span class="ident">access_routes</span>: <span class="macro">vec!</span>[],
-            },
-        )
-        .<span class="ident">unwrap_err</span>();
-
-        <span class="kw">match</span> <span class="ident">err</span> {
-            <span class="ident">ContractError::InvalidFunds</span>(<span class="ident">message</span>) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    <span class="macro">format!</span>(
-                        <span class="string">&quot;Improper fee of {}nhash provided (expected {}nhash)&quot;</span>,
-                        <span class="ident">DEFAULT_ONBOARDING_COST</span> <span class="op">+</span> <span class="number">1</span>,
-                        <span class="ident">DEFAULT_ONBOARDING_COST</span>
-                    ),
-                    <span class="ident">message</span>,
-                    <span class="string">&quot;the invalid funds message should reflect that improper funds were sent&quot;</span>
+                    <span class="string">&quot;route requires no funds be present&quot;</span>, <span class="ident">message</span>,
+                    <span class="string">&quot;the error should indicate that no funds should be sent when onboarding an asset&quot;</span>,
                 );
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
@@ -1642,7 +1546,8 @@
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">bogus_scope_address</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1675,7 +1580,8 @@
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1716,7 +1622,8 @@
         <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">TestOnboardAsset::default_onboard_asset</span>(),
         )
         .<span class="ident">unwrap_err</span>();
@@ -1743,7 +1650,8 @@
         <span class="ident">deps</span>.<span class="ident">querier</span>.<span class="ident">with_scope</span>(<span class="ident">get_default_scope</span>());
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1788,7 +1696,8 @@
         <span class="ident">deps</span>.<span class="ident">querier</span>.<span class="ident">with_scope</span>(<span class="ident">get_default_scope</span>());
         <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1827,7 +1736,8 @@
         );
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1877,7 +1787,8 @@
         );
         <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1902,7 +1813,8 @@
 
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1932,13 +1844,14 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_onboard_asset_succeeds</span>() {
+    <span class="kw">fn</span> <span class="ident">test_onboard_asset_success</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">onboard_asset</span>(
             <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>()),
-            <span class="ident">mock_info_with_nhash</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="ident">DEFAULT_ONBOARDING_COST</span>),
+            <span class="ident">mock_env</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>),
             <span class="ident">OnboardAssetV1</span> {
                 <span class="ident">identifier</span>: <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
                 <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">into</span>(),
@@ -1948,25 +1861,24 @@
         )
         .<span class="ident">unwrap</span>();
 
+        <span class="kw">let</span> <span class="ident">fee_payment_result</span> <span class="op">=</span>
+            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">fee_payment_result</span> {
+            <span class="macro">panic!</span>(<span class="string">&quot;fee payment detail should be stored for onboarded asset&quot;</span>)
+        }
+
         <span class="macro">assert_eq!</span>(
-            <span class="number">1</span>,
+            <span class="number">2</span>,
             <span class="ident">result</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;Onboarding should produce only one (bind attribute) message&quot;</span>
+            <span class="string">&quot;Onboarding should produce the correct number of messages&quot;</span>
         );
 
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">messages</span>.<span class="ident">first</span>();
-
-        <span class="kw">match</span> <span class="ident">msg</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">SubMsg</span> {
-                <span class="ident">msg</span>:
-                    <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
-                        <span class="ident">params</span>:
-                            <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::AddAttribute</span> {
-                                <span class="ident">name</span>,
-                                <span class="ident">value</span>,
-                                ..
-                            }),
-                        ..
+        <span class="ident">result</span>.<span class="ident">messages</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">msg</span><span class="op">|</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">msg</span> {
+            <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                <span class="ident">params</span>:
+                    <span class="ident">ProvenanceMsgParams::Attribute</span>(<span class="ident">AttributeMsgParams::AddAttribute</span> {
+                        <span class="ident">name</span>, <span class="ident">value</span>, ..
                     }),
                 ..
             }) =&gt; {
@@ -2001,9 +1913,38 @@
                     <span class="string">&quot;Proper access route should be set upon onboarding&quot;</span>
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected message from onboard_asset: {:?}&quot;</span>, <span class="ident">msg</span>),
-        }
-
+            <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                <span class="ident">params</span>:
+                    <span class="ident">ProvenanceMsgParams::MsgFees</span>(<span class="ident">MsgFeesMsgParams::AssessCustomFee</span> {
+                        <span class="ident">amount</span>,
+                        <span class="ident">name</span>,
+                        <span class="ident">from</span>,
+                        <span class="ident">recipient</span>,
+                    }),
+                ..
+            }) =&gt; {
+                <span class="macro">assert_eq!</span>(
+                    <span class="ident">DEFAULT_ONBOARDING_COST</span>,
+                    <span class="ident">amount</span>.<span class="ident">amount</span>.<span class="ident">u128</span>(),
+                    <span class="string">&quot;double the default verifier cost should be included in the fee msg to account for the provenance cut&quot;</span>,
+                );
+                <span class="macro">assert!</span>(
+                    <span class="ident">name</span>.<span class="ident">is_some</span>(),
+                    <span class="string">&quot;the fee message should include a fee name&quot;</span>,
+                );
+                <span class="macro">assert_eq!</span>(
+                    <span class="ident">MOCK_CONTRACT_ADDR</span>,
+                    <span class="ident">from</span>.<span class="ident">as_str</span>(),
+                    <span class="string">&quot;the fee message should always be sent from the contract&#39;s address&quot;</span>,
+                );
+                <span class="macro">assert_eq!</span>(
+                    <span class="ident">MOCK_CONTRACT_ADDR</span>,
+                    <span class="ident">recipient</span>.<span class="ident">to_owned</span>().<span class="ident">expect</span>(<span class="string">&quot;a recipient address should be set on the custom fee&quot;</span>).<span class="ident">as_str</span>(),
+                    <span class="string">&quot;the contract&#39;s address should be the recipient of the fee&quot;</span>,
+                );
+            }
+            <span class="ident">msg</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected message from onboard_asset: {:?}&quot;</span>, <span class="ident">msg</span>),
+        });
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[
                 (<span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="string">&quot;onboard_asset&quot;</span>),
@@ -2021,7 +1962,6 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
         <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
-        <span class="comment">// Verify the asset to denied status</span>
         <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default_with_success</span>(<span class="bool-val">false</span>)).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
             .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
@@ -2031,15 +1971,151 @@
             <span class="ident">AssetOnboardingStatus::Denied</span>,
             <span class="string">&quot;sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false&quot;</span>,
         );
-        <span class="comment">// Try to do a retry on onboarding</span>
-        <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">payment_detail_before_retry</span> <span class="op">=</span>
+            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;a fee payment detail should be stored for the asset&quot;</span>);
+        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(
+            <span class="number">2</span>,
+            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
+            <span class="string">&quot;two messages should be emitted in the retry. One for an attribute update and one for a message fee&quot;</span>,
+        );
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(
+                <span class="ident">response</span>.<span class="ident">messages</span>[<span class="number">0</span>].<span class="ident">msg</span>,
+                <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                    <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::Attribute</span>(
+                        <span class="ident">AttributeMsgParams::UpdateAttribute</span> { .. }
+                    ),
+                    ..
+                })
+            ),
+            <span class="string">&quot;the first emitted message should update the attribute&quot;</span>,
+        );
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(
+                <span class="ident">response</span>.<span class="ident">messages</span>[<span class="number">1</span>].<span class="ident">msg</span>,
+                <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                    <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::MsgFees</span>(<span class="ident">MsgFeesMsgParams::AssessCustomFee</span> { .. }),
+                    ..
+                })
+            ),
+            <span class="string">&quot;the second emitted message should be the message fee&quot;</span>
+        );
         <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
-        .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
-        .<span class="ident">expect</span>(<span class="string">&quot;the default scope address should still contain an attribute after onboarding for a second time&quot;</span>);
+            .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;the default scope address should still contain an attribute after onboarding for a second time&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">attribute</span>.<span class="ident">onboarding_status</span>,
             <span class="ident">AssetOnboardingStatus::Pending</span>,
             <span class="string">&quot;the onboarding status should now be set to pending after retrying the onboard process&quot;</span>,
+        );
+        <span class="kw">let</span> <span class="ident">payment_detail_after_retry</span> <span class="op">=</span>
+            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;a fee payment detail should still be present after updating&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">payment_detail_before_retry</span>, <span class="ident">payment_detail_after_retry</span>,
+            <span class="string">&quot;the payment details should be identical due to choosing the same, unchanged verifier&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_onboard_asset_retry_success_changing_verifiers</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
+        <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
+        <span class="kw">let</span> <span class="ident">other_verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;tp17szfvgwgx9c9kwvyp9megryft3zm77am6x9gal&quot;</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">300</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;feeperson1&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">100</span>)),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;feeperson2&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">50</span>)),
+            ],
+            <span class="prelude-val">None</span>,
+        );
+        <span class="ident">add_asset_verifier</span>(
+            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
+            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>),
+            <span class="ident">AddAssetVerifierV1</span> {
+                <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">to_string</span>(),
+                <span class="ident">verifier</span>: <span class="ident">other_verifier</span>.<span class="ident">clone</span>(),
+            },
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;adding the second verifier should succeed without error&quot;</span>);
+        <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default_with_success</span>(<span class="bool-val">false</span>)).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
+            .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;the default scope address should have an attribute attached to it&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">attribute</span>.<span class="ident">onboarding_status</span>,
+            <span class="ident">AssetOnboardingStatus::Denied</span>,
+            <span class="string">&quot;sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false&quot;</span>,
+        );
+        <span class="kw">let</span> <span class="ident">payment_detail_before</span> <span class="op">=</span>
+            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;a fee payment detail should be stored for the asset&quot;</span>);
+        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_onboard_asset</span>(
+            <span class="kw-2">&amp;mut</span> <span class="ident">deps</span>,
+            <span class="ident">TestOnboardAsset</span> {
+                <span class="ident">onboard_asset</span>: <span class="ident">OnboardAssetV1</span> {
+                    <span class="ident">verifier_address</span>: <span class="ident">other_verifier</span>.<span class="ident">address</span>.<span class="ident">clone</span>(),
+                    ..<span class="ident">TestOnboardAsset::default_onboard_asset</span>()
+                },
+                ..<span class="ident">TestOnboardAsset::default</span>()
+            },
+        )
+        .<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(
+            <span class="number">2</span>,
+            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
+            <span class="string">&quot;two messages should be emitted in the retry. One for an attribute update and one for a message fee&quot;</span>,
+        );
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(
+                <span class="ident">response</span>.<span class="ident">messages</span>[<span class="number">0</span>].<span class="ident">msg</span>,
+                <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                    <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::Attribute</span>(
+                        <span class="ident">AttributeMsgParams::UpdateAttribute</span> { .. }
+                    ),
+                    ..
+                })
+            ),
+            <span class="string">&quot;the first emitted message should update the attribute&quot;</span>,
+        );
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(
+                <span class="ident">response</span>.<span class="ident">messages</span>[<span class="number">1</span>].<span class="ident">msg</span>,
+                <span class="ident">CosmosMsg::Custom</span>(<span class="ident">ProvenanceMsg</span> {
+                    <span class="ident">params</span>: <span class="ident">ProvenanceMsgParams::MsgFees</span>(<span class="ident">MsgFeesMsgParams::AssessCustomFee</span> { .. }),
+                    ..
+                })
+            ),
+            <span class="string">&quot;the second emitted message should be the message fee&quot;</span>
+        );
+        <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
+            .<span class="ident">get_asset</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;the default scope address should still contain an attribute after onboarding for a second time&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">attribute</span>.<span class="ident">onboarding_status</span>,
+            <span class="ident">AssetOnboardingStatus::Pending</span>,
+            <span class="string">&quot;the onboarding status should now be set to pending after retrying the onboard process&quot;</span>,
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">attribute</span>.<span class="ident">verifier_address</span>, <span class="ident">other_verifier</span>.<span class="ident">address</span>,
+            <span class="string">&quot;the attribute should be updated to the other verifier&#39;s address&quot;</span>,
+        );
+        <span class="kw">let</span> <span class="ident">payment_detail_after</span> <span class="op">=</span>
+            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;a fee payment detail should be stored for the asset&quot;</span>);
+        <span class="macro">assert_ne!</span>(
+            <span class="ident">payment_detail_before</span>, <span class="ident">payment_detail_after</span>,
+            <span class="string">&quot;the payment details should not match due to changing verifiers&quot;</span>,
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">FeePaymentDetail::new</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="kw-2">&amp;</span><span class="ident">other_verifier</span>).<span class="ident">expect</span>(<span class="string">&quot;the other verifier should be successfully converted to a fee payment detail&quot;</span>),
+            <span class="ident">payment_detail_after</span>,
+            <span class="string">&quot;the fee payment detail after the retry should equate to the new verifier&#39;s fee definitions&quot;</span>,
         );
     }
 

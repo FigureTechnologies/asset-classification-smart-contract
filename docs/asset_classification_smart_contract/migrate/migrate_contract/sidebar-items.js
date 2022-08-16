@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["migrate_contract","The main entrypoint function for running a code migration.  Referred to in the contract file."]]});
+window.SIDEBAR_ITEMS = {"fn":[["migrate_contract","The main entrypoint function for running a code migration.  Referred to in the contract file."]]};

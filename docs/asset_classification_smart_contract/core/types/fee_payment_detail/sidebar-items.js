@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["FeePayment","Defines an individual fee to be charged to an account during the asset verification process."],["FeePaymentDetail","Defines a fee established from a VerifierDetailV2 and its contained FeeDestinations."]]});
+window.SIDEBAR_ITEMS = {"struct":[["FeePayment","Defines an individual fee to be charged to an account during the asset verification process."],["FeePaymentDetail","Defines a fee established from a VerifierDetailV2 and its contained FeeDestinations."]]};

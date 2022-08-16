@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["migrate_contract","The main entrypoint function for running a code migration.  Referred to in the contract file."],["version_info","Module for structs and helper functions containing the version information stored for contract migrations."]]});
+window.SIDEBAR_ITEMS = {"mod":[["migrate_contract","The main entrypoint function for running a code migration.  Referred to in the contract file."],["version_info","Module for structs and helper functions containing the version information stored for contract migrations."]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["DepsContainer","Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects relatively easily and then freed when required."]]});
+window.SIDEBAR_ITEMS = {"struct":[["DepsContainer","Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects relatively easily and then freed when required."]]};

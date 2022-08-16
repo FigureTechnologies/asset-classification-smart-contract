@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["init_contract","The main functionality executed when the smart contract is first instantiated.   This creates the internal contract StateV2 value, as well as any provided AssetDefinitionsV2 provided in the init msg."]]});
+window.SIDEBAR_ITEMS = {"fn":[["init_contract","The main functionality executed when the smart contract is first instantiated.   This creates the internal contract StateV2 value, as well as any provided AssetDefinitionsV2 provided in the init msg."]]};

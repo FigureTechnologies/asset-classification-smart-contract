@@ -8,14 +8,14 @@ to verify the contents of the asset by granting permission to them.
 [![Latest Release][release-badge]][release-latest]
 [![Apache 2.0 License][license-badge]][license-url]
 
-[license-badge]: https://img.shields.io/github/license/provenance-io/asset-classification-smart-contract.svg
-[license-url]: https://github.com/provenance-io/asset-classification-smart-contract/blob/main/LICENSE
-[release-badge]: https://img.shields.io/github/tag/provenance-io/asset-classification-smart-contract.svg
-[release-latest]: https://github.com/provenance-io/asset-classification-smart-contract/releases/latest
+[license-badge]: https://img.shields.io/github/license/FigureTechnologies/asset-classification-smart-contract.svg
+[license-url]: https://github.com/FigureTechnologies/asset-classification-smart-contract/blob/main/LICENSE
+[release-badge]: https://img.shields.io/github/tag/FigureTechnologies/asset-classification-smart-contract.svg
+[release-latest]: https://github.com/FigureTechnologies/asset-classification-smart-contract/releases/latest
 
 ## Documentation
 
-For more information on how the contract is composed, check out the code [documentation](https://provenance-io.github.io/asset-classification-smart-contract/).
+For more information on how the contract is composed, check out the code [documentation](https://figuretechnologies.github.io/asset-classification-smart-contract/).
 
 ## Build
 
@@ -26,7 +26,7 @@ make optimize
 
 ## Kotlin Library
 
-[Asset Classification Libs](https://www.github.com/provenance-io/asset-classification-libs) includes a `client` library
+[Asset Classification Libs](https://github.com/FigureTechnologies/asset-classification-libs) includes a `client` library
 for making requests from a Kotlin project to an instantiated instance of this smart contract.
 
 ## Process / Concepts

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use super::entity_detail::EntityDetail;
 
 /// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct VerifierDetailV2 {
     /// The Provenance Blockchain bech32 address of the verifier account.

@@ -13,7 +13,7 @@ const ASSET_UUID_NAME: &str = "asset_uuid";
 const SCOPE_ADDRESS_NAME: &str = "scope_address";
 
 /// An enum containing interchangeable values that can be used to define an asset (uuid or address).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AssetIdentifier {
     /// A uuid v4 represented by a string.

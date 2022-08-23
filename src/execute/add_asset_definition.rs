@@ -20,7 +20,7 @@ use provwasm_std::{bind_name, NameBinding};
 /// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
 /// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
 /// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinitionV2,
     pub bind_name: Option<bool>,

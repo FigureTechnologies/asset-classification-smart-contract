@@ -8,7 +8,7 @@ use crate::util::{
 use super::access_route::AccessRoute;
 
 /// Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AccessDefinitionType {
     /// Indicates that the access definition was created by the requestor that onboarded the scope.
@@ -18,7 +18,7 @@ pub enum AccessDefinitionType {
 }
 
 /// Defines a collection of [AccessRoute](super::access_route::AccessRoute) for a specific address.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AccessDefinition {
     /// The bech32 address of the account that created the underlying [AccessRoutes](super::access_route::AccessRoute).

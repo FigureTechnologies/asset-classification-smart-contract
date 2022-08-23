@@ -22,7 +22,7 @@ const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
 const FEE_PAYMENT_DETAILS: Map<String, FeePaymentDetail> = Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
 /// Stores the main configurations for the contract internally.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct StateV2 {
     /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)
     /// will use this value as their parent name.

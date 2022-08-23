@@ -1,9 +1,11 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{load_asset_definition_v2_by_type, replace_asset_definition_v2};
+use crate::core::state::{
+    config_read_v2, load_asset_definition_v2_by_type, replace_asset_definition_v2,
+};
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
-use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::replace_single_matching_vec_element;
 use crate::util::traits::ResultExtensions;
@@ -20,7 +22,7 @@ use cosmwasm_std::{MessageInfo, Response};
 /// property.
 /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
 /// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAssetVerifierV1 {
     pub asset_type: String,
     pub verifier: VerifierDetailV2,
@@ -82,9 +84,15 @@ pub fn update_asset_verifier(
     info: MessageInfo,
     msg: UpdateAssetVerifierV1,
 ) -> EntryPointResponse {
-    check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     let mut asset_definition = load_asset_definition_v2_by_type(deps.storage, &msg.asset_type)?;
+    let state = config_read_v2(deps.storage).load()?;
+    if info.sender != state.admin && info.sender.as_str() != msg.verifier.address.as_str() {
+        return ContractError::Unauthorized {
+            explanation: "admin or verifier required".to_string(),
+        }
+        .to_err();
+    }
     let verifier_address = msg.verifier.address.clone();
     // If a single verifier for the given address cannot be found, data is either corrupt, or the
     // verifier does not exist.  Given validation upfront prevents multiple verifiers with the
@@ -146,58 +154,60 @@ mod tests {
 
     #[test]
     fn test_valid_update_asset_verifier_via_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let verifier = get_valid_update_verifier();
-        let response = execute(
-            deps.as_mut(),
-            mock_env(),
-            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            ExecuteMsg::UpdateAssetVerifier {
-                asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                verifier: verifier.clone(),
-            },
-        )
-        .expect("expected the update verifier checks to work correctly");
-        assert!(
-            response.messages.is_empty(),
-            "updating an asset verifier should not require messages",
-        );
-        assert_eq!(
-            3,
-            response.attributes.len(),
-            "the correct number of attributes should be produced",
-        );
-        assert_eq!(
-            EventType::UpdateAssetVerifier.event_name().as_str(),
-            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
-            "expected the proper event type to be emitted",
-        );
-        assert_eq!(
-            DEFAULT_ASSET_TYPE,
-            single_attribute_for_key(&response, ASSET_TYPE_KEY),
-            "expected the update asset verifier main key to include the asset type",
-        );
-        assert_eq!(
-            &verifier.address,
-            single_attribute_for_key(&response, VERIFIER_ADDRESS_KEY),
-            "expected the verifier's address to be the value for the address key",
-        );
-        test_default_verifier_was_updated(&verifier, &deps.as_ref());
+        // Test that both the admin and the verifier can make the update without being rejected
+        for sender_address in vec![DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
+            let mut deps = mock_dependencies(&[]);
+            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            let verifier = get_valid_update_verifier();
+            let response = execute(
+                deps.as_mut(),
+                mock_env(),
+                empty_mock_info(sender_address),
+                ExecuteMsg::UpdateAssetVerifier {
+                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                    verifier: verifier.clone(),
+                },
+            )
+            .expect("expected the update verifier checks to work correctly");
+            assert!(
+                response.messages.is_empty(),
+                "updating an asset verifier should not require messages",
+            );
+            assert_eq!(
+                3,
+                response.attributes.len(),
+                "the correct number of attributes should be produced",
+            );
+            assert_eq!(
+                EventType::UpdateAssetVerifier.event_name().as_str(),
+                single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
+                "expected the proper event type to be emitted",
+            );
+            assert_eq!(
+                DEFAULT_ASSET_TYPE,
+                single_attribute_for_key(&response, ASSET_TYPE_KEY),
+                "expected the update asset verifier main key to include the asset type",
+            );
+            assert_eq!(
+                &verifier.address,
+                single_attribute_for_key(&response, VERIFIER_ADDRESS_KEY),
+                "expected the verifier's address to be the value for the address key",
+            );
+            test_default_verifier_was_updated(&verifier, &deps.as_ref());
+        }
     }
 
     #[test]
     fn test_valid_update_asset_verifier_via_internal() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let msg = get_valid_update_verifier_msg();
-        update_asset_verifier(
-            deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
-            msg.clone(),
-        )
-        .expect("expected the update verifier function to return properly");
-        test_default_verifier_was_updated(&msg.verifier, &deps.as_ref());
+        // Test that both the admin and the verifier can make the update without being rejected
+        for sender_address in vec![DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
+            let mut deps = mock_dependencies(&[]);
+            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            let msg = get_valid_update_verifier_msg();
+            update_asset_verifier(deps.as_mut(), empty_mock_info(sender_address), msg.clone())
+                .expect("expected the update verifier function to return properly");
+            test_default_verifier_was_updated(&msg.verifier, &deps.as_ref());
+        }
     }
 
     #[test]

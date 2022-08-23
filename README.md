@@ -616,7 +616,7 @@ parameter, or the request will be rejected.
 ```
 
 #### [Update Asset Verifier](src/execute/update_asset_verifier.rs)
-__This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetailV2](src/core/types/verifier_detail.rs)
+__This route is only accessible to the contract's admin address or the address of the verifier being updated.__ This route updates an existing [VerifierDetailV2](src/core/types/verifier_detail.rs)
 in an existing [AssetDefinitionV2](src/core/types/asset_definition.rs).  This route is intended to be used when the values
 of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the
 referenced asset definition is not present within the contract, or if a verifier does not exist within the asset

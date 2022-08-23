@@ -18,7 +18,7 @@ use cosmwasm_std::{MessageInfo, Response};
 /// in contract storage.
 /// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)
 /// request.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct AddAssetVerifierV1 {
     pub asset_type: String,
     pub verifier: VerifierDetailV2,

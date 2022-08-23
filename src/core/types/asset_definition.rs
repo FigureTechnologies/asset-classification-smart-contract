@@ -15,7 +15,7 @@ use crate::{
 
 /// Defines a specific asset type associated with the contract.  Allows its specified type to be
 /// onboarded and verified.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinitionV2 {
     /// The unique name of the asset associated with the definition.
@@ -95,7 +95,7 @@ impl AssetDefinitionV2 {
 
 /// Allows the user to optionally specify the enabled flag on an asset definition, versus forcing
 /// it to be added manually on every request, when it will likely always be specified as `true`.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetDefinitionInputV2 {
     /// The name of the asset associated with the definition.  This value must be unique across all

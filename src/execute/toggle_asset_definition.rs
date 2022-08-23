@@ -23,7 +23,7 @@ use crate::{
 /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
 /// in succession (either by accident or by various unrelated callers) will only be honored if
 /// the asset definition is in the intended state during the execution of the route.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct ToggleAssetDefinitionV1 {
     pub asset_type: String,
     pub expected_result: bool,

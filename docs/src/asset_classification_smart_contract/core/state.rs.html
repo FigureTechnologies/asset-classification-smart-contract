@@ -816,7 +816,7 @@
 <span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAILS</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Map::new</span>(<span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>);
 
 <span class="doccomment">/// Stores the main configurations for the contract internally.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StateV2</span> {
     <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)</span>
     <span class="doccomment">/// will use this value as their parent name.</span>

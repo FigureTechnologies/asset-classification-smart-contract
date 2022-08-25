@@ -401,7 +401,7 @@
 <span class="doccomment">/// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt</span>
 <span class="doccomment">/// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)</span>
 <span class="doccomment">/// with the provided definition&#39;s [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AddAssetDefinitionV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV2</span>,
     <span class="kw">pub</span> <span class="ident">bind_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,

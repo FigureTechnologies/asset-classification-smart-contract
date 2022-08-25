@@ -366,7 +366,7 @@
 <span class="doccomment">/// after the toggle takes place.  This value is required to ensure that multiple toggles executed</span>
 <span class="doccomment">/// in succession (either by accident or by various unrelated callers) will only be honored if</span>
 <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToggleAssetDefinitionV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">expected_result</span>: <span class="ident">bool</span>,

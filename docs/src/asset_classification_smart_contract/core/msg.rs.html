@@ -283,7 +283,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::access_route::AccessRoute</span>;
 
 <span class="doccomment">/// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InitMsg</span> {
     <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2)</span>
@@ -307,7 +307,7 @@
 
 <span class="doccomment">/// Defines all routes in which the contract can be queried.  These are all handled directly in</span>
 <span class="doccomment">/// the [contract file](crate::contract::query).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">QueryMsg</span> {
     <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract&#39;s</span>
@@ -354,7 +354,7 @@
 
 <span class="doccomment">/// Defines all routes in which the contract can be executed.  These are all handled directly in</span>
 <span class="doccomment">/// the [contract file](crate::contract::execute).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ExecuteMsg</span> {
     <span class="doccomment">/// This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of</span>
@@ -454,7 +454,7 @@
         <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
         <span class="ident">expected_result</span>: <span class="ident">bool</span>,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
     <span class="doccomment">/// to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers</span>
     <span class="doccomment">/// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added</span>
     <span class="doccomment">/// with addresses that match any other verifiers on the target asset definition.</span>
@@ -518,7 +518,7 @@
 
 <span class="doccomment">/// The struct used to migrate the contract from one code instance to another.  Utilized in the core</span>
 <span class="doccomment">/// [contract file](crate::contract::migrate).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">MigrateMsg</span> {
     <span class="doccomment">/// Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract)</span>
@@ -531,7 +531,7 @@
 }
 
 <span class="doccomment">/// Sub-level struct that defines optional changes that can occur during the migration process.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MigrationOptions</span> {
     <span class="doccomment">/// Sets the contract admin to a new address when populated.  Must be a valid Provenance</span>

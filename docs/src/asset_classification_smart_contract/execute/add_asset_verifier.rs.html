@@ -350,7 +350,7 @@
 <span class="doccomment">/// in contract storage.</span>
 <span class="doccomment">/// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)</span>
 <span class="doccomment">/// request.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AddAssetVerifierV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">verifier</span>: <span class="ident">VerifierDetailV2</span>,

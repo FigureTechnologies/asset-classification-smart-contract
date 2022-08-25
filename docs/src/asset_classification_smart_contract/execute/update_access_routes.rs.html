@@ -639,7 +639,7 @@
 <span class="doccomment">/// instead of the existing routes.  If other existing routes need to be maintained and the updated</span>
 <span class="doccomment">/// is intended to simply add a new route, then the existing routes need to be included in the</span>
 <span class="doccomment">/// request alongside the new route(s).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAccessRoutesV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
     <span class="kw">pub</span> <span class="ident">owner_address</span>: <span class="ident">String</span>,

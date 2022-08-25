@@ -158,7 +158,7 @@
 
 <span class="doccomment">/// Holds both the contract&#39;s unique name and version.</span>
 <span class="doccomment">/// Used to ensure that migrations have the correct targets and are not downgrades.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VersionInfoV1</span> {
     <span class="doccomment">/// The name of the contract, set to the value of [CONTRACT_NAME](self::CONTRACT_NAME) during instantiation and</span>
     <span class="doccomment">/// following migrations.</span>

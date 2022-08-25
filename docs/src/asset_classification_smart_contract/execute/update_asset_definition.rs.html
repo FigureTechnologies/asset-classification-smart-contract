@@ -332,7 +332,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)</span>
 <span class="doccomment">/// property that matches an existing asset definition in contract storage.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAssetDefinitionV1</span> {
     <span class="kw">pub</span> <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV2</span>,
 }

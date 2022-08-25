@@ -256,7 +256,7 @@
 <span class="doccomment">/// It&#39;s also worth noting that this solution can only create enum switches that have Strings as</span>
 <span class="doccomment">/// their values.  Anything different will not work for this solution and will require further</span>
 <span class="doccomment">/// adaptation and hackery.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">JsonSchema</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SerializedEnum</span> {
     <span class="doccomment">/// Specifies the type of enum to deserialize into. Maps into one of the values specified in</span>

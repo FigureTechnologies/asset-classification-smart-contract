@@ -1140,7 +1140,7 @@
 <span class="doccomment">/// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute&#39;s](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
 <span class="doccomment">/// [AccessDefinition](crate::core::types::access_definition::AccessDefinition) for the [Requestor](crate::core::types::access_definition::AccessDefinitionType::Requestor)</span>
 <span class="doccomment">/// entry.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OnboardAssetV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
     <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,

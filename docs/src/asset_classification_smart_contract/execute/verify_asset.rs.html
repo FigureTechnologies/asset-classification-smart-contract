@@ -454,7 +454,7 @@
 <span class="doccomment">/// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission</span>
 <span class="doccomment">/// to easily fetch asset data from a new location, potentially without any Provenance Blockchain</span>
 <span class="doccomment">/// interaction, facilitating the process of data interaction.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VerifyAssetV1</span> {
     <span class="kw">pub</span> <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
     <span class="kw">pub</span> <span class="ident">success</span>: <span class="ident">bool</span>,

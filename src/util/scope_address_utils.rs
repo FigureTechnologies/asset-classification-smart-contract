@@ -73,7 +73,7 @@ pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> AssetResult<Addr> {
     let address_string = address.into();
     // First, try to decode the string as Bech32.  If this fails, then the input is invalid and should not be converted to an Addr
     let (hrp, _, _) = bech32::decode(&address_string)?;
-    return if !VALID_HRPS.contains(&hrp.as_str()) {
+    if !VALID_HRPS.contains(&hrp.as_str()) {
         ContractError::InvalidAddress {
             address: address_string,
             explanation: format!("invalid address prefix [{}]", hrp),
@@ -82,7 +82,7 @@ pub fn bech32_string_to_addr<S: Into<String>>(address: S) -> AssetResult<Addr> {
     } else {
         // Once the address has been validated as bech32, just funnel it into the Addr struct with an unchecked call
         Addr::unchecked(&address_string).to_ok()
-    };
+    }
 }
 
 /// Takes a string representation of a UUID and converts it to a scope address by appending its

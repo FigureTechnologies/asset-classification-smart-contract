@@ -9,7 +9,7 @@ const ASSET_TYPE_NAME: &str = "asset_type";
 const SCOPE_SPEC_ADDRESS_NAME: &str = "scope_spec_address";
 
 /// An enum containing different identifiers that can be used to fetch an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AssetQualifier {
     /// The unique name for an asset type.  Ex: heloc, payable, etc.

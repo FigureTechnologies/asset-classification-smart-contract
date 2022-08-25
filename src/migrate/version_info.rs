@@ -19,7 +19,7 @@ const VERSION_INFO: Item<VersionInfoV1> = Item::new(VERSION_INFO_NAMESPACE);
 
 /// Holds both the contract's unique name and version.
 /// Used to ensure that migrations have the correct targets and are not downgrades.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct VersionInfoV1 {
     /// The name of the contract, set to the value of [CONTRACT_NAME](self::CONTRACT_NAME) during instantiation and
     /// following migrations.

@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 /// It's also worth noting that this solution can only create enum switches that have Strings as
 /// their values.  Anything different will not work for this solution and will require further
 /// adaptation and hackery.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct SerializedEnum {
     /// Specifies the type of enum to deserialize into. Maps into one of the values specified in

@@ -177,7 +177,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added with addresses that match any other verifiers on the target asset definition.",
+      "description": "__This route is only accessible to the contract's admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added with addresses that match any other verifiers on the target asset definition.",
       "type": "object",
       "required": [
         "add_asset_verifier"

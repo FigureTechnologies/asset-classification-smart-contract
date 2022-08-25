@@ -15,7 +15,7 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
 /// property that matches an existing asset definition in contract storage.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAssetDefinitionV1 {
     pub asset_definition: AssetDefinitionV2,
 }

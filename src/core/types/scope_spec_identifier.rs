@@ -15,7 +15,7 @@ const UUID_NAME: &str = "uuid";
 const ADDRESS_NAME: &str = "address";
 
 /// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ScopeSpecIdentifier {
     /// A uuid v4 represented by a string.

@@ -35,7 +35,7 @@ use provwasm_std::ProvenanceQuerier;
 /// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute's](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
 /// [AccessDefinition](crate::core::types::access_definition::AccessDefinition) for the [Requestor](crate::core::types::access_definition::AccessDefinitionType::Requestor)
 /// entry.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
     pub asset_type: String,

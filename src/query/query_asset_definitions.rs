@@ -11,7 +11,7 @@ use crate::util::{
 
 /// A simple wrapper for all asset definitions returned as a result of the [query_asset_definitions](self::query_asset_definitions)
 /// function.
-#[derive(Serialize, Deserialize, PartialEq, Clone, JsonSchema)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QueryAssetDefinitionsResponse {
     /// All derived asset definitions derived from the [query_asset_definitions](self::query_asset_definitions)

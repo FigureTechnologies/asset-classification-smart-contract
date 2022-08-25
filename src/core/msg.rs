@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::types::access_route::AccessRoute;
 
 /// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InitMsg {
     /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2)
@@ -31,7 +31,7 @@ pub struct InitMsg {
 
 /// Defines all routes in which the contract can be queried.  These are all handled directly in
 /// the [contract file](crate::contract::query).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     /// This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract's
@@ -78,7 +78,7 @@ pub enum QueryMsg {
 
 /// Defines all routes in which the contract can be executed.  These are all handled directly in
 /// the [contract file](crate::contract::execute).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     /// This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of
@@ -178,7 +178,7 @@ pub enum ExecuteMsg {
         /// the asset definition is in the intended state during the execution of the route.
         expected_result: bool,
     },
-    /// __This route is only accessible to the contract's admin address.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// __This route is only accessible to the contract's admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
     /// to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers
     /// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added
     /// with addresses that match any other verifiers on the target asset definition.
@@ -242,7 +242,7 @@ pub enum ExecuteMsg {
 
 /// The struct used to migrate the contract from one code instance to another.  Utilized in the core
 /// [contract file](crate::contract::migrate).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum MigrateMsg {
     /// Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract)
@@ -255,7 +255,7 @@ pub enum MigrateMsg {
 }
 
 /// Sub-level struct that defines optional changes that can occur during the migration process.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MigrationOptions {
     /// Sets the contract admin to a new address when populated.  Must be a valid Provenance

@@ -34,7 +34,7 @@ use cosmwasm_std::{MessageInfo, Response};
 /// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission
 /// to easily fetch asset data from a new location, potentially without any Provenance Blockchain
 /// interaction, facilitating the process of data interaction.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct VerifyAssetV1 {
     pub identifier: AssetIdentifier,
     pub success: bool,

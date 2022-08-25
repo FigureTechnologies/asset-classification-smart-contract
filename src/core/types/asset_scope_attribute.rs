@@ -18,7 +18,7 @@ use super::{
 
 /// An asset scope attribute contains all relevant information for asset classification, and is serialized directly
 /// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AssetScopeAttribute {
     /// A unique uuid v4 value that defines the asset contained within the scope.

@@ -29,7 +29,7 @@ use cosmwasm_std::{MessageInfo, Response};
 /// instead of the existing routes.  If other existing routes need to be maintained and the updated
 /// is intended to simply add a new route, then the existing routes need to be included in the
 /// request alongside the new route(s).
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAccessRoutesV1 {
     pub identifier: AssetIdentifier,
     pub owner_address: String,

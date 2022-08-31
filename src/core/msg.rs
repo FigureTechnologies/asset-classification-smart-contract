@@ -46,7 +46,7 @@ pub enum QueryMsg {
     /// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
     /// to be inspected or displayed.  The query asset definition route is much more efficient.
     QueryAssetDefinitions {},
-    /// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has
+    /// This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have
     /// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
     /// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
     /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
@@ -55,6 +55,18 @@ pub enum QueryMsg {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
+    },
+    /// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has
+    /// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
+    /// contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
+    /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
+    /// successfully classified by a verifier for a specific asset type.
+    QueryAssetScopeAttributeForAssetType {
+        /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
+        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
+        identifier: SerializedEnum,
+        /// The asset type to query for
+        asset_type: String,
     },
     /// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)
     /// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
@@ -65,6 +77,8 @@ pub enum QueryMsg {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
+        /// The asset type to query for pending verification fee payment details
+        asset_type: String,
     },
     /// This route can be used to retrieve the internal contract state values.  These are core configurations that denote how
     /// the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It
@@ -124,6 +138,8 @@ pub enum ExecuteMsg {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
+        /// The asset type this verification result is for
+        asset_type: String,
         /// A boolean indicating whether or not verification was successful.  A value of `false` either indicates that
         /// the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred
         /// during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as
@@ -143,11 +159,8 @@ pub enum ExecuteMsg {
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
     /// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
-    /// two criteria:
+    /// the following criteria:
     /// * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition.
-    /// * Its [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))
-    /// must also be unique across asset definitions.
-    /// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).
     AddAssetDefinition {
         /// An asset definition input value defining all of the new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
@@ -155,8 +168,7 @@ pub enum ExecuteMsg {
     },
     /// __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the
-    /// existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation
-    /// ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.
+    /// existing values.  If no asset definition exists for the given type, the request will be rejected.
     UpdateAssetDefinition {
         /// An asset definition input value defining all of the updated [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
@@ -215,6 +227,8 @@ pub enum ExecuteMsg {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,
+        /// The asset type to update access routes for
+        asset_type: String,
         /// Corresponds to the bech32 address of the account that originally created the [AccessRoutes](super::types::access_route::AccessRoute).
         /// These values can be found in the [AccessDefinition](super::types::access_definition::AccessDefinition) of the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
         /// tied to a scope after the onboarding process occurs.
@@ -224,10 +238,7 @@ pub enum ExecuteMsg {
         /// routes need to be included in the request alongside the new route(s).
         access_routes: Vec<AccessRoute>,
     },
-    /// __This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
-    /// is erroneously added with an incorrect asset type, the scope specification address is unable
-    /// to be used, as it is another unique key of the asset definition.  This route facilitates the
-    /// removal of bad data.
+    /// __This route is only accessible to the contract's admin address.__ This route facilitates the removal of bad data.
     /// IMPORTANT: If an asset definition is completely removed, all contract references to it will
     /// fail to function.  This can cause assets currently in the onboarding process for a deleted
     /// type to have failures when interactions occur with them.  This functionality should only be

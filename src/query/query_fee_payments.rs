@@ -16,10 +16,15 @@ use cosmwasm_std::{to_binary, Binary};
 /// * `qualifier` An enum containing identifier information that can be used to look up a stored
 /// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail) by a derived
 /// Provenance Blockchain Metadata Scope bech32 address.
-pub fn query_fee_payments(deps: &DepsC, identifier: AssetIdentifier) -> AssetResult<Binary> {
+pub fn query_fee_payments(
+    deps: &DepsC,
+    identifier: AssetIdentifier,
+    asset_type: &str,
+) -> AssetResult<Binary> {
     to_binary(&may_load_fee_payment_detail(
         deps.storage,
         identifier.get_scope_address()?,
+        asset_type,
     ))?
     .to_ok()
 }
@@ -30,7 +35,9 @@ mod tests {
     use crate::core::types::asset_identifier::AssetIdentifier;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
     use crate::query::query_fee_payments::query_fee_payments;
-    use crate::testutil::test_constants::{DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS};
+    use crate::testutil::test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS,
+    };
     use crate::testutil::test_utilities::get_duped_fee_payment_detail;
     use cosmwasm_std::from_binary;
     use provwasm_mocks::mock_dependencies;
@@ -40,11 +47,12 @@ mod tests {
     fn test_successful_query() {
         let mut deps = mock_dependencies(&[]);
         let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
-        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail, DEFAULT_ASSET_TYPE)
             .expect("expected payment detail to be inserted successfully");
         let result_binary = query_fee_payments(
             &deps.as_ref(),
             AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            DEFAULT_ASSET_TYPE,
         )
         .expect("expected binary result from asset uuid to be successful");
         let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary)
@@ -57,6 +65,7 @@ mod tests {
         let result_binary = query_fee_payments(
             &deps.as_ref(),
             AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            DEFAULT_ASSET_TYPE,
         )
         .expect("expected binary result from scope address to be successful");
         let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary)
@@ -74,6 +83,7 @@ mod tests {
         let result_binary = query_fee_payments(
             &deps.as_ref(),
             AssetIdentifier::asset_uuid(Uuid::new_v4().to_string()),
+            DEFAULT_ASSET_TYPE,
         )
         .expect("result should successfully produce a binary even when the value is missing");
         let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary).expect(
@@ -86,6 +96,7 @@ mod tests {
         let result_binary = query_fee_payments(
             &deps.as_ref(),
             AssetIdentifier::scope_address("scope1qqse8umjp7pprmd390dnsj7s4yrse73q0x"),
+            DEFAULT_ASSET_TYPE,
         )
         .expect("result should successfully produce a binary even when the value is missing");
         let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary).expect(

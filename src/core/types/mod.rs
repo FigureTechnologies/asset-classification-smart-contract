@@ -24,10 +24,8 @@ pub mod fee_destination;
 /// Defines a stored set of values for charging fees to the onboarding account during the asset
 /// classification process.
 pub mod fee_payment_detail;
-/// An enum containing interchangeable values that can be used to define a Provenance Blockchain Metadata Scope Specification.
-pub mod scope_spec_identifier;
 /// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:
-/// [AssetIdentifier](self::asset_identifier::AssetIdentifier), [AssetQualifier](self::asset_qualifier::AssetQualifier), and [ScopeSpecIdentifier](self::scope_spec_identifier::ScopeSpecIdentifier).
+/// [AssetIdentifier](self::asset_identifier::AssetIdentifier) and [AssetQualifier](self::asset_qualifier::AssetQualifier)
 pub mod serialized_enum;
 /// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](self::asset_definition::AssetDefinitionV2).
 pub mod verifier_detail;

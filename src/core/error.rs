@@ -35,19 +35,23 @@ pub enum ContractError {
     //////////////////
     /// This error is encountered when an asset is attempted in the onboarding process, but it has
     /// already been onboarded and classified.
-    #[error("Asset {scope_address} has already been fully onboarded")]
+    #[error("Asset {scope_address} has already been fully onboarded as asset type [{asset_type}]")]
     AssetAlreadyOnboarded {
         /// The bech32 scope address of the already-onboarded asset.
         scope_address: String,
+        /// The asset type for which onboarding has already been completed
+        asset_type: String,
     },
 
     /// An error emitted when a verifier attempts to run the verification process on an asset that
     /// does not require it.  This can only occur when a verifier attempts to run a duplicate
     /// verification on a scope that has already had its verification process completed.
-    #[error("Asset [{scope_address}] was already verified and has status [{status}]")]
+    #[error("Asset [{scope_address}] was already verified for asset type [{asset_type}] and has status [{status}]")]
     AssetAlreadyVerified {
         /// The bech32 address of the scope that has already been verified.
         scope_address: String,
+        /// The asset type for which verification has already been completed for this asset.
+        asset_type: String,
         /// The current onboarding status in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
         /// on the scope that has already been verified.
         status: AssetOnboardingStatus,
@@ -64,31 +68,15 @@ pub enum ContractError {
     /// This error is encountered when the onboarding process is attempted for an asset that has
     /// already been onboarded as is awaiting a decision from its target verifier.
     #[error(
-        "Asset {scope_address} is currently awaiting verification from address {verifier_address}"
+        "Asset {scope_address} is currently awaiting verification as asset type {asset_type} from address {verifier_address}"
     )]
     AssetPendingVerification {
         /// The bech32 scope address of the asset that has been onboarded.
         scope_address: String,
+        /// The asset type for which verification is pending for this asset.
+        asset_type: String,
         /// The bech32 address of the verifier that will perform verification on the asset.
         verifier_address: String,
-    },
-
-    /// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type),
-    /// but the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) for that type
-    /// has a different Provenance Blockchain Scope Specification bech32 address listed in the
-    /// contract's internal storage.  This is to prevent scopes from being onboarded as a specific
-    /// type unless they meet the correct specification listed on the blockchain.
-    #[error("Provided scope [address: {scope_address}, spec_address: {scope_spec_address}] does not conform to the spec configured for the provided asset_type [{asset_type}]. Expected a scope of spec [{expected_scope_spec_address}]")]
-    AssetSpecMismatch {
-        /// The type of asset provided by the requestor for onboarding.
-        asset_type: String,
-        /// The bech32 scope address of the asset provided during onboarding.
-        scope_address: String,
-        /// The bech32 scope specification address listed on the scope provided during onboarding.
-        scope_spec_address: String,
-        /// The bech32 scope specification address listed in the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
-        /// stored for the given asset type.
-        expected_scope_spec_address: String,
     },
 
     /// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
@@ -220,10 +208,12 @@ pub enum ContractError {
 
     /// An error emitted when an account attempts to initiate the verification process for a scope
     /// when its bech32 address is not listed as the verifier for the particular onboarding instance.
-    #[error("Unauthorized verifier [{verifier_address}] for scope [{scope_address}], expected verifier [{expected_verifier_address}]")]
+    #[error("Unauthorized verifier [{verifier_address}] for scope [{scope_address}] as asset type [{asset_type}], expected verifier [{expected_verifier_address}]")]
     UnauthorizedAssetVerifier {
         /// The bech32 address of the scope that is awaiting verification.
         scope_address: String,
+        /// The asset type that was used to resolve the verifier
+        asset_type: String,
         /// The bech32 address of the account that attempted to run verification.
         verifier_address: String,
         /// The bech32 address of the account that has been requested to run verification.

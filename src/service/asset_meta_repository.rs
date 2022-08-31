@@ -44,16 +44,19 @@ pub trait AssetMetaRepository {
     /// entirely replaced with the values contained within this struct.
     fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()>;
 
-    /// Attempts to fetch a scope attribute currently attached to a scope.  Returns an error if no
+    /// Attempts to fetch all asset attributes currently attached to a scope.  Returns an error if no
     /// scope exists or no scope attribute is attached to the existing scope.
     ///
     /// # Parameters
     ///
     /// * `scope_address` A Provenance Blockchain bech32 address with an hrp of "scope".
-    fn get_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<AssetScopeAttribute>;
+    fn get_asset<S1: Into<String>>(
+        &self,
+        scope_address: S1,
+    ) -> AssetResult<Vec<AssetScopeAttribute>>;
 
-    /// Attempts to fetch a scope attribute currently attached to a scope.  Returns an error if bad
-    /// data exists on the scope (an unlikely occurrence) or None if no scope or scope attribute
+    /// Attempts to fetch all asset attributes currently attached to a scope.  Returns an error if bad
+    /// data exists on the scope (an unlikely occurrence) or None if no scope or scope attributes
     /// exist.
     ///
     /// # Parameters
@@ -62,6 +65,33 @@ pub trait AssetMetaRepository {
     fn try_get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
+    ) -> AssetResult<Option<Vec<AssetScopeAttribute>>>;
+
+    /// Attempts to fetch an attribute currently attached to a scope by asset type.  Returns an error if no
+    /// scope exists or no scope attribute is attached to the existing scope.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` A Provenance Blockchain bech32 address with an hrp of "scope".
+    /// * `asset_type` The asset type to query for
+    fn get_asset_by_asset_type<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<AssetScopeAttribute>;
+
+    /// Attempts to fetch asset attributes currently attached to a scope by asset type.  Returns an error if bad
+    /// data exists on the scope (an unlikely occurrence) or None if no scope or scope attribute
+    /// exists.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` A Provenance Blockchain bech32 address with an hrp of "scope".
+    /// * `asset_type` The asset type to query for
+    fn try_get_asset_by_asset_type<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
     ) -> AssetResult<Option<AssetScopeAttribute>>;
 
     /// Attempts to generate the [CosmosMsg](cosmwasm_std::CosmosMsg) values required to verify an
@@ -79,11 +109,12 @@ pub trait AssetMetaRepository {
     /// * `access_routes` Additional access routes that the verifier provides for external consumers
     /// to retrieve the underlying asset data from the scope, potentially without access an object
     /// store.
-    fn verify_asset<S1: Into<String>, S2: Into<String>>(
+    fn verify_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         &self,
         scope_address: S1,
+        asset_type: S2,
         success: bool,
-        verification_message: Option<S2>,
+        verification_message: Option<S3>,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<()>;
 }

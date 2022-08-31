@@ -139,17 +139,6 @@ where
 
     let state = repository.use_deps(|deps| config_read_v2(deps.storage).load())?;
 
-    // verify scope is of correct spec for provided asset_type
-    if scope.specification_id != asset_definition.scope_spec_address {
-        return ContractError::AssetSpecMismatch {
-            asset_type: msg.asset_type,
-            scope_address: asset_identifiers.scope_address,
-            scope_spec_address: scope.specification_id,
-            expected_scope_spec_address: asset_definition.scope_spec_address,
-        }
-        .to_err();
-    }
-
     // verify that the sender of this message is a scope owner
     if !scope
         .owners
@@ -192,13 +181,14 @@ where
 
     // check to see if the attribute already exists, and determine if this is a fresh onboard or a subsequent one
     let is_retry = if let Some(existing_attribute) =
-        repository.try_get_asset(&asset_identifiers.scope_address)?
+        repository.try_get_asset_by_asset_type(&asset_identifiers.scope_address, &msg.asset_type)?
     {
         match existing_attribute.onboarding_status {
             // If the attribute indicates that the asset is approved, then it's already fully onboarded and verified
             AssetOnboardingStatus::Approved => {
                 return ContractError::AssetAlreadyOnboarded {
                     scope_address: asset_identifiers.scope_address,
+                    asset_type: msg.asset_type,
                 }
                 .to_err();
             }
@@ -206,6 +196,7 @@ where
             AssetOnboardingStatus::Pending => {
                 return ContractError::AssetPendingVerification {
                     scope_address: existing_attribute.scope_address,
+                    asset_type: msg.asset_type,
                     verifier_address: existing_attribute.verifier_address.to_string(),
                 }
                 .to_err()
@@ -217,7 +208,11 @@ where
                 // fees may have changed.  Deleting the existing fee payment detail ensures that a
                 // new one with the correct values may be saved.
                 repository.use_deps(|deps| {
-                    delete_fee_payment_detail(deps.storage, &existing_attribute.scope_address)
+                    delete_fee_payment_detail(
+                        deps.storage,
+                        &existing_attribute.scope_address,
+                        &existing_attribute.asset_type,
+                    )
                 })?;
                 true
             }
@@ -279,11 +274,11 @@ mod tests {
             onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset},
             test_constants::{
                 DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-                DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
-                DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+                DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
             },
             test_utilities::{
-                empty_mock_info, get_default_access_routes, get_default_scope, get_duped_scope,
+                empty_mock_info, get_default_access_routes, get_default_scope,
                 mock_info_with_funds, mock_info_with_nhash, setup_test_suite,
                 test_instantiate_success, InstArgs,
             },
@@ -490,12 +485,18 @@ mod tests {
         match err {
             ContractError::AssetPendingVerification {
                 scope_address,
+                asset_type,
                 verifier_address,
             } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     scope_address,
                     "the asset pending verification message should reflect that the asset address is awaiting verification"
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE,
+                    asset_type,
+                    "the asset pending verification message should reflect the asset type for which the asset address is awaiting verification"
                 );
                 assert_eq!(
                     DEFAULT_VERIFIER_ADDRESS,
@@ -524,11 +525,19 @@ mod tests {
         )
         .unwrap_err();
         match err {
-            ContractError::AssetAlreadyOnboarded { scope_address } => {
+            ContractError::AssetAlreadyOnboarded {
+                scope_address,
+                asset_type,
+            } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
                     scope_address,
                     "the asset already onboarded message should reflect that the asset address was already onboarded",
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE,
+                    asset_type,
+                    "the asset already onboarded message should reflect the asswet type for which the asset address was already onboarded",
                 );
             }
             _ => panic!(
@@ -696,50 +705,6 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_errors_on_scope_spec_message_type_configuration_mismatch() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let bogus_scope_spec_address = "specLolWhut".to_string();
-        let scope = get_duped_scope(
-            DEFAULT_SCOPE_ADDRESS,
-            &bogus_scope_spec_address, // not the spec you are looking for/was configured as an asset_type in test_instantate_success
-            DEFAULT_SENDER_ADDRESS,
-        );
-        deps.querier.with_scope(scope.clone());
-
-        let err = onboard_asset(
-            AssetMetaService::new(deps.as_mut()),
-            mock_env(),
-            empty_mock_info(DEFAULT_SENDER_ADDRESS),
-            OnboardAssetV1 {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                asset_type: DEFAULT_ASSET_TYPE.into(),
-                verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                access_routes: vec![],
-            },
-        )
-        .unwrap_err();
-
-        match err {
-            ContractError::AssetSpecMismatch {
-                asset_type,
-                scope_address,
-                scope_spec_address,
-                expected_scope_spec_address,
-            } => {
-                assert_eq!(DEFAULT_ASSET_TYPE, asset_type);
-                assert_eq!(DEFAULT_SCOPE_ADDRESS, scope_address);
-                assert_eq!(bogus_scope_spec_address, scope_spec_address);
-                assert_eq!(DEFAULT_SCOPE_SPEC_ADDRESS, expected_scope_spec_address);
-            }
-            _ => panic!(
-                "expected the error to indicate the scope onboarding error, but got: {:?}",
-                err
-            ),
-        }
-    }
-
-    #[test]
     fn test_onboard_asset_success() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
@@ -757,8 +722,11 @@ mod tests {
         )
         .unwrap();
 
-        let fee_payment_result =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS);
+        let fee_payment_result = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        );
 
         if let Err(_) = fee_payment_result {
             panic!("fee payment detail should be stored for onboarded asset")
@@ -860,16 +828,19 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should have an attribute attached to it");
         assert_eq!(
             attribute.onboarding_status,
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
-        let payment_detail_before_retry =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("a fee payment detail should be stored for the asset");
+        let payment_detail_before_retry = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be stored for the asset");
         let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         assert_eq!(
             2,
@@ -899,16 +870,19 @@ mod tests {
             "the second emitted message should be the message fee"
         );
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should still contain an attribute after onboarding for a second time");
         assert_eq!(
             attribute.onboarding_status,
             AssetOnboardingStatus::Pending,
             "the onboarding status should now be set to pending after retrying the onboard process",
         );
-        let payment_detail_after_retry =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("a fee payment detail should still be present after updating");
+        let payment_detail_after_retry = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should still be present after updating");
         assert_eq!(
             payment_detail_before_retry, payment_detail_after_retry,
             "the payment details should be identical due to choosing the same, unchanged verifier",
@@ -941,16 +915,19 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should have an attribute attached to it");
         assert_eq!(
             attribute.onboarding_status,
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
-        let payment_detail_before =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("a fee payment detail should be stored for the asset");
+        let payment_detail_before = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be stored for the asset");
         let response = test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
@@ -990,7 +967,7 @@ mod tests {
             "the second emitted message should be the message fee"
         );
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should still contain an attribute after onboarding for a second time");
         assert_eq!(
             attribute.onboarding_status,
@@ -1001,9 +978,12 @@ mod tests {
             attribute.verifier_address, other_verifier.address,
             "the attribute should be updated to the other verifier's address",
         );
-        let payment_detail_after =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("a fee payment detail should be stored for the asset");
+        let payment_detail_after = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be stored for the asset");
         assert_ne!(
             payment_detail_before, payment_detail_after,
             "the payment details should not match due to changing verifiers",
@@ -1023,7 +1003,7 @@ mod tests {
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let service = AssetMetaService::new(deps.as_mut());
         let original_attribute = service
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the attribute should be present after all default steps");
         assert_eq!(
             AssetOnboardingStatus::Approved,

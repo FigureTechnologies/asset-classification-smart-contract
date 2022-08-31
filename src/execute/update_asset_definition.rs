@@ -41,7 +41,7 @@ impl UpdateAssetDefinitionV1 {
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<UpdateAssetDefinitionV1> {
         match msg {
             ExecuteMsg::UpdateAssetDefinition { asset_definition } => Self {
-                asset_definition: asset_definition.into_asset_definition()?,
+                asset_definition: asset_definition.into_asset_definition(),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -90,14 +90,12 @@ mod tests {
     use crate::core::state::load_asset_definition_v2_by_type;
     use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
     use crate::core::types::fee_destination::FeeDestinationV2;
-    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
     use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_SENDER_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SENDER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
@@ -167,13 +165,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinitionInputV2::new(
-                DEFAULT_ASSET_TYPE,
-                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
-                vec![],
-                None,
-                None,
-            ),
+            asset_definition: AssetDefinitionInputV2::new(DEFAULT_ASSET_TYPE, vec![], None, None),
         };
         let error = execute(
             deps.as_mut(),
@@ -230,7 +222,6 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let missing_asset_definition = AssetDefinitionV2::new(
             "nonexistent-type",
-            DEFAULT_SCOPE_SPEC_ADDRESS,
             vec![VerifierDetailV2::new(
                 "verifier",
                 Uint128::new(100),
@@ -253,12 +244,7 @@ mod tests {
     }
 
     fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInputV2, deps: &DepsC) {
-        test_asset_definition_was_updated(
-            &input
-                .as_asset_definition()
-                .expect("conversion should succeed"),
-            deps,
-        )
+        test_asset_definition_was_updated(&input.as_asset_definition(), deps)
     }
 
     fn test_asset_definition_was_updated(asset_definition: &AssetDefinitionV2, deps: &DepsC) {
@@ -277,7 +263,6 @@ mod tests {
     fn get_update_asset_definition() -> AssetDefinitionInputV2 {
         let def = AssetDefinitionInputV2::new(
             DEFAULT_ASSET_TYPE,
-            ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
             vec![VerifierDetailV2::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),
@@ -303,9 +288,7 @@ mod tests {
 
     fn get_valid_update_asset_definition() -> UpdateAssetDefinitionV1 {
         UpdateAssetDefinitionV1 {
-            asset_definition: get_update_asset_definition()
-                .into_asset_definition()
-                .expect("asset definition input conversion should succeed"),
+            asset_definition: get_update_asset_definition().into_asset_definition(),
         }
     }
 }

@@ -6,7 +6,6 @@
   "required": [
     "asset_type",
     "enabled",
-    "scope_spec_address",
     "verifiers"
   ],
   "properties": {
@@ -17,10 +16,6 @@
     "enabled": {
       "description": "Indicates whether or not the asset definition is enabled for use in the contract.  If disabled, requests to onboard assets of this type will be rejected.",
       "type": "boolean"
-    },
-    "scope_spec_address": {
-      "description": "A link to a scope specification that defines this asset type.",
-      "type": "string"
     },
     "verifiers": {
       "description": "Individual verifier definitions.  There can be many verifiers for a single asset type.",

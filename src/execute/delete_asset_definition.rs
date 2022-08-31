@@ -85,16 +85,12 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::{
-        load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
-    };
+    use crate::core::state::load_asset_definition_v2_by_type;
     use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::execute::delete_asset_definition::{
         delete_asset_definition, DeleteAssetDefinitionV1,
     };
-    use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_SPEC_ADDRESS,
-    };
+    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE};
     use crate::testutil::test_utilities::{
         empty_mock_info, mock_info_with_funds, single_attribute_for_key, test_instantiate_success,
         InstArgs,
@@ -139,52 +135,6 @@ mod tests {
         );
         let err = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect_err("expected an error to occur when loading the default asset definition");
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to access the asset definition after deletion, but got: {:?}",
-            err,
-        );
-    }
-
-    #[test]
-    fn test_delete_asset_definition_success_for_scope_spec_address() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
-        load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, DEFAULT_SCOPE_SPEC_ADDRESS).expect(
-            "sanity check: expected the default scope spec address's asset definition to be inserted after instantiation",
-        );
-        let response = delete_asset_definition(
-            deps.as_mut(),
-            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            DeleteAssetDefinitionV1::new(AssetQualifier::scope_spec_address(
-                DEFAULT_SCOPE_SPEC_ADDRESS,
-            )),
-        )
-        .expect("expected deletion by scope spec address to succeed");
-        assert!(
-            response.messages.is_empty(),
-            "the route should not emit messages",
-        );
-        assert_eq!(
-            2,
-            response.attributes.len(),
-            "expected the correct number of attributes to be emitted",
-        );
-        assert_eq!(
-            EventType::DeleteAssetDefinition.event_name(),
-            single_attribute_for_key(&response, ASSET_EVENT_TYPE_KEY),
-            "expected the event type attribute to be set correctly",
-        );
-        assert_eq!(
-            DEFAULT_ASSET_TYPE,
-            single_attribute_for_key(&response, ASSET_TYPE_KEY),
-            "expected the asset type attribute to be set correctly",
-        );
-        let err = load_asset_definition_v2_by_scope_spec(
-            deps.as_ref().storage,
-            DEFAULT_SCOPE_SPEC_ADDRESS,
-        )
-        .expect_err("expected an error to occur when loading the default asset definition");
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
             "expected the record not found error to occur when attempting to access the asset definition after deletion, but got: {:?}",
@@ -265,16 +215,5 @@ mod tests {
             "expected a record not found error to be emitted when deleting a missing asset type, but got: {:?}",
             err,
         );
-        let err = delete_asset_definition(
-            deps.as_mut(),
-            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            DeleteAssetDefinitionV1::new(AssetQualifier::scope_spec_address("not real scope spec")),
-        )
-        .expect_err("expected an error to occur when an invalid scope spec address is provided");
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected a record not found error to be emitted when deleting a missing scope spec address, but got: {:?}",
-            err,
-        )
     }
 }

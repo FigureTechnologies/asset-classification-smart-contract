@@ -38,7 +38,7 @@ impl AddAssetDefinitionV1 {
         match msg {
             ExecuteMsg::AddAssetDefinition { asset_definition } => Self {
                 bind_name: asset_definition.bind_name,
-                asset_definition: asset_definition.into_asset_definition()?,
+                asset_definition: asset_definition.into_asset_definition(),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -106,13 +106,11 @@ mod tests {
     use crate::core::state::load_asset_definition_v2_by_type;
     use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
     use crate::core::types::fee_destination::FeeDestinationV2;
-    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::testutil::msg_utilities::test_message_is_name_bind;
     use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_FEE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_VERIFIER_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_FEE_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
@@ -129,7 +127,6 @@ mod tests {
 
     // These tests board a new asset type, so they need values other than the default to work with
     const TEST_ASSET_TYPE: &str = "add_asset_type";
-    const TEST_SCOPE_SPEC_ADDRESS: &str = "scopespec1q3ptevdt2x5yg5ycflqjsky8rz5q47e34p";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
@@ -205,12 +202,7 @@ mod tests {
             response.messages.is_empty(),
             "when no name binding is requested, no messages should be emitted"
         );
-        test_asset_definition_was_added(
-            &asset_definition
-                .into_asset_definition()
-                .expect("expected the input to properly convert to an asset definition"),
-            &deps.as_ref(),
-        );
+        test_asset_definition_was_added(&asset_definition.into_asset_definition(), &deps.as_ref());
     }
 
     #[test]
@@ -240,7 +232,6 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInputV2::new(
                 "",
-                ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                 vec![],
                 true.to_some(),
                 true.to_some(),
@@ -319,12 +310,7 @@ mod tests {
     }
 
     fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV2, deps: &DepsC) {
-        test_asset_definition_was_added(
-            &input
-                .as_asset_definition()
-                .expect("asset definition conversion should succeed"),
-            deps,
-        )
+        test_asset_definition_was_added(&input.as_asset_definition(), deps)
     }
 
     fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV2, deps: &DepsC) {
@@ -344,7 +330,6 @@ mod tests {
     fn get_valid_asset_definition() -> AssetDefinitionInputV2 {
         let def = AssetDefinitionInputV2::new(
             TEST_ASSET_TYPE,
-            ScopeSpecIdentifier::address(TEST_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
             // Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers
             vec![VerifierDetailV2::new(
@@ -366,9 +351,7 @@ mod tests {
 
     fn get_valid_add_asset_definition(bind_name: bool) -> AddAssetDefinitionV1 {
         AddAssetDefinitionV1 {
-            asset_definition: get_valid_asset_definition()
-                .into_asset_definition()
-                .expect("asset definition conversion should succeed"),
+            asset_definition: get_valid_asset_definition().into_asset_definition(),
             bind_name: bind_name.to_some(),
         }
     }

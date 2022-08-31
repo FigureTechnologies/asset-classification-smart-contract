@@ -24,7 +24,6 @@ use crate::{
             asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
             entity_detail::EntityDetail,
-            scope_spec_identifier::ScopeSpecIdentifier,
         },
     },
     util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
@@ -51,8 +50,6 @@ pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, 
 pub fn get_default_asset_definition_input() -> AssetDefinitionInputV2 {
     AssetDefinitionInputV2 {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS)
-            .to_serialized_enum(),
         verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
@@ -81,9 +78,7 @@ pub fn get_default_verifier_detail() -> VerifierDetailV2 {
 }
 
 pub fn get_default_asset_definition() -> AssetDefinitionV2 {
-    get_default_asset_definition_input()
-        .into_asset_definition()
-        .expect("the default asset definition input could not be parsed as an asset definition")
+    get_default_asset_definition_input().into_asset_definition()
 }
 
 pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV2> {
@@ -93,11 +88,7 @@ pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV2> {
 pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV2> {
     get_default_asset_definition_inputs()
         .into_iter()
-        .map(|input| {
-            input
-                .into_asset_definition()
-                .expect("failed to convert default asset definition input into an asset definition")
-        })
+        .map(|input| input.into_asset_definition())
         .collect()
 }
 

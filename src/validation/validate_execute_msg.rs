@@ -26,10 +26,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
         } => validate_onboard_asset(identifier, asset_type, verifier_address),
         ExecuteMsg::VerifyAsset { identifier, .. } => validate_verify_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.as_asset_definition()?)
+            validate_asset_definition(&asset_definition.as_asset_definition())
         }
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.as_asset_definition()?)
+            validate_asset_definition(&asset_definition.as_asset_definition())
         }
         ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
@@ -234,15 +234,6 @@ fn get_asset_qualifier_invalid_message(qualifier: &SerializedEnum) -> Option<Str
             AssetQualifier::AssetType(asset_type) => {
                 if asset_type.is_empty() {
                     "qualifier:asset_type: must not be blank"
-                        .to_string()
-                        .to_some()
-                } else {
-                    None
-                }
-            }
-            AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
-                if scope_spec_address.is_empty() {
-                    "qualifier:scope_spec_address: must not be blank"
                         .to_string()
                         .to_some()
                 } else {
@@ -611,13 +602,9 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_delete_asset_definition_successes() {
+    fn test_validate_delete_asset_definition_success() {
         validate_delete_asset_definition(&AssetQualifier::asset_type("heloc").to_serialized_enum())
             .expect("expected the validation for asset type qualifier to pass");
-        validate_delete_asset_definition(
-            &AssetQualifier::scope_spec_address("address").to_serialized_enum(),
-        )
-        .expect("expected the validation for scope spec address qualifier to pass");
     }
 
     #[test]
@@ -637,7 +624,7 @@ mod tests {
                 "expected only a single invalid field to be found",
             );
             assert_eq!(
-                "qualifier: received type [invalid_type]: Invalid AssetQualifier. Expected one of [asset_type, scope_spec_address]",
+                "qualifier: received type [invalid_type]: Invalid AssetQualifier. Expected [asset_type]",
                 invalid_fields.first().unwrap(),
                 "expected the appropriate error message to be returned"
             );
@@ -660,29 +647,6 @@ mod tests {
             );
             assert_eq!(
                 "qualifier:asset_type: must not be blank",
-                invalid_fields.first().unwrap(),
-                "expected the appropriate error message to be returned"
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_delete_asset_definition_invalid_scope_spec_address() {
-        let result = validate_delete_asset_definition(
-            &AssetQualifier::scope_spec_address("").to_serialized_enum(),
-        );
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::DeleteAssetDefinition", message_type,
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "qualifier:scope_spec_address: must not be blank",
                 invalid_fields.first().unwrap(),
                 "expected the appropriate error message to be returned"
             );

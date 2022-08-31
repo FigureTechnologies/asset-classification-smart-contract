@@ -43,7 +43,7 @@
       "additionalProperties": false
     },
     {
-      "description": "This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
+      "description": "This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
       "type": "object",
       "required": [
         "query_asset_scope_attribute"
@@ -69,6 +69,37 @@
       "additionalProperties": false
     },
     {
+      "description": "This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier for a specific asset type.",
+      "type": "object",
+      "required": [
+        "query_asset_scope_attribute_for_asset_type"
+      ],
+      "properties": {
+        "query_asset_scope_attribute_for_asset_type": {
+          "type": "object",
+          "required": [
+            "asset_type",
+            "identifier"
+          ],
+          "properties": {
+            "asset_type": {
+              "description": "The asset type to query for",
+              "type": "string"
+            },
+            "identifier": {
+              "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail) that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset) route is executed.",
       "type": "object",
       "required": [
@@ -78,9 +109,14 @@
         "query_fee_payments": {
           "type": "object",
           "required": [
+            "asset_type",
             "identifier"
           ],
           "properties": {
+            "asset_type": {
+              "description": "The asset type to query for pending verification fee payment details",
+              "type": "string"
+            },
             "identifier": {
               "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
               "allOf": [

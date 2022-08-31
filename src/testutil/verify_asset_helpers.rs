@@ -8,7 +8,10 @@ use crate::{
 };
 
 use super::{
-    test_constants::{DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS, DEFAULT_VERIFIER_ADDRESS},
+    test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SCOPE_ADDRESS,
+        DEFAULT_VERIFIER_ADDRESS,
+    },
     test_utilities::{get_default_access_routes, intercept_add_or_update_attribute, MockOwnedDeps},
 };
 
@@ -21,6 +24,7 @@ impl TestVerifyAsset {
     pub fn default_verify_asset() -> VerifyAssetV1 {
         VerifyAssetV1 {
             identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            asset_type: DEFAULT_ASSET_TYPE.into(),
             success: true,
             message: "Verified asset without errors".to_string().to_some(),
             access_routes: get_default_access_routes(),

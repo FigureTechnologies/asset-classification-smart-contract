@@ -15,19 +15,6 @@
         }
       },
       "additionalProperties": false
-    },
-    {
-      "description": "A unique bech32 address with an hrp of \"scopespec\".",
-      "type": "object",
-      "required": [
-        "scope_spec_address"
-      ],
-      "properties": {
-        "scope_spec_address": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
     }
   ]
 }

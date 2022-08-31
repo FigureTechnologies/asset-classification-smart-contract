@@ -2,7 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::core::error::ContractError;
-use crate::core::types::serialized_enum::SerializedEnum;
+use crate::core::state::StateV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::{
     core::state::config_read_v2,
@@ -20,8 +20,6 @@ use crate::{
 pub struct AssetDefinitionV2 {
     /// The unique name of the asset associated with the definition.
     pub asset_type: String,
-    /// A link to a scope specification that defines this asset type.
-    pub scope_spec_address: String,
     /// Individual verifier definitions.  There can be many verifiers for a single asset type.
     pub verifiers: Vec<VerifierDetailV2>,
     /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
@@ -34,16 +32,10 @@ impl AssetDefinitionV2 {
     /// # Parameters
     ///
     /// * `asset_type` The unique name of the asset associated with the definition.
-    /// * `scope_spec_address` A link to a scope specification that defines this asset type.
     /// * `verifiers` Individual verifier definitions.
-    pub fn new<S1: Into<String>, S2: Into<String>>(
-        asset_type: S1,
-        scope_spec_address: S2,
-        verifiers: Vec<VerifierDetailV2>,
-    ) -> Self {
+    pub fn new<S1: Into<String>>(asset_type: S1, verifiers: Vec<VerifierDetailV2>) -> Self {
         AssetDefinitionV2 {
             asset_type: asset_type.into(),
-            scope_spec_address: scope_spec_address.into(),
             verifiers,
             enabled: true,
         }
@@ -51,8 +43,8 @@ impl AssetDefinitionV2 {
 
     /// Converts the asset_type value to lowercase and serializes it as bytes,
     /// then uplifts the value to a vector to allow it to be returned.
-    pub fn storage_key(&self) -> Vec<u8> {
-        self.asset_type.to_lowercase().as_bytes().to_vec()
+    pub fn storage_key(&self) -> String {
+        self.asset_type.to_lowercase()
     }
 
     /// Helper functionality to retrieve the base contract name from state and use it to create the
@@ -63,7 +55,17 @@ impl AssetDefinitionV2 {
     /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
     pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
         let state = config_read_v2(deps.storage).load()?;
-        generate_asset_attribute_name(&self.asset_type, state.base_contract_name).to_ok()
+        self.attribute_name_state(&state).to_ok()
+    }
+
+    /// Helper functionality to use the base contract name from already fetched state and use it to create the
+    /// Provenance Blockchain Attribute Module name for this asset type.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
+    pub fn attribute_name_state(&self, state: &StateV2) -> String {
+        generate_asset_attribute_name(&self.asset_type, &state.base_contract_name)
     }
 
     /// Helper functionality to retrieve a verifier detail from the self-contained vector of
@@ -101,11 +103,6 @@ pub struct AssetDefinitionInputV2 {
     /// The name of the asset associated with the definition.  This value must be unique across all
     /// instances persisted in contract storage, or requests to add will be rejected.
     pub asset_type: String,
-    /// A link to a scope specification that defines this asset type.  A serialized version of a
-    /// [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple
-    /// different values to be derived as a scope specification address.  Must be unique across all
-    /// instances persisted in contract storage, or requests to add will be rejected.
-    pub scope_spec_identifier: SerializedEnum,
     /// Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
     /// value must have a unique `address` property or requests to add will be rejected.
     pub verifiers: Vec<VerifierDetailV2>,
@@ -127,10 +124,6 @@ impl AssetDefinitionInputV2 {
     ///
     /// * `asset_type` The name of the asset associated with the definition.  This value must be unique across all
     /// instances persisted in contract storage, or requests to add will be rejected.
-    /// * `scope_spec_identifier` A link to a scope specification that defines this asset type.
-    /// A serialized version of a [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple
-    /// different values to be derived as a scope specification address.  Must be unique across all
-    /// instances persisted in contract storage, or requests to add will be rejected.
     /// * `verifiers` Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
     /// value must have a unique `address` property or requests to add will be rejected.
     /// * `enabled` Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
@@ -139,47 +132,34 @@ impl AssetDefinitionInputV2 {
     /// struct is used to add a new asset type to the contract.
     pub fn new<S1: Into<String>>(
         asset_type: S1,
-        scope_spec_identifier: SerializedEnum,
         verifiers: Vec<VerifierDetailV2>,
         enabled: Option<bool>,
         bind_name: Option<bool>,
     ) -> Self {
         Self {
             asset_type: asset_type.into(),
-            scope_spec_identifier,
             verifiers,
             enabled,
             bind_name,
         }
     }
 
-    /// Moves this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2), converting
-    /// the contained `scope_spec_identifier` enum value into a string scope spec address.
-    pub fn into_asset_definition(self) -> AssetResult<AssetDefinitionV2> {
+    /// Moves this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2)
+    pub fn into_asset_definition(self) -> AssetDefinitionV2 {
         AssetDefinitionV2 {
             asset_type: self.asset_type,
-            scope_spec_address: self
-                .scope_spec_identifier
-                .to_scope_spec_identifier()?
-                .get_scope_spec_address()?,
             verifiers: self.verifiers,
             enabled: self.enabled.unwrap_or(true),
         }
-        .to_ok()
     }
 
     /// Clones the values contained within this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2).
     /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV2::into_asset_definition).
-    pub fn as_asset_definition(&self) -> AssetResult<AssetDefinitionV2> {
+    pub fn as_asset_definition(&self) -> AssetDefinitionV2 {
         AssetDefinitionV2 {
             asset_type: self.asset_type.clone(),
-            scope_spec_address: self
-                .scope_spec_identifier
-                .to_scope_spec_identifier()?
-                .get_scope_spec_address()?,
             verifiers: self.verifiers.clone(),
             enabled: self.enabled.unwrap_or(true),
         }
-        .to_ok()
     }
 }

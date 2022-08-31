@@ -32,6 +32,7 @@ use cosmwasm_std::{MessageInfo, Response};
 #[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAccessRoutesV1 {
     pub identifier: AssetIdentifier,
+    pub asset_type: String,
     pub owner_address: String,
     pub access_routes: Vec<AccessRoute>,
 }
@@ -50,13 +51,15 @@ impl UpdateAccessRoutesV1 {
     /// instead of the existing routes.  If other existing routes need to be maintained and the updated
     /// is intended to simply add a new route, then the existing routes need to be included in the
     /// request alongside the new route(s).
-    pub fn new<S: Into<String>>(
+    pub fn new<S1: Into<String>, S2: Into<String>>(
         identifier: AssetIdentifier,
-        owner_address: S,
+        asset_type: S1,
+        owner_address: S2,
         access_routes: Vec<AccessRoute>,
     ) -> Self {
         Self {
             identifier,
+            asset_type: asset_type.into(),
             owner_address: owner_address.into(),
             access_routes,
         }
@@ -74,10 +77,12 @@ impl UpdateAccessRoutesV1 {
         match msg {
             ExecuteMsg::UpdateAccessRoutes {
                 identifier,
+                asset_type,
                 owner_address,
                 access_routes,
             } => Self::new(
                 identifier.to_asset_identifier()?,
+                asset_type,
                 owner_address,
                 access_routes,
             )
@@ -134,7 +139,7 @@ where
         return ContractError::generic("invalid or duplicate access routes were provided").to_err();
     }
     let scope_address = msg.identifier.get_scope_address()?;
-    let mut scope_attribute = repository.get_asset(&scope_address)?;
+    let mut scope_attribute = repository.get_asset_by_asset_type(&scope_address, msg.asset_type)?;
     if let Some(mut target_access_definition) = scope_attribute
         .access_definitions
         .iter()
@@ -263,6 +268,7 @@ mod tests {
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             UpdateAccessRoutesV1::new(
                 AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                DEFAULT_ASSET_TYPE,
                 DEFAULT_SENDER_ADDRESS,
                 vec![AccessRoute::new("", "".to_some())],
             ),
@@ -292,6 +298,7 @@ mod tests {
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             UpdateAccessRoutesV1::new(
                 AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                DEFAULT_ASSET_TYPE,
                 "some random person",
                 vec![AccessRoute::new("fakeroute", "something-idk".to_some())],
             )
@@ -323,7 +330,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
-        let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect(
+        let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
             "expected a scope attribute to be available for the default address after onboarding",
         );
         assert!(
@@ -359,7 +366,7 @@ mod tests {
         let expected_attribute_name =
             generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
         let attribute_after_update = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("expected to retrieve the attribute successfully after the access route update is completed");
         response.messages.iter().for_each(|msg| match &msg.msg {
             CosmosMsg::Custom(ProvenanceMsg {
@@ -490,6 +497,7 @@ mod tests {
                 info: empty_mock_info(DEFAULT_SENDER_ADDRESS),
                 update_access_routes: UpdateAccessRoutesV1::new(
                     AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                    DEFAULT_ASSET_TYPE,
                     DEFAULT_SENDER_ADDRESS,
                     vec![],
                 ),
@@ -497,7 +505,7 @@ mod tests {
         )
         .expect("expected the update to complete successfully");
         let scope_attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("expected the scope attribute to be available after an update");
         let access_definition = assert_single_item(
             &scope_attribute.access_definitions,
@@ -517,7 +525,7 @@ mod tests {
             .expect("expected the default asset onboarding to succeed");
         test_verify_asset(&mut deps, TestVerifyAsset::default())
             .expect("expected the default asset verification to succeed");
-        let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset(DEFAULT_SCOPE_ADDRESS).expect(
+        let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
             "expected a scope attribute to be available for the default address after onboarding",
         );
         let verifier_definition_before_update = attribute_before_update
@@ -544,7 +552,7 @@ mod tests {
         )
         .expect("expected the update to complete successfully");
         let attribute_after_update = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("expected the scope attribute to be available after the update");
         assert_eq!(
             2,
@@ -584,6 +592,7 @@ mod tests {
             ExecuteMsg::UpdateAccessRoutes {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS)
                     .to_serialized_enum(),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
                 access_routes: vec![AccessRoute::new("grpcs://no.u:4433", "some_name".to_some())],
             },
@@ -594,6 +603,7 @@ mod tests {
     fn get_valid_update_routes_v1() -> UpdateAccessRoutesV1 {
         UpdateAccessRoutesV1::new(
             AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            DEFAULT_ASSET_TYPE,
             DEFAULT_SENDER_ADDRESS,
             vec![AccessRoute::new(
                 "grpcs://fake.route:1234",

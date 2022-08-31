@@ -3,14 +3,11 @@ use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
-    util::{
-        aliases::AssetResult,
-        traits::{OptionExtensions, ResultExtensions},
-    },
+    util::{aliases::AssetResult, traits::ResultExtensions},
 };
 use cosmwasm_std::{Addr, Storage};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
-use cw_storage_plus::{Index, IndexList, IndexedMap, Map, UniqueIndex};
+use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -19,7 +16,8 @@ use super::error::ContractError;
 static STATE_V2_KEY: &[u8] = b"state_v2";
 const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
 
-const FEE_PAYMENT_DETAILS: Map<String, FeePaymentDetail> = Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
+const FEE_PAYMENT_DETAILS: Map<(Addr, String), FeePaymentDetail> =
+    Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
 /// Stores the main configurations for the contract internally.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -74,40 +72,25 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
     singleton_read(storage, STATE_V2_KEY)
 }
 
-/// Boilerplate implementation of indexes for an IndexMap around state.
-/// This establishes a unique index on the scope spec address to ensure
-/// that saves cannot include duplicate scope specs.
-/// If it becomes a requirement in the future that we have duplicate scope specs,
-/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
-/// will fall apart.
-pub struct AssetDefinitionIndexesV2<'a> {
-    scope_spec: UniqueIndex<'a, String, AssetDefinitionV2>,
-}
-impl<'a> IndexList<AssetDefinitionV2> for AssetDefinitionIndexesV2<'a> {
-    fn get_indexes(&'_ self) -> Box<dyn Iterator<Item = &'_ dyn Index<AssetDefinitionV2>> + '_> {
-        let v: Vec<&dyn Index<AssetDefinitionV2>> = vec![&self.scope_spec];
-        Box::new(v.into_iter())
-    }
-}
-
+const ASSET_DEFINITIONS_V2_NAMESPACE: &str = "asset_definitions_v2";
 /// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
 /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
 /// functionality. Private access to ensure only helper functions below are used.
-pub fn asset_definitions_v2<'a>(
-) -> IndexedMap<'a, &'a [u8], AssetDefinitionV2, AssetDefinitionIndexesV2<'a>> {
-    let indexes = AssetDefinitionIndexesV2 {
-        scope_spec: UniqueIndex::new(
-            |d: &AssetDefinitionV2| d.scope_spec_address.clone().to_lowercase(),
-            "asset_definitions_v2__scope_spec_address",
-        ),
-    };
-    IndexedMap::new("asset_definitions_v2", indexes)
+const ASSET_DEFINITIONS_V2: Map<String, AssetDefinitionV2> =
+    Map::new(ASSET_DEFINITIONS_V2_NAMESPACE);
+
+pub fn list_asset_definitions_v2(storage: &dyn Storage) -> Vec<AssetDefinitionV2> {
+    ASSET_DEFINITIONS_V2
+        .range(storage, None, None, cosmwasm_std::Order::Descending)
+        .into_iter()
+        .filter(|result| result.is_ok())
+        .map(|result| result.unwrap().1)
+        .collect::<Vec<AssetDefinitionV2>>()
 }
 
 /// Inserts a new asset definition into storage. If a value already exists, an error will be returned.
 /// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
-/// value, as well as a unique [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address).
-/// Either unique constraint being violated will return an error.
+/// value. An error will be returned if this unique constraint is violated.
 ///
 /// # Parameters
 ///
@@ -117,21 +100,21 @@ pub fn insert_asset_definition_v2(
     storage: &mut dyn Storage,
     definition: &AssetDefinitionV2,
 ) -> AssetResult<()> {
-    let state = asset_definitions_v2();
-    let key = &definition.storage_key();
-    if let Ok(existing_def) = state.load(storage, key) {
+    let state = ASSET_DEFINITIONS_V2;
+    let key = definition.storage_key();
+    if let Ok(existing_def) = state.load(storage, key.clone()) {
         ContractError::RecordAlreadyExists {
             explanation: format!(
-                "unique constraints violated! record exists with asset type [{}] and scope spec address [{}]",
-                existing_def.asset_type, existing_def.scope_spec_address
+                "unique constraints violated! record exists with asset type [{}]",
+                existing_def.asset_type
             ),
         }
-            .to_err()
+        .to_err()
     } else {
         // At this point, we know there is no old data available, so we can safely call the replace function and
         // specify None for the old_data param.
         state
-            .replace(storage, key, definition.to_some(), None)
+            .save(storage, key, definition)
             .map_err(ContractError::Std)
     }
 }
@@ -152,28 +135,23 @@ pub fn replace_asset_definition_v2(
     storage: &mut dyn Storage,
     definition: &AssetDefinitionV2,
 ) -> AssetResult<()> {
-    let state = asset_definitions_v2();
-    let key = &definition.storage_key();
-    if let Ok(existing_def) = state.load(storage, key) {
-        // The documentation for the save() function in IndexedMap recommends calling replace() directly after
-        // loading the data, because it's needed for an update and happens internally anyway
-        state
-            .replace(
-                storage,
-                key,
-                definition.to_some(),
-                (&existing_def).to_some(),
-            )
-            .map_err(ContractError::Std)
-    } else {
-        ContractError::RecordNotFound {
-            explanation: format!(
-                "no record exists to update for asset type [{}]",
-                &definition.asset_type
-            ),
-        }
-        .to_err()
-    }
+    let state = ASSET_DEFINITIONS_V2;
+    let key = definition.storage_key();
+    state
+        .update(storage, key, |existing| {
+            if let None = existing {
+                ContractError::RecordNotFound {
+                    explanation: format!(
+                        "no record exists to update for asset type [{}]",
+                        &definition.asset_type
+                    ),
+                }
+                .to_err()
+            } else {
+                definition.to_owned().to_ok()
+            }
+        })
+        .map(|_| ())
 }
 
 /// Finds an existing asset definition in state by checking against the provided asset type,
@@ -188,9 +166,9 @@ pub fn may_load_asset_definition_v2_by_type<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
 ) -> AssetResult<Option<AssetDefinitionV2>> {
-    asset_definitions_v2()
+    ASSET_DEFINITIONS_V2
         // Coerce to lowercase to match how stored values are keyed
-        .may_load(storage, asset_type.into().to_lowercase().as_bytes())
+        .may_load(storage, asset_type.into().to_lowercase())
         .map_err(ContractError::Std)
 }
 
@@ -216,56 +194,6 @@ pub fn load_asset_definition_v2_by_type<S: Into<String>>(
     }
 }
 
-/// Finds an existing asset definition in state by checking against the provided scope spec address,
-/// returning an Option that reflects whether or not the definition exists.
-///
-/// # Parameters
-///
-/// * `storage` A reference to the contract's internal storage.
-/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address)
-/// for the requested asset definition.
-pub fn may_load_asset_definition_v2_by_scope_spec<S: Into<String>>(
-    storage: &dyn Storage,
-    scope_spec_address: S,
-) -> AssetResult<Option<AssetDefinitionV2>> {
-    // Coerce to lowercase to match how stored values are keyed
-    let spec_addr = scope_spec_address.into().to_lowercase();
-    asset_definitions_v2()
-        .idx
-        .scope_spec
-        .item(storage, spec_addr)
-        .map(|option| option.map(|(_, def)| def))
-        .map_err(ContractError::Std)
-}
-
-/// Finds an existing asset definition by scope spec address, or returns an error if no definition is
-/// found.
-///
-/// # Parameters
-///
-/// * `storage` A reference to the contract's internal storage.
-/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address)
-/// for the requested asset definition.
-pub fn load_asset_definition_v2_by_scope_spec<S: Into<String>>(
-    storage: &dyn Storage,
-    scope_spec_address: S,
-) -> AssetResult<AssetDefinitionV2> {
-    let scope_spec_address = scope_spec_address.into();
-    if let Some(asset_definition) =
-        may_load_asset_definition_v2_by_scope_spec(storage, &scope_spec_address)?
-    {
-        asset_definition.to_ok()
-    } else {
-        ContractError::RecordNotFound {
-            explanation: format!(
-                "no asset definition existed for scope spec address {}",
-                scope_spec_address
-            ),
-        }
-        .to_err()
-    }
-}
-
 /// Attempts to delete an existing asset definition by asset type.  Returns an error if the
 /// definition does not exist or if the deletion fails.  Returns the asset type of the deleted
 /// definition on a successful deletion.
@@ -283,12 +211,9 @@ pub fn delete_asset_definition_v2_by_qualifier(
         AssetQualifier::AssetType(asset_type) => {
             load_asset_definition_v2_by_type(storage, asset_type)
         }
-        AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
-            load_asset_definition_v2_by_scope_spec(storage, scope_spec_address)
-        }
     }?
     .asset_type;
-    asset_definitions_v2().remove(storage, existing_asset_type.to_lowercase().as_bytes())?;
+    ASSET_DEFINITIONS_V2.remove(storage, existing_asset_type.to_lowercase());
     Ok(existing_asset_type)
 }
 
@@ -303,8 +228,9 @@ pub fn delete_asset_definition_v2_by_qualifier(
 pub fn insert_fee_payment_detail(
     storage: &mut dyn Storage,
     fee_payment_detail: &FeePaymentDetail,
+    asset_type: &str,
 ) -> AssetResult<()> {
-    if load_fee_payment_detail(storage, &fee_payment_detail.scope_address).is_ok() {
+    if load_fee_payment_detail(storage, &fee_payment_detail.scope_address, asset_type).is_ok() {
         return ContractError::RecordAlreadyExists {
             explanation: format!(
                 "cannot insert payment detail for scope [{}] because a record already exists with that address",
@@ -315,7 +241,10 @@ pub fn insert_fee_payment_detail(
     FEE_PAYMENT_DETAILS
         .save(
             storage,
-            fee_payment_detail.scope_address.to_owned(),
+            (
+                Addr::unchecked(&fee_payment_detail.scope_address),
+                asset_type.into(),
+            ),
             fee_payment_detail,
         )?
         .to_ok()
@@ -328,12 +257,13 @@ pub fn insert_fee_payment_detail(
 /// * `storage` A reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// for the requested payment detail.
-pub fn load_fee_payment_detail<S: Into<String>>(
+pub fn load_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
     storage: &dyn Storage,
-    scope_address: S,
+    scope_address: S1,
+    asset_type: S2,
 ) -> AssetResult<FeePaymentDetail> {
     FEE_PAYMENT_DETAILS
-        .load(storage, scope_address.into())?
+        .load(storage, (Addr::unchecked(scope_address), asset_type.into()))?
         .to_ok()
 }
 
@@ -345,12 +275,13 @@ pub fn load_fee_payment_detail<S: Into<String>>(
 /// * `storage` A reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// for the requested payment detail.
-pub fn may_load_fee_payment_detail<S: Into<String>>(
+pub fn may_load_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
     storage: &dyn Storage,
-    scope_address: S,
+    scope_address: S1,
+    asset_type: S2,
 ) -> Option<FeePaymentDetail> {
     FEE_PAYMENT_DETAILS
-        .may_load(storage, scope_address.into())
+        .may_load(storage, (Addr::unchecked(scope_address), asset_type.into()))
         .unwrap_or(None)
 }
 
@@ -362,16 +293,18 @@ pub fn may_load_fee_payment_detail<S: Into<String>>(
 /// * `storage` A mutable reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// of the detail to delete.
-pub fn delete_fee_payment_detail<S: Into<String>>(
+pub fn delete_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
     storage: &mut dyn Storage,
-    scope_address: S,
+    scope_address: S1,
+    asset_type: S2,
 ) -> AssetResult<()> {
     let scope_address = scope_address.into();
+    let asset_type = asset_type.into();
     // Verify the detail exists before allowing its deletion.  The standard "remove" function will
     // not produce an error if no target value exists, but it is very informative of bad code to
     // reveal when unnecessary operations occur.
-    load_fee_payment_detail(storage, &scope_address)?;
-    FEE_PAYMENT_DETAILS.remove(storage, scope_address);
+    load_fee_payment_detail(storage, &scope_address, &asset_type)?;
+    FEE_PAYMENT_DETAILS.remove(storage, (Addr::unchecked(scope_address), asset_type));
     ().to_ok()
 }
 
@@ -383,44 +316,32 @@ mod tests {
     use crate::core::error::ContractError;
     use crate::core::state::{
         delete_asset_definition_v2_by_qualifier, delete_fee_payment_detail,
-        insert_asset_definition_v2, insert_fee_payment_detail,
-        load_asset_definition_v2_by_scope_spec, load_asset_definition_v2_by_type,
-        load_fee_payment_detail, may_load_asset_definition_v2_by_scope_spec,
-        may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
+        insert_asset_definition_v2, insert_fee_payment_detail, load_asset_definition_v2_by_type,
+        load_fee_payment_detail, may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
         replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
     use crate::core::types::asset_qualifier::AssetQualifier;
-    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
     use crate::testutil::test_utilities::get_duped_fee_payment_detail;
 
     #[test]
     fn test_insert_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
+        let def = AssetDefinitionV2::new("heloc", vec![]);
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
         let error = insert_asset_definition_v2(deps.as_mut().storage, &def).unwrap_err();
         match error {
             ContractError::RecordAlreadyExists { explanation } => {
                 assert_eq!(
-                    "unique constraints violated! record exists with asset type [heloc] and scope spec address [heloc-scope-spec]",
+                    "unique constraints violated! record exists with asset type [heloc]",
                     explanation,
                     "the proper record type should be returned in the resulting error"
                 );
             }
             _ => panic!("unexpected error encountered: {:?}", error),
         }
-        let def_with_same_scope_spec =
-            AssetDefinitionV2::new("mortgage", "heloc-scope-spec", vec![]);
-        let scope_spec_key_violation_error =
-            insert_asset_definition_v2(deps.as_mut().storage, &def_with_same_scope_spec)
-                .unwrap_err();
-        assert!(
-            matches!(scope_spec_key_violation_error, ContractError::Std(_)),
-            "violating the scope spec unique key should result in an error, but got incorrect error: {:?}",
-            scope_spec_key_violation_error,
-        );
         let loaded_asset_definition =
             load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
                 .expect("asset definition should load without error");
@@ -433,7 +354,7 @@ mod tests {
     #[test]
     fn test_replace_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let mut def = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
+        let mut def = AssetDefinitionV2::new("heloc", vec![]);
         let error = replace_asset_definition_v2(deps.as_mut().storage, &def).unwrap_err();
         match error {
             ContractError::RecordNotFound { explanation } => {
@@ -446,7 +367,7 @@ mod tests {
         };
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
-        def.scope_spec_address = "new-spec-address".to_string();
+        def.enabled = !def.enabled;
         replace_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("update should work correctly");
         let loaded_asset_definition =
@@ -461,7 +382,7 @@ mod tests {
     #[test]
     fn test_may_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
+        let heloc = AssetDefinitionV2::new("heloc", vec![]);
         insert_asset_definition_v2(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert without error");
         assert!(
@@ -482,8 +403,8 @@ mod tests {
     #[test]
     fn test_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
-        let mortgage = AssetDefinitionV2::new("mortgage", "mortgage-scope-spec", vec![]);
+        let heloc = AssetDefinitionV2::new("heloc", vec![]);
+        let mortgage = AssetDefinitionV2::new("mortgage", vec![]);
         insert_asset_definition_v2(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert appropriately");
         insert_asset_definition_v2(deps.as_mut().storage, &mortgage)
@@ -505,62 +426,9 @@ mod tests {
     }
 
     #[test]
-    fn test_may_load_asset_definition_by_scope_spec_address() {
-        let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &heloc)
-            .expect("the heloc definition should insert without error");
-        assert!(
-            may_load_asset_definition_v2_by_scope_spec(
-                deps.as_ref().storage,
-                "not-heloc-scope-spec"
-            )
-            .expect("may load asset definition by scope spec should execute without error")
-            .is_none(),
-            "expected the missing asset definition to return an empty Option",
-        );
-        assert_eq!(
-            may_load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &heloc.scope_spec_address)
-            .expect("may load asset definition by scope spec should execute without error")
-            .expect("expected the asset definition loaded by a populated scope spec address to be present"),
-            heloc,
-            "expected the loaded asset definition to equate to the original value that was inserted",
-        );
-    }
-
-    #[test]
-    fn test_load_asset_definition_by_scope_spec() {
-        let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
-        let mortgage = AssetDefinitionV2::new("mortgage", "mortgage-scope-spec", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &heloc)
-            .expect("the heloc definition should insert appropriately");
-        insert_asset_definition_v2(deps.as_mut().storage, &mortgage)
-            .expect("the mortgage definition should insert appropriately");
-        let heloc_from_storage = load_asset_definition_v2_by_scope_spec(
-            deps.as_ref().storage,
-            &heloc.scope_spec_address,
-        )
-        .expect("the heloc definition should load without error");
-        let mortgage_from_storage = load_asset_definition_v2_by_scope_spec(
-            deps.as_ref().storage,
-            &mortgage.scope_spec_address,
-        )
-        .expect("the mortgage definition should load without error");
-        assert_eq!(
-            heloc, heloc_from_storage,
-            "the heloc definition should be the same after loading from storage"
-        );
-        assert_eq!(
-            mortgage, mortgage_from_storage,
-            "the mortgage definition should be the same after loading from storage"
-        );
-    }
-
-    #[test]
     fn test_delete_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
+        let def = AssetDefinitionV2::new("heloc", vec![]);
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored without error");
         assert_eq!(
@@ -568,12 +436,6 @@ mod tests {
                 .expect("expected the load to succeed"),
             def,
             "sanity check: asset definition should be accessible by asset type",
-        );
-        assert_eq!(
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect("expected the load to succeed"),
-            def,
-            "sanity check: asset definition should be accessible by scope spec address",
         );
         delete_asset_definition_v2_by_qualifier(
             deps.as_mut().storage,
@@ -589,16 +451,6 @@ mod tests {
             "expected the record not found error to occur when attempting to load by asset type, but got: {:?}",
             err,
         );
-        let err =
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect_err(
-                    "expected an error to occur when attempting to load the deleted definition",
-                );
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}",
-            err,
-        );
         insert_asset_definition_v2(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored again without error");
         assert_eq!(
@@ -606,12 +458,6 @@ mod tests {
                 .expect("expected the load to succeed"),
             def,
             "the definition should be once again successfully attainable by asset type",
-        );
-        assert_eq!(
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect("expected the load to succeed"),
-            def,
-            "the definition should be once again successfully attainable by scope spec address",
         );
     }
 
@@ -631,84 +477,14 @@ mod tests {
     }
 
     #[test]
-    fn test_delete_asset_definition_by_scope_spec_address() {
-        let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV2::new("heloc", "heloc-scope-spec", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
-            .expect("expected the asset definition to be stored without error");
-        assert_eq!(
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
-                .expect("expected the load to succeed"),
-            def,
-            "sanity check: asset definition should be accessible by asset type",
-        );
-        assert_eq!(
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect("expected the load to succeed"),
-            def,
-            "sanity check: asset definition should be accessible by scope spec address",
-        );
-        delete_asset_definition_v2_by_qualifier(
-            deps.as_mut().storage,
-            &AssetQualifier::scope_spec_address(&def.scope_spec_address),
-        )
-        .expect("expected the deletion to succeed");
-        let err = load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
-            .expect_err(
-                "expected an error to occur when attempting to load the deleted definition",
-            );
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by asset type, but got: {:?}",
-            err,
-        );
-        let err =
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect_err(
-                    "expected an error to occur when attempting to load the deleted definition",
-                );
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}",
-            err,
-        );
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
-            .expect("expected the asset definition to be stored again without error");
-        assert_eq!(
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
-                .expect("expected the load to succeed"),
-            def,
-            "the definition should be once again successfully attainable by asset type",
-        );
-        assert_eq!(
-            load_asset_definition_v2_by_scope_spec(deps.as_ref().storage, &def.scope_spec_address)
-                .expect("expected the load to succeed"),
-            def,
-            "the definition should be once again successfully attainable by scope spec address",
-        );
-    }
-
-    #[test]
-    fn test_delete_nonexistent_asset_definition_by_scope_spec_address_failure() {
-        let mut deps = mock_dependencies(&[]);
-        let err = delete_asset_definition_v2_by_qualifier(
-            deps.as_mut().storage,
-            &AssetQualifier::scope_spec_address("fake-scope-spec-address"),
-        )
-        .expect_err(
-            "expected an error to occur when attempting to delete by a missing scope spec address",
-        );
-        assert!(
-            matches!(err, ContractError::RecordNotFound { .. }),
-            "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",
-            err,
-        );
-    }
-
-    #[test]
     fn test_insert_and_load_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
-        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+        let err = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect_err(
             "an error should occur when trying to load a payment detail that does not exist",
         );
         assert!(
@@ -717,19 +493,24 @@ mod tests {
             err,
         );
         let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
-        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail, DEFAULT_ASSET_TYPE)
             .expect("inserting a new fee payment detail should succeed");
-        let loaded_payment_detail =
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("loading the stored payment detail should succeed");
+        let loaded_payment_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("loading the stored payment detail should succeed");
         assert_eq!(
             payment_detail, loaded_payment_detail,
             "the loaded payment detail should equate to the stored value",
         );
-        let err = insert_fee_payment_detail(deps.as_mut().storage, &loaded_payment_detail)
-            .expect_err(
-                "an error should occur when attempting to insert a duplicate payment detail",
-            );
+        let err = insert_fee_payment_detail(
+            deps.as_mut().storage,
+            &loaded_payment_detail,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect_err("an error should occur when attempting to insert a duplicate payment detail");
         assert!(
             matches!(err, ContractError::RecordAlreadyExists { .. }),
             "a record already exists error should occur, but got: {:?}",
@@ -741,15 +522,23 @@ mod tests {
     fn test_may_load_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
         assert!(
-            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_none(),
+            may_load_fee_payment_detail(
+                deps.as_ref().storage,
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE
+            )
+            .is_none(),
             "attempting to load a detail that does not exist should produce a None variant",
         );
         let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
-        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail, DEFAULT_ASSET_TYPE)
             .expect("inserting a new fee payment detail should succeed");
-        let loaded_payment_detail =
-            may_load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-                .expect("the fee payment detail should load successfully");
+        let loaded_payment_detail = may_load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("the fee payment detail should load successfully");
         assert_eq!(
             payment_detail, loaded_payment_detail,
             "the loaded payment detail should equate to the inserted value",
@@ -759,7 +548,7 @@ mod tests {
     #[test]
     fn test_delete_fee_payment_detail() {
         let mut deps = mock_dependencies(&[]);
-        let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+        let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect_err(
             "an error should occur when attempting to delete a fee payment detail that does not exist"
         );
         assert!(
@@ -768,15 +557,29 @@ mod tests {
             err,
         );
         let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
-        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail)
+        insert_fee_payment_detail(deps.as_mut().storage, &payment_detail, DEFAULT_ASSET_TYPE)
             .expect("inserting a payment detail should succeed");
         assert!(
-            load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).is_ok(),
+            load_fee_payment_detail(
+                deps.as_ref().storage,
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE
+            )
+            .is_ok(),
             "sanity check: fee payment detail should be available after insert",
         );
-        delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS)
-            .expect("deleting a payment detail should succeed");
-        let err = load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS).expect_err(
+        delete_fee_payment_detail(
+            deps.as_mut().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("deleting a payment detail should succeed");
+        let err = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect_err(
             "an error should occur when trying to load a payment detail after it has been deleted",
         );
         assert!(

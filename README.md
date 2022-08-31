@@ -128,10 +128,7 @@ underlying record values.  This should never be set to true in a mainnet environ
   "asset_definitions": [
     {
       "asset_type": "cat",
-      "scope_spec_identifier": {
-        "type": "uuid",
-        "value": "895a4740-d6fc-11ec-abea-8bfabb5342cd"
-      },
+
       "verifiers": [
         {
           "address": "tp14w3jf4em4uszs77yaqnmfrlxwcmqux5g6hfpdf",
@@ -372,9 +369,6 @@ value to be added to the contract's internal storage.  These asset definitions d
 be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
 two criteria:
 * Its `asset_type` value must not yet be registered in a different asset definition.
-* Its `scope_spec_address` (entered as a [ScopeSpecIdentifier](src/core/types/scope_spec_identifier.rs)) must also be
-unique across asset definitions.
-Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).
 
 ##### Request Parameters
 
@@ -393,10 +387,6 @@ asset definition.
   "add_asset_definition": {
     "asset_definition": {
       "asset_type": "car",
-      "scope_spec_identifier": {
-        "type": "address",
-        "value": "scopespec1qjhsfqsj6meprmyrvmhn64pquchqmu0qaw"
-      },
       "verifiers": [
         {
           "address": "tp1eqfg2lxlwqs23m320arhuk3dad47ha6tvzu5n5",
@@ -434,8 +424,7 @@ asset definition.
 #### [Update Asset Definition](src/execute/update_asset_definition.rs)
 __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](src/core/types/asset_definition.rs)
 value to be updated.  It works by matching the input's `asset_type` to an existing asset definition and overwriting the
-existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation
-ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.
+existing values.  If no asset definition exists for the given type, the request will be rejected.
 
 ##### Request Parameters
 
@@ -454,10 +443,6 @@ ensures that after the update, all scope specification addresses contained in as
   "update_asset_definition": {
     "asset_definition": {
       "asset_type": "car",
-      "scope_spec_identifier": {
-        "type": "address",
-        "value": "scopespec1qjm3wkwc6me3rmyde635xcmqnq8q8yecd9"
-      },
       "verifiers": [
         {
           "address": "tp1uvnpfg9hmeyuf0t3a6l9xhegx8ewhtk9z683x4",
@@ -523,9 +508,7 @@ the asset definition is in the intended state during the execution of the route.
 ```
 
 #### [Delete Asset Definition](src/execute/delete_asset_definition.rs)
-__This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](src/core/types/asset_definition.rs)
-is erroneously added with an incorrect asset type, the scope specification address is unable to be used, as it is
-another unique key of the asset definition.  This route facilitates the removal of bad data.
+__This route is only accessible to the contract's admin address.__  This route facilitates the removal of bad data.
 
 __IMPORTANT__: If an asset definition is completely removed, all contract references to it will fail to function.  This
 can cause assets currently in the onboarding process for a deleted type to have failures when interactions occur with
@@ -537,10 +520,6 @@ them.  This functionality should only be used for an unused type!
 type to delete.  The following json is an example of what this might look like in a request:
 ```json
 {"qualifier": {"type": "asset_type", "value": "porcupine"}}
-```
-OR
-```json
-{"qualifier": {"type": "scope_spec_address", "value": "scopespec1qsvpxtxcmw63rmy5v9rnyg5kxmqsdvzfr5"}}
 ```
 
 ##### Emitted Attributes
@@ -731,10 +710,6 @@ type to fetch.  The following json is an example of what this might look like in
 ```json
 {"qualifier": {"type": "asset_type", "value": "dog"}}
 ```
-OR
-```json
-{"qualifier": {"type": "scope_spec_address", "value": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3"}}
-```
 
 ##### Request Sample
 ```json
@@ -753,7 +728,6 @@ OR
 {
   "data": {
     "asset_type": "dog",
-    "scope_spec_address": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3",
     "verifiers": [
       {
         "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",
@@ -814,7 +788,6 @@ No parameters are used for the `QueryAssetDefinitions` route.
     "asset_definitions": [
       {
         "asset_type": "ferret",
-        "scope_spec_address": "scopespec1q33t5qxj6uzprm9heza7fx5x720qpc8ad3",
         "verifiers": [
           {
             "address": "tp1935mawrmyuzwuryg8wya3g6uh2vpwvapq50kvq",

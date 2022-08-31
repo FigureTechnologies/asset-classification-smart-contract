@@ -46,7 +46,7 @@ pub fn init_contract(
     // append new definitions. When no definitions are supplied, this contract will not be able to
     // take execution input until they are
     for input in msg.asset_definitions.iter() {
-        let asset_definition = input.as_asset_definition()?;
+        let asset_definition = input.as_asset_definition();
         // Create a new state storage for the provided asset definition
         insert_asset_definition_v2(deps.storage, &asset_definition)?;
         // Default to true for name bind if no value is specified.
@@ -81,14 +81,12 @@ mod tests {
     use crate::core::state::{config_read_v2, load_asset_definition_v2_by_type};
     use crate::core::types::asset_definition::AssetDefinitionInputV2;
     use crate::core::types::fee_destination::FeeDestinationV2;
-    use crate::core::types::scope_spec_identifier::ScopeSpecIdentifier;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
     use crate::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
     use crate::testutil::test_constants::{
         DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
-        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_VERIFIER_ADDRESS,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         get_default_asset_definition, get_default_asset_definition_inputs,
@@ -158,8 +156,6 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInputV2::new(
             "heloc",
-            ScopeSpecIdentifier::address("scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn")
-                .to_serialized_enum(),
             vec![VerifierDetailV2::new(
                 DEFAULT_VERIFIER_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
@@ -175,8 +171,6 @@ mod tests {
         );
         let second_asset_def = AssetDefinitionInputV2::new(
             "mortgage",
-            ScopeSpecIdentifier::address("scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3")
-                .to_serialized_enum(),
             vec![VerifierDetailV2::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(300),
@@ -221,9 +215,7 @@ mod tests {
             .expect("the heloc asset definition should be added to the state");
         assert_eq!(
             heloc_asset_state,
-            first_asset_def
-                .into_asset_definition()
-                .expect("failed to convert input to asset definition"),
+            first_asset_def.into_asset_definition(),
             "the heloc asset state should equate to the heloc input"
         );
         let mortgage_asset_state =
@@ -231,9 +223,7 @@ mod tests {
                 .expect("the mortgage asset definition should be added to the state");
         assert_eq!(
             mortgage_asset_state,
-            second_asset_def
-                .into_asset_definition()
-                .expect("failed to convert input to asset definition"),
+            second_asset_def.into_asset_definition(),
             "the mortgage asset state should equate to the mortgage input"
         );
     }
@@ -294,7 +284,6 @@ mod tests {
                 bind_base_name: false,
                 asset_definitions: vec![AssetDefinitionInputV2::new(
                     DEFAULT_ASSET_TYPE,
-                    ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS).to_serialized_enum(),
                     vec![get_default_verifier_detail()],
                     true.to_some(),
                     // bind_name == false
@@ -333,13 +322,7 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInputV2::new(
-                "",
-                ScopeSpecIdentifier::address("").to_serialized_enum(),
-                vec![],
-                None,
-                None,
-            )],
+            asset_definitions: vec![AssetDefinitionInputV2::new("", vec![], None, None)],
             ..Default::default()
         };
         let error = instantiate(

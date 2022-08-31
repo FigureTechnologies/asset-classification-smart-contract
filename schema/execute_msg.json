@@ -59,6 +59,7 @@
         "verify_asset": {
           "type": "object",
           "required": [
+            "asset_type",
             "identifier",
             "success"
           ],
@@ -72,6 +73,10 @@
               "items": {
                 "$ref": "#/definitions/AccessRoute"
               }
+            },
+            "asset_type": {
+              "description": "The asset type this verification result is for",
+              "type": "string"
             },
             "identifier": {
               "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
@@ -98,7 +103,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in two criteria: * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition. * Its [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier)) must also be unique across asset definitions. Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).",
+      "description": "__This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in the following criteria: * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition.",
       "type": "object",
       "required": [
         "add_asset_definition"
@@ -124,7 +129,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.",
+      "description": "__This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the existing values.  If no asset definition exists for the given type, the request will be rejected.",
       "type": "object",
       "required": [
         "update_asset_definition"
@@ -249,6 +254,7 @@
           "type": "object",
           "required": [
             "access_routes",
+            "asset_type",
             "identifier",
             "owner_address"
           ],
@@ -259,6 +265,10 @@
               "items": {
                 "$ref": "#/definitions/AccessRoute"
               }
+            },
+            "asset_type": {
+              "description": "The asset type to update access routes for",
+              "type": "string"
             },
             "identifier": {
               "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
@@ -278,7 +288,7 @@
       "additionalProperties": false
     },
     {
-      "description": "__This route is only accessible to the contract's admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) is erroneously added with an incorrect asset type, the scope specification address is unable to be used, as it is another unique key of the asset definition.  This route facilitates the removal of bad data. IMPORTANT: If an asset definition is completely removed, all contract references to it will fail to function.  This can cause assets currently in the onboarding process for a deleted type to have failures when interactions occur with them.  This functionality should only be used for an unused type!",
+      "description": "__This route is only accessible to the contract's admin address.__ This route facilitates the removal of bad data. IMPORTANT: If an asset definition is completely removed, all contract references to it will fail to function.  This can cause assets currently in the onboarding process for a deleted type to have failures when interactions occur with them.  This functionality should only be used for an unused type!",
       "type": "object",
       "required": [
         "delete_asset_definition"
@@ -330,7 +340,6 @@
       "type": "object",
       "required": [
         "asset_type",
-        "scope_spec_identifier",
         "verifiers"
       ],
       "properties": {
@@ -350,14 +359,6 @@
           "type": [
             "boolean",
             "null"
-          ]
-        },
-        "scope_spec_identifier": {
-          "description": "A link to a scope specification that defines this asset type.  A serialized version of a [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple different values to be derived as a scope specification address.  Must be unique across all instances persisted in contract storage, or requests to add will be rejected.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/SerializedEnum"
-            }
           ]
         },
         "verifiers": {

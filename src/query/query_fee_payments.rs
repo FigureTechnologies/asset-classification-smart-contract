@@ -13,9 +13,10 @@ use cosmwasm_std::{to_binary, Binary};
 ///
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
-/// * `qualifier` An enum containing identifier information that can be used to look up a stored
+/// * `identifier` An enum containing identifier information that can be used to look up a stored
 /// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail) by a derived
 /// Provenance Blockchain Metadata Scope bech32 address.
+/// * `asset_type` The type of asset that the payment details represent
 pub fn query_fee_payments(
     deps: &DepsC,
     identifier: AssetIdentifier,

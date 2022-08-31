@@ -1,7 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::delete_asset_definition_v2_by_qualifier;
-use crate::core::types::asset_qualifier::AssetQualifier;
+use crate::core::state::delete_asset_definition_v2_by_asset_type;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -13,20 +12,20 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
-/// to delete.
+/// * `asset_type` The asset type to delete.
 pub struct DeleteAssetDefinitionV1 {
-    pub qualifier: AssetQualifier,
+    pub asset_type: String,
 }
 impl DeleteAssetDefinitionV1 {
     /// Constructs a new instance of this struct.
     ///
     /// # Parameters
     ///
-    /// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
-    /// to delete.
-    pub fn new(qualifier: AssetQualifier) -> Self {
-        Self { qualifier }
+    /// * `asset_type` The asset type to delete.
+    pub fn new(asset_type: &str) -> Self {
+        Self {
+            asset_type: asset_type.to_string(),
+        }
     }
 
     /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
@@ -39,8 +38,8 @@ impl DeleteAssetDefinitionV1 {
     /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     pub fn from_execute_msg(msg: ExecuteMsg) -> AssetResult<DeleteAssetDefinitionV1> {
         match msg {
-            ExecuteMsg::DeleteAssetDefinition { qualifier } => {
-                DeleteAssetDefinitionV1::new(qualifier.to_asset_qualifier()?).to_ok()
+            ExecuteMsg::DeleteAssetDefinition { asset_type } => {
+                DeleteAssetDefinitionV1::new(&asset_type).to_ok()
             }
             _ => ContractError::InvalidMessageType {
                 expected_message_type: "ExecuteMsg::DeleteAssetDefinition".to_string(),
@@ -71,7 +70,8 @@ pub fn delete_asset_definition(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let deleted_asset_type = delete_asset_definition_v2_by_qualifier(deps.storage, &msg.qualifier)?;
+    let deleted_asset_type =
+        delete_asset_definition_v2_by_asset_type(deps.storage, &msg.asset_type)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::DeleteAssetDefinition)
@@ -86,7 +86,6 @@ mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
     use crate::core::state::load_asset_definition_v2_by_type;
-    use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::execute::delete_asset_definition::{
         delete_asset_definition, DeleteAssetDefinitionV1,
     };
@@ -111,7 +110,7 @@ mod tests {
         let response = delete_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            DeleteAssetDefinitionV1::new(AssetQualifier::asset_type(DEFAULT_ASSET_TYPE)),
+            DeleteAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
         )
         .expect("expected deletion by asset type to succeed");
         assert!(
@@ -151,7 +150,7 @@ mod tests {
             mock_env(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             ExecuteMsg::DeleteAssetDefinition {
-                qualifier: AssetQualifier::asset_type(DEFAULT_ASSET_TYPE).to_serialized_enum(),
+                asset_type: DEFAULT_ASSET_TYPE.to_string(),
             },
         )
         .expect("expected the deletion to be successful");
@@ -171,7 +170,7 @@ mod tests {
         let err = delete_asset_definition(
             deps.as_mut(),
             empty_mock_info("bad-actor"),
-            DeleteAssetDefinitionV1::new(AssetQualifier::asset_type(DEFAULT_ASSET_TYPE)),
+            DeleteAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
         )
         .expect_err(
             "expected an error to occur when a non-admin user attempts to access the route",
@@ -190,7 +189,7 @@ mod tests {
         let err = delete_asset_definition(
             deps.as_mut(),
             mock_info_with_funds(DEFAULT_ADMIN_ADDRESS, &[coin(100, "coindollars")]),
-            DeleteAssetDefinitionV1::new(AssetQualifier::asset_type(DEFAULT_ADMIN_ADDRESS)),
+            DeleteAssetDefinitionV1::new(DEFAULT_ASSET_TYPE),
         )
         .expect_err("expected an error to occur when funds are provided by the admin");
         assert!(
@@ -207,7 +206,7 @@ mod tests {
         let err = delete_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
-            DeleteAssetDefinitionV1::new(AssetQualifier::asset_type("not real asset type")),
+            DeleteAssetDefinitionV1::new("not real asset type"),
         )
         .expect_err("expected an error to occur when an invalid asset type is provided");
         assert!(

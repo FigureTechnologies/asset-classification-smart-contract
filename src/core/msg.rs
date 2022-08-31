@@ -38,9 +38,8 @@ pub enum QueryMsg {
     /// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
     /// response will be returned.
     QueryAssetDefinition {
-        /// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible
-        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
-        qualifier: SerializedEnum,
+        /// The asset type to query for
+        asset_type: String,
     },
     /// This route can be used to retrieve all [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) stored in the contract.  This response payload can be quite
     /// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
@@ -244,10 +243,8 @@ pub enum ExecuteMsg {
     /// type to have failures when interactions occur with them.  This functionality should only be
     /// used for an unused type!
     DeleteAssetDefinition {
-        /// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible
-        /// [SerializedEnum](super::types::serialized_enum::SerializedEnum) that will map to an
-        /// existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).
-        qualifier: SerializedEnum,
+        /// The asset type to delete the definition for
+        asset_type: String,
     },
 }
 

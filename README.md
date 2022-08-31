@@ -516,11 +516,7 @@ them.  This functionality should only be used for an unused type!
 
 ##### Request Parameters
 
-* `qualifier`: A serialized version of an [AssetQualifier](src/core/types/asset_qualifier.rs) enum.  Indicates the asset
-type to delete.  The following json is an example of what this might look like in a request:
-```json
-{"qualifier": {"type": "asset_type", "value": "porcupine"}}
-```
+* `asset_type`: The asset type to delete.
 
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `delete_asset_definition`.
@@ -532,10 +528,7 @@ deleted [asset definition](src/core/types/asset_definition.rs).
 ```json
 {
   "delete_asset_definition": {
-    "qualifier": {
-      "type": "asset_type",
-      "value": "widget"
-    }
+    "asset_type": "widget"
   }
 }
 ```
@@ -705,20 +698,13 @@ response will be returned.
 
 ##### Request Parameters
 
-* `qualifier`: A serialized version of an [AssetQualifier](src/core/types/asset_qualifier.rs) enum.  Indicates the asset
-type to fetch.  The following json is an example of what this might look like in a request:
-```json
-{"qualifier": {"type": "asset_type", "value": "dog"}}
-```
+* `asset_type`: The asset type to fetch.
 
 ##### Request Sample
 ```json
 {
   "query_asset_definition": {
-    "qualifier": {
-      "type": "asset_type",
-      "value": "dog"
-    }
+    "asset_type": "dog"
   }
 }
 ```

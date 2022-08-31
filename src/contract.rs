@@ -65,9 +65,7 @@ pub fn instantiate(
 #[entry_point]
 pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
-        QueryMsg::QueryAssetDefinition { qualifier } => {
-            query_asset_definition(&deps, qualifier.to_asset_qualifier()?)
-        }
+        QueryMsg::QueryAssetDefinition { asset_type } => query_asset_definition(&deps, &asset_type),
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
         QueryMsg::QueryAssetScopeAttributes { identifier } => {
             query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)

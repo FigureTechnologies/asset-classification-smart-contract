@@ -1,5 +1,4 @@
 use crate::core::types::asset_identifier::AssetIdentifier;
-use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::util::aliases::AssetResult;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -42,18 +41,12 @@ impl SerializedEnum {
     pub fn to_asset_identifier(&self) -> AssetResult<AssetIdentifier> {
         AssetIdentifier::from_serialized_enum(self)
     }
-
-    /// Converts this value to an instance of an asset qualifier if it has a compatible type.
-    pub fn to_asset_qualifier(&self) -> AssetResult<AssetQualifier> {
-        AssetQualifier::from_serialized_enum(self)
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::core::error::ContractError;
     use crate::core::types::asset_identifier::AssetIdentifier;
-    use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::core::types::serialized_enum::SerializedEnum;
     use uuid::Uuid;
 
@@ -103,46 +96,6 @@ mod tests {
                 );
                 assert_eq!(
                     format!("Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]"),
-                    explanation,
-                    "expected the explanation to list the type of the enum and the expected values",
-                );
-            }
-            _ => panic!("unexpected error encountered: {:?}", err),
-        };
-    }
-
-    #[test]
-    fn test_to_asset_qualifier_asset_type_success() {
-        let qualifier = SerializedEnum::new("asset_type", "heloc")
-            .to_asset_qualifier()
-            .expect("expected the conversion to succeed to asset qualifier");
-        match qualifier {
-            AssetQualifier::AssetType(asset_type) => {
-                assert_eq!(
-                    "heloc", asset_type,
-                    "expected the proper asset type to be derived",
-                );
-            }
-            _ => panic!("unexpected qualifier derived: {:?}", qualifier),
-        };
-    }
-
-    #[test]
-    fn test_to_asset_qualifier_failure() {
-        let err = SerializedEnum::new("incorrect_variant", "some-value")
-            .to_asset_qualifier()
-            .expect_err("expected an incorrect variant to produce an error");
-        match err {
-            ContractError::UnexpectedSerializedEnum {
-                received_type,
-                explanation,
-            } => {
-                assert_eq!(
-                    "incorrect_variant", received_type,
-                    "expected the unexpected type to be provided in the error message",
-                );
-                assert_eq!(
-                    format!("Invalid AssetQualifier. Expected [asset_type]"),
                     explanation,
                     "expected the explanation to list the type of the enum and the expected values",
                 );

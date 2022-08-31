@@ -1,5 +1,4 @@
 use crate::core::types::asset_definition::AssetDefinitionV2;
-use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
@@ -201,18 +200,12 @@ pub fn load_asset_definition_v2_by_type<S: Into<String>>(
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
-/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
-/// to delete.
-pub fn delete_asset_definition_v2_by_qualifier(
+/// * `asset_type` The asset type to delete.
+pub fn delete_asset_definition_v2_by_asset_type(
     storage: &mut dyn Storage,
-    qualifier: &AssetQualifier,
+    asset_type: &str,
 ) -> AssetResult<String> {
-    let existing_asset_type = match qualifier {
-        AssetQualifier::AssetType(asset_type) => {
-            load_asset_definition_v2_by_type(storage, asset_type)
-        }
-    }?
-    .asset_type;
+    let existing_asset_type = load_asset_definition_v2_by_type(storage, asset_type)?.asset_type;
     ASSET_DEFINITIONS_V2.remove(storage, existing_asset_type.to_lowercase());
     Ok(existing_asset_type)
 }
@@ -315,13 +308,12 @@ mod tests {
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_qualifier, delete_fee_payment_detail,
+        delete_asset_definition_v2_by_asset_type, delete_fee_payment_detail,
         insert_asset_definition_v2, insert_fee_payment_detail, load_asset_definition_v2_by_type,
         load_fee_payment_detail, may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
         replace_asset_definition_v2,
     };
     use crate::core::types::asset_definition::AssetDefinitionV2;
-    use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
     use crate::testutil::test_utilities::get_duped_fee_payment_detail;
 
@@ -437,11 +429,8 @@ mod tests {
             def,
             "sanity check: asset definition should be accessible by asset type",
         );
-        delete_asset_definition_v2_by_qualifier(
-            deps.as_mut().storage,
-            &AssetQualifier::asset_type(&def.asset_type),
-        )
-        .expect("expected the deletion to succeed");
+        delete_asset_definition_v2_by_asset_type(deps.as_mut().storage, &def.asset_type)
+            .expect("expected the deletion to succeed");
         let err = load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
             .expect_err(
                 "expected an error to occur when attempting to load the deleted definition",
@@ -464,11 +453,10 @@ mod tests {
     #[test]
     fn test_delete_nonexistent_asset_definition_by_type_failure() {
         let mut deps = mock_dependencies(&[]);
-        let err = delete_asset_definition_v2_by_qualifier(
-            deps.as_mut().storage,
-            &AssetQualifier::asset_type("fake-type"),
-        )
-        .expect_err("expected an error to occur when attempting to delete a missing asset type");
+        let err = delete_asset_definition_v2_by_asset_type(deps.as_mut().storage, "fake-type")
+            .expect_err(
+                "expected an error to occur when attempting to delete a missing asset type",
+            );
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
             "expected a record not found error to be emitted when the definition does not exist, but got: {:?}",

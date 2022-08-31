@@ -51,7 +51,7 @@ pub enum QueryMsg {
     /// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
     /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
     /// successfully classified by a verifier.
-    QueryAssetScopeAttribute {
+    QueryAssetScopeAttributes {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         identifier: SerializedEnum,

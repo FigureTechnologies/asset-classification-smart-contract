@@ -69,7 +69,7 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
             query_asset_definition(&deps, qualifier.to_asset_qualifier()?)
         }
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
-        QueryMsg::QueryAssetScopeAttribute { identifier } => {
+        QueryMsg::QueryAssetScopeAttributes { identifier } => {
             query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)
         }
         QueryMsg::QueryAssetScopeAttributeForAssetType {

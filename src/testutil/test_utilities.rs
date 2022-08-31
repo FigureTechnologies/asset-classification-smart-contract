@@ -141,6 +141,26 @@ impl Default for InstArgs {
     }
 }
 
+impl InstArgs {
+    pub fn default_with_additional_asset_types(asset_types: Vec<&str>) -> Self {
+        let default = Self::default();
+        Self {
+            asset_definitions: vec![
+                default.asset_definitions,
+                asset_types
+                    .iter()
+                    .map(|asset_type| AssetDefinitionInputV2 {
+                        asset_type: asset_type.to_string(),
+                        ..get_default_asset_definition_input()
+                    })
+                    .collect(),
+            ]
+            .concat(),
+            ..default
+        }
+    }
+}
+
 pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
     instantiate(
         deps,

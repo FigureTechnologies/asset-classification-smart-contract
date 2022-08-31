@@ -66,11 +66,20 @@ impl<'a> AssetMetaService<'a> {
     }
 }
 impl<'a> AssetMetaRepository for AssetMetaService<'a> {
-    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<bool> {
-        let scope_address_string: String = scope_address.into();
+    fn has_asset<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<bool> {
+        let scope_address: String = scope_address.into();
+        let asset_type = asset_type.into();
         // check for asset attribute existence
         self.use_deps(|d| {
-            may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
+            may_query_scope_attribute_by_scope_address_and_asset_type(
+                &d.as_ref(),
+                &scope_address,
+                &asset_type,
+            )
         })?
         .is_some()
         .to_ok()
@@ -86,7 +95,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // Verify that the attribute does or does not exist.  This check verifies that the value equivalent to is_retry:
         // If the asset exists, this should be a retry, because a subsequent onboard should only occur for that purpose
         // If the asset does not exist, this should not be a retry, because this is the first time the attribute is being attempted
-        if self.has_asset(&attribute.scope_address)? != is_retry {
+        if self.has_asset(&attribute.scope_address, &attribute.asset_type)? != is_retry {
             return if is_retry {
                 ContractError::generic(format!("unexpected state! asset scope [{}] was processed as new onboard, but the scope was not populated with asset classification data", &attribute.scope_address))
             } else {
@@ -347,7 +356,9 @@ mod tests {
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
-    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM};
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM, DEFAULT_SECONDARY_ASSET_TYPE,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_asset_definition, get_duped_fee_payment_detail,
     };
@@ -398,7 +409,9 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
-        let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
         assert!(
             !result,
             "Repository should return false when asset does not have attribute"
@@ -413,11 +426,34 @@ mod tests {
 
         let repository = AssetMetaService::new(deps.as_mut());
 
-        let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
 
         assert!(
             result,
             "Repository should return true when asset does have attribute"
+        );
+    }
+
+    #[test]
+    fn has_asset_returns_false_if_asset_has_attribute_for_different_type() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(
+            &mut deps,
+            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+
+        let repository = AssetMetaService::new(deps.as_mut());
+
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE)
+            .unwrap();
+
+        assert!(
+            !result,
+            "Repository should return false when asset doesn't have attribute for specified type (but does for another type)"
         );
     }
 

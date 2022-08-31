@@ -14,7 +14,11 @@ pub trait AssetMetaRepository {
     ///
     /// * `scope_address` The Provenance Metadata Scope bech32 address with an hrp of "scope" that
     /// refers to an existing scope.
-    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<bool>;
+    fn has_asset<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<bool>;
 
     /// Attempts to generate the [CosmosMsg](cosmwasm_std::CosmosMsg) values required to onboard
     /// an asset to the contract.

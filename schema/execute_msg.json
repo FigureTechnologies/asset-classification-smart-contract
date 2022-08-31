@@ -297,16 +297,12 @@
         "delete_asset_definition": {
           "type": "object",
           "required": [
-            "qualifier"
+            "asset_type"
           ],
           "properties": {
-            "qualifier": {
-              "description": "Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum) that will map to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/SerializedEnum"
-                }
-              ]
+            "asset_type": {
+              "description": "The asset type to delete the definition for",
+              "type": "string"
             }
           }
         }

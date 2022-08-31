@@ -13,16 +13,12 @@
         "query_asset_definition": {
           "type": "object",
           "required": [
-            "qualifier"
+            "asset_type"
           ],
           "properties": {
-            "qualifier": {
-              "description": "Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/SerializedEnum"
-                }
-              ]
+            "asset_type": {
+              "description": "The asset type to query for",
+              "type": "string"
             }
           }
         }
@@ -46,10 +42,10 @@
       "description": "This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
       "type": "object",
       "required": [
-        "query_asset_scope_attribute"
+        "query_asset_scope_attributes"
       ],
       "properties": {
-        "query_asset_scope_attribute": {
+        "query_asset_scope_attributes": {
           "type": "object",
           "required": [
             "identifier"

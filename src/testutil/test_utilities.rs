@@ -15,7 +15,7 @@ use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::core::{
     error::ContractError,
-    types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2},
+    types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3},
 };
 use crate::util::constants::NHASH;
 use crate::{
@@ -50,8 +50,8 @@ use super::test_constants::{
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
-pub fn get_default_asset_definition_input() -> AssetDefinitionInputV2 {
-    AssetDefinitionInputV2 {
+pub fn get_default_asset_definition_input() -> AssetDefinitionInputV3 {
+    AssetDefinitionInputV3 {
         asset_type: DEFAULT_ASSET_TYPE.into(),
         verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
@@ -80,15 +80,15 @@ pub fn get_default_verifier_detail() -> VerifierDetailV2 {
     }
 }
 
-pub fn get_default_asset_definition() -> AssetDefinitionV2 {
+pub fn get_default_asset_definition() -> AssetDefinitionV3 {
     get_default_asset_definition_input().into_asset_definition()
 }
 
-pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV2> {
+pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV3> {
     vec![get_default_asset_definition_input()]
 }
 
-pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV2> {
+pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV3> {
     get_default_asset_definition_inputs()
         .into_iter()
         .map(|input| input.into_asset_definition())
@@ -126,7 +126,7 @@ pub struct InstArgs {
     pub base_contract_name: String,
     pub bind_base_name: bool,
     pub is_test: bool,
-    pub asset_definitions: Vec<AssetDefinitionInputV2>,
+    pub asset_definitions: Vec<AssetDefinitionInputV3>,
 }
 impl Default for InstArgs {
     fn default() -> Self {
@@ -152,7 +152,7 @@ impl InstArgs {
                 default.asset_definitions,
                 asset_types
                     .iter()
-                    .map(|asset_type| AssetDefinitionInputV2 {
+                    .map(|asset_type| AssetDefinitionInputV3 {
                         asset_type: asset_type.to_string(),
                         ..get_default_asset_definition_input()
                     })

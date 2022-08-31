@@ -1,5 +1,5 @@
 use crate::core::msg::InitMsg;
-use crate::core::state::{config_v2, insert_asset_definition_v2, StateV2};
+use crate::core::state::{config_v2, insert_asset_definition_v3, StateV2};
 use crate::migrate::version_info::migrate_version_info;
 use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
@@ -48,7 +48,7 @@ pub fn init_contract(
     for input in msg.asset_definitions.iter() {
         let asset_definition = input.as_asset_definition();
         // Create a new state storage for the provided asset definition
-        insert_asset_definition_v2(deps.storage, &asset_definition)?;
+        insert_asset_definition_v3(deps.storage, &asset_definition)?;
         // Default to true for name bind if no value is specified.
         if input.bind_name.unwrap_or(true) {
             messages.push(bind_name(
@@ -78,8 +78,8 @@ mod tests {
     use crate::contract::instantiate;
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
-    use crate::core::state::{config_read_v2, load_asset_definition_v2_by_type};
-    use crate::core::types::asset_definition::AssetDefinitionInputV2;
+    use crate::core::state::{config_read_v2, load_asset_definition_by_type_v3};
+    use crate::core::types::asset_definition::AssetDefinitionInputV3;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
@@ -123,7 +123,7 @@ mod tests {
         test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, DEFAULT_ASSET_TYPE);
         let asset_state =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
                 .expect("expected the asset state data should be added to storage");
         assert_eq!(
             DEFAULT_ASSET_TYPE, asset_state.asset_type,
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn test_valid_init_with_multiple_asset_definitions() {
         let mut deps = mock_dependencies(&[]);
-        let first_asset_def = AssetDefinitionInputV2::new(
+        let first_asset_def = AssetDefinitionInputV3::new(
             "heloc",
             vec![VerifierDetailV2::new(
                 DEFAULT_VERIFIER_ADDRESS,
@@ -169,7 +169,7 @@ mod tests {
             None,
             None,
         );
-        let second_asset_def = AssetDefinitionInputV2::new(
+        let second_asset_def = AssetDefinitionInputV3::new(
             "mortgage",
             vec![VerifierDetailV2::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
@@ -211,7 +211,7 @@ mod tests {
         test_for_default_base_name(&response.messages);
         test_message_is_name_bind(&response.messages, "heloc");
         test_message_is_name_bind(&response.messages, "mortgage");
-        let heloc_asset_state = load_asset_definition_v2_by_type(deps.as_ref().storage, "heloc")
+        let heloc_asset_state = load_asset_definition_by_type_v3(deps.as_ref().storage, "heloc")
             .expect("the heloc asset definition should be added to the state");
         assert_eq!(
             heloc_asset_state,
@@ -219,7 +219,7 @@ mod tests {
             "the heloc asset state should equate to the heloc input"
         );
         let mortgage_asset_state =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, "mortgage")
+            load_asset_definition_by_type_v3(deps.as_ref().storage, "mortgage")
                 .expect("the mortgage asset definition should be added to the state");
         assert_eq!(
             mortgage_asset_state,
@@ -282,7 +282,7 @@ mod tests {
             InitMsg {
                 base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
                 bind_base_name: false,
-                asset_definitions: vec![AssetDefinitionInputV2::new(
+                asset_definitions: vec![AssetDefinitionInputV3::new(
                     DEFAULT_ASSET_TYPE,
                     vec![get_default_verifier_detail()],
                     true.to_some(),
@@ -297,7 +297,7 @@ mod tests {
             response.messages.is_empty(),
             "no messages should be added when no bindings are added"
         );
-        load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+        load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect("the asset definition should be added, regardless of name binding");
     }
 
@@ -322,7 +322,7 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInputV2::new("", vec![], None, None)],
+            asset_definitions: vec![AssetDefinitionInputV3::new("", vec![], None, None)],
             ..Default::default()
         };
         let error = instantiate(

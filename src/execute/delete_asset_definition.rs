@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::delete_asset_definition_v2_by_asset_type;
+use crate::core::state::delete_asset_definition_by_asset_type_v3;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -71,7 +71,7 @@ pub fn delete_asset_definition(
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     let deleted_asset_type =
-        delete_asset_definition_v2_by_asset_type(deps.storage, &msg.asset_type)?;
+        delete_asset_definition_by_asset_type_v3(deps.storage, &msg.asset_type)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::DeleteAssetDefinition)
@@ -85,7 +85,7 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::core::state::load_asset_definition_by_type_v3;
     use crate::execute::delete_asset_definition::{
         delete_asset_definition, DeleteAssetDefinitionV1,
     };
@@ -104,7 +104,7 @@ mod tests {
     fn test_delete_asset_definition_success_for_asset_type() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE).expect(
+        load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE).expect(
             "sanity check: expected the default asset type to be inserted after instantiation",
         );
         let response = delete_asset_definition(
@@ -132,7 +132,7 @@ mod tests {
             single_attribute_for_key(&response, ASSET_TYPE_KEY),
             "expected the asset type attribute to be set correctly",
         );
-        let err = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+        let err = load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect_err("expected an error to occur when loading the default asset definition");
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),
@@ -154,7 +154,7 @@ mod tests {
             },
         )
         .expect("expected the deletion to be successful");
-        let err = load_asset_definition_v2_by_type(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+        let err = load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
             .expect_err("expected an error to occur when loading the default asset definition");
         assert!(
             matches!(err, ContractError::RecordNotFound { .. }),

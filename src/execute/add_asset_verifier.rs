@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{load_asset_definition_v2_by_type, replace_asset_definition_v2};
+use crate::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3};
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
@@ -82,7 +82,7 @@ pub fn add_asset_verifier(
 ) -> EntryPointResponse {
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
-    let mut asset_definition = load_asset_definition_v2_by_type(deps.storage, &msg.asset_type)?;
+    let mut asset_definition = load_asset_definition_by_type_v3(deps.storage, &msg.asset_type)?;
     // If the asset definition has any verifiers on it (only ever should be 1 max) with a matching
     // address to the new verifier, this request should be an update, not an add
     if asset_definition
@@ -98,7 +98,7 @@ pub fn add_asset_verifier(
         .set_verifier(&msg.verifier.address);
     // Store the new verifier in the definition and save it to storage
     asset_definition.verifiers.push(msg.verifier);
-    replace_asset_definition_v2(deps.storage, &asset_definition)?;
+    replace_asset_definition_v3(deps.storage, &asset_definition)?;
     // Respond with emitted attributes
     Response::new().add_attributes(attributes).to_ok()
 }
@@ -108,7 +108,7 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_v2_by_type;
+    use crate::core::state::load_asset_definition_by_type_v3;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
@@ -295,7 +295,7 @@ mod tests {
 
     // Checks that the verifier passed in was added to the default asset type's definition
     fn test_default_verifier_was_added(verifier: &VerifierDetailV2, deps: &DepsC) {
-        let state_def = load_asset_definition_v2_by_type(deps.storage, DEFAULT_ASSET_TYPE)
+        let state_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)
             .expect("expected a single verifier to be produced when searching for the new verifier's address");

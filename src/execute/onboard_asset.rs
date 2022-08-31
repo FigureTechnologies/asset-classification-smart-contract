@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{
-    config_read_v2, delete_fee_payment_detail, load_asset_definition_v2_by_type,
+    config_read_v2, delete_fee_payment_detail, load_asset_definition_by_type_v3,
 };
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
@@ -99,7 +99,7 @@ where
     let asset_identifiers = msg.identifier.to_identifiers()?;
     // get asset definition config for type, or error if not present
     let asset_definition = match repository
-        .use_deps(|d| load_asset_definition_v2_by_type(d.storage, &msg.asset_type))
+        .use_deps(|d| load_asset_definition_by_type_v3(d.storage, &msg.asset_type))
     {
         Ok(state) => {
             if !state.enabled {

@@ -4,7 +4,7 @@ use provwasm_std::ProvenanceQuerier;
 use crate::{
     core::{
         error::ContractError,
-        state::load_asset_definition_v2_by_type,
+        state::load_asset_definition_by_type_v3,
         types::{asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute},
     },
     util::{
@@ -154,7 +154,7 @@ pub fn may_query_scope_attribute_by_scope_address_and_asset_type<
     let _scope = querier.get_scope(&scope_address_str)?;
 
     // Second, query up the asset definition by the asset type
-    let asset_definition = load_asset_definition_v2_by_type(deps.storage, &asset_type.into())?;
+    let asset_definition = load_asset_definition_by_type_v3(deps.storage, &asset_type.into())?;
 
     // Third, construct the attribute name that the scope attribute lives on by mixing the asset definition's asset type with state values
     let attribute_name = asset_definition.attribute_name(deps)?;

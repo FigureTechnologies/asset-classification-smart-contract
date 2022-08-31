@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, insert_asset_definition_v2};
-use crate::core::types::asset_definition::AssetDefinitionV2;
+use crate::core::state::{config_read_v2, insert_asset_definition_v3};
+use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -22,7 +22,7 @@ use provwasm_std::{bind_name, NameBinding};
 /// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
 #[derive(Clone, PartialEq, Eq)]
 pub struct AddAssetDefinitionV1 {
-    pub asset_definition: AssetDefinitionV2,
+    pub asset_definition: AssetDefinitionV3,
     pub bind_name: Option<bool>,
 }
 impl AddAssetDefinitionV1 {
@@ -74,7 +74,7 @@ pub fn add_asset_definition(
     check_funds_are_empty(&info)?;
     // The insert function includes its own checking to verify that the asset definition does not yet exist, and an error
     // will be returned if a duplicate is attempted
-    insert_asset_definition_v2(deps.storage, &msg.asset_definition)?;
+    insert_asset_definition_v3(deps.storage, &msg.asset_definition)?;
     let mut messages = vec![];
     // If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
     // to write new attributes for onboarded scopes
@@ -103,8 +103,8 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_v2_by_type;
-    use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+    use crate::core::state::load_asset_definition_by_type_v3;
+    use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
@@ -230,7 +230,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
-            asset_definition: AssetDefinitionInputV2::new(
+            asset_definition: AssetDefinitionInputV3::new(
                 "",
                 vec![],
                 true.to_some(),
@@ -309,13 +309,13 @@ mod tests {
         );
     }
 
-    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV2, deps: &DepsC) {
+    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV3, deps: &DepsC) {
         test_asset_definition_was_added(&input.as_asset_definition(), deps)
     }
 
-    fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV2, deps: &DepsC) {
+    fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV3, deps: &DepsC) {
         let state_def =
-            load_asset_definition_v2_by_type(deps.storage, &asset_definition.asset_type)
+            load_asset_definition_by_type_v3(deps.storage, &asset_definition.asset_type)
                 .expect("expected the added asset type to be stored in the state");
         assert_eq!(
             asset_definition, &state_def,
@@ -327,8 +327,8 @@ mod tests {
         );
     }
 
-    fn get_valid_asset_definition() -> AssetDefinitionInputV2 {
-        let def = AssetDefinitionInputV2::new(
+    fn get_valid_asset_definition() -> AssetDefinitionInputV3 {
+        let def = AssetDefinitionInputV3::new(
             TEST_ASSET_TYPE,
             // Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers

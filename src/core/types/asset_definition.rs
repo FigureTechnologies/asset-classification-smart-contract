@@ -17,7 +17,7 @@ use crate::{
 /// onboarded and verified.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct AssetDefinitionV2 {
+pub struct AssetDefinitionV3 {
     /// The unique name of the asset associated with the definition.
     pub asset_type: String,
     /// Individual verifier definitions.  There can be many verifiers for a single asset type.
@@ -26,7 +26,7 @@ pub struct AssetDefinitionV2 {
     /// requests to onboard assets of this type will be rejected.
     pub enabled: bool,
 }
-impl AssetDefinitionV2 {
+impl AssetDefinitionV3 {
     /// Constructs a new instance of AssetDefinitionV2, setting enabled to `true` by default.
     ///
     /// # Parameters
@@ -34,7 +34,7 @@ impl AssetDefinitionV2 {
     /// * `asset_type` The unique name of the asset associated with the definition.
     /// * `verifiers` Individual verifier definitions.
     pub fn new<S1: Into<String>>(asset_type: S1, verifiers: Vec<VerifierDetailV2>) -> Self {
-        AssetDefinitionV2 {
+        AssetDefinitionV3 {
             asset_type: asset_type.into(),
             verifiers,
             enabled: true,
@@ -99,7 +99,7 @@ impl AssetDefinitionV2 {
 /// it to be added manually on every request, when it will likely always be specified as `true`.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct AssetDefinitionInputV2 {
+pub struct AssetDefinitionInputV3 {
     /// The name of the asset associated with the definition.  This value must be unique across all
     /// instances persisted in contract storage, or requests to add will be rejected.
     pub asset_type: String,
@@ -117,7 +117,7 @@ pub struct AssetDefinitionInputV2 {
     /// "myasset," the resulting bound name would be "myasset.pb".
     pub bind_name: Option<bool>,
 }
-impl AssetDefinitionInputV2 {
+impl AssetDefinitionInputV3 {
     /// Constructs a new instance of this struct.
     ///
     /// # Parameters
@@ -145,8 +145,8 @@ impl AssetDefinitionInputV2 {
     }
 
     /// Moves this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2)
-    pub fn into_asset_definition(self) -> AssetDefinitionV2 {
-        AssetDefinitionV2 {
+    pub fn into_asset_definition(self) -> AssetDefinitionV3 {
+        AssetDefinitionV3 {
             asset_type: self.asset_type,
             verifiers: self.verifiers,
             enabled: self.enabled.unwrap_or(true),
@@ -155,8 +155,8 @@ impl AssetDefinitionInputV2 {
 
     /// Clones the values contained within this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2).
     /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV2::into_asset_definition).
-    pub fn as_asset_definition(&self) -> AssetDefinitionV2 {
-        AssetDefinitionV2 {
+    pub fn as_asset_definition(&self) -> AssetDefinitionV3 {
+        AssetDefinitionV3 {
             asset_type: self.asset_type.clone(),
             verifiers: self.verifiers.clone(),
             enabled: self.enabled.unwrap_or(true),

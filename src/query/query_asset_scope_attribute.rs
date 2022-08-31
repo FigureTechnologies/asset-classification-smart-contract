@@ -6,7 +6,7 @@ use provwasm_std::{AttributeValueType, ProvenanceQuerier};
 use crate::{
     core::{
         error::ContractError,
-        state::{config_read_v2, list_asset_definitions_v2},
+        state::{config_read_v2, list_asset_definitions_v3},
         types::{asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute},
     },
     util::{
@@ -124,7 +124,7 @@ pub fn may_query_scope_attribute_by_scope_address<S: Into<String>>(
 
     // Second, query up all possible asset definition names
     let state = config_read_v2(deps.storage).load()?;
-    let asset_definitions: HashSet<String> = list_asset_definitions_v2(deps.storage)
+    let asset_definitions: HashSet<String> = list_asset_definitions_v3(deps.storage)
         .iter()
         .map(|def| def.attribute_name_state(&state))
         .collect();

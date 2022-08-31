@@ -1,4 +1,4 @@
-use crate::core::types::asset_definition::AssetDefinitionV2;
+use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{
     core::msg::InitMsg,
@@ -75,16 +75,16 @@ const ASSET_DEFINITIONS_V2_NAMESPACE: &str = "asset_definitions_v2";
 /// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
 /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
 /// functionality. Private access to ensure only helper functions below are used.
-const ASSET_DEFINITIONS_V2: Map<String, AssetDefinitionV2> =
+const ASSET_DEFINITIONS_V3: Map<String, AssetDefinitionV3> =
     Map::new(ASSET_DEFINITIONS_V2_NAMESPACE);
 
-pub fn list_asset_definitions_v2(storage: &dyn Storage) -> Vec<AssetDefinitionV2> {
-    ASSET_DEFINITIONS_V2
+pub fn list_asset_definitions_v3(storage: &dyn Storage) -> Vec<AssetDefinitionV3> {
+    ASSET_DEFINITIONS_V3
         .range(storage, None, None, cosmwasm_std::Order::Descending)
         .into_iter()
         .filter(|result| result.is_ok())
         .map(|result| result.unwrap().1)
-        .collect::<Vec<AssetDefinitionV2>>()
+        .collect::<Vec<AssetDefinitionV3>>()
 }
 
 /// Inserts a new asset definition into storage. If a value already exists, an error will be returned.
@@ -95,11 +95,11 @@ pub fn list_asset_definitions_v2(storage: &dyn Storage) -> Vec<AssetDefinitionV2
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
 /// * `definition` The asset definition to insert into storage and derive the unique keys.
-pub fn insert_asset_definition_v2(
+pub fn insert_asset_definition_v3(
     storage: &mut dyn Storage,
-    definition: &AssetDefinitionV2,
+    definition: &AssetDefinitionV3,
 ) -> AssetResult<()> {
-    let state = ASSET_DEFINITIONS_V2;
+    let state = ASSET_DEFINITIONS_V3;
     let key = definition.storage_key();
     if let Ok(existing_def) = state.load(storage, key.clone()) {
         ContractError::RecordAlreadyExists {
@@ -130,11 +130,11 @@ pub fn insert_asset_definition_v2(
 /// * `storage` A mutable reference to the contract's internal storage.
 /// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
 /// property.
-pub fn replace_asset_definition_v2(
+pub fn replace_asset_definition_v3(
     storage: &mut dyn Storage,
-    definition: &AssetDefinitionV2,
+    definition: &AssetDefinitionV3,
 ) -> AssetResult<()> {
-    let state = ASSET_DEFINITIONS_V2;
+    let state = ASSET_DEFINITIONS_V3;
     let key = definition.storage_key();
     state
         .update(storage, key, |existing| {
@@ -161,11 +161,11 @@ pub fn replace_asset_definition_v2(
 /// * `storage` A reference to the contract's internal storage.
 /// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
 /// for the requested asset definition.
-pub fn may_load_asset_definition_v2_by_type<S: Into<String>>(
+pub fn may_load_asset_definition_by_type_v3<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
-) -> AssetResult<Option<AssetDefinitionV2>> {
-    ASSET_DEFINITIONS_V2
+) -> AssetResult<Option<AssetDefinitionV3>> {
+    ASSET_DEFINITIONS_V3
         // Coerce to lowercase to match how stored values are keyed
         .may_load(storage, asset_type.into().to_lowercase())
         .map_err(ContractError::Std)
@@ -178,12 +178,12 @@ pub fn may_load_asset_definition_v2_by_type<S: Into<String>>(
 /// * `storage` A reference to the contract's internal storage.
 /// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
 /// for the requested asset definition.
-pub fn load_asset_definition_v2_by_type<S: Into<String>>(
+pub fn load_asset_definition_by_type_v3<S: Into<String>>(
     storage: &dyn Storage,
     asset_type: S,
-) -> AssetResult<AssetDefinitionV2> {
+) -> AssetResult<AssetDefinitionV3> {
     let asset_type = asset_type.into();
-    if let Some(asset_definition) = may_load_asset_definition_v2_by_type(storage, &asset_type)? {
+    if let Some(asset_definition) = may_load_asset_definition_by_type_v3(storage, &asset_type)? {
         asset_definition.to_ok()
     } else {
         ContractError::RecordNotFound {
@@ -201,12 +201,12 @@ pub fn load_asset_definition_v2_by_type<S: Into<String>>(
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
 /// * `asset_type` The asset type to delete.
-pub fn delete_asset_definition_v2_by_asset_type(
+pub fn delete_asset_definition_by_asset_type_v3(
     storage: &mut dyn Storage,
     asset_type: &str,
 ) -> AssetResult<String> {
-    let existing_asset_type = load_asset_definition_v2_by_type(storage, asset_type)?.asset_type;
-    ASSET_DEFINITIONS_V2.remove(storage, existing_asset_type.to_lowercase());
+    let existing_asset_type = load_asset_definition_by_type_v3(storage, asset_type)?.asset_type;
+    ASSET_DEFINITIONS_V3.remove(storage, existing_asset_type.to_lowercase());
     Ok(existing_asset_type)
 }
 
@@ -303,27 +303,40 @@ pub fn delete_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::BorrowMut;
+    use std::cmp::Ordering;
+
     use cosmwasm_std::StdError;
+    use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
     use provwasm_mocks::mock_dependencies;
+    use schemars::JsonSchema;
+    use serde::{Deserialize, Serialize};
 
     use crate::core::error::ContractError;
     use crate::core::state::{
-        delete_asset_definition_v2_by_asset_type, delete_fee_payment_detail,
-        insert_asset_definition_v2, insert_fee_payment_detail, load_asset_definition_v2_by_type,
-        load_fee_payment_detail, may_load_asset_definition_v2_by_type, may_load_fee_payment_detail,
-        replace_asset_definition_v2,
+        delete_asset_definition_by_asset_type_v3, delete_fee_payment_detail,
+        insert_asset_definition_v3, insert_fee_payment_detail, list_asset_definitions_v3,
+        load_asset_definition_by_type_v3, load_fee_payment_detail,
+        may_load_asset_definition_by_type_v3, may_load_fee_payment_detail,
+        replace_asset_definition_v3,
     };
-    use crate::core::types::asset_definition::AssetDefinitionV2;
-    use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
-    use crate::testutil::test_utilities::get_duped_fee_payment_detail;
+    use crate::core::types::asset_definition::AssetDefinitionV3;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
+        DEFAULT_SECONDARY_ASSET_TYPE,
+    };
+    use crate::testutil::test_utilities::{
+        get_default_verifier_detail, get_duped_fee_payment_detail,
+    };
 
     #[test]
     fn test_insert_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV2::new("heloc", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
+        let def = AssetDefinitionV3::new("heloc", vec![]);
+        insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
-        let error = insert_asset_definition_v2(deps.as_mut().storage, &def).unwrap_err();
+        let error = insert_asset_definition_v3(deps.as_mut().storage, &def).unwrap_err();
         match error {
             ContractError::RecordAlreadyExists { explanation } => {
                 assert_eq!(
@@ -335,7 +348,7 @@ mod tests {
             _ => panic!("unexpected error encountered: {:?}", error),
         }
         let loaded_asset_definition =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &def.asset_type)
                 .expect("asset definition should load without error");
         assert_eq!(
             loaded_asset_definition, def,
@@ -346,8 +359,8 @@ mod tests {
     #[test]
     fn test_replace_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let mut def = AssetDefinitionV2::new("heloc", vec![]);
-        let error = replace_asset_definition_v2(deps.as_mut().storage, &def).unwrap_err();
+        let mut def = AssetDefinitionV3::new("heloc", vec![]);
+        let error = replace_asset_definition_v3(deps.as_mut().storage, &def).unwrap_err();
         match error {
             ContractError::RecordNotFound { explanation } => {
                 assert_eq!(
@@ -357,13 +370,13 @@ mod tests {
             }
             _ => panic!("unexpected error encountered: {:?}", error),
         };
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
+        insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
         def.enabled = !def.enabled;
-        replace_asset_definition_v2(deps.as_mut().storage, &def)
+        replace_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("update should work correctly");
         let loaded_asset_definition =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &def.asset_type)
                 .expect("asset definition should load without error");
         assert_eq!(
             loaded_asset_definition, def,
@@ -374,17 +387,17 @@ mod tests {
     #[test]
     fn test_may_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &heloc)
+        let heloc = AssetDefinitionV3::new("heloc", vec![]);
+        insert_asset_definition_v3(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert without error");
         assert!(
-            may_load_asset_definition_v2_by_type(deps.as_ref().storage, "not-heloc")
+            may_load_asset_definition_by_type_v3(deps.as_ref().storage, "not-heloc")
                 .expect("may load asset definition by type should execute without error")
                 .is_none(),
             "expected the missing asset definition to return an empty Option",
         );
         assert_eq!(
-            may_load_asset_definition_v2_by_type(deps.as_ref().storage, &heloc.asset_type)
+            may_load_asset_definition_by_type_v3(deps.as_ref().storage, &heloc.asset_type)
             .expect("may load asset definition by type should execute without error")
             .expect("expected the asset definition loaded by a populated type to be present"),
             heloc,
@@ -395,17 +408,17 @@ mod tests {
     #[test]
     fn test_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV2::new("heloc", vec![]);
-        let mortgage = AssetDefinitionV2::new("mortgage", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &heloc)
+        let heloc = AssetDefinitionV3::new("heloc", vec![]);
+        let mortgage = AssetDefinitionV3::new("mortgage", vec![]);
+        insert_asset_definition_v3(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert appropriately");
-        insert_asset_definition_v2(deps.as_mut().storage, &mortgage)
+        insert_asset_definition_v3(deps.as_mut().storage, &mortgage)
             .expect("the mortgage definition should insert appropriately");
         let heloc_from_storage =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &heloc.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &heloc.asset_type)
                 .expect("the heloc definition should load without error");
         let mortgage_from_storage =
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &mortgage.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &mortgage.asset_type)
                 .expect("the mortgage definition should load without error");
         assert_eq!(
             heloc, heloc_from_storage,
@@ -420,18 +433,18 @@ mod tests {
     #[test]
     fn test_delete_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV2::new("heloc", vec![]);
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
+        let def = AssetDefinitionV3::new("heloc", vec![]);
+        insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored without error");
         assert_eq!(
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &def.asset_type)
                 .expect("expected the load to succeed"),
             def,
             "sanity check: asset definition should be accessible by asset type",
         );
-        delete_asset_definition_v2_by_asset_type(deps.as_mut().storage, &def.asset_type)
+        delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, &def.asset_type)
             .expect("expected the deletion to succeed");
-        let err = load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
+        let err = load_asset_definition_by_type_v3(deps.as_ref().storage, &def.asset_type)
             .expect_err(
                 "expected an error to occur when attempting to load the deleted definition",
             );
@@ -440,10 +453,10 @@ mod tests {
             "expected the record not found error to occur when attempting to load by asset type, but got: {:?}",
             err,
         );
-        insert_asset_definition_v2(deps.as_mut().storage, &def)
+        insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored again without error");
         assert_eq!(
-            load_asset_definition_v2_by_type(deps.as_ref().storage, &def.asset_type)
+            load_asset_definition_by_type_v3(deps.as_ref().storage, &def.asset_type)
                 .expect("expected the load to succeed"),
             def,
             "the definition should be once again successfully attainable by asset type",
@@ -453,7 +466,7 @@ mod tests {
     #[test]
     fn test_delete_nonexistent_asset_definition_by_type_failure() {
         let mut deps = mock_dependencies(&[]);
-        let err = delete_asset_definition_v2_by_asset_type(deps.as_mut().storage, "fake-type")
+        let err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, "fake-type")
             .expect_err(
                 "expected an error to occur when attempting to delete a missing asset type",
             );
@@ -574,6 +587,137 @@ mod tests {
             matches!(err, ContractError::Std(StdError::NotFound { .. })),
             "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
             err,
+        );
+    }
+
+    // TEMPORARY SANITY TEST FOR GOING FROM IndexedMap -> Map
+    /// Boilerplate implementation of indexes for an IndexMap around state.
+    /// This establishes a unique index on the scope spec address to ensure
+    /// that saves cannot include duplicate scope specs.
+    /// If it becomes a requirement in the future that we have duplicate scope specs,
+    /// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
+    /// will fall apart.
+
+    /// old asset definition
+    /// /// Defines a specific asset type associated with the contract.  Allows its specified type to be
+    /// onboarded and verified.
+    #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+    #[serde(rename_all = "snake_case")]
+    pub struct AssetDefinitionV2 {
+        /// The unique name of the asset associated with the definition.
+        pub asset_type: String,
+        /// A link to a scope specification that defines this asset type.
+        pub scope_spec_address: String,
+        /// Individual verifier definitions.  There can be many verifiers for a single asset type.
+        pub verifiers: Vec<VerifierDetailV2>,
+        /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+        /// requests to onboard assets of this type will be rejected.
+        pub enabled: bool,
+    }
+    impl AssetDefinitionV2 {
+        pub fn storage_key(&self) -> Vec<u8> {
+            self.asset_type.to_lowercase().as_bytes().to_vec()
+        }
+    }
+    pub struct AssetDefinitionIndexesV2<'a> {
+        scope_spec: UniqueIndex<'a, String, AssetDefinitionV2>,
+    }
+    impl<'a> IndexList<AssetDefinitionV2> for AssetDefinitionIndexesV2<'a> {
+        fn get_indexes(
+            &'_ self,
+        ) -> Box<dyn Iterator<Item = &'_ dyn Index<AssetDefinitionV2>> + '_> {
+            let v: Vec<&dyn Index<AssetDefinitionV2>> = vec![&self.scope_spec];
+            Box::new(v.into_iter())
+        }
+    }
+
+    /// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
+    /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
+    /// functionality. Private access to ensure only helper functions below are used.
+    fn asset_definitions_v2<'a>(
+    ) -> IndexedMap<'a, &'a [u8], AssetDefinitionV2, AssetDefinitionIndexesV2<'a>> {
+        let indexes = AssetDefinitionIndexesV2 {
+            scope_spec: UniqueIndex::new(
+                |d: &AssetDefinitionV2| d.scope_spec_address.clone().to_lowercase(),
+                "asset_definitions_v2__scope_spec_address",
+            ),
+        };
+        IndexedMap::new("asset_definitions_v2", indexes)
+    }
+
+    fn asset_definition_v2_to_v3(v2: AssetDefinitionV2) -> AssetDefinitionV3 {
+        AssetDefinitionV3 {
+            asset_type: v2.asset_type,
+            verifiers: v2.verifiers,
+            enabled: v2.enabled,
+        }
+    }
+
+    fn get_default_asset_definition_v2() -> AssetDefinitionV2 {
+        AssetDefinitionV2 {
+            asset_type: DEFAULT_ASSET_TYPE.to_string(),
+            scope_spec_address: DEFAULT_SCOPE_SPEC_ADDRESS.to_string(),
+            verifiers: vec![get_default_verifier_detail()],
+            enabled: true,
+        }
+    }
+
+    #[test]
+    fn test_read_data_from_old_storage() {
+        // insert using old IndexedMap style
+        let mut deps = mock_dependencies(&[]);
+        let def1 = get_default_asset_definition_v2();
+        let def2 = AssetDefinitionV2 {
+            asset_type: DEFAULT_SECONDARY_ASSET_TYPE.into(),
+            scope_spec_address: format!("{}2", DEFAULT_SCOPE_SPEC_ADDRESS),
+            ..get_default_asset_definition_v2()
+        };
+        let state = asset_definitions_v2();
+        state
+            .replace(
+                deps.storage.borrow_mut(),
+                &def1.storage_key(),
+                Some(&def1),
+                None,
+            )
+            .expect("asset definition should be saved using old storage");
+        state
+            .replace(
+                deps.storage.borrow_mut(),
+                &def2.storage_key(),
+                Some(&def2),
+                None,
+            )
+            .expect("asset definition should be saved using old storage");
+        // retrieve with new methods
+        let retrieved1 = load_asset_definition_by_type_v3(&deps.storage, DEFAULT_ASSET_TYPE)
+            .expect("should be able to retrieve existing asset definition with new storage");
+        let retrieved2 =
+            load_asset_definition_by_type_v3(&deps.storage, DEFAULT_SECONDARY_ASSET_TYPE)
+                .expect("should be able to retrieve existing asset definition with new storage");
+
+        assert_eq!(
+            asset_definition_v2_to_v3(def1),
+            retrieved1,
+            "asset definition fetched via new method should match existing"
+        );
+        assert_eq!(
+            asset_definition_v2_to_v3(def2),
+            retrieved2,
+            "asset definition fetched via new method should match existing"
+        );
+        let mut definition_iterator = list_asset_definitions_v3(&deps.storage);
+        definition_iterator.sort_by(|a, b| {
+            if a.asset_type < b.asset_type {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        });
+        assert_eq!(
+            vec![retrieved1, retrieved2],
+            definition_iterator,
+            "existing asset definitions should be able to be iterated over"
         );
     }
 }

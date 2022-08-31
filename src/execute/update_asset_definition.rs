@@ -1,7 +1,7 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::replace_asset_definition_v2;
-use crate::core::types::asset_definition::AssetDefinitionV2;
+use crate::core::state::replace_asset_definition_v3;
+use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
@@ -17,7 +17,7 @@ use cosmwasm_std::{MessageInfo, Response};
 /// property that matches an existing asset definition in contract storage.
 #[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAssetDefinitionV1 {
-    pub asset_definition: AssetDefinitionV2,
+    pub asset_definition: AssetDefinitionV3,
 }
 impl UpdateAssetDefinitionV1 {
     /// Constructs a new instance of this struct.
@@ -26,7 +26,7 @@ impl UpdateAssetDefinitionV1 {
     ///
     /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
     /// property that matches an existing asset definition in contract storage.
-    pub fn new(asset_definition: AssetDefinitionV2) -> Self {
+    pub fn new(asset_definition: AssetDefinitionV3) -> Self {
         UpdateAssetDefinitionV1 { asset_definition }
     }
 
@@ -73,7 +73,7 @@ pub fn update_asset_definition(
     check_admin_only(&deps.as_ref(), &info)?;
     check_funds_are_empty(&info)?;
     // Overwrite the existing asset definition with the new one
-    replace_asset_definition_v2(deps.storage, &msg.asset_definition)?;
+    replace_asset_definition_v3(deps.storage, &msg.asset_definition)?;
     Response::new()
         .add_attributes(
             EventAttributes::new(EventType::UpdateAssetDefinition)
@@ -87,8 +87,8 @@ mod tests {
     use crate::contract::execute;
     use crate::core::error::ContractError;
     use crate::core::msg::ExecuteMsg;
-    use crate::core::state::load_asset_definition_v2_by_type;
-    use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+    use crate::core::state::load_asset_definition_by_type_v3;
+    use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::update_asset_definition::{
@@ -165,7 +165,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinitionInputV2::new(DEFAULT_ASSET_TYPE, vec![], None, None),
+            asset_definition: AssetDefinitionInputV3::new(DEFAULT_ASSET_TYPE, vec![], None, None),
         };
         let error = execute(
             deps.as_mut(),
@@ -220,7 +220,7 @@ mod tests {
     fn test_invalid_update_asset_definition_for_missing_loan_type() {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        let missing_asset_definition = AssetDefinitionV2::new(
+        let missing_asset_definition = AssetDefinitionV3::new(
             "nonexistent-type",
             vec![VerifierDetailV2::new(
                 "verifier",
@@ -243,13 +243,13 @@ mod tests {
         );
     }
 
-    fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInputV2, deps: &DepsC) {
+    fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInputV3, deps: &DepsC) {
         test_asset_definition_was_updated(&input.as_asset_definition(), deps)
     }
 
-    fn test_asset_definition_was_updated(asset_definition: &AssetDefinitionV2, deps: &DepsC) {
+    fn test_asset_definition_was_updated(asset_definition: &AssetDefinitionV3, deps: &DepsC) {
         let state_def =
-            load_asset_definition_v2_by_type(deps.storage, &asset_definition.asset_type)
+            load_asset_definition_by_type_v3(deps.storage, &asset_definition.asset_type)
                 .expect("expected the updated asset definition to be stored in the state");
         assert_eq!(
             asset_definition, &state_def,
@@ -260,8 +260,8 @@ mod tests {
     // This builds off of the existing default asset definition in test_utilities and adds/tweaks
     // details.  This uses randomly-generated bech32 provenance testnet addresses to be different than
     // the default values
-    fn get_update_asset_definition() -> AssetDefinitionInputV2 {
-        let def = AssetDefinitionInputV2::new(
+    fn get_update_asset_definition() -> AssetDefinitionInputV3 {
+        let def = AssetDefinitionInputV3::new(
             DEFAULT_ASSET_TYPE,
             vec![VerifierDetailV2::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",

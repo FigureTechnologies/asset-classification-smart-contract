@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::InitMsg;
-use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
@@ -51,7 +51,7 @@ pub fn validate_init_msg(msg: &InitMsg) -> AssetResult<()> {
 /// # Parameters
 ///
 /// * `input` The asset definition input value to validate for issues.
-pub fn validate_asset_definition_input(input: &AssetDefinitionInputV2) -> AssetResult<()> {
+pub fn validate_asset_definition_input(input: &AssetDefinitionInputV3) -> AssetResult<()> {
     validate_asset_definition(&input.as_asset_definition())
 }
 
@@ -61,7 +61,7 @@ pub fn validate_asset_definition_input(input: &AssetDefinitionInputV2) -> AssetR
 /// # Parameters
 ///
 /// * `asset_definition` The asset definition value to validate for issues.
-pub fn validate_asset_definition(asset_definition: &AssetDefinitionV2) -> AssetResult<()> {
+pub fn validate_asset_definition(asset_definition: &AssetDefinitionV3) -> AssetResult<()> {
     let invalid_fields = validate_asset_definition_internal(asset_definition);
     if !invalid_fields.is_empty() {
         ContractError::InvalidMessageFields {
@@ -113,11 +113,11 @@ pub fn validate_verifier_with_provided_errors(
     }
 }
 
-fn validate_asset_definition_input_internal(input: &AssetDefinitionInputV2) -> Vec<String> {
+fn validate_asset_definition_input_internal(input: &AssetDefinitionInputV3) -> Vec<String> {
     validate_asset_definition_internal(&input.as_asset_definition())
 }
 
-fn validate_asset_definition_internal(asset_definition: &AssetDefinitionV2) -> Vec<String> {
+fn validate_asset_definition_internal(asset_definition: &AssetDefinitionV3) -> Vec<String> {
     let mut invalid_fields: Vec<String> = vec![];
     if asset_definition.asset_type.is_empty() {
         invalid_fields.push("asset_definition:asset_type: must not be blank".to_string());
@@ -188,7 +188,7 @@ fn validate_destination_internal(destination: &FeeDestinationV2) -> Vec<String> 
 pub mod tests {
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
-    use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+    use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -217,7 +217,7 @@ pub mod tests {
             base_contract_name: "asset".to_string(),
             bind_base_name: true,
             is_test: false.to_some(),
-            asset_definitions: vec![AssetDefinitionInputV2::new(
+            asset_definitions: vec![AssetDefinitionInputV3::new(
                 "heloc",
                 vec![VerifierDetailV2::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
@@ -242,7 +242,7 @@ pub mod tests {
             bind_base_name: true,
             is_test: false.to_some(),
             asset_definitions: vec![
-                AssetDefinitionInputV2::new(
+                AssetDefinitionInputV3::new(
                     "heloc",
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
@@ -257,7 +257,7 @@ pub mod tests {
                     None,
                     None,
                 ),
-                AssetDefinitionInputV2::new(
+                AssetDefinitionInputV3::new(
                     "mortgage",
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
@@ -278,7 +278,7 @@ pub mod tests {
                     None,
                     None,
                 ),
-                AssetDefinitionInputV2::new(
+                AssetDefinitionInputV3::new(
                     "pl",
                     vec![
                         VerifierDetailV2::new(
@@ -325,7 +325,7 @@ pub mod tests {
                 base_contract_name: String::new(),
                 bind_base_name: true,
                 is_test: false.to_some(),
-                asset_definitions: vec![AssetDefinitionInputV2::new(
+                asset_definitions: vec![AssetDefinitionInputV3::new(
                     "heloc",
                     vec![VerifierDetailV2::new(
                         "address",
@@ -350,8 +350,8 @@ pub mod tests {
                 bind_base_name: true,
                 is_test: false.to_some(),
                 asset_definitions: vec![
-                    AssetDefinitionInputV2::new("heloc", vec![], None, None),
-                    AssetDefinitionInputV2::new("heloc", vec![], None, None),
+                    AssetDefinitionInputV3::new("heloc", vec![], None, None),
+                    AssetDefinitionInputV3::new("heloc", vec![], None, None),
                 ],
             },
             "asset_definitions: each definition must specify a unique asset type",
@@ -365,7 +365,7 @@ pub mod tests {
                 base_contract_name: "asset".to_string(),
                 bind_base_name: true,
                 is_test: false.to_some(),
-                asset_definitions: vec![AssetDefinitionInputV2::new("", vec![], None, None)],
+                asset_definitions: vec![AssetDefinitionInputV3::new("", vec![], None, None)],
             },
             "asset_definition:asset_type: must not be blank",
         );
@@ -373,7 +373,7 @@ pub mod tests {
 
     #[test]
     fn test_valid_asset_definition() {
-        let definition = AssetDefinitionV2::new(
+        let definition = AssetDefinitionV3::new(
             "heloc",
             vec![VerifierDetailV2::new(
                 "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
@@ -397,7 +397,7 @@ pub mod tests {
     #[test]
     fn test_invalid_asset_definition_asset_type() {
         test_invalid_asset_definition(
-            &AssetDefinitionV2::new(
+            &AssetDefinitionV3::new(
                 "",
                 vec![VerifierDetailV2::new(
                     "address",
@@ -414,7 +414,7 @@ pub mod tests {
     #[test]
     fn test_invalid_asset_definition_empty_verifiers() {
         test_invalid_asset_definition(
-            &AssetDefinitionV2::new("mortgage", vec![]),
+            &AssetDefinitionV3::new("mortgage", vec![]),
             "asset_definition:verifiers: at least one verifier must be supplied per asset type",
         );
     }
@@ -422,7 +422,7 @@ pub mod tests {
     #[test]
     fn test_invalid_asset_definition_picks_up_invalid_verifier_scenarios() {
         test_invalid_asset_definition(
-            &AssetDefinitionV2::new(
+            &AssetDefinitionV3::new(
                 "",
                 vec![VerifierDetailV2::new(
                     "",
@@ -667,7 +667,7 @@ pub mod tests {
         }
     }
 
-    fn test_invalid_asset_definition(definition: &AssetDefinitionV2, expected_message: &str) {
+    fn test_invalid_asset_definition(definition: &AssetDefinitionV3, expected_message: &str) {
         let results = validate_asset_definition_internal(&definition);
         assert!(
             results.contains(&expected_message.to_string()),

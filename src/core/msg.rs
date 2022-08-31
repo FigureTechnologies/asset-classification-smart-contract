@@ -1,4 +1,4 @@
-use crate::core::types::asset_definition::AssetDefinitionInputV2;
+use crate::core::types::asset_definition::AssetDefinitionInputV3;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use schemars::JsonSchema;
@@ -21,7 +21,7 @@ pub struct InitMsg {
     /// All the initial [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) for the
     /// contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition)
     /// functionality.
-    pub asset_definitions: Vec<AssetDefinitionInputV2>,
+    pub asset_definitions: Vec<AssetDefinitionInputV3>,
     /// A boolean value allowing for less restrictions to be placed on certain functionalities
     /// across the contract's execution processes.  Notably, this disables a check during the
     /// onboarding process to determine if onboarded scopes include underlying record values.  This
@@ -163,7 +163,7 @@ pub enum ExecuteMsg {
     AddAssetDefinition {
         /// An asset definition input value defining all of the new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
-        asset_definition: AssetDefinitionInputV2,
+        asset_definition: AssetDefinitionInputV3,
     },
     /// __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the
@@ -171,7 +171,7 @@ pub enum ExecuteMsg {
     UpdateAssetDefinition {
         /// An asset definition input value defining all of the updated [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)'s
         /// values.  The execution route converts the incoming value to an asset definition.
-        asset_definition: AssetDefinitionInputV2,
+        asset_definition: AssetDefinitionInputV3,
     },
     /// __This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)
     /// from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to

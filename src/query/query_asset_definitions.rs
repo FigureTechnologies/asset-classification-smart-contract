@@ -1,6 +1,6 @@
 use cosmwasm_std::{to_binary, Binary};
 
-use crate::core::state::list_asset_definitions_v2;
+use crate::core::state::list_asset_definitions_v3;
 use crate::util::{
     aliases::{AssetResult, DepsC},
     traits::ResultExtensions,
@@ -14,7 +14,7 @@ use crate::util::{
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
 pub fn query_asset_definitions(deps: &DepsC) -> AssetResult<Binary> {
-    let asset_definitions = list_asset_definitions_v2(deps.storage);
+    let asset_definitions = list_asset_definitions_v3(deps.storage);
     to_binary(&asset_definitions)?.to_ok()
 }
 
@@ -23,7 +23,7 @@ mod tests {
     use cosmwasm_std::{from_binary, Uint128};
     use provwasm_mocks::mock_dependencies;
 
-    use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
+    use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::{
         test_constants::DEFAULT_VERIFIER_ADDRESS,
@@ -38,7 +38,7 @@ mod tests {
         let deps = mock_dependencies(&[]);
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV2>>(&response_bin)
+        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert!(
             query_response.is_empty(),
@@ -52,7 +52,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV2>>(&response_bin)
+        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert_eq!(
             1,
@@ -76,7 +76,7 @@ mod tests {
         let asset_definition_inputs = def_ids
             .into_iter()
             .map(|id| {
-                AssetDefinitionInputV2::new(
+                AssetDefinitionInputV3::new(
                     format!("asset_type_{}", id),
                     vec![VerifierDetailV2::new(
                         DEFAULT_VERIFIER_ADDRESS,
@@ -89,7 +89,7 @@ mod tests {
                     true.to_some(),
                 )
             })
-            .collect::<Vec<AssetDefinitionInputV2>>();
+            .collect::<Vec<AssetDefinitionInputV3>>();
         test_instantiate_success(
             deps.as_mut(),
             InstArgs {
@@ -99,7 +99,7 @@ mod tests {
         );
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV2>>(&response_bin)
+        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert_eq!(
             20,

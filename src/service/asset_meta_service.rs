@@ -599,8 +599,9 @@ mod tests {
         match err {
             ContractError::NotFound { explanation } => assert_eq!(
                 format!(
-                    "scope at address [{}] did not include an asset scope attribute",
-                    DEFAULT_SCOPE_ADDRESS
+                    "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                    DEFAULT_SCOPE_ADDRESS,
+                    DEFAULT_ASSET_TYPE
                 ),
                 explanation
             ),
@@ -684,8 +685,9 @@ mod tests {
             ContractError::NotFound { explanation } => assert_eq!(
                 explanation,
                 format!(
-                    "scope at address [{}] did not include an asset scope attribute",
-                    DEFAULT_SCOPE_ADDRESS
+                    "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                    DEFAULT_SCOPE_ADDRESS,
+                    DEFAULT_ASSET_TYPE
                 )
             ),
             _ => panic!(

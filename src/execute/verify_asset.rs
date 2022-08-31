@@ -223,8 +223,9 @@ mod tests {
             ContractError::NotFound { explanation } => {
                 assert_eq!(
                     format!(
-                        "scope at address [{}] did not include an asset scope attribute",
-                        DEFAULT_SCOPE_ADDRESS
+                        "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                        DEFAULT_SCOPE_ADDRESS,
+                        DEFAULT_ASSET_TYPE
                     ),
                     explanation,
                     "the asset not found message should reflect that the asset was not found"
@@ -520,6 +521,35 @@ mod tests {
             may_load_fee_payment_detail(&deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
             "the asset's payment details should still be removed for the secondary verification asset type"
         );
+    }
+
+    #[test]
+    fn test_verify_asset_wrong_asset_type_denied() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(
+            &mut deps,
+            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let err = test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..TestVerifyAsset::default()
+            },
+        )
+        .expect_err("attempting to validate an asset as the wrong type should be denied");
+        match err {
+                ContractError::NotFound { explanation } => assert_eq!(
+                    format!("scope at address [{}] did not include an asset scope attribute for asset type [{}]", DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
+                    explanation,
+                    "the error message should reflect the scope address the verification was attempted for"
+                ),
+                e => panic!("unexpected error type {:?}", e)
+            }
     }
 
     #[test]

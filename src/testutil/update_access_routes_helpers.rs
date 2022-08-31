@@ -42,15 +42,16 @@ pub fn test_update_access_routes(
     deps: &mut MockOwnedDeps,
     msg: TestUpdateAccessRoutes,
 ) -> EntryPointResponse {
-    let response = update_access_routes(
+    update_access_routes(
         AssetMetaService::new(deps.as_mut()),
         msg.info,
         msg.update_access_routes,
-    );
-    intercept_add_or_update_attribute(
-        deps,
-        &response,
-        "failure occurred for test_update_access_routes",
-    );
-    response
+    )
+    .and_then(|response| {
+        intercept_add_or_update_attribute(
+            deps,
+            response,
+            "failure occurred for test_update_access_routes",
+        )
+    })
 }

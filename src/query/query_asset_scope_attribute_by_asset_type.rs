@@ -80,11 +80,12 @@ pub fn query_scope_attribute_by_scope_address_and_asset_type<S1: Into<String>, S
     scope_address: S1,
     asset_type: S2,
 ) -> AssetResult<AssetScopeAttribute> {
-    let scope_address_str = scope_address.into();
+    let scope_address = scope_address.into();
+    let asset_type = asset_type.into();
     let scope_attribute = may_query_scope_attribute_by_scope_address_and_asset_type(
         deps,
-        scope_address_str.clone(),
-        asset_type,
+        scope_address.clone(),
+        &asset_type,
     )?;
     // This is a normal scenario, which just means the scope didn't have an attribute.  This can happen if a scope was
     // never registered by using onboard_asset.
@@ -93,8 +94,9 @@ pub fn query_scope_attribute_by_scope_address_and_asset_type<S1: Into<String>, S
     } else {
         ContractError::NotFound {
             explanation: format!(
-                "scope at address [{}] did not include an asset scope attribute",
-                scope_address_str
+                "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                scope_address,
+                asset_type
             ),
         }
         .to_err()

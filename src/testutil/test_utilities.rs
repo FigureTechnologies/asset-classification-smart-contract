@@ -11,9 +11,12 @@ use provwasm_std::{
 };
 use serde_json_wasm::to_string;
 
-use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
 use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::core::{
+    error::ContractError,
+    types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2},
+};
 use crate::util::constants::NHASH;
 use crate::{
     contract::instantiate,
@@ -392,65 +395,59 @@ impl<'a> AddOrUpdateAttributeParams<'a> {
 /// value for the given address.
 pub fn intercept_add_or_update_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
-    response: &EntryPointResponse,
+    response: Response<ProvenanceMsg>,
     failure_description: S,
-) {
+) -> EntryPointResponse {
     let failure_msg: String = failure_description.into();
-    match response {
-        Ok(ref res) => {
-            for m in res.messages.iter() {
-                let params = match &m.msg {
-                    CosmosMsg::Custom(ProvenanceMsg {
-                        params:
-                            ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                                address,
-                                name,
-                                value,
-                                ..
-                            }),
+
+    for m in response.messages.iter() {
+        let params = match &m.msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        address,
+                        name,
+                        value,
                         ..
-                    }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
-                    CosmosMsg::Custom(ProvenanceMsg {
-                        params:
-                            ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                                address,
-                                name,
-                                update_value,
-                                ..
-                            }),
+                    }),
+                ..
+            }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
+                        address,
+                        name,
+                        update_value,
                         ..
-                    }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
-                    _ => None,
-                };
-                if let Some(AddOrUpdateAttributeParams {
-                    address,
-                    name,
-                    binary,
-                }) = params
-                {
-                    // inject bound name into provmock querier
-                    let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
-                    deps.querier.with_attributes(
-                        address.as_str(),
-                        &[(
-                            name.as_str(),
-                            to_string(&deserialized)
-                                .expect(
-                                    "expected the scope attribute to convert to json without error",
-                                )
-                                .as_str(),
-                            "json",
-                        )],
-                    );
-                    // After finding the an add or update attribute message, exit to avoid panics
-                    return;
-                }
-            }
-            panic!("{}: message provided did not contain an add attribute message. Full response: {:?}", failure_msg, response);
+                    }),
+                ..
+            }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
+            _ => None,
+        };
+        if let Some(AddOrUpdateAttributeParams {
+            address,
+            name,
+            binary,
+        }) = params
+        {
+            // inject bound name into provmock querier
+            let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
+            deps.querier.with_attributes(
+                address.as_str(),
+                &[(
+                    name.as_str(),
+                    to_string(&deserialized)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                )],
+            );
+            // After finding the an add or update attribute message, exit to avoid panics
+            return Ok(response);
         }
-        Err(e) => panic!(
-            "{}: expected onboard_asset call to succeed, but got error: {:?}",
-            failure_msg, e
-        ),
-    };
+    }
+    Err(ContractError::generic(format!(
+        "{}: message provided did not contain an add attribute message. Full response: {:?}",
+        failure_msg, response
+    )))
 }

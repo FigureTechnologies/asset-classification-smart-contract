@@ -52,11 +52,12 @@ impl Default for TestVerifyAsset {
 }
 
 pub fn test_verify_asset(deps: &mut MockOwnedDeps, msg: TestVerifyAsset) -> EntryPointResponse {
-    let response = verify_asset(
+    verify_asset(
         AssetMetaService::new(deps.as_mut()),
         msg.info,
         msg.verify_asset,
-    );
-    intercept_add_or_update_attribute(deps, &response, "failure occurred for test_verify_asset");
-    response
+    )
+    .and_then(|response| {
+        intercept_add_or_update_attribute(deps, response, "failure occurred for test_verify_asset")
+    })
 }

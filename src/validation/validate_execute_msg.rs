@@ -1,7 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::types::asset_identifier::AssetIdentifier;
-use crate::core::types::asset_qualifier::AssetQualifier;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
@@ -26,10 +25,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
         } => validate_onboard_asset(identifier, asset_type, verifier_address),
         ExecuteMsg::VerifyAsset { identifier, .. } => validate_verify_asset(identifier),
         ExecuteMsg::AddAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.as_asset_definition()?)
+            validate_asset_definition(&asset_definition.as_asset_definition())
         }
         ExecuteMsg::UpdateAssetDefinition { asset_definition } => {
-            validate_asset_definition(&asset_definition.as_asset_definition()?)
+            validate_asset_definition(&asset_definition.as_asset_definition())
         }
         ExecuteMsg::ToggleAssetDefinition { asset_type, .. } => {
             validate_toggle_asset_definition(asset_type)
@@ -47,8 +46,8 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
             owner_address,
             ..
         } => validate_update_access_routes(identifier, owner_address),
-        ExecuteMsg::DeleteAssetDefinition { qualifier } => {
-            validate_delete_asset_definition(qualifier)
+        ExecuteMsg::DeleteAssetDefinition { asset_type } => {
+            validate_delete_asset_definition(asset_type)
         }
     }
 }
@@ -62,10 +61,10 @@ pub fn validate_execute_msg(msg: &ExecuteMsg) -> AssetResult<()> {
 ///
 /// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
 /// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
-/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// stored internally in the contract.
 /// * `verifier_address` The bech32 address of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
-/// held within the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// held within the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// for onboarding.
 fn validate_onboard_asset(
     identifier: &SerializedEnum,
@@ -109,7 +108,7 @@ fn validate_verify_asset(identifier: &SerializedEnum) -> AssetResult<()> {
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// stored internally in the contract.
 fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
@@ -126,7 +125,7 @@ fn validate_toggle_asset_definition(asset_type: &str) -> AssetResult<()> {
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// stored internally in the contract.
 /// * `verifier` The verifier detail to add or update.
 fn validate_asset_verifier_msg(asset_type: &str, verifier: &VerifierDetailV2) -> AssetResult<()> {
@@ -169,13 +168,15 @@ fn validate_update_access_routes(
 ///
 /// # Parameters
 ///
-/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// * `asset_type` The asset type to identify the [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// to delete.
-fn validate_delete_asset_definition(qualifier: &SerializedEnum) -> AssetResult<()> {
+fn validate_delete_asset_definition(asset_type: &str) -> AssetResult<()> {
     let mut invalid_fields: Vec<String> = vec![];
-    if let Some(message) = get_asset_qualifier_invalid_message(qualifier) {
-        invalid_fields.push(message);
+
+    if asset_type.is_empty() {
+        invalid_fields.push("asset_type: must not be blank".to_string())
     }
+
     gen_validation_response("ExecuteMsg::DeleteAssetDefinition", invalid_fields)
 }
 
@@ -221,48 +222,6 @@ fn get_asset_identifier_invalid_message(identifier: &SerializedEnum) -> Option<S
     }
 }
 
-/// Validates a serialized enum to ensure that it can convert to a valid [AssetQualifier](crate::core::types::asset_qualifier::AssetQualifier),
-/// returning an optional string that is only populated if an error is present.
-///
-/// # Parameters
-///
-/// * `qualifier` An [AssetQualifier](crate::core::types::asset_qualifier::AssetQualifier)
-/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
-fn get_asset_qualifier_invalid_message(qualifier: &SerializedEnum) -> Option<String> {
-    match qualifier.to_asset_qualifier() {
-        Ok(asset_qualifier) => match asset_qualifier {
-            AssetQualifier::AssetType(asset_type) => {
-                if asset_type.is_empty() {
-                    "qualifier:asset_type: must not be blank"
-                        .to_string()
-                        .to_some()
-                } else {
-                    None
-                }
-            }
-            AssetQualifier::ScopeSpecAddress(scope_spec_address) => {
-                if scope_spec_address.is_empty() {
-                    "qualifier:scope_spec_address: must not be blank"
-                        .to_string()
-                        .to_some()
-                } else {
-                    None
-                }
-            }
-        },
-        Err(e) => match e {
-            ContractError::UnexpectedSerializedEnum {
-                received_type,
-                explanation,
-            } => {
-                format!("qualifier: received type [{received_type}]: {explanation}")
-            }
-            _ => format!("qualifier: received unexpected error message: {e:?}"),
-        }
-        .to_some(),
-    }
-}
-
 /// Takes the invalid fields produced by the various validation functions, and, if they are not
 /// empty, returns an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
 /// error.  If they are empty, returns an empty response.
@@ -290,7 +249,6 @@ fn gen_validation_response<S: Into<String>>(
 
 #[cfg(test)]
 mod tests {
-    use crate::core::types::asset_qualifier::AssetQualifier;
     use crate::core::types::serialized_enum::SerializedEnum;
     use crate::validation::validate_execute_msg::{
         validate_delete_asset_definition, validate_update_access_routes,
@@ -611,43 +569,14 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_delete_asset_definition_successes() {
-        validate_delete_asset_definition(&AssetQualifier::asset_type("heloc").to_serialized_enum())
-            .expect("expected the validation for asset type qualifier to pass");
-        validate_delete_asset_definition(
-            &AssetQualifier::scope_spec_address("address").to_serialized_enum(),
-        )
-        .expect("expected the validation for scope spec address qualifier to pass");
-    }
-
-    #[test]
-    fn test_validate_delete_asset_definition_invalid_serialized_enum() {
-        let result = validate_delete_asset_definition(&SerializedEnum {
-            r#type: "invalid_type".to_string(),
-            value: "heloc".to_string(),
-        });
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::DeleteAssetDefinition", message_type,
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "qualifier: received type [invalid_type]: Invalid AssetQualifier. Expected one of [asset_type, scope_spec_address]",
-                invalid_fields.first().unwrap(),
-                "expected the appropriate error message to be returned"
-            );
-        });
+    fn test_validate_delete_asset_definition_success() {
+        validate_delete_asset_definition("heloc")
+            .expect("expected the validation for asset type to pass");
     }
 
     #[test]
     fn test_validate_delete_asset_definition_invalid_asset_type() {
-        let result =
-            validate_delete_asset_definition(&AssetQualifier::asset_type("").to_serialized_enum());
+        let result = validate_delete_asset_definition("");
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
                 "ExecuteMsg::DeleteAssetDefinition", message_type,
@@ -659,30 +588,7 @@ mod tests {
                 "expected only a single invalid field to be found",
             );
             assert_eq!(
-                "qualifier:asset_type: must not be blank",
-                invalid_fields.first().unwrap(),
-                "expected the appropriate error message to be returned"
-            );
-        });
-    }
-
-    #[test]
-    fn test_validate_delete_asset_definition_invalid_scope_spec_address() {
-        let result = validate_delete_asset_definition(
-            &AssetQualifier::scope_spec_address("").to_serialized_enum(),
-        );
-        test_invalid_message_fields(result, |message_type, invalid_fields| {
-            assert_eq!(
-                "ExecuteMsg::DeleteAssetDefinition", message_type,
-                "incorrect message type for error",
-            );
-            assert_eq!(
-                1,
-                invalid_fields.len(),
-                "expected only a single invalid field to be found",
-            );
-            assert_eq!(
-                "qualifier:scope_spec_address: must not be blank",
+                "asset_type: must not be blank",
                 invalid_fields.first().unwrap(),
                 "expected the appropriate error message to be returned"
             );

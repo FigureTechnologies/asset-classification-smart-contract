@@ -13,6 +13,7 @@ use crate::migrate::migrate_contract::migrate_contract;
 use crate::query::query_asset_definition::query_asset_definition;
 use crate::query::query_asset_definitions::query_asset_definitions;
 use crate::query::query_asset_scope_attribute::query_asset_scope_attribute;
+use crate::query::query_asset_scope_attribute_by_asset_type::query_asset_scope_attribute_by_asset_type;
 use crate::query::query_fee_payments::query_fee_payments;
 use crate::query::query_state::query_state;
 use crate::query::query_version::query_version;
@@ -64,16 +65,23 @@ pub fn instantiate(
 #[entry_point]
 pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
-        QueryMsg::QueryAssetDefinition { qualifier } => {
-            query_asset_definition(&deps, qualifier.to_asset_qualifier()?)
-        }
+        QueryMsg::QueryAssetDefinition { asset_type } => query_asset_definition(&deps, &asset_type),
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
-        QueryMsg::QueryAssetScopeAttribute { identifier } => {
+        QueryMsg::QueryAssetScopeAttributes { identifier } => {
             query_asset_scope_attribute(&deps, identifier.to_asset_identifier()?)
         }
-        QueryMsg::QueryFeePayments { identifier } => {
-            query_fee_payments(&deps, identifier.to_asset_identifier()?)
-        }
+        QueryMsg::QueryAssetScopeAttributeForAssetType {
+            identifier,
+            asset_type,
+        } => query_asset_scope_attribute_by_asset_type(
+            &deps,
+            identifier.to_asset_identifier()?,
+            asset_type,
+        ),
+        QueryMsg::QueryFeePayments {
+            identifier,
+            asset_type,
+        } => query_fee_payments(&deps, identifier.to_asset_identifier()?, &asset_type),
         QueryMsg::QueryState {} => query_state(&deps),
         QueryMsg::QueryVersion {} => query_version(&deps),
     }

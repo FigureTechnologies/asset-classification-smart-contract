@@ -4,7 +4,7 @@
   "description": "Defines all routes in which the contract can be queried.  These are all handled directly in the [contract file](crate::contract::query).",
   "anyOf": [
     {
-      "description": "This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract's internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null response will be returned.",
+      "description": "This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract's internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null response will be returned.",
       "type": "object",
       "required": [
         "query_asset_definition"
@@ -13,16 +13,12 @@
         "query_asset_definition": {
           "type": "object",
           "required": [
-            "qualifier"
+            "asset_type"
           ],
           "properties": {
-            "qualifier": {
-              "description": "Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/SerializedEnum"
-                }
-              ]
+            "asset_type": {
+              "description": "The asset type to query for",
+              "type": "string"
             }
           }
         }
@@ -30,7 +26,7 @@
       "additionalProperties": false
     },
     {
-      "description": "This route can be used to retrieve all [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) stored in the contract.  This response payload can be quite large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need to be inspected or displayed.  The query asset definition route is much more efficient.",
+      "description": "This route can be used to retrieve all [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) stored in the contract.  This response payload can be quite large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need to be inspected or displayed.  The query asset definition route is much more efficient.",
       "type": "object",
       "required": [
         "query_asset_definitions"
@@ -43,18 +39,49 @@
       "additionalProperties": false
     },
     {
-      "description": "This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
+      "description": "This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier.",
       "type": "object",
       "required": [
-        "query_asset_scope_attribute"
+        "query_asset_scope_attributes"
       ],
       "properties": {
-        "query_asset_scope_attribute": {
+        "query_asset_scope_attributes": {
           "type": "object",
           "required": [
             "identifier"
           ],
           "properties": {
+            "identifier": {
+              "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SerializedEnum"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract. This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been successfully classified by a verifier for a specific asset type.",
+      "type": "object",
+      "required": [
+        "query_asset_scope_attribute_for_asset_type"
+      ],
+      "properties": {
+        "query_asset_scope_attribute_for_asset_type": {
+          "type": "object",
+          "required": [
+            "asset_type",
+            "identifier"
+          ],
+          "properties": {
+            "asset_type": {
+              "description": "The asset type to query for",
+              "type": "string"
+            },
             "identifier": {
               "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
               "allOf": [
@@ -78,9 +105,14 @@
         "query_fee_payments": {
           "type": "object",
           "required": [
+            "asset_type",
             "identifier"
           ],
           "properties": {
+            "asset_type": {
+              "description": "The asset type to query for pending verification fee payment details",
+              "type": "string"
+            },
             "identifier": {
               "description": "Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible [SerializedEnum](super::types::serialized_enum::SerializedEnum).",
               "allOf": [

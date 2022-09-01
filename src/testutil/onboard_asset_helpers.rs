@@ -59,12 +59,13 @@ impl Default for TestOnboardAsset {
 }
 
 pub fn test_onboard_asset(deps: &mut MockOwnedDeps, msg: TestOnboardAsset) -> EntryPointResponse {
-    let response = onboard_asset(
+    onboard_asset(
         AssetMetaService::new(deps.as_mut()),
         mock_env(),
         msg.info,
         msg.onboard_asset,
-    );
-    intercept_add_or_update_attribute(deps, &response, "failure occurred for test_onboard_asset");
-    response
+    )
+    .and_then(|response| {
+        intercept_add_or_update_attribute(deps, response, "failure occurred for test_onboard_asset")
+    })
 }

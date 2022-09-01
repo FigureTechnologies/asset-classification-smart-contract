@@ -1,12 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AssetDefinitionV2",
+  "title": "AssetDefinitionV3",
   "description": "Defines a specific asset type associated with the contract.  Allows its specified type to be onboarded and verified.",
   "type": "object",
   "required": [
     "asset_type",
     "enabled",
-    "scope_spec_address",
     "verifiers"
   ],
   "properties": {
@@ -14,13 +13,16 @@
       "description": "The unique name of the asset associated with the definition.",
       "type": "string"
     },
+    "display_name": {
+      "description": "A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "enabled": {
       "description": "Indicates whether or not the asset definition is enabled for use in the contract.  If disabled, requests to onboard assets of this type will be rejected.",
       "type": "boolean"
-    },
-    "scope_spec_address": {
-      "description": "A link to a scope specification that defines this asset type.",
-      "type": "string"
     },
     "verifiers": {
       "description": "Individual verifier definitions.  There can be many verifiers for a single asset type.",
@@ -103,7 +105,7 @@
       "type": "string"
     },
     "VerifierDetailV2": {
-      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).",
       "type": "object",
       "required": [
         "address",

@@ -1,11 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AssetDefinitionInputV2",
+  "title": "AssetDefinitionInputV3",
   "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
   "type": "object",
   "required": [
     "asset_type",
-    "scope_spec_identifier",
     "verifiers"
   ],
   "properties": {
@@ -20,19 +19,18 @@
         "null"
       ]
     },
+    "display_name": {
+      "description": "A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "enabled": {
       "description": "Indicates whether or not the asset definition is enabled for use in the contract.  If disabled, requests to onboard assets of this type will be rejected.",
       "type": [
         "boolean",
         "null"
-      ]
-    },
-    "scope_spec_identifier": {
-      "description": "A link to a scope specification that defines this asset type.  A serialized version of a [ScopeSpecIdentifier](super::scope_spec_identifier::ScopeSpecIdentifier) that allows multiple different values to be derived as a scope specification address.  Must be unique across all instances persisted in contract storage, or requests to add will be rejected.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/SerializedEnum"
-        }
       ]
     },
     "verifiers": {
@@ -111,30 +109,12 @@
         }
       }
     },
-    "SerializedEnum": {
-      "description": "There is a bug in cosmwasm 1.0.0's interaction with serde-json-wasm that causes floating point operations to be added into the compiled wasm, so the previous solution of using things like AssetIdentifier directly and specifying them with a tag and content param in their serde annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain identical, but not generate floating point errors.  It makes the schema less useful, but it's a hack to fix a bug, so...\n\nIt's also worth noting that this solution can only create enum switches that have Strings as their values.  Anything different will not work for this solution and will require further adaptation and hackery.",
-      "type": "object",
-      "required": [
-        "type",
-        "value"
-      ],
-      "properties": {
-        "type": {
-          "description": "Specifies the type of enum to deserialize into. Maps into one of the values specified in the impl for this struct.",
-          "type": "string"
-        },
-        "value": {
-          "description": "Specifies the string value to be used for the type.",
-          "type": "string"
-        }
-      }
-    },
     "Uint128": {
       "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
       "type": "string"
     },
     "VerifierDetailV2": {
-      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).",
       "type": "object",
       "required": [
         "address",

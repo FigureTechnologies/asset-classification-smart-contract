@@ -11,9 +11,12 @@ use provwasm_std::{
 };
 use serde_json_wasm::to_string;
 
-use crate::core::types::asset_definition::{AssetDefinitionInputV2, AssetDefinitionV2};
 use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::core::{
+    error::ContractError,
+    types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3},
+};
 use crate::util::constants::NHASH;
 use crate::{
     contract::instantiate,
@@ -24,7 +27,6 @@ use crate::{
             asset_onboarding_status::AssetOnboardingStatus,
             asset_scope_attribute::AssetScopeAttribute,
             entity_detail::EntityDetail,
-            scope_spec_identifier::ScopeSpecIdentifier,
         },
     },
     util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
@@ -36,23 +38,22 @@ use crate::{
 
 use super::test_constants::{
     DEFAULT_ACCESS_ROUTE_NAME, DEFAULT_ACCESS_ROUTE_ROUTE, DEFAULT_ADMIN_ADDRESS,
-    DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_CONTRACT_BASE_NAME,
-    DEFAULT_ENTITY_DETAIL_DESCRIPTION, DEFAULT_ENTITY_DETAIL_HOME_URL, DEFAULT_ENTITY_DETAIL_NAME,
-    DEFAULT_ENTITY_DETAIL_SOURCE_URL, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM,
-    DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD, DEFAULT_PROCESS_NAME,
-    DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS, DEFAULT_RECORD_NAME,
-    DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS, DEFAULT_SCOPE_ADDRESS,
-    DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_SESSION_ADDRESS,
-    DEFAULT_VERIFIER_ADDRESS,
+    DEFAULT_ASSET_TYPE, DEFAULT_ASSET_TYPE_DISPLAY_NAME, DEFAULT_ASSET_UUID,
+    DEFAULT_CONTRACT_BASE_NAME, DEFAULT_ENTITY_DETAIL_DESCRIPTION, DEFAULT_ENTITY_DETAIL_HOME_URL,
+    DEFAULT_ENTITY_DETAIL_NAME, DEFAULT_ENTITY_DETAIL_SOURCE_URL, DEFAULT_ONBOARDING_COST,
+    DEFAULT_ONBOARDING_DENOM, DEFAULT_PROCESS_ADDRESS, DEFAULT_PROCESS_METHOD,
+    DEFAULT_PROCESS_NAME, DEFAULT_RECORD_INPUT_NAME, DEFAULT_RECORD_INPUT_SOURCE_ADDRESS,
+    DEFAULT_RECORD_NAME, DEFAULT_RECORD_OUTPUT_HASH, DEFAULT_RECORD_SPEC_ADDRESS,
+    DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS, DEFAULT_SENDER_ADDRESS,
+    DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
 
 pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
 
-pub fn get_default_asset_definition_input() -> AssetDefinitionInputV2 {
-    AssetDefinitionInputV2 {
+pub fn get_default_asset_definition_input() -> AssetDefinitionInputV3 {
+    AssetDefinitionInputV3 {
         asset_type: DEFAULT_ASSET_TYPE.into(),
-        scope_spec_identifier: ScopeSpecIdentifier::address(DEFAULT_SCOPE_SPEC_ADDRESS)
-            .to_serialized_enum(),
+        display_name: DEFAULT_ASSET_TYPE_DISPLAY_NAME.map(|n| n.to_string()),
         verifiers: vec![get_default_verifier_detail()],
         // Specifying None will cause the underlying code to always choose enabled: true
         enabled: None,
@@ -80,24 +81,18 @@ pub fn get_default_verifier_detail() -> VerifierDetailV2 {
     }
 }
 
-pub fn get_default_asset_definition() -> AssetDefinitionV2 {
-    get_default_asset_definition_input()
-        .into_asset_definition()
-        .expect("the default asset definition input could not be parsed as an asset definition")
+pub fn get_default_asset_definition() -> AssetDefinitionV3 {
+    get_default_asset_definition_input().into_asset_definition()
 }
 
-pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV2> {
+pub fn get_default_asset_definition_inputs() -> Vec<AssetDefinitionInputV3> {
     vec![get_default_asset_definition_input()]
 }
 
-pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV2> {
+pub fn get_default_asset_definitions() -> Vec<AssetDefinitionV3> {
     get_default_asset_definition_inputs()
         .into_iter()
-        .map(|input| {
-            input
-                .into_asset_definition()
-                .expect("failed to convert default asset definition input into an asset definition")
-        })
+        .map(|input| input.into_asset_definition())
         .collect()
 }
 
@@ -132,7 +127,7 @@ pub struct InstArgs {
     pub base_contract_name: String,
     pub bind_base_name: bool,
     pub is_test: bool,
-    pub asset_definitions: Vec<AssetDefinitionInputV2>,
+    pub asset_definitions: Vec<AssetDefinitionInputV3>,
 }
 impl Default for InstArgs {
     fn default() -> Self {
@@ -146,6 +141,26 @@ impl Default for InstArgs {
             // realistic scenarios
             is_test: false,
             asset_definitions: get_default_asset_definition_inputs(),
+        }
+    }
+}
+
+impl InstArgs {
+    pub fn default_with_additional_asset_types(asset_types: Vec<&str>) -> Self {
+        let default = Self::default();
+        Self {
+            asset_definitions: vec![
+                default.asset_definitions,
+                asset_types
+                    .iter()
+                    .map(|asset_type| AssetDefinitionInputV3 {
+                        asset_type: asset_type.to_string(),
+                        ..get_default_asset_definition_input()
+                    })
+                    .collect(),
+            ]
+            .concat(),
+            ..default
         }
     }
 }
@@ -381,65 +396,59 @@ impl<'a> AddOrUpdateAttributeParams<'a> {
 /// value for the given address.
 pub fn intercept_add_or_update_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
-    response: &EntryPointResponse,
+    response: Response<ProvenanceMsg>,
     failure_description: S,
-) {
+) -> EntryPointResponse {
     let failure_msg: String = failure_description.into();
-    match response {
-        Ok(ref res) => {
-            for m in res.messages.iter() {
-                let params = match &m.msg {
-                    CosmosMsg::Custom(ProvenanceMsg {
-                        params:
-                            ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                                address,
-                                name,
-                                value,
-                                ..
-                            }),
+
+    for m in response.messages.iter() {
+        let params = match &m.msg {
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
+                        address,
+                        name,
+                        value,
                         ..
-                    }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
-                    CosmosMsg::Custom(ProvenanceMsg {
-                        params:
-                            ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                                address,
-                                name,
-                                update_value,
-                                ..
-                            }),
+                    }),
+                ..
+            }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
+            CosmosMsg::Custom(ProvenanceMsg {
+                params:
+                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
+                        address,
+                        name,
+                        update_value,
                         ..
-                    }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
-                    _ => None,
-                };
-                if let Some(AddOrUpdateAttributeParams {
-                    address,
-                    name,
-                    binary,
-                }) = params
-                {
-                    // inject bound name into provmock querier
-                    let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
-                    deps.querier.with_attributes(
-                        address.as_str(),
-                        &[(
-                            name.as_str(),
-                            to_string(&deserialized)
-                                .expect(
-                                    "expected the scope attribute to convert to json without error",
-                                )
-                                .as_str(),
-                            "json",
-                        )],
-                    );
-                    // After finding the an add or update attribute message, exit to avoid panics
-                    return;
-                }
-            }
-            panic!("{}: message provided did not contain an add attribute message. Full response: {:?}", failure_msg, response);
+                    }),
+                ..
+            }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
+            _ => None,
+        };
+        if let Some(AddOrUpdateAttributeParams {
+            address,
+            name,
+            binary,
+        }) = params
+        {
+            // inject bound name into provmock querier
+            let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
+            deps.querier.with_attributes(
+                address.as_str(),
+                &[(
+                    name.as_str(),
+                    to_string(&deserialized)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                )],
+            );
+            // After finding the an add or update attribute message, exit to avoid panics
+            return Ok(response);
         }
-        Err(e) => panic!(
-            "{}: expected onboard_asset call to succeed, but got error: {:?}",
-            failure_msg, e
-        ),
-    };
+    }
+    Err(ContractError::generic(format!(
+        "{}: message provided did not contain an add attribute message. Full response: {:?}",
+        failure_msg, response
+    )))
 }

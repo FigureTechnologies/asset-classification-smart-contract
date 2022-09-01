@@ -37,6 +37,7 @@ use cosmwasm_std::{MessageInfo, Response};
 #[derive(Clone, PartialEq, Eq)]
 pub struct VerifyAssetV1 {
     pub identifier: AssetIdentifier,
+    pub asset_type: String,
     pub success: bool,
     pub message: Option<String>,
     pub access_routes: Vec<AccessRoute>,
@@ -54,11 +55,13 @@ impl VerifyAssetV1 {
         match msg {
             ExecuteMsg::VerifyAsset {
                 identifier,
+                asset_type,
                 success,
                 message,
                 access_routes,
             } => VerifyAssetV1 {
                 identifier: identifier.to_asset_identifier()?,
+                asset_type,
                 success,
                 message,
                 access_routes: access_routes.unwrap_or_default(),
@@ -100,12 +103,14 @@ where
 
     let asset_identifiers = msg.identifier.to_identifiers()?;
     // look up asset in repository
-    let scope_attribute = repository.get_asset(&asset_identifiers.scope_address)?;
+    let scope_attribute =
+        repository.get_asset_by_asset_type(&asset_identifiers.scope_address, &msg.asset_type)?;
 
     // verify sender is requested verifier
     if info.sender != scope_attribute.verifier_address {
         return ContractError::UnauthorizedAssetVerifier {
             scope_address: asset_identifiers.scope_address,
+            asset_type: msg.asset_type,
             verifier_address: info.sender.into(),
             expected_verifier_address: scope_attribute.verifier_address.into_string(),
         }
@@ -118,6 +123,7 @@ where
     if scope_attribute.onboarding_status != AssetOnboardingStatus::Pending {
         return ContractError::AssetAlreadyVerified {
             scope_address: asset_identifiers.scope_address,
+            asset_type: msg.asset_type,
             status: scope_attribute.onboarding_status,
         }
         .to_err();
@@ -125,6 +131,7 @@ where
 
     repository.verify_asset(
         &asset_identifiers.scope_address,
+        msg.asset_type,
         msg.success,
         msg.message,
         msg.access_routes,
@@ -147,8 +154,14 @@ where
 #[cfg(test)]
 mod tests {
     use provwasm_mocks::mock_dependencies;
+    use serde_json_wasm::to_string;
 
+    use crate::core::state::may_load_fee_payment_detail;
     use crate::execute::onboard_asset::OnboardAssetV1;
+    use crate::testutil::test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SECONDARY_ASSET_TYPE,
+    };
+    use crate::util::functions::generate_asset_attribute_name;
     use crate::{
         core::{
             error::ContractError,
@@ -198,6 +211,7 @@ mod tests {
             empty_mock_info(DEFAULT_VERIFIER_ADDRESS),
             VerifyAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 success: true,
                 message: None,
                 access_routes: vec![],
@@ -209,8 +223,9 @@ mod tests {
             ContractError::NotFound { explanation } => {
                 assert_eq!(
                     format!(
-                        "scope at address [{}] did not include an asset scope attribute",
-                        DEFAULT_SCOPE_ADDRESS
+                        "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                        DEFAULT_SCOPE_ADDRESS,
+                        DEFAULT_ASSET_TYPE
                     ),
                     explanation,
                     "the asset not found message should reflect that the asset was not found"
@@ -236,6 +251,7 @@ mod tests {
             info.clone(),
             VerifyAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.into(),
                 success: true,
                 message: None,
                 access_routes: vec![],
@@ -246,12 +262,17 @@ mod tests {
         match err {
             ContractError::UnauthorizedAssetVerifier {
                 scope_address,
+                asset_type,
                 verifier_address,
                 expected_verifier_address,
             } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
                     "the unauthorized verifier message should reflect the scope address"
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE, asset_type,
+                    "the unauthorized verifier message should reflect the asset type"
                 );
                 assert_eq!(
                     info.sender.to_string(), verifier_address,
@@ -280,6 +301,7 @@ mod tests {
             empty_mock_info(DEFAULT_VERIFIER_ADDRESS),
             VerifyAssetV1 {
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 success: true,
                 message: "Your data sucks".to_string().to_some(),
                 access_routes: vec![],
@@ -318,11 +340,16 @@ mod tests {
         match err {
             ContractError::AssetAlreadyVerified {
                 scope_address,
+                asset_type,
                 status,
             } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
                     "the response message should contain the expected scope address",
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE, asset_type,
+                    "the response message should contain the expected asset type",
                 );
                 assert_eq!(
                     status,
@@ -352,11 +379,16 @@ mod tests {
         match err {
             ContractError::AssetAlreadyVerified {
                 scope_address,
+                asset_type,
                 status,
             } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
                     "the response message should contain the expected scope address",
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE, asset_type,
+                    "the response message should contain the expected asset type",
                 );
                 assert_eq!(
                     status,
@@ -372,22 +404,162 @@ mod tests {
     }
 
     #[test]
-    fn test_verify_asset_success_true_produces_correct_onboarding_status() {
+    fn test_verify_asset_two_pending_verifications_do_not_conflict() {
         let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(
+            &mut deps,
+            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let default_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
+        // onboard asset for secondary class
         test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
                 onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.into(),
                     ..TestOnboardAsset::default_onboard_asset()
                 },
                 ..TestOnboardAsset::default()
             },
         )
         .unwrap();
+        let default_secondary_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE)
+            .unwrap();
+
+        // dumb hack to get both attributes in the ProvenanceMockQuerier... our interception of the AddOrUpdateParams stuff can only
+        // set the one attribute in the mock querier at a time, as the existing attributes get overwritten and there is no way to
+        // access them in order to append
+        deps.querier.with_attributes(
+            DEFAULT_SCOPE_ADDRESS,
+            &[
+                (
+                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    to_string(&default_attribute)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                ),
+                (
+                    &generate_asset_attribute_name(
+                        DEFAULT_SECONDARY_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME,
+                    ),
+                    to_string(&default_secondary_attribute)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                ),
+            ],
+        );
+        // end dumb hack
+
+        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        let updated_default_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect("after validating the asset, the scope attribute should be present");
+        assert_eq!(
+            AssetOnboardingStatus::Approved,
+            updated_default_attribute.onboarding_status,
+            "the asset should be in approved status after onboarding with a status of success = true",
+        );
+        assert_eq!(
+            None,
+            may_load_fee_payment_detail(&deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE),
+            "the asset's payment details should be removed after successful onboarding for a specific type"
+        );
+        may_load_fee_payment_detail(&deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE).expect("the asset's payment details for an unrelated secondary asset type should be unaffected by onboarding a different type");
+
+        // dumb hack AGAIN to get both the updated attribute and untouched in the ProvenanceMockQuerier... our interception of the AddOrUpdateParams stuff can only
+        // set the one attribute in the mock querier at a time, as the existing attributes get overwritten and there is no way to
+        // access them in order to append... Not sure if I can really test this situation I guess
+        deps.querier.with_attributes(
+            DEFAULT_SCOPE_ADDRESS,
+            &[
+                (
+                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    to_string(&updated_default_attribute)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                ),
+                (
+                    &generate_asset_attribute_name(
+                        DEFAULT_SECONDARY_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME,
+                    ),
+                    to_string(&default_secondary_attribute)
+                        .expect("expected the scope attribute to convert to json without error")
+                        .as_str(),
+                    "json",
+                ),
+            ],
+        );
+        // end dumb hack AGAIN
+
+        test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.into(),
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..TestVerifyAsset::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            None,
+            may_load_fee_payment_detail(&deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE),
+            "the asset's payment details should still be missing for the initial verification asset type"
+        );
+        assert_eq!(
+            None,
+            may_load_fee_payment_detail(&deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
+            "the asset's payment details should still be removed for the secondary verification asset type"
+        );
+    }
+
+    #[test]
+    fn test_verify_asset_wrong_asset_type_denied() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(
+            &mut deps,
+            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let err = test_verify_asset(
+            &mut deps,
+            TestVerifyAsset {
+                verify_asset: VerifyAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestVerifyAsset::default_verify_asset()
+                },
+                ..TestVerifyAsset::default()
+            },
+        )
+        .expect_err("attempting to validate an asset as the wrong type should be denied");
+        match err {
+                ContractError::NotFound { explanation } => assert_eq!(
+                    format!("scope at address [{}] did not include an asset scope attribute for asset type [{}]", DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
+                    explanation,
+                    "the error message should reflect the scope address the verification was attempted for"
+                ),
+                e => panic!("unexpected error type {:?}", e)
+            }
+    }
+
+    #[test]
+    fn test_verify_asset_success_true_produces_correct_onboarding_status() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
         assert_eq!(
             AssetOnboardingStatus::Approved,
@@ -403,7 +575,7 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
         assert_eq!(
             AssetOnboardingStatus::Denied,

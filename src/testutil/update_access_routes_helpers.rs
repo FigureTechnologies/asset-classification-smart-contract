@@ -3,7 +3,7 @@ use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::execute::update_access_routes::{update_access_routes, UpdateAccessRoutesV1};
 use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_constants::{
-    DEFAULT_ADMIN_ADDRESS, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+    DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
 };
 use crate::testutil::test_utilities::{
     empty_mock_info, intercept_add_or_update_attribute, MockOwnedDeps,
@@ -20,6 +20,7 @@ impl TestUpdateAccessRoutes {
     pub fn default_update_access_routes() -> UpdateAccessRoutesV1 {
         UpdateAccessRoutesV1::new(
             AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            DEFAULT_ASSET_TYPE,
             DEFAULT_SENDER_ADDRESS,
             vec![AccessRoute::new(
                 "http://updated.route:8080",
@@ -41,15 +42,16 @@ pub fn test_update_access_routes(
     deps: &mut MockOwnedDeps,
     msg: TestUpdateAccessRoutes,
 ) -> EntryPointResponse {
-    let response = update_access_routes(
+    update_access_routes(
         AssetMetaService::new(deps.as_mut()),
         msg.info,
         msg.update_access_routes,
-    );
-    intercept_add_or_update_attribute(
-        deps,
-        &response,
-        "failure occurred for test_update_access_routes",
-    );
-    response
+    )
+    .and_then(|response| {
+        intercept_add_or_update_attribute(
+            deps,
+            response,
+            "failure occurred for test_update_access_routes",
+        )
+    })
 }

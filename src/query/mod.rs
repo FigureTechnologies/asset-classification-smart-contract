@@ -1,14 +1,17 @@
 //! Contains the functionality used in the [contract file](crate::contract) to perform a contract query.
 
-/// A query that fetches a target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// A query that fetches a target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.
 pub mod query_asset_definition;
-/// A query that fetches all [AssetDefinitionV2s](crate::core::types::asset_definition::AssetDefinitionV2)
+/// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.
 pub mod query_asset_definitions;
-/// A query that attempts to find an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+/// A query that attempts to find all [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)s
 /// on a Provenance Blockchain Metadata Scope that was added by this contract.
 pub mod query_asset_scope_attribute;
+/// A query that attempts to find an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+/// for a specific asset type on a Provenance Blockchain Metadata Scope that was added by this contract.
+pub mod query_asset_scope_attribute_by_asset_type;
 /// A query that attempts to find a [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
 /// stored for an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
 /// that has not yet finished its asset verification step.

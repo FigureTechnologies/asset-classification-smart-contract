@@ -8,6 +8,10 @@ use crate::core::state::{
 };
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
+use crate::query::query_asset_scope_attribute_by_asset_type::{
+    may_query_scope_attribute_by_scope_address_and_asset_type,
+    query_scope_attribute_by_scope_address_and_asset_type,
+};
 use crate::{
     core::{
         error::ContractError,
@@ -62,11 +66,20 @@ impl<'a> AssetMetaService<'a> {
     }
 }
 impl<'a> AssetMetaRepository for AssetMetaService<'a> {
-    fn has_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<bool> {
-        let scope_address_string: String = scope_address.into();
+    fn has_asset<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<bool> {
+        let scope_address: String = scope_address.into();
+        let asset_type = asset_type.into();
         // check for asset attribute existence
         self.use_deps(|d| {
-            may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
+            may_query_scope_attribute_by_scope_address_and_asset_type(
+                &d.as_ref(),
+                &scope_address,
+                &asset_type,
+            )
         })?
         .is_some()
         .to_ok()
@@ -82,12 +95,13 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // Verify that the attribute does or does not exist.  This check verifies that the value equivalent to is_retry:
         // If the asset exists, this should be a retry, because a subsequent onboard should only occur for that purpose
         // If the asset does not exist, this should not be a retry, because this is the first time the attribute is being attempted
-        if self.has_asset(&attribute.scope_address)? != is_retry {
+        if self.has_asset(&attribute.scope_address, &attribute.asset_type)? != is_retry {
             return if is_retry {
                 ContractError::generic(format!("unexpected state! asset scope [{}] was processed as new onboard, but the scope was not populated with asset classification data", &attribute.scope_address))
             } else {
                 ContractError::AssetAlreadyOnboarded {
                     scope_address: attribute.scope_address.clone(),
+                    asset_type: attribute.asset_type.clone(),
                 }
             }.to_err();
         }
@@ -120,7 +134,9 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             env.contract.address.to_owned(),
             Some(env.contract.address.to_owned()),
         )?]);
-        self.use_deps(|deps| insert_fee_payment_detail(deps.storage, &payment_detail))?;
+        self.use_deps(|deps| {
+            insert_fee_payment_detail(deps.storage, &payment_detail, &attribute.asset_type)
+        })?;
         Ok(())
     }
 
@@ -128,7 +144,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         let contract_base_name = self
             .use_deps(|d| config_read_v2(d.storage).load())?
             .base_contract_name;
-        let original_attribute = self.get_asset(&updated_attribute.scope_address)?;
+        let original_attribute = self.get_asset_by_asset_type(
+            &updated_attribute.scope_address,
+            &updated_attribute.asset_type,
+        )?;
         self.add_message(update_attribute(
             // address: Target address - the scope with the attribute on it
             bech32_string_to_addr(&original_attribute.scope_address)?,
@@ -147,7 +166,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn get_asset<S1: Into<String>>(&self, scope_address: S1) -> AssetResult<AssetScopeAttribute> {
+    fn get_asset<S1: Into<String>>(
+        &self,
+        scope_address: S1,
+    ) -> AssetResult<Vec<AssetScopeAttribute>> {
         let scope_address_string: String = scope_address.into();
         // try to fetch asset from attribute meta, if found also fetch scope attribute and reconstruct AssetMeta from relevant pieces
         self.use_deps(|d| {
@@ -158,23 +180,57 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
     fn try_get_asset<S1: Into<String>>(
         &self,
         scope_address: S1,
-    ) -> AssetResult<Option<AssetScopeAttribute>> {
+    ) -> AssetResult<Option<Vec<AssetScopeAttribute>>> {
         let scope_address_string: String = scope_address.into();
         self.use_deps(|d| {
             may_query_scope_attribute_by_scope_address(&d.as_ref(), &scope_address_string)
         })
     }
 
-    fn verify_asset<S1: Into<String>, S2: Into<String>>(
+    fn get_asset_by_asset_type<S1: Into<String>, S2: Into<String>>(
         &self,
         scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<AssetScopeAttribute> {
+        let scope_address = scope_address.into();
+        let asset_type = asset_type.into();
+        // try to fetch asset from attribute meta, if found also fetch scope attribute and reconstruct AssetMeta from relevant pieces
+        self.use_deps(|d| {
+            query_scope_attribute_by_scope_address_and_asset_type(
+                &d.as_ref(),
+                &scope_address,
+                &asset_type,
+            )
+        })
+    }
+
+    fn try_get_asset_by_asset_type<S1: Into<String>, S2: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
+    ) -> AssetResult<Option<AssetScopeAttribute>> {
+        let scope_address_string: String = scope_address.into();
+        let asset_type_string: String = asset_type.into();
+        self.use_deps(|d| {
+            may_query_scope_attribute_by_scope_address_and_asset_type(
+                &d.as_ref(),
+                &scope_address_string,
+                &asset_type_string,
+            )
+        })
+    }
+
+    fn verify_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+        &self,
+        scope_address: S1,
+        asset_type: S2,
         success: bool,
-        verification_message: Option<S2>,
+        verification_message: Option<S3>,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<()> {
         // set verification result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
-        let mut attribute = self.get_asset(scope_address_str)?;
+        let mut attribute = self.get_asset_by_asset_type(scope_address_str, asset_type)?;
         let message = verification_message.map(|m| m.into()).unwrap_or_else(|| {
             match success {
                 true => "verification successful",
@@ -238,19 +294,26 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         self.update_attribute(&attribute)?;
 
         // Retrieve fee breakdown and use it to emit message fees
-        let payment_detail =
-            self.use_deps(|deps| load_fee_payment_detail(deps.storage, &attribute.scope_address))?;
+        let payment_detail = self.use_deps(|deps| {
+            load_fee_payment_detail(
+                deps.storage,
+                &attribute.scope_address,
+                &attribute.asset_type,
+            )
+        })?;
         // Pay the verifier detail fees after verification has successfully been completed
         self.append_messages(&payment_detail.to_bank_send_msgs()?);
 
-        if success {
-            // Remove the fee payment detail after it has been successfully used for verification.
-            // Stored fee payment amounts are no longer needed after the custom bank send messages have been
-            // used, as it can easily become outdated in the future
-            self.use_deps(|deps| {
-                delete_fee_payment_detail(deps.storage, &attribute.scope_address)
-            })?;
-        }
+        // Remove the fee payment detail after it has been used for verification.
+        // Stored fee payment amounts are no longer needed after the custom bank send messages have been
+        // used, as it can easily become outdated in the future
+        self.use_deps(|deps| {
+            delete_fee_payment_detail(
+                deps.storage,
+                &attribute.scope_address,
+                &attribute.asset_type,
+            )
+        })?;
 
         Ok(())
     }
@@ -291,7 +354,9 @@ mod tests {
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
-    use crate::testutil::test_constants::{DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM};
+    use crate::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ONBOARDING_DENOM, DEFAULT_SECONDARY_ASSET_TYPE,
+    };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_asset_definition, get_duped_fee_payment_detail,
     };
@@ -342,7 +407,9 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
-        let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
         assert!(
             !result,
             "Repository should return false when asset does not have attribute"
@@ -357,11 +424,34 @@ mod tests {
 
         let repository = AssetMetaService::new(deps.as_mut());
 
-        let result = repository.has_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
 
         assert!(
             result,
             "Repository should return true when asset does have attribute"
+        );
+    }
+
+    #[test]
+    fn has_asset_returns_false_if_asset_has_attribute_for_different_type() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(
+            &mut deps,
+            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+
+        let repository = AssetMetaService::new(deps.as_mut());
+
+        let result = repository
+            .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE)
+            .unwrap();
+
+        assert!(
+            !result,
+            "Repository should return false when asset doesn't have attribute for specified type (but does for another type)"
         );
     }
 
@@ -383,11 +473,19 @@ mod tests {
             .unwrap_err();
 
         match err {
-            ContractError::AssetAlreadyOnboarded { scope_address } => {
+            ContractError::AssetAlreadyOnboarded {
+                scope_address,
+                asset_type,
+            } => {
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS.to_string(),
                     scope_address,
                     "Scope address should be reflected in AssetAlreadyOnboarded error"
+                );
+                assert_eq!(
+                    DEFAULT_ASSET_TYPE.to_string(),
+                    asset_type,
+                    "Asset type should be reflected in AssetAlreadyOnboarded error"
                 )
             }
             _ => panic!(
@@ -492,13 +590,16 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
 
-        let err = repository.get_asset(DEFAULT_SCOPE_ADDRESS).unwrap_err();
+        let err = repository
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap_err();
 
         match err {
             ContractError::NotFound { explanation } => assert_eq!(
                 format!(
-                    "scope at address [{}] did not include an asset scope attribute",
-                    DEFAULT_SCOPE_ADDRESS
+                    "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                    DEFAULT_SCOPE_ADDRESS,
+                    DEFAULT_ASSET_TYPE
                 ),
                 explanation
             ),
@@ -516,7 +617,9 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
-        let attribute = repository.get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let attribute = repository
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
 
         assert_eq!(
             get_default_asset_scope_attribute(),
@@ -531,7 +634,9 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         let repository = AssetMetaService::new(deps.as_mut());
 
-        let result = repository.try_get_asset(DEFAULT_SCOPE_ADDRESS).unwrap();
+        let result = repository
+            .try_get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .unwrap();
 
         assert_eq!(
             None, result,
@@ -547,7 +652,7 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         let result = repository
-            .try_get_asset(DEFAULT_SCOPE_ADDRESS)
+            .try_get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("asset result should return without error")
             .expect("encapsulated asset should be present in the Option");
 
@@ -565,15 +670,22 @@ mod tests {
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
-            .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, true, None, vec![])
+            .verify_asset::<&str, &str, &str>(
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE,
+                true,
+                None,
+                vec![],
+            )
             .unwrap_err();
 
         match err {
             ContractError::NotFound { explanation } => assert_eq!(
                 explanation,
                 format!(
-                    "scope at address [{}] did not include an asset scope attribute",
-                    DEFAULT_SCOPE_ADDRESS
+                    "scope at address [{}] did not include an asset scope attribute for asset type [{}]",
+                    DEFAULT_SCOPE_ADDRESS,
+                    DEFAULT_ASSET_TYPE
                 )
             ),
             _ => panic!(
@@ -659,12 +771,14 @@ mod tests {
         fee_payment_detail.payments[0].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
         fee_payment_detail.payments[0].amount =
             Coin::new(DEFAULT_ONBOARDING_COST / 2, DEFAULT_ONBOARDING_DENOM);
-        insert_fee_payment_detail(&mut deps.storage, &fee_payment_detail).unwrap();
+        insert_fee_payment_detail(&mut deps.storage, &fee_payment_detail, DEFAULT_ASSET_TYPE)
+            .unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
         repository
-            .verify_asset::<&str, &str>(
+            .verify_asset::<&str, &str, &str>(
                 DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE,
                 true,
                 "Great jaerb there Hamstar".to_some(),
                 vec![AccessRoute::route_only("newroute")],
@@ -785,7 +899,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let verifier_access_definitions = attribute
             .access_definitions
@@ -833,7 +947,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         assert!(
             !attribute
@@ -863,7 +977,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let access_routes = assert_single_item(
             &attribute
@@ -911,7 +1025,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let access_routes = assert_single_item(
             &attribute
@@ -956,7 +1070,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let access_routes = assert_single_item(
             &attribute
@@ -1005,7 +1119,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let access_routes = assert_single_item(
             &attribute
@@ -1050,7 +1164,7 @@ mod tests {
         )
         .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the scope attribute should be fetched");
         let verifier_access_definitions = attribute
             .access_definitions
@@ -1078,11 +1192,19 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
-        let original_attribute_value = repository.get_asset(DEFAULT_SCOPE_ADDRESS).expect(
-            "original attribute value should load from Provenance Blockchain without issue",
-        );
+        let original_attribute_value = repository
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect(
+                "original attribute value should load from Provenance Blockchain without issue",
+            );
         repository
-            .verify_asset::<&str, &str>(DEFAULT_SCOPE_ADDRESS, result, message, vec![])
+            .verify_asset::<&str, &str, &str>(
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE,
+                result,
+                message,
+                vec![],
+            )
             .unwrap();
 
         let messages = repository.get_messages();
@@ -1178,8 +1300,12 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS)
-            .expect("fee payment detail should be stored");
+        load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("fee payment detail should be stored");
         // test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
         // Overwrite the default asset definition with a new verifier detail that's identical to the
         // original value, with the exception of having a new address.  This will effectively
@@ -1201,7 +1327,7 @@ mod tests {
         }
         let service = AssetMetaService::new(deps.as_mut());
         let asset = service
-            .get_asset(DEFAULT_SCOPE_ADDRESS)
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the asset should be available after verification");
         assert_eq!(
             AssetOnboardingStatus::Pending,
@@ -1211,6 +1337,7 @@ mod tests {
         service
             .verify_asset(
                 DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE,
                 true,
                 Some("great jaerb there hamstar"),
                 get_default_access_routes(),
@@ -1304,7 +1431,13 @@ mod tests {
             ),
         };
         let err = service
-            .use_deps(|deps| load_fee_payment_detail(deps.as_ref().storage, DEFAULT_SCOPE_ADDRESS))
+            .use_deps(|deps| {
+                load_fee_payment_detail(
+                    deps.as_ref().storage,
+                    DEFAULT_SCOPE_ADDRESS,
+                    DEFAULT_ASSET_TYPE,
+                )
+            })
             .expect_err(
                 "an error should occur when trying to fetch payment detail after finalization",
             );

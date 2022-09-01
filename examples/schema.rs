@@ -5,10 +5,9 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use asset_classification_smart_contract::core::msg::{ExecuteMsg, InitMsg, MigrateMsg, QueryMsg};
 use asset_classification_smart_contract::core::types::asset_definition::{
-    AssetDefinitionInputV2, AssetDefinitionV2,
+    AssetDefinitionInputV3, AssetDefinitionV3,
 };
 use asset_classification_smart_contract::core::types::asset_identifier::AssetIdentifier;
-use asset_classification_smart_contract::core::types::asset_qualifier::AssetQualifier;
 use asset_classification_smart_contract::core::types::asset_scope_attribute::AssetScopeAttribute;
 use asset_classification_smart_contract::core::types::fee_destination::FeeDestinationV2;
 use asset_classification_smart_contract::core::types::fee_payment_detail::FeePaymentDetail;
@@ -26,12 +25,11 @@ fn main() {
     export_schema(&schema_for!(QueryMsg), &out_dir);
     export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(AssetScopeAttribute), &out_dir);
-    export_schema(&schema_for!(AssetDefinitionV2), &out_dir);
-    export_schema(&schema_for!(AssetDefinitionInputV2), &out_dir);
+    export_schema(&schema_for!(AssetDefinitionV3), &out_dir);
+    export_schema(&schema_for!(AssetDefinitionInputV3), &out_dir);
     export_schema(&schema_for!(VerifierDetailV2), &out_dir);
     export_schema(&schema_for!(FeeDestinationV2), &out_dir);
     export_schema(&schema_for!(AssetIdentifier), &out_dir);
-    export_schema(&schema_for!(AssetQualifier), &out_dir);
     export_schema(&schema_for!(SerializedEnum), &out_dir);
     export_schema(&schema_for!(FeePaymentDetail), &out_dir);
 }

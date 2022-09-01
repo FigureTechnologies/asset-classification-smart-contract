@@ -88,115 +88,29 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
-<span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{
-    <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>, <span class="ident">may_load_asset_definition_v2_by_type</span>,
-};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::may_load_asset_definition_by_type_v3</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Binary</span>};
 
-<span class="doccomment">/// A query that fetches a target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// A query that fetches a target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// from the contract&#39;s internal storage.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
 <span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `qualifier` An enum containing identifier information that can be used to look up a stored</span>
-<span class="doccomment">/// [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_asset_definition</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">qualifier</span>: <span class="ident">AssetQualifier</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">qualifier</span> {
-        <span class="ident">AssetQualifier::AssetType</span>(<span class="ident">asset_type</span>) =&gt; {
-            <span class="ident">may_load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">asset_type</span>)
-        }
-        <span class="ident">AssetQualifier::ScopeSpecAddress</span>(<span class="ident">scope_spec_address</span>) =&gt; {
-            <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">scope_spec_address</span>)
-        }
-    }<span class="question-mark">?</span>;
+<span class="doccomment">/// * `asset_type` The asset type corresponding to the stored</span>
+<span class="doccomment">/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) to look up.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_asset_definition</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">asset_type</span>)<span class="question-mark">?</span>;
     <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>.<span class="ident">to_ok</span>()
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::insert_asset_definition_v2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::insert_asset_definition_v3</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_asset_definition::query_asset_definition</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
         <span class="ident">get_default_asset_definition</span>, <span class="ident">test_instantiate_success</span>, <span class="ident">InstArgs</span>,
@@ -222,26 +136,10 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_query_from_instantiation_for_scope_spec</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="comment">// This is the same value that gets added when the contract is instantiated with InstArgs::default()</span>
-        <span class="kw">let</span> <span class="ident">default_asset_definition</span> <span class="op">=</span> <span class="ident">get_default_asset_definition</span>();
-        <span class="kw">let</span> <span class="ident">from_query_def</span> <span class="op">=</span> <span class="ident">get_asset_from_query_by_scope_spec</span>(
-            <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">default_asset_definition</span>.<span class="ident">scope_spec_address</span>,
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">default_asset_definition</span>, <span class="ident">from_query_def</span>,
-            <span class="string">&quot;expected the query value to equate to the value added during instantiation&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_successful_query_from_direct_serialization_for_asset_type</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="kw">let</span> <span class="ident">asset_def</span> <span class="op">=</span> <span class="ident">get_default_asset_definition</span>();
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_def</span>)
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be properly saved to state&quot;</span>);
         <span class="kw">let</span> <span class="ident">query_def</span> <span class="op">=</span> <span class="ident">get_asset_from_query_by_asset_type</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">asset_def</span>.<span class="ident">asset_type</span>);
         <span class="macro">assert_eq!</span>(
@@ -251,42 +149,10 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_query_from_direct_serialization_for_scope_spec</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">asset_def</span> <span class="op">=</span> <span class="ident">get_default_asset_definition</span>();
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be properly saved to state&quot;</span>);
-        <span class="kw">let</span> <span class="ident">query_def</span> <span class="op">=</span>
-            <span class="ident">get_asset_from_query_by_scope_spec</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">asset_def</span>.<span class="ident">scope_spec_address</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">asset_def</span>, <span class="ident">query_def</span>,
-            <span class="string">&quot;expected the query value to equate to the value directly added to the state&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_none_is_returned_when_asset_definition_is_not_found_by_asset_type</span>() {
-        <span class="kw">let</span> <span class="ident">binary</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">as_ref</span>(),
-            <span class="ident">AssetQualifier::asset_type</span>(<span class="string">&quot;fakeloan&quot;</span>),
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;the query should execute without error&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">binary</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the binary to deserialize appropriately&quot;</span>);
-        <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_none</span>(),
-            <span class="string">&quot;the resulting binary should be an empty Option&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_none_is_returned_when_asset_definition_is_not_found_by_scope_spec</span>() {
-        <span class="kw">let</span> <span class="ident">binary</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">as_ref</span>(),
-            <span class="ident">AssetQualifier::scope_spec_address</span>(<span class="string">&quot;fakescopespec&quot;</span>),
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;the query should execute without error&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">binary</span>)
+        <span class="kw">let</span> <span class="ident">binary</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">as_ref</span>(), <span class="string">&quot;fakeloan&quot;</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;the query should execute without error&quot;</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">binary</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the binary to deserialize appropriately&quot;</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_none</span>(),
@@ -297,27 +163,11 @@
     <span class="kw">fn</span> <span class="ident">get_asset_from_query_by_asset_type</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>,
         <span class="ident">asset_type</span>: <span class="ident">S</span>,
-    ) -&gt; <span class="ident">AssetDefinitionV2</span> {
-        <span class="kw">let</span> <span class="ident">bin</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(<span class="ident">deps</span>, <span class="ident">AssetQualifier::asset_type</span>(<span class="ident">asset_type</span>)).<span class="ident">expect</span>(
+    ) -&gt; <span class="ident">AssetDefinitionV3</span> {
+        <span class="kw">let</span> <span class="ident">bin</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(<span class="ident">deps</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>.<span class="ident">into</span>()).<span class="ident">expect</span>(
             <span class="string">&quot;the query should successfully serialize the value in storage as binary without error&quot;</span>,
         );
-        <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">bin</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;binary deserialization should succeed&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the deserialized option to be populated&quot;</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_asset_from_query_by_scope_spec</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>,
-        <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
-    ) -&gt; <span class="ident">AssetDefinitionV2</span> {
-        <span class="kw">let</span> <span class="ident">bin</span> <span class="op">=</span> <span class="ident">query_asset_definition</span>(
-            <span class="ident">deps</span>,
-            <span class="ident">AssetQualifier::scope_spec_address</span>(<span class="ident">scope_spec_address</span>),
-        )
-        .<span class="ident">expect</span>(
-            <span class="string">&quot;the query should successfully serialize the value in storage as binary without error&quot;</span>,
-        );
-        <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">bin</span>)
+        <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">bin</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;binary deserialization should succeed&quot;</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the deserialized option to be populated&quot;</span>)
     }

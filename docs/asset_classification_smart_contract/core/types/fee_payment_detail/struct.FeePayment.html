@@ -13,8 +13,8 @@
 process.</p>
 </div></details><h2 id="fields" class="fields small-section-header">Fields<a href="#fields" class="anchor"></a></h2><span id="structfield.amount" class="structfield small-section-header"><a href="#structfield.amount" class="anchor field"></a><code>amount: Coin</code></span><div class="docblock"><p>The amount to be charged during the asset verification process.  The denom will always
 match the <a href="../verifier_detail/struct.VerifierDetailV2.html#structfield.onboarding_denom">onboarding_denom</a>
-amount.  The coin’s amount will be double the amount specified in the verifier detail to
-account for Provenance MsgFees 50% charge.</p>
+amount.  The coin’s amount will be equal to the amount for a fee_destination in the verifier detail,
+and (onboarding_cost / 2) - fee_destination_total for the verifier itself if that amount is &gt; 0.</p>
 </div><span id="structfield.name" class="structfield small-section-header"><a href="#structfield.name" class="anchor field"></a><code>name: <a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code></span><div class="docblock"><p>A name describing to the end user (requestor) the purpose and target of the fee.</p>
 </div><span id="structfield.recipient" class="structfield small-section-header"><a href="#structfield.recipient" class="anchor field"></a><code>recipient: Addr</code></span><div class="docblock"><p>The bech32 address of the recipient of the fee, derived from various fields in the
 <a href="../verifier_detail/struct.VerifierDetailV2.html">VerifierDetailV2</a>.</p>

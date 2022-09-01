@@ -12,10 +12,10 @@
 for ease of use in the underlying <a href="fn.toggle_asset_definition.html">toggle_asset_definition</a> function.</p>
 <h2 id="parameters"><a href="#parameters">Parameters</a></h2>
 <ul>
-<li><code>asset_type</code> The unique identifier for the target <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinition</a>,
-keyed on its <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html#structfield.asset_type">asset_type</a>
+<li><code>asset_type</code> The unique identifier for the target <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinition</a>,
+keyed on its <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html#structfield.asset_type">asset_type</a>
 property.</li>
-<li><code>expected_result</code> The value of <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html#structfield.enabled">enabled</a>
+<li><code>expected_result</code> The value of <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html#structfield.enabled">enabled</a>
 after the toggle takes place.  This value is required to ensure that multiple toggles executed
 in succession (either by accident or by various unrelated callers) will only be honored if
 the asset definition is in the intended state during the execution of the route.</li>
@@ -23,10 +23,10 @@ the asset definition is in the intended state during the execution of the route.
 </div></details><h2 id="fields" class="fields small-section-header">Fields<a href="#fields" class="anchor"></a></h2><span id="structfield.asset_type" class="structfield small-section-header"><a href="#structfield.asset_type" class="anchor field"></a><code>asset_type: <a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code></span><span id="structfield.expected_result" class="structfield small-section-header"><a href="#structfield.expected_result" class="anchor field"></a><code>expected_result: <a class="primitive" href="https://doc.rust-lang.org/1.63.0/std/primitive.bool.html">bool</a></code></span><h2 id="implementations" class="small-section-header">Implementations<a href="#implementations" class="anchor"></a></h2><div id="implementations-list"><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl" class="impl has-srclink"><span class="rightside"><a class="srclink" href="../../../src/asset_classification_smart_contract/execute/toggle_asset_definition.rs.html#31-70">source</a></span><a href="#impl" class="anchor"></a><h3 class="code-header in-band">impl <a class="struct" href="struct.ToggleAssetDefinitionV1.html" title="struct asset_classification_smart_contract::execute::toggle_asset_definition::ToggleAssetDefinitionV1">ToggleAssetDefinitionV1</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.new" class="method has-srclink"><span class="rightside"><a class="srclink" href="../../../src/asset_classification_smart_contract/execute/toggle_asset_definition.rs.html#43-48">source</a></span><a href="#method.new" class="anchor"></a><h4 class="code-header">pub fn <a href="#method.new" class="fnname">new</a>&lt;S:&nbsp;<a class="trait" href="https://doc.rust-lang.org/1.63.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;(asset_type: S, expected_result: <a class="primitive" href="https://doc.rust-lang.org/1.63.0/std/primitive.bool.html">bool</a>) -&gt; Self</h4></section></summary><div class="docblock"><p>Constructs a new instance of this struct.</p>
 <h5 id="parameters-1"><a href="#parameters-1">Parameters</a></h5>
 <ul>
-<li><code>asset_type</code> The unique identifier for the target <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>,
-keyed on its <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html#structfield.asset_type">asset_type</a>
+<li><code>asset_type</code> The unique identifier for the target <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinitionV3</a>,
+keyed on its <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html#structfield.asset_type">asset_type</a>
 property.</li>
-<li><code>expected_result</code> The value of <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html#structfield.enabled">enabled</a>
+<li><code>expected_result</code> The value of <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html#structfield.enabled">enabled</a>
 after the toggle takes place.  This value is required to ensure that multiple toggles executed
 in succession (either by accident or by various unrelated callers) will only be honored if
 the asset definition is in the intended state during the execution of the route.</li>

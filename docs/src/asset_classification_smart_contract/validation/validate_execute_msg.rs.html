@@ -620,104 +620,9 @@
 <span id="614">614</span>
 <span id="615">615</span>
 <span id="616">616</span>
-<span id="617">617</span>
-<span id="618">618</span>
-<span id="619">619</span>
-<span id="620">620</span>
-<span id="621">621</span>
-<span id="622">622</span>
-<span id="623">623</span>
-<span id="624">624</span>
-<span id="625">625</span>
-<span id="626">626</span>
-<span id="627">627</span>
-<span id="628">628</span>
-<span id="629">629</span>
-<span id="630">630</span>
-<span id="631">631</span>
-<span id="632">632</span>
-<span id="633">633</span>
-<span id="634">634</span>
-<span id="635">635</span>
-<span id="636">636</span>
-<span id="637">637</span>
-<span id="638">638</span>
-<span id="639">639</span>
-<span id="640">640</span>
-<span id="641">641</span>
-<span id="642">642</span>
-<span id="643">643</span>
-<span id="644">644</span>
-<span id="645">645</span>
-<span id="646">646</span>
-<span id="647">647</span>
-<span id="648">648</span>
-<span id="649">649</span>
-<span id="650">650</span>
-<span id="651">651</span>
-<span id="652">652</span>
-<span id="653">653</span>
-<span id="654">654</span>
-<span id="655">655</span>
-<span id="656">656</span>
-<span id="657">657</span>
-<span id="658">658</span>
-<span id="659">659</span>
-<span id="660">660</span>
-<span id="661">661</span>
-<span id="662">662</span>
-<span id="663">663</span>
-<span id="664">664</span>
-<span id="665">665</span>
-<span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
-<span id="672">672</span>
-<span id="673">673</span>
-<span id="674">674</span>
-<span id="675">675</span>
-<span id="676">676</span>
-<span id="677">677</span>
-<span id="678">678</span>
-<span id="679">679</span>
-<span id="680">680</span>
-<span id="681">681</span>
-<span id="682">682</span>
-<span id="683">683</span>
-<span id="684">684</span>
-<span id="685">685</span>
-<span id="686">686</span>
-<span id="687">687</span>
-<span id="688">688</span>
-<span id="689">689</span>
-<span id="690">690</span>
-<span id="691">691</span>
-<span id="692">692</span>
-<span id="693">693</span>
-<span id="694">694</span>
-<span id="695">695</span>
-<span id="696">696</span>
-<span id="697">697</span>
-<span id="698">698</span>
-<span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
@@ -742,10 +647,10 @@
         } =&gt; <span class="ident">validate_onboard_asset</span>(<span class="ident">identifier</span>, <span class="ident">asset_type</span>, <span class="ident">verifier_address</span>),
         <span class="ident">ExecuteMsg::VerifyAsset</span> { <span class="ident">identifier</span>, .. } =&gt; <span class="ident">validate_verify_asset</span>(<span class="ident">identifier</span>),
         <span class="ident">ExecuteMsg::AddAssetDefinition</span> { <span class="ident">asset_definition</span> } =&gt; {
-            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>()<span class="question-mark">?</span>)
+            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>())
         }
         <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> { <span class="ident">asset_definition</span> } =&gt; {
-            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>()<span class="question-mark">?</span>)
+            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>())
         }
         <span class="ident">ExecuteMsg::ToggleAssetDefinition</span> { <span class="ident">asset_type</span>, .. } =&gt; {
             <span class="ident">validate_toggle_asset_definition</span>(<span class="ident">asset_type</span>)
@@ -763,8 +668,8 @@
             <span class="ident">owner_address</span>,
             ..
         } =&gt; <span class="ident">validate_update_access_routes</span>(<span class="ident">identifier</span>, <span class="ident">owner_address</span>),
-        <span class="ident">ExecuteMsg::DeleteAssetDefinition</span> { <span class="ident">qualifier</span> } =&gt; {
-            <span class="ident">validate_delete_asset_definition</span>(<span class="ident">qualifier</span>)
+        <span class="ident">ExecuteMsg::DeleteAssetDefinition</span> { <span class="ident">asset_type</span> } =&gt; {
+            <span class="ident">validate_delete_asset_definition</span>(<span class="ident">asset_type</span>)
         }
     }
 }
@@ -778,10 +683,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)</span>
 <span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="doccomment">/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// stored internally in the contract.</span>
 <span class="doccomment">/// * `verifier_address` The bech32 address of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)</span>
-<span class="doccomment">/// held within the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// held within the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// for onboarding.</span>
 <span class="kw">fn</span> <span class="ident">validate_onboard_asset</span>(
     <span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>,
@@ -825,7 +730,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// stored internally in the contract.</span>
 <span class="kw">fn</span> <span class="ident">validate_toggle_asset_definition</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
@@ -842,7 +747,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// stored internally in the contract.</span>
 <span class="doccomment">/// * `verifier` The verifier detail to add or update.</span>
 <span class="kw">fn</span> <span class="ident">validate_asset_verifier_msg</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -885,13 +790,15 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
+<span class="doccomment">/// * `asset_type` The asset type to identify the [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// to delete.</span>
-<span class="kw">fn</span> <span class="ident">validate_delete_asset_definition</span>(<span class="ident">qualifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">validate_delete_asset_definition</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) <span class="op">=</span> <span class="ident">get_asset_qualifier_invalid_message</span>(<span class="ident">qualifier</span>) {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="ident">message</span>);
+
+    <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
+        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>())
     }
+
     <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">invalid_fields</span>)
 }
 
@@ -937,48 +844,6 @@
     }
 }
 
-<span class="doccomment">/// Validates a serialized enum to ensure that it can convert to a valid [AssetQualifier](crate::core::types::asset_qualifier::AssetQualifier),</span>
-<span class="doccomment">/// returning an optional string that is only populated if an error is present.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `qualifier` An [AssetQualifier](crate::core::types::asset_qualifier::AssetQualifier)</span>
-<span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="kw">fn</span> <span class="ident">get_asset_qualifier_invalid_message</span>(<span class="ident">qualifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">qualifier</span>.<span class="ident">to_asset_qualifier</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">asset_qualifier</span>) =&gt; <span class="kw">match</span> <span class="ident">asset_qualifier</span> {
-            <span class="ident">AssetQualifier::AssetType</span>(<span class="ident">asset_type</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-                    <span class="string">&quot;qualifier:asset_type: must not be blank&quot;</span>
-                        .<span class="ident">to_string</span>()
-                        .<span class="ident">to_some</span>()
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
-            }
-            <span class="ident">AssetQualifier::ScopeSpecAddress</span>(<span class="ident">scope_spec_address</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">scope_spec_address</span>.<span class="ident">is_empty</span>() {
-                    <span class="string">&quot;qualifier:scope_spec_address: must not be blank&quot;</span>
-                        .<span class="ident">to_string</span>()
-                        .<span class="ident">to_some</span>()
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
-            }
-        },
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="ident">ContractError::UnexpectedSerializedEnum</span> {
-                <span class="ident">received_type</span>,
-                <span class="ident">explanation</span>,
-            } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;qualifier: received type [{received_type}]: {explanation}&quot;</span>)
-            }
-            <span class="kw">_</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;qualifier: received unexpected error message: {e:?}&quot;</span>),
-        }
-        .<span class="ident">to_some</span>(),
-    }
-}
-
 <span class="doccomment">/// Takes the invalid fields produced by the various validation functions, and, if they are not</span>
 <span class="doccomment">/// empty, returns an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)</span>
 <span class="doccomment">/// error.  If they are empty, returns an empty response.</span>
@@ -1006,7 +871,6 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_execute_msg</span>::{
         <span class="ident">validate_delete_asset_definition</span>, <span class="ident">validate_update_access_routes</span>,
@@ -1327,43 +1191,14 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_successes</span>() {
-        <span class="ident">validate_delete_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">AssetQualifier::asset_type</span>(<span class="string">&quot;heloc&quot;</span>).<span class="ident">to_serialized_enum</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the validation for asset type qualifier to pass&quot;</span>);
-        <span class="ident">validate_delete_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::scope_spec_address</span>(<span class="string">&quot;address&quot;</span>).<span class="ident">to_serialized_enum</span>(),
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the validation for scope spec address qualifier to pass&quot;</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_invalid_serialized_enum</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_delete_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span> {
-            <span class="ident">r#type</span>: <span class="string">&quot;invalid_type&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">value</span>: <span class="string">&quot;heloc&quot;</span>.<span class="ident">to_string</span>(),
-        });
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
-            <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">message_type</span>,
-                <span class="string">&quot;incorrect message type for error&quot;</span>,
-            );
-            <span class="macro">assert_eq!</span>(
-                <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
-                <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
-            );
-            <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;qualifier: received type [invalid_type]: Invalid AssetQualifier. Expected one of [asset_type, scope_spec_address]&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
-                <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>
-            );
-        });
+    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_success</span>() {
+        <span class="ident">validate_delete_asset_definition</span>(<span class="string">&quot;heloc&quot;</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;expected the validation for asset type to pass&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_invalid_asset_type</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
-            <span class="ident">validate_delete_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">AssetQualifier::asset_type</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>());
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_delete_asset_definition</span>(<span class="string">&quot;&quot;</span>);
         <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">message_type</span>,
@@ -1375,30 +1210,7 @@
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;qualifier:asset_type: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
-                <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>
-            );
-        });
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_invalid_scope_spec_address</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_delete_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::scope_spec_address</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>(),
-        );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
-            <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">message_type</span>,
-                <span class="string">&quot;incorrect message type for error&quot;</span>,
-            );
-            <span class="macro">assert_eq!</span>(
-                <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
-                <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
-            );
-            <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;qualifier:scope_spec_address: must not be blank&quot;</span>,
+                <span class="string">&quot;asset_type: must not be blank&quot;</span>,
                 <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>
             );

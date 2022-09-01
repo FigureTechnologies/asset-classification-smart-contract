@@ -244,119 +244,6 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryInto</span>, <span class="ident">str::FromStr</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">core::error::ContractError</span>, <span class="ident">util::aliases::AssetResult</span>};
@@ -368,18 +255,14 @@
 
 <span class="comment">// Standard scope key prefix from the Provenance libs</span>
 <span class="kw">const</span> <span class="ident">KEY_SCOPE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x00</span>;
-<span class="comment">// Standard scope spec key prefix from the Provenance libs</span>
-<span class="kw">const</span> <span class="ident">KEY_SCOPE_SPEC</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x04</span>;
 <span class="comment">// Standard bech32 encoding for mainnet addresses simply begins the with the string &quot;pb&quot;</span>
 <span class="kw">const</span> <span class="ident">MAINNET_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;pb&quot;</span>;
 <span class="comment">// Standard bech32 encoding for testnet addresses simply begins with the string &quot;tp&quot;</span>
 <span class="kw">const</span> <span class="ident">TESTNET_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;tp&quot;</span>;
 <span class="comment">// Standard bech32 encoding for scope addresses simply begins with the string &quot;scope&quot;</span>
 <span class="kw">const</span> <span class="ident">SCOPE_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;scope&quot;</span>;
-<span class="comment">// Standard bech32 encoding for scope spec addresses simply begins with the string &quot;scopespec&quot;</span>
-<span class="kw">const</span> <span class="ident">SCOPE_SPEC_HRP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;scopespec&quot;</span>;
 <span class="comment">// All valid hrps for use in the underlying functions</span>
-<span class="kw">const</span> <span class="ident">VALID_HRPS</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="ident">MAINNET_HRP</span>, <span class="ident">TESTNET_HRP</span>, <span class="ident">SCOPE_HRP</span>, <span class="ident">SCOPE_SPEC_HRP</span>];
+<span class="kw">const</span> <span class="ident">VALID_HRPS</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">3</span>] <span class="op">=</span> [<span class="ident">MAINNET_HRP</span>, <span class="ident">TESTNET_HRP</span>, <span class="ident">SCOPE_HRP</span>];
 
 <span class="doccomment">/// Converts a string containing an asset uuid into a scope address.</span>
 <span class="doccomment">///</span>
@@ -388,17 +271,6 @@
 <span class="doccomment">/// * `asset_uuid` A valid uuid v4 string.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">asset_uuid_to_scope_address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">asset_uuid</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">uuid_to_address</span>(<span class="ident">KEY_SCOPE</span>, <span class="ident">SCOPE_HRP</span>, <span class="ident">asset_uuid</span>)
-}
-
-<span class="doccomment">/// Converts a string containing a scope spec uuid into a scope spec address.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `scope_spec_uuid` A valid bech32 address with an hrp of &quot;scopespec&quot;.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_spec_uuid_to_scope_spec_address</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">scope_spec_uuid</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">uuid_to_address</span>(<span class="ident">KEY_SCOPE_SPEC</span>, <span class="ident">SCOPE_SPEC_HRP</span>, <span class="ident">scope_spec_uuid</span>)
 }
 
 <span class="doccomment">/// Takes a string representation of a scope address and converts it into an asset uuid string.</span>
@@ -410,17 +282,6 @@
 <span class="doccomment">/// * `scope_address` A valid bech32 address with an hrp of &quot;scope&quot;.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_address_to_asset_uuid</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">scope_address</span>: <span class="ident">S</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">address_to_uuid</span>(<span class="ident">scope_address</span>, <span class="ident">SCOPE_HRP</span>)
-}
-
-<span class="doccomment">/// Takes a string representation of a scope spec address and converts it to the scope spec&#39;s uuid.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `scope_spec_address` A valid bech32 address with an hrp of &quot;scopespec&quot;.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope_spec_address_to_scope_spec_uuid</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">address_to_uuid</span>(<span class="ident">scope_spec_address</span>, <span class="ident">SCOPE_SPEC_HRP</span>)
 }
 
 <span class="doccomment">/// Validates that the address is valid by decoding to base 32, and then converts it to an Addr.</span>
@@ -461,7 +322,7 @@
 }
 
 <span class="doccomment">/// Takes a valid bech32 address with the acknowledged prefix and attempts to convert it to a uuid.</span>
-<span class="doccomment">/// This should only be used for addresses that are derived from uuid sources, like scope and scope spec.</span>
+<span class="doccomment">/// This should only be used for addresses that are derived from uuid sources, like a scope.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
@@ -505,15 +366,10 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">core::error::ContractError</span>,
-        <span class="ident">util::scope_address_utils</span>::{
-            <span class="ident">asset_uuid_to_scope_address</span>, <span class="ident">scope_spec_uuid_to_scope_spec_address</span>,
-        },
+        <span class="ident">core::error::ContractError</span>, <span class="ident">util::scope_address_utils::asset_uuid_to_scope_address</span>,
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">bech32_string_to_addr</span>, <span class="ident">scope_address_to_asset_uuid</span>, <span class="ident">scope_spec_address_to_scope_spec_uuid</span>,
-    };
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">bech32_string_to_addr</span>, <span class="ident">scope_address_to_asset_uuid</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_successful_asset_uuid_to_scope_address</span>() {
@@ -548,54 +404,8 @@
             <span class="ident">not_even_close</span>,
         );
     }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_scope_spec_uuid_to_scope_spec_address</span>() {
-        <span class="comment">// Source uuid randomly generated via CLI tool</span>
-        <span class="kw">let</span> <span class="ident">source_uuid</span> <span class="op">=</span> <span class="string">&quot;0bdd0bec-a09a-11ec-941c-979317050879&quot;</span>;
-        <span class="comment">// Expected result taken from MetadataAddress Provenance tool for verification that this</span>
-        <span class="comment">// functionality set produces the same result</span>
-        <span class="kw">let</span> <span class="ident">expected_bech32</span> <span class="op">=</span> <span class="string">&quot;scopespec1qs9a6zlv5zdprmy5rjtex9c9ppusezpgqw&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="ident">source_uuid</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;conversion should execute without failure&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">expected_bech32</span>,
-            <span class="ident">result</span>.<span class="ident">as_str</span>(),
-            <span class="string">&quot;the resulting scope spec address should match&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_scope_spec_uuid_to_scope_spec_address</span>() {
-        <span class="comment">// Close to a UUID but has invalid characters</span>
-        <span class="kw">let</span> <span class="ident">similar_but_bad</span> <span class="op">=</span>
-            <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="string">&quot;zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz&quot;</span>)
-                .<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">similar_but_bad</span>, <span class="ident">ContractError::UuidError</span>(<span class="kw">_</span>)),
-            <span class="string">&quot;a uuid error should occur when an invalid uuid is processed: similar to good uuid but invalid characters. Got error: {:?}&quot;</span>,
-            <span class="ident">similar_but_bad</span>,
-        );
-        <span class="kw">let</span> <span class="ident">not_even_close</span> <span class="op">=</span>
-            <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="string">&quot;definitely not a uuid&quot;</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">not_even_close</span>, <span class="ident">ContractError::UuidError</span>(<span class="kw">_</span>)),
-            <span class="string">&quot;a uuid error should occur when an invalid uuid is processed: very malformatted uuid. Got error: {:?}&quot;</span>,
-            <span class="ident">not_even_close</span>,
-        );
-    }
-
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_successful_scope_address_to_asset_uuid</span>() {
-        <span class="macro">println!</span>(
-            <span class="string">&quot;{}&quot;</span>,
-            <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="string">&quot;63a7fe02-a09c-11ec-aefd-379750e5f559&quot;</span>).<span class="ident">unwrap</span>()
-        );
-        <span class="macro">println!</span>(
-            <span class="string">&quot;{}&quot;</span>,
-            <span class="ident">scope_spec_uuid_to_scope_spec_address</span>(<span class="string">&quot;79375a88-a09c-11ec-bd55-83d4d1e52b5d&quot;</span>).<span class="ident">unwrap</span>()
-        );
-
         <span class="comment">// These values were generated using the MetadataAddress kotlin helper to verify their authenticity</span>
         <span class="comment">// from random input</span>
         <span class="kw">let</span> <span class="ident">scope_address</span> <span class="op">=</span> <span class="string">&quot;scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra&quot;</span>;
@@ -622,42 +432,6 @@
     <span class="kw">fn</span> <span class="ident">test_invalid_scope_address_to_asset_uuid_for_wrong_address_type</span>() {
         <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">scope_address_to_asset_uuid</span>(<span class="string">&quot;scopespec1qj3s7dvsnlh3rmyy3pm5tszs2v7qegwr7j&quot;</span>)
             .<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidAddress</span> { .. }),
-            <span class="string">&quot;an invalid address error should be returned when the wrong address type is provided, but got error: {:?}&quot;</span>,
-            <span class="ident">error</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_scope_spec_address_to_scope_spec_uuid</span>() {
-        <span class="comment">// These values were generated using the MetadataAddress kotlin helper to verify their authenticity</span>
-        <span class="comment">// from random input</span>
-        <span class="kw">let</span> <span class="ident">scope_spec_address</span> <span class="op">=</span> <span class="string">&quot;scopespec1qjvwczgs5zd3rm9wghfcmn40swpq3p2rhp&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected_uuid</span> <span class="op">=</span> <span class="string">&quot;98ec0910-a09b-11ec-ae45-d38dceaf8382&quot;</span>;
-        <span class="kw">let</span> <span class="ident">result_uuid</span> <span class="op">=</span> <span class="ident">scope_spec_address_to_scope_spec_uuid</span>(<span class="ident">scope_spec_address</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the conversion to occur without error&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">expected_uuid</span>, <span class="ident">result_uuid</span>,
-            <span class="string">&quot;the function produced an incorrect uuid value&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_scope_spec_address_to_scope_spec_uuid_for_invalid_address</span>() {
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">scope_spec_address_to_scope_spec_uuid</span>(<span class="string">&quot;not a scope spec address&quot;</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::Bech32Error</span>(<span class="kw">_</span>)),
-            <span class="string">&quot;a bech32 error should occur when attempting to parse an invalid scope spec address, but got error: {:?}&quot;</span>,
-            <span class="ident">error</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_scope_spec_address_to_scope_spec_uuid_for_wrong_address_type</span>() {
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span>
-            <span class="ident">scope_spec_address_to_scope_spec_uuid</span>(<span class="string">&quot;scope1qzvwczgs5zd3rm9wghfcmn40swpql8nds5&quot;</span>)
-                .<span class="ident">unwrap_err</span>();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidAddress</span> { .. }),
             <span class="string">&quot;an invalid address error should be returned when the wrong address type is provided, but got error: {:?}&quot;</span>,

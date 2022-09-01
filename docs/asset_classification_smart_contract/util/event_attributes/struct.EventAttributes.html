@@ -21,23 +21,23 @@ values to facilitate the process of generating all events.</p>
 <li><code>event_type</code> All events should denote their type for external consumers of Provenance
 Blockchain Event Stream, so this value is required for any new instance and appends the
 name of the event with the key of <a href="../constants/constant.ASSET_EVENT_TYPE_KEY.html">ASSET_EVENT_TYPE_KEY</a>.</li>
-<li><code>asset_type</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>
+<li><code>asset_type</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinitionV3</a>
 that uses the key <a href="../constants/constant.ASSET_TYPE_KEY.html">ASSET_TYPE_KEY</a>.</li>
-<li><code>scope_address</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>
+<li><code>scope_address</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinitionV3</a>
 that uses the key <a href="../constants/constant.ASSET_SCOPE_ADDRESS_KEY.html">ASSET_SCOPE_ADDRESS_KEY</a>.</li>
 </ul>
 </div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.set_asset_type" class="method has-srclink"><span class="rightside"><a class="srclink" href="../../../src/asset_classification_smart_contract/util/event_attributes.rs.html#110-114">source</a></span><a href="#method.set_asset_type" class="anchor"></a><h4 class="code-header">pub fn <a href="#method.set_asset_type" class="fnname">set_asset_type</a>&lt;T:&nbsp;<a class="trait" href="https://doc.rust-lang.org/1.63.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;(self, asset_type: T) -&gt; Self</h4></section></summary><div class="docblock"><p>Appends an asset type value to an existing <a href="struct.EventAttributes.html">EventAttributes</a> and
 returns the same instance to create a functional chain for further attribute addition.</p>
 <h5 id="parameters-2"><a href="#parameters-2">Parameters</a></h5>
 <ul>
-<li><code>asset_type</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>
+<li><code>asset_type</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinitionV3</a>
 that uses the key <a href="../constants/constant.ASSET_TYPE_KEY.html">ASSET_TYPE_KEY</a>.</li>
 </ul>
 </div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.set_scope_address" class="method has-srclink"><span class="rightside"><a class="srclink" href="../../../src/asset_classification_smart_contract/util/event_attributes.rs.html#123-127">source</a></span><a href="#method.set_scope_address" class="anchor"></a><h4 class="code-header">pub fn <a href="#method.set_scope_address" class="fnname">set_scope_address</a>&lt;T:&nbsp;<a class="trait" href="https://doc.rust-lang.org/1.63.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;(self, scope_address: T) -&gt; Self</h4></section></summary><div class="docblock"><p>Appends a scope address bech32 value to an existing <a href="struct.EventAttributes.html">EventAttributes</a> and
 returns the same instance to create a functional chain for further attribute addition.</p>
 <h5 id="parameters-3"><a href="#parameters-3">Parameters</a></h5>
 <ul>
-<li><code>scope_address</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV2.html">AssetDefinitionV2</a>
+<li><code>scope_address</code> A unique key for an <a href="../../core/types/asset_definition/struct.AssetDefinitionV3.html">AssetDefinitionV3</a>
 that uses the key <a href="../constants/constant.ASSET_SCOPE_ADDRESS_KEY.html">ASSET_SCOPE_ADDRESS_KEY</a>.</li>
 </ul>
 </div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.set_verifier" class="method has-srclink"><span class="rightside"><a class="srclink" href="../../../src/asset_classification_smart_contract/util/event_attributes.rs.html#137-141">source</a></span><a href="#method.set_verifier" class="anchor"></a><h4 class="code-header">pub fn <a href="#method.set_verifier" class="fnname">set_verifier</a>&lt;T:&nbsp;<a class="trait" href="https://doc.rust-lang.org/1.63.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.63.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;(self, verifier_address: T) -&gt; Self</h4></section></summary><div class="docblock"><p>Appends a verifier address bech32 value to an existing <a href="struct.EventAttributes.html">EventAttributes</a> and

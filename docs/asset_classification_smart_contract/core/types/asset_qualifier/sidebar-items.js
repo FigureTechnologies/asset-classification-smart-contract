@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["AssetQualifier","An enum containing different identifiers that can be used to fetch an AssetDefinitionV2."]]};

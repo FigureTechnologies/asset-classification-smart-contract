@@ -103,6 +103,18 @@
 <span id="97">97</span>
 <span id="98">98</span>
 <span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::may_load_fee_payment_detail</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
@@ -118,13 +130,19 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
 <span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `qualifier` An enum containing identifier information that can be used to look up a stored</span>
+<span class="doccomment">/// * `identifier` An enum containing identifier information that can be used to look up a stored</span>
 <span class="doccomment">/// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail) by a derived</span>
 <span class="doccomment">/// Provenance Blockchain Metadata Scope bech32 address.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_fee_payments</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
+<span class="doccomment">/// * `asset_type` The type of asset that the payment details represent</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_fee_payments</span>(
+    <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>,
+    <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
+    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
     <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">may_load_fee_payment_detail</span>(
         <span class="ident">deps</span>.<span class="ident">storage</span>,
         <span class="ident">identifier</span>.<span class="ident">get_scope_address</span>()<span class="question-mark">?</span>,
+        <span class="ident">asset_type</span>,
     ))<span class="question-mark">?</span>
     .<span class="ident">to_ok</span>()
 }
@@ -135,7 +153,9 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_fee_payments::query_fee_payments</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{<span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
+        <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+    };
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail</span>;
     <span class="kw">use</span> <span class="ident">cosmwasm_std::from_binary</span>;
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
@@ -145,11 +165,12 @@
     <span class="kw">fn</span> <span class="ident">test_successful_query</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>)
+        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected payment detail to be inserted successfully&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
             <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
             <span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;expected binary result from asset uuid to be successful&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>)
@@ -162,6 +183,7 @@
         <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
             <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
             <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;expected binary result from scope address to be successful&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>)
@@ -179,6 +201,7 @@
         <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
             <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
             <span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">Uuid::new_v4</span>().<span class="ident">to_string</span>()),
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>).<span class="ident">expect</span>(
@@ -191,6 +214,7 @@
         <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
             <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
             <span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;scope1qqse8umjp7pprmd390dnsj7s4yrse73q0x&quot;</span>),
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
         <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>).<span class="ident">expect</span>(

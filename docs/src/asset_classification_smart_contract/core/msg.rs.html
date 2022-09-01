@@ -274,7 +274,15 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV2</span>;
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
@@ -286,18 +294,18 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InitMsg</span> {
-    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3)</span>
     <span class="doccomment">/// will use this value as their parent name.</span>
     <span class="kw">pub</span> <span class="ident">base_contract_name</span>: <span class="ident">String</span>,
     <span class="doccomment">/// If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name)</span>
     <span class="doccomment">/// during the instantiation process to itself.  No action will be taken if the value is `false`,</span>
     <span class="doccomment">/// but the base name will still be recorded in the contract&#39;s [state](super::state::StateV2)</span>
-    <span class="doccomment">/// and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV2).</span>
+    <span class="doccomment">/// and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV3).</span>
     <span class="kw">pub</span> <span class="ident">bind_base_name</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// All the initial [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) for the</span>
+    <span class="doccomment">/// All the initial [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) for the</span>
     <span class="doccomment">/// contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition)</span>
     <span class="doccomment">/// functionality.</span>
-    <span class="kw">pub</span> <span class="ident">asset_definitions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionInputV2</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">asset_definitions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionInputV3</span><span class="op">&gt;</span>,
     <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities</span>
     <span class="doccomment">/// across the contract&#39;s execution processes.  Notably, this disables a check during the</span>
     <span class="doccomment">/// onboarding process to determine if onboarded scopes include underlying record values.  This</span>
@@ -310,27 +318,38 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">QueryMsg</span> {
-    <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) from the contract&#39;s</span>
+    <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract&#39;s</span>
     <span class="doccomment">/// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null</span>
     <span class="doccomment">/// response will be returned.</span>
     <span class="ident">QueryAssetDefinition</span> {
-        <span class="doccomment">/// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible</span>
-        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
-        <span class="ident">qualifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type to query for</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
-    <span class="doccomment">/// This route can be used to retrieve all [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) stored in the contract.  This response payload can be quite</span>
+    <span class="doccomment">/// This route can be used to retrieve all [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) stored in the contract.  This response payload can be quite</span>
     <span class="doccomment">/// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need</span>
     <span class="doccomment">/// to be inspected or displayed.  The query asset definition route is much more efficient.</span>
     <span class="ident">QueryAssetDefinitions</span> {},
-    <span class="doccomment">/// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has</span>
+    <span class="doccomment">/// This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have</span>
     <span class="doccomment">/// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this</span>
     <span class="doccomment">/// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.</span>
     <span class="doccomment">/// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been</span>
     <span class="doccomment">/// successfully classified by a verifier.</span>
-    <span class="ident">QueryAssetScopeAttribute</span> {
+    <span class="ident">QueryAssetScopeAttributes</span> {
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+    },
+    <span class="doccomment">/// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has</span>
+    <span class="doccomment">/// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this</span>
+    <span class="doccomment">/// contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.</span>
+    <span class="doccomment">/// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been</span>
+    <span class="doccomment">/// successfully classified by a verifier for a specific asset type.</span>
+    <span class="ident">QueryAssetScopeAttributeForAssetType</span> {
+        <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
+        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
+        <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type to query for</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
     <span class="doccomment">/// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)</span>
     <span class="doccomment">/// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
@@ -341,6 +360,8 @@
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type to query for pending verification fee payment details</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
     <span class="doccomment">/// This route can be used to retrieve the internal contract state values.  These are core configurations that denote how</span>
     <span class="doccomment">/// the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It</span>
@@ -362,7 +383,7 @@
     <span class="doccomment">/// provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The</span>
     <span class="doccomment">/// attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type</span>
     <span class="doccomment">/// in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is &quot;asset&quot; and the asset type is &quot;myasset&quot;, the attribute would be assigned</span>
-    <span class="doccomment">/// under the name of &quot;myasset.asset&quot;.  All available asset types are queryable, and stored in the contract as [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// under the name of &quot;myasset.asset&quot;.  All available asset types are queryable, and stored in the contract as [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
     <span class="doccomment">/// values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be</span>
     <span class="doccomment">/// stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus)</span>
     <span class="doccomment">/// of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending),</span>
@@ -371,10 +392,10 @@
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
-        <span class="doccomment">/// A name that must directly match one of the contract&#39;s internal [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+        <span class="doccomment">/// A name that must directly match one of the contract&#39;s internal [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
         <span class="doccomment">/// names.  Any request with a specified type not matching an asset definition will be rejected outright.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2),</span>
+        <span class="doccomment">/// The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3),</span>
         <span class="doccomment">/// within its nested vector of [VerifierDetailV2s](super::types::verifier_detail::VerifierDetailV2).</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
         <span class="doccomment">/// An optional parameter that allows the specification of a location to get the underlying asset data</span>
@@ -400,6 +421,8 @@
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type this verification result is for</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// A boolean indicating whether or not verification was successful.  A value of `false` either indicates that</span>
         <span class="doccomment">/// the underlying data was fetched and it did not meet the requirements for a classified asset, or that a failure occurred</span>
         <span class="doccomment">/// during the verification process.  Note: Verifiers should be wary of returning false immediately on a code failure, as</span>
@@ -416,51 +439,47 @@
         <span class="doccomment">/// interaction.</span>
         <span class="ident">access_routes</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__  This route allows a new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__  This route allows a new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
     <span class="doccomment">/// value to be added to the contract&#39;s internal storage.  These asset definitions dictate which asset types are allowed to</span>
     <span class="doccomment">/// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in</span>
-    <span class="doccomment">/// two criteria:</span>
-    <span class="doccomment">/// * Its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) value must not yet be registered in a different asset definition.</span>
-    <span class="doccomment">/// * Its [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address) (entered as a [ScopeSpecIdentifier](super::types::scope_spec_identifier::ScopeSpecIdentifier))</span>
-    <span class="doccomment">/// must also be unique across asset definitions.</span>
-    <span class="doccomment">/// Additionally, all added asset definitions must refer to an existing [Provenance Metadata Scope Specification](https://docs.provenance.io/modules/metadata-module#scope-specification).</span>
+    <span class="doccomment">/// the following criteria:</span>
+    <span class="doccomment">/// * Its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) value must not yet be registered in a different asset definition.</span>
     <span class="ident">AddAssetDefinition</span> {
-        <span class="doccomment">/// An asset definition input value defining all of the new [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)&#39;s</span>
+        <span class="doccomment">/// An asset definition input value defining all of the new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s</span>
         <span class="doccomment">/// values.  The execution route converts the incoming value to an asset definition.</span>
-        <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV2</span>,
+        <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV3</span>,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route allows an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
-    <span class="doccomment">/// value to be updated.  It works by matching the input&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) to an existing asset definition and overwriting the</span>
-    <span class="doccomment">/// existing values.  If no asset definition exists for the given type, the request will be rejected.  Contract validation</span>
-    <span class="doccomment">/// ensures that after the update, all scope specification addresses contained in asset definitions remain unique, as well.</span>
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route allows an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
+    <span class="doccomment">/// value to be updated.  It works by matching the input&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) to an existing asset definition and overwriting the</span>
+    <span class="doccomment">/// existing values.  If no asset definition exists for the given type, the request will be rejected.</span>
     <span class="ident">UpdateAssetDefinition</span> {
-        <span class="doccomment">/// An asset definition input value defining all of the updated [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)&#39;s</span>
+        <span class="doccomment">/// An asset definition input value defining all of the updated [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s</span>
         <span class="doccomment">/// values.  The execution route converts the incoming value to an asset definition.</span>
-        <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV2</span>,
+        <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV3</span>,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route toggles an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route toggles an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
     <span class="doccomment">/// from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to</span>
     <span class="doccomment">/// be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be</span>
     <span class="doccomment">/// allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of</span>
-    <span class="doccomment">/// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinitionV2::enabled)</span>
+    <span class="doccomment">/// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinitionV3::enabled)</span>
     <span class="doccomment">/// value on the `asset_definition` parameter, but this route is significantly simpler and prevents</span>
     <span class="doccomment">/// accidental data mutation due to it not requiring the entirety of the definition&#39;s values.</span>
     <span class="ident">ToggleAssetDefinition</span> {
-        <span class="doccomment">/// The type of asset for which the definition&#39;s [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) value will be toggled.  As the asset type value</span>
+        <span class="doccomment">/// The type of asset for which the definition&#39;s [enabled](super::types::asset_definition::AssetDefinitionV3::enabled) value will be toggled.  As the asset type value</span>
         <span class="doccomment">/// on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The value of [enabled](super::types::asset_definition::AssetDefinitionV2::enabled) after the toggle takes place.  This value is required to ensure that</span>
+        <span class="doccomment">/// The value of [enabled](super::types::asset_definition::AssetDefinitionV3::enabled) after the toggle takes place.  This value is required to ensure that</span>
         <span class="doccomment">/// multiple toggles executed in succession (either by accident or by various unrelated callers) will only be honored if</span>
         <span class="doccomment">/// the asset definition is in the intended state during the execution of the route.</span>
         <span class="ident">expected_result</span>: <span class="ident">bool</span>,
     },
     <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
-    <span class="doccomment">/// to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to register new verifiers</span>
+    <span class="doccomment">/// to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3).  This route is intended to register new verifiers</span>
     <span class="doccomment">/// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added</span>
     <span class="doccomment">/// with addresses that match any other verifiers on the target asset definition.</span>
     <span class="ident">AddAssetVerifier</span> {
         <span class="doccomment">/// The type of asset for which the new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be added.</span>
-        <span class="doccomment">/// This must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+        <span class="doccomment">/// This must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
         <span class="doccomment">/// value, or the request will be rejected.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The new verifier detail to be added to the asset definition, with all of its required</span>
@@ -469,13 +488,13 @@
         <span class="ident">verifier</span>: <span class="ident">VerifierDetailV2</span>,
     },
     <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route updates an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
-    <span class="doccomment">/// in an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).  This route is intended to be used when the values</span>
+    <span class="doccomment">/// in an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3).  This route is intended to be used when the values</span>
     <span class="doccomment">/// of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the</span>
     <span class="doccomment">/// referenced asset definition is not present within the contract, or if a verifier does not exist within the asset</span>
     <span class="doccomment">/// definition that matches the address of the provided verifier data.</span>
     <span class="ident">UpdateAssetVerifier</span> {
         <span class="doccomment">/// The type of asset for which the [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be updated. This</span>
-        <span class="doccomment">/// must refer to an existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+        <span class="doccomment">/// must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
         <span class="doccomment">/// value, or the request will be rejected.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The updated verifier detail to be modified in the asset definition. An existing verifier</span>
@@ -491,6 +510,8 @@
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible</span>
         <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum).</span>
         <span class="ident">identifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type to update access routes for</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// Corresponds to the bech32 address of the account that originally created the [AccessRoutes](super::types::access_route::AccessRoute).</span>
         <span class="doccomment">/// These values can be found in the [AccessDefinition](super::types::access_definition::AccessDefinition) of the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
         <span class="doccomment">/// tied to a scope after the onboarding process occurs.</span>
@@ -500,19 +521,14 @@
         <span class="doccomment">/// routes need to be included in the request alongside the new route(s).</span>
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ When an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
-    <span class="doccomment">/// is erroneously added with an incorrect asset type, the scope specification address is unable</span>
-    <span class="doccomment">/// to be used, as it is another unique key of the asset definition.  This route facilitates the</span>
-    <span class="doccomment">/// removal of bad data.</span>
+    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route facilitates the removal of bad data.</span>
     <span class="doccomment">/// IMPORTANT: If an asset definition is completely removed, all contract references to it will</span>
     <span class="doccomment">/// fail to function.  This can cause assets currently in the onboarding process for a deleted</span>
     <span class="doccomment">/// type to have failures when interactions occur with them.  This functionality should only be</span>
     <span class="doccomment">/// used for an unused type!</span>
     <span class="ident">DeleteAssetDefinition</span> {
-        <span class="doccomment">/// Expects an [AssetQualifier](super::types::asset_qualifier::AssetQualifier)-compatible</span>
-        <span class="doccomment">/// [SerializedEnum](super::types::serialized_enum::SerializedEnum) that will map to an</span>
-        <span class="doccomment">/// existing [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2).</span>
-        <span class="ident">qualifier</span>: <span class="ident">SerializedEnum</span>,
+        <span class="doccomment">/// The asset type to delete the definition for</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
 }
 

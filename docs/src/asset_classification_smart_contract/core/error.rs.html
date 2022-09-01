@@ -283,16 +283,6 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::StdError</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 
@@ -330,19 +320,23 @@
     <span class="comment">//////////////////</span>
     <span class="doccomment">/// This error is encountered when an asset is attempted in the onboarding process, but it has</span>
     <span class="doccomment">/// already been onboarded and classified.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset {scope_address} has already been fully onboarded&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset {scope_address} has already been fully onboarded as asset type [{asset_type}]&quot;</span>)]</span>
     <span class="ident">AssetAlreadyOnboarded</span> {
         <span class="doccomment">/// The bech32 scope address of the already-onboarded asset.</span>
         <span class="ident">scope_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The asset type for which onboarding has already been completed</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },
 
     <span class="doccomment">/// An error emitted when a verifier attempts to run the verification process on an asset that</span>
     <span class="doccomment">/// does not require it.  This can only occur when a verifier attempts to run a duplicate</span>
     <span class="doccomment">/// verification on a scope that has already had its verification process completed.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset [{scope_address}] was already verified and has status [{status}]&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset [{scope_address}] was already verified for asset type [{asset_type}] and has status [{status}]&quot;</span>)]</span>
     <span class="ident">AssetAlreadyVerified</span> {
         <span class="doccomment">/// The bech32 address of the scope that has already been verified.</span>
         <span class="ident">scope_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The asset type for which verification has already been completed for this asset.</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The current onboarding status in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
         <span class="doccomment">/// on the scope that has already been verified.</span>
         <span class="ident">status</span>: <span class="ident">AssetOnboardingStatus</span>,
@@ -359,36 +353,20 @@
     <span class="doccomment">/// This error is encountered when the onboarding process is attempted for an asset that has</span>
     <span class="doccomment">/// already been onboarded as is awaiting a decision from its target verifier.</span>
     <span class="attribute">#[<span class="ident">error</span>(
-        <span class="string">&quot;Asset {scope_address} is currently awaiting verification from address {verifier_address}&quot;</span>
+        <span class="string">&quot;Asset {scope_address} is currently awaiting verification as asset type {asset_type} from address {verifier_address}&quot;</span>
     )]</span>
     <span class="ident">AssetPendingVerification</span> {
         <span class="doccomment">/// The bech32 scope address of the asset that has been onboarded.</span>
         <span class="ident">scope_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The asset type for which verification is pending for this asset.</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The bech32 address of the verifier that will perform verification on the asset.</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
     },
 
-    <span class="doccomment">/// This error is encountered when an asset is attempted to be onboarded as a specific [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type),</span>
-    <span class="doccomment">/// but the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) for that type</span>
-    <span class="doccomment">/// has a different Provenance Blockchain Scope Specification bech32 address listed in the</span>
-    <span class="doccomment">/// contract&#39;s internal storage.  This is to prevent scopes from being onboarded as a specific</span>
-    <span class="doccomment">/// type unless they meet the correct specification listed on the blockchain.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Provided scope [address: {scope_address}, spec_address: {scope_spec_address}] does not conform to the spec configured for the provided asset_type [{asset_type}]. Expected a scope of spec [{expected_scope_spec_address}]&quot;</span>)]</span>
-    <span class="ident">AssetSpecMismatch</span> {
-        <span class="doccomment">/// The type of asset provided by the requestor for onboarding.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 scope address of the asset provided during onboarding.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 scope specification address listed on the scope provided during onboarding.</span>
-        <span class="ident">scope_spec_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 scope specification address listed in the [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
-        <span class="doccomment">/// stored for the given asset type.</span>
-        <span class="ident">expected_scope_spec_address</span>: <span class="ident">String</span>,
-    },
-
-    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
-    <span class="doccomment">/// linked to an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) that is</span>
-    <span class="doccomment">/// currently not [enabled](super::types::asset_definition::AssetDefinitionV2::enabled)]</span>
+    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
+    <span class="doccomment">/// linked to an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) that is</span>
+    <span class="doccomment">/// currently not [enabled](super::types::asset_definition::AssetDefinitionV3::enabled)]</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset type {asset_type} is currently disabled&quot;</span>)]</span>
     <span class="ident">AssetTypeDisabled</span> {
         <span class="doccomment">/// The type of asset that is currently disabled.</span>
@@ -398,7 +376,7 @@
     <span class="doccomment">/// Denotes that an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
     <span class="doccomment">/// has the same [address](super::types::verifier_detail::VerifierDetailV2::address) property</span>
     <span class="doccomment">/// as the provided [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to be</span>
-    <span class="doccomment">/// added to an [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).</span>
+    <span class="doccomment">/// added to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;duplicate/existing verifier address provided as input&quot;</span>)]</span>
     <span class="ident">DuplicateVerifierProvided</span>,
 
@@ -479,7 +457,7 @@
     },
 
     <span class="doccomment">/// An error that occurs when a lookup is attempted for a contract resource but the resource</span>
-    <span class="doccomment">/// does not exist.  For instance, when an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2)</span>
+    <span class="doccomment">/// does not exist.  For instance, when an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
     <span class="doccomment">/// does not contain a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) with a</span>
     <span class="doccomment">/// specified bech32 [address](super::types::verifier_detail::VerifierDetailV2::address), this</span>
     <span class="doccomment">/// error will occur.</span>
@@ -515,10 +493,12 @@
 
     <span class="doccomment">/// An error emitted when an account attempts to initiate the verification process for a scope</span>
     <span class="doccomment">/// when its bech32 address is not listed as the verifier for the particular onboarding instance.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unauthorized verifier [{verifier_address}] for scope [{scope_address}], expected verifier [{expected_verifier_address}]&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unauthorized verifier [{verifier_address}] for scope [{scope_address}] as asset type [{asset_type}], expected verifier [{expected_verifier_address}]&quot;</span>)]</span>
     <span class="ident">UnauthorizedAssetVerifier</span> {
         <span class="doccomment">/// The bech32 address of the scope that is awaiting verification.</span>
         <span class="ident">scope_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// The asset type that was used to resolve the verifier</span>
+        <span class="ident">asset_type</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The bech32 address of the account that attempted to run verification.</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
         <span class="doccomment">/// The bech32 address of the account that has been requested to run verification.</span>
@@ -560,13 +540,13 @@
     },
 
     <span class="doccomment">/// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
-    <span class="doccomment">/// does not exist in an [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) during</span>
+    <span class="doccomment">/// does not exist in an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) during</span>
     <span class="doccomment">/// the onboarding process.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unsupported verifier [{verifier_address}] for asset type [{asset_type}]&quot;</span>)]</span>
     <span class="ident">UnsupportedVerifier</span> {
         <span class="doccomment">/// The bech32 address of the target verifier.</span>
         <span class="ident">verifier_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type) selected</span>
+        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) selected</span>
         <span class="doccomment">/// during onboarding.</span>
         <span class="ident">asset_type</span>: <span class="ident">String</span>,
     },

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["query_asset_definitions","A query that fetches all AssetDefinitionV2s from the contract’s internal storage."]],"struct":[["QueryAssetDefinitionsResponse","A simple wrapper for all asset definitions returned as a result of the query_asset_definitions function."]]};
+window.SIDEBAR_ITEMS = {"fn":[["query_asset_definitions","A query that fetches all AssetDefinitionV3s from the contract’s internal storage."]]};

@@ -731,80 +731,15 @@
 <span id="725">725</span>
 <span id="726">726</span>
 <span id="727">727</span>
-<span id="728">728</span>
-<span id="729">729</span>
-<span id="730">730</span>
-<span id="731">731</span>
-<span id="732">732</span>
-<span id="733">733</span>
-<span id="734">734</span>
-<span id="735">735</span>
-<span id="736">736</span>
-<span id="737">737</span>
-<span id="738">738</span>
-<span id="739">739</span>
-<span id="740">740</span>
-<span id="741">741</span>
-<span id="742">742</span>
-<span id="743">743</span>
-<span id="744">744</span>
-<span id="745">745</span>
-<span id="746">746</span>
-<span id="747">747</span>
-<span id="748">748</span>
-<span id="749">749</span>
-<span id="750">750</span>
-<span id="751">751</span>
-<span id="752">752</span>
-<span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
-<span id="771">771</span>
-<span id="772">772</span>
-<span id="773">773</span>
-<span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
-<span id="782">782</span>
-<span id="783">783</span>
-<span id="784">784</span>
-<span id="785">785</span>
-<span id="786">786</span>
-<span id="787">787</span>
-<span id="788">788</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core::msg::InitMsg</span>,
-    <span class="ident">util</span>::{
-        <span class="ident">aliases::AssetResult</span>,
-        <span class="ident">traits</span>::{<span class="ident">OptionExtensions</span>, <span class="ident">ResultExtensions</span>},
-    },
+    <span class="ident">util</span>::{<span class="ident">aliases::AssetResult</span>, <span class="ident">traits::ResultExtensions</span>},
 };
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Addr</span>, <span class="ident">Storage</span>};
 <span class="kw">use</span> <span class="ident">cosmwasm_storage</span>::{<span class="ident">singleton</span>, <span class="ident">singleton_read</span>, <span class="ident">ReadonlySingleton</span>, <span class="ident">Singleton</span>};
-<span class="kw">use</span> <span class="ident">cw_storage_plus</span>::{<span class="ident">Index</span>, <span class="ident">IndexList</span>, <span class="ident">IndexedMap</span>, <span class="ident">Map</span>, <span class="ident">UniqueIndex</span>};
+<span class="kw">use</span> <span class="ident">cw_storage_plus::Map</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
@@ -813,7 +748,8 @@
 <span class="kw">static</span> <span class="ident">STATE_V2_KEY</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;state_v2&quot;</span>;
 <span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;fee_payment_detail&quot;</span>;
 
-<span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAILS</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Map::new</span>(<span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>);
+<span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAILS</span>: <span class="ident">Map</span><span class="op">&lt;</span>(<span class="ident">Addr</span>, <span class="ident">String</span>), <span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> <span class="op">=</span>
+    <span class="ident">Map::new</span>(<span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>);
 
 <span class="doccomment">/// Stores the main configurations for the contract internally.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
@@ -868,71 +804,58 @@
     <span class="ident">singleton_read</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
 }
 
-<span class="doccomment">/// Boilerplate implementation of indexes for an IndexMap around state.</span>
-<span class="doccomment">/// This establishes a unique index on the scope spec address to ensure</span>
-<span class="doccomment">/// that saves cannot include duplicate scope specs.</span>
-<span class="doccomment">/// If it becomes a requirement in the future that we have duplicate scope specs,</span>
-<span class="doccomment">/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract</span>
-<span class="doccomment">/// will fall apart.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">String</span>, <span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span>,
-}
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IndexList</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">get_indexes</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="self">self</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">scope_spec</span>];
-        <span class="ident">Box::new</span>(<span class="ident">v</span>.<span class="ident">into_iter</span>())
-    }
-}
-
-<span class="doccomment">/// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.</span>
+<span class="doccomment">/// Value is currently &#39;asset_definitions_v2&#39; due to a structural change of data (removing an existing field, scope_spec_address) and switching from</span>
+<span class="doccomment">/// and IndexedMap to a regular Map... so everything was changed to be called &#39;v3&#39;, but no migration was actually needed to transition all values to new</span>
+<span class="doccomment">/// keys as the existing config was able to be read as a Map as-is.</span>
+<span class="kw">const</span> <span class="ident">ASSET_DEFINITIONS_NAMESPACE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;asset_definitions_v2&quot;</span>;
+<span class="doccomment">/// The main entrypoint access for [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) state.</span>
 <span class="doccomment">/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator</span>
 <span class="doccomment">/// functionality. Private access to ensure only helper functions below are used.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">asset_definitions_v2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-) -&gt; <span class="ident">IndexedMap</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">AssetDefinitionV2</span>, <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">indexes</span> <span class="op">=</span> <span class="ident">AssetDefinitionIndexesV2</span> {
-        <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex::new</span>(
-            <span class="op">|</span><span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">scope_spec_address</span>.<span class="ident">clone</span>().<span class="ident">to_lowercase</span>(),
-            <span class="string">&quot;asset_definitions_v2__scope_spec_address&quot;</span>,
-        ),
-    };
-    <span class="ident">IndexedMap::new</span>(<span class="string">&quot;asset_definitions_v2&quot;</span>, <span class="ident">indexes</span>)
+<span class="kw">const</span> <span class="ident">ASSET_DEFINITIONS_V3</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Map::new</span>(<span class="ident">ASSET_DEFINITIONS_NAMESPACE</span>);
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_asset_definitions_v3</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> {
+    <span class="ident">ASSET_DEFINITIONS_V3</span>
+        .<span class="ident">range</span>(<span class="ident">storage</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="ident">cosmwasm_std::Order::Descending</span>)
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">is_ok</span>())
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">unwrap</span>().<span class="number">1</span>)
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>()
 }
 
 <span class="doccomment">/// Inserts a new asset definition into storage. If a value already exists, an error will be returned.</span>
-<span class="doccomment">/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
-<span class="doccomment">/// value, as well as a unique [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address).</span>
-<span class="doccomment">/// Either unique constraint being violated will return an error.</span>
+<span class="doccomment">/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
+<span class="doccomment">/// value. An error will be returned if this unique constraint is violated.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
 <span class="doccomment">/// * `definition` The asset definition to insert into storage and derive the unique keys.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_asset_definition_v2</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_asset_definition_v3</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>,
+    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">asset_definitions_v2</span>();
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">definition</span>.<span class="ident">storage_key</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">existing_def</span>) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">load</span>(<span class="ident">storage</span>, <span class="ident">key</span>) {
+    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">ASSET_DEFINITIONS_V3</span>;
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">storage_key</span>();
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">existing_def</span>) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">load</span>(<span class="ident">storage</span>, <span class="ident">key</span>.<span class="ident">clone</span>()) {
         <span class="ident">ContractError::RecordAlreadyExists</span> {
             <span class="ident">explanation</span>: <span class="macro">format!</span>(
-                <span class="string">&quot;unique constraints violated! record exists with asset type [{}] and scope spec address [{}]&quot;</span>,
-                <span class="ident">existing_def</span>.<span class="ident">asset_type</span>, <span class="ident">existing_def</span>.<span class="ident">scope_spec_address</span>
+                <span class="string">&quot;unique constraints violated! record exists with asset type [{}]&quot;</span>,
+                <span class="ident">existing_def</span>.<span class="ident">asset_type</span>
             ),
         }
-            .<span class="ident">to_err</span>()
+        .<span class="ident">to_err</span>()
     } <span class="kw">else</span> {
         <span class="comment">// At this point, we know there is no old data available, so we can safely call the replace function and</span>
         <span class="comment">// specify None for the old_data param.</span>
         <span class="ident">state</span>
-            .<span class="ident">replace</span>(<span class="ident">storage</span>, <span class="ident">key</span>, <span class="ident">definition</span>.<span class="ident">to_some</span>(), <span class="prelude-val">None</span>)
+            .<span class="ident">save</span>(<span class="ident">storage</span>, <span class="ident">key</span>, <span class="ident">definition</span>)
             .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
     }
 }
 
 <span class="doccomment">/// Replaces an existing asset definition in state with the provided value.  If no value exists for</span>
-<span class="doccomment">/// the given definition, an error will be returned.  Note: IndexedMap (the type [asset_definitions_v2](self::asset_definitions_v2)</span>
-<span class="doccomment">/// function returns) provides a really nice update() function that allows two branches (one for</span>
+<span class="doccomment">/// the given definition, an error will be returned.  Note: Map (the internal storage type)</span>
+<span class="doccomment">/// provides a really nice update() function that allows two branches (one for</span>
 <span class="doccomment">/// success and one for failure to find) that seems ideal for this functionality, but it requires a</span>
 <span class="doccomment">/// non-reference version of the data to be used. This requires that the provided definition must be</span>
 <span class="doccomment">/// cloned, which makes it vastly inefficient compared to this implementation.</span>
@@ -940,24 +863,17 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+<span class="doccomment">/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
 <span class="doccomment">/// property.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_asset_definition_v2</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_asset_definition_v3</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>,
+    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">asset_definitions_v2</span>();
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">definition</span>.<span class="ident">storage_key</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">existing_def</span>) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">load</span>(<span class="ident">storage</span>, <span class="ident">key</span>) {
-        <span class="comment">// The documentation for the save() function in IndexedMap recommends calling replace() directly after</span>
-        <span class="comment">// loading the data, because it&#39;s needed for an update and happens internally anyway</span>
+    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">ASSET_DEFINITIONS_V3</span>;
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">storage_key</span>();
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">key</span>.<span class="ident">to_string</span>()) {
         <span class="ident">state</span>
-            .<span class="ident">replace</span>(
-                <span class="ident">storage</span>,
-                <span class="ident">key</span>,
-                <span class="ident">definition</span>.<span class="ident">to_some</span>(),
-                (<span class="kw-2">&amp;</span><span class="ident">existing_def</span>).<span class="ident">to_some</span>(),
-            )
+            .<span class="ident">save</span>(<span class="ident">storage</span>, <span class="ident">key</span>, <span class="ident">definition</span>)
             .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
     } <span class="kw">else</span> {
         <span class="ident">ContractError::RecordNotFound</span> {
@@ -976,15 +892,15 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
 <span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_v2_by_type</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_by_type_v3</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">asset_type</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">asset_definitions_v2</span>()
+) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">ASSET_DEFINITIONS_V3</span>
         <span class="comment">// Coerce to lowercase to match how stored values are keyed</span>
-        .<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>().<span class="ident">to_lowercase</span>().<span class="ident">as_bytes</span>())
+        .<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>().<span class="ident">to_lowercase</span>())
         .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
 }
 
@@ -993,68 +909,18 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)</span>
+<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
 <span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_v2_by_type</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_by_type_v3</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">asset_type</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span> {
+) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">asset_type</span> <span class="op">=</span> <span class="ident">asset_type</span>.<span class="ident">into</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">asset_definition</span>) <span class="op">=</span> <span class="ident">may_load_asset_definition_v2_by_type</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>)<span class="question-mark">?</span> {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">asset_definition</span>) <span class="op">=</span> <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>)<span class="question-mark">?</span> {
         <span class="ident">asset_definition</span>.<span class="ident">to_ok</span>()
     } <span class="kw">else</span> {
         <span class="ident">ContractError::RecordNotFound</span> {
             <span class="ident">explanation</span>: <span class="macro">format!</span>(<span class="string">&quot;no asset definition existed for asset type {}&quot;</span>, <span class="ident">asset_type</span>,),
-        }
-        .<span class="ident">to_err</span>()
-    }
-}
-
-<span class="doccomment">/// Finds an existing asset definition in state by checking against the provided scope spec address,</span>
-<span class="doccomment">/// returning an Option that reflects whether or not the definition exists.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address)</span>
-<span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_v2_by_scope_spec</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="comment">// Coerce to lowercase to match how stored values are keyed</span>
-    <span class="kw">let</span> <span class="ident">spec_addr</span> <span class="op">=</span> <span class="ident">scope_spec_address</span>.<span class="ident">into</span>().<span class="ident">to_lowercase</span>();
-    <span class="ident">asset_definitions_v2</span>()
-        .<span class="ident">idx</span>
-        .<span class="ident">scope_spec</span>
-        .<span class="ident">item</span>(<span class="ident">storage</span>, <span class="ident">spec_addr</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">option</span><span class="op">|</span> <span class="ident">option</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">def</span>)<span class="op">|</span> <span class="ident">def</span>))
-        .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
-}
-
-<span class="doccomment">/// Finds an existing asset definition by scope spec address, or returns an error if no definition is</span>
-<span class="doccomment">/// found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `scope_spec_address` The unique address key [scope_spec_address](super::types::asset_definition::AssetDefinitionV2::scope_spec_address)</span>
-<span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_v2_by_scope_spec</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_spec_address</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">scope_spec_address</span> <span class="op">=</span> <span class="ident">scope_spec_address</span>.<span class="ident">into</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">asset_definition</span>) <span class="op">=</span>
-        <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">scope_spec_address</span>)<span class="question-mark">?</span>
-    {
-        <span class="ident">asset_definition</span>.<span class="ident">to_ok</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">ContractError::RecordNotFound</span> {
-            <span class="ident">explanation</span>: <span class="macro">format!</span>(
-                <span class="string">&quot;no asset definition existed for scope spec address {}&quot;</span>,
-                <span class="ident">scope_spec_address</span>
-            ),
         }
         .<span class="ident">to_err</span>()
     }
@@ -1067,22 +933,13 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `qualifier` An asset qualifier that can identify the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)</span>
-<span class="doccomment">/// to delete.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_asset_definition_v2_by_qualifier</span>(
+<span class="doccomment">/// * `asset_type` The asset type to delete.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_asset_definition_by_asset_type_v3</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">qualifier</span>: <span class="kw-2">&amp;</span><span class="ident">AssetQualifier</span>,
+    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">existing_asset_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">qualifier</span> {
-        <span class="ident">AssetQualifier::AssetType</span>(<span class="ident">asset_type</span>) =&gt; {
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>)
-        }
-        <span class="ident">AssetQualifier::ScopeSpecAddress</span>(<span class="ident">scope_spec_address</span>) =&gt; {
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">storage</span>, <span class="ident">scope_spec_address</span>)
-        }
-    }<span class="question-mark">?</span>
-    .<span class="ident">asset_type</span>;
-    <span class="ident">asset_definitions_v2</span>().<span class="ident">remove</span>(<span class="ident">storage</span>, <span class="ident">existing_asset_type</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">existing_asset_type</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>)<span class="question-mark">?</span>.<span class="ident">asset_type</span>;
+    <span class="ident">ASSET_DEFINITIONS_V3</span>.<span class="ident">remove</span>(<span class="ident">storage</span>, <span class="ident">existing_asset_type</span>.<span class="ident">to_lowercase</span>());
     <span class="prelude-val">Ok</span>(<span class="ident">existing_asset_type</span>)
 }
 
@@ -1097,19 +954,24 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_fee_payment_detail</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
     <span class="ident">fee_payment_detail</span>: <span class="kw-2">&amp;</span><span class="ident">FeePaymentDetail</span>,
+    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>).<span class="ident">is_ok</span>() {
+    <span class="kw">if</span> <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>, <span class="ident">asset_type</span>).<span class="ident">is_ok</span>() {
         <span class="kw">return</span> <span class="ident">ContractError::RecordAlreadyExists</span> {
             <span class="ident">explanation</span>: <span class="macro">format!</span>(
-                <span class="string">&quot;cannot insert payment detail for scope [{}] because a record already exists with that address&quot;</span>,
-                <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>
+                <span class="string">&quot;cannot insert payment detail for scope [{}] and asset type [{}] because a record already exists with that address and asset type&quot;</span>,
+                <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>,
+                <span class="kw-2">&amp;</span><span class="ident">asset_type</span>
             )
         }.<span class="ident">to_err</span>();
     }
     <span class="ident">FEE_PAYMENT_DETAILS</span>
         .<span class="ident">save</span>(
             <span class="ident">storage</span>,
-            <span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>.<span class="ident">to_owned</span>(),
+            (
+                <span class="ident">Addr::unchecked</span>(<span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>),
+                <span class="ident">asset_type</span>.<span class="ident">into</span>(),
+            ),
             <span class="ident">fee_payment_detail</span>,
         )<span class="question-mark">?</span>
         .<span class="ident">to_ok</span>()
@@ -1122,12 +984,13 @@
 <span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
 <span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
 <span class="doccomment">/// for the requested payment detail.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S</span>,
+    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
+    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> {
     <span class="ident">FEE_PAYMENT_DETAILS</span>
-        .<span class="ident">load</span>(<span class="ident">storage</span>, <span class="ident">scope_address</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+        .<span class="ident">load</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>
         .<span class="ident">to_ok</span>()
 }
 
@@ -1139,12 +1002,13 @@
 <span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
 <span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
 <span class="doccomment">/// for the requested payment detail.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S</span>,
+    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
+    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
 ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> {
     <span class="ident">FEE_PAYMENT_DETAILS</span>
-        .<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">scope_address</span>.<span class="ident">into</span>())
+        .<span class="ident">may_load</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>.<span class="ident">into</span>()))
         .<span class="ident">unwrap_or</span>(<span class="prelude-val">None</span>)
 }
 
@@ -1156,67 +1020,70 @@
 <span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
 <span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
 <span class="doccomment">/// of the detail to delete.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S</span>,
+    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
+    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
 ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">scope_address</span> <span class="op">=</span> <span class="ident">scope_address</span>.<span class="ident">into</span>();
+    <span class="kw">let</span> <span class="ident">asset_type</span> <span class="op">=</span> <span class="ident">asset_type</span>.<span class="ident">into</span>();
     <span class="comment">// Verify the detail exists before allowing its deletion.  The standard &quot;remove&quot; function will</span>
     <span class="comment">// not produce an error if no target value exists, but it is very informative of bad code to</span>
     <span class="comment">// reveal when unnecessary operations occur.</span>
-    <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">scope_address</span>)<span class="question-mark">?</span>;
-    <span class="ident">FEE_PAYMENT_DETAILS</span>.<span class="ident">remove</span>(<span class="ident">storage</span>, <span class="ident">scope_address</span>);
+    <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">scope_address</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>)<span class="question-mark">?</span>;
+    <span class="ident">FEE_PAYMENT_DETAILS</span>.<span class="ident">remove</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>));
     ().<span class="ident">to_ok</span>()
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident">std::borrow::BorrowMut</span>;
+    <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+
     <span class="kw">use</span> <span class="ident">cosmwasm_std::StdError</span>;
+    <span class="kw">use</span> <span class="ident">cw_storage_plus</span>::{<span class="ident">Index</span>, <span class="ident">IndexList</span>, <span class="ident">IndexedMap</span>, <span class="ident">UniqueIndex</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+    <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
+    <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{
-        <span class="ident">delete_asset_definition_v2_by_qualifier</span>, <span class="ident">delete_fee_payment_detail</span>,
-        <span class="ident">insert_asset_definition_v2</span>, <span class="ident">insert_fee_payment_detail</span>,
-        <span class="ident">load_asset_definition_v2_by_scope_spec</span>, <span class="ident">load_asset_definition_v2_by_type</span>,
-        <span class="ident">load_fee_payment_detail</span>, <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>,
-        <span class="ident">may_load_asset_definition_v2_by_type</span>, <span class="ident">may_load_fee_payment_detail</span>,
-        <span class="ident">replace_asset_definition_v2</span>,
+        <span class="ident">delete_asset_definition_by_asset_type_v3</span>, <span class="ident">delete_fee_payment_detail</span>,
+        <span class="ident">insert_asset_definition_v3</span>, <span class="ident">insert_fee_payment_detail</span>, <span class="ident">list_asset_definitions_v3</span>,
+        <span class="ident">load_asset_definition_by_type_v3</span>, <span class="ident">load_fee_payment_detail</span>,
+        <span class="ident">may_load_asset_definition_by_type_v3</span>, <span class="ident">may_load_fee_payment_detail</span>,
+        <span class="ident">replace_asset_definition_v3</span>,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_qualifier::AssetQualifier</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants::DEFAULT_SCOPE_ADDRESS</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
+        <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>,
+        <span class="ident">DEFAULT_SECONDARY_ASSET_TYPE</span>,
+    };
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
+        <span class="ident">get_default_verifier_detail</span>, <span class="ident">get_duped_fee_payment_detail</span>,
+    };
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_insert_asset_definition</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
+        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;insert should work correctly&quot;</span>);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
         <span class="kw">match</span> <span class="ident">error</span> {
             <span class="ident">ContractError::RecordAlreadyExists</span> { <span class="ident">explanation</span> } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;unique constraints violated! record exists with asset type [heloc] and scope spec address [heloc-scope-spec]&quot;</span>,
+                    <span class="string">&quot;unique constraints violated! record exists with asset type [heloc]&quot;</span>,
                     <span class="ident">explanation</span>,
                     <span class="string">&quot;the proper record type should be returned in the resulting error&quot;</span>
                 );
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
         }
-        <span class="kw">let</span> <span class="ident">def_with_same_scope_spec</span> <span class="op">=</span>
-            <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">scope_spec_key_violation_error</span> <span class="op">=</span>
-            <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def_with_same_scope_spec</span>)
-                .<span class="ident">unwrap_err</span>();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">scope_spec_key_violation_error</span>, <span class="ident">ContractError::Std</span>(<span class="kw">_</span>)),
-            <span class="string">&quot;violating the scope spec unique key should result in an error, but got incorrect error: {:?}&quot;</span>,
-            <span class="ident">scope_spec_key_violation_error</span>,
-        );
         <span class="kw">let</span> <span class="ident">loaded_asset_definition</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;asset definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">loaded_asset_definition</span>, <span class="ident">def</span>,
@@ -1227,8 +1094,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_replace_asset_definition</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">replace_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span>
+            <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">replace_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
         <span class="kw">match</span> <span class="ident">error</span> {
             <span class="ident">ContractError::RecordNotFound</span> { <span class="ident">explanation</span> } =&gt; {
                 <span class="macro">assert_eq!</span>(
@@ -1238,13 +1106,13 @@
             }
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
         };
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;insert should work correctly&quot;</span>);
-        <span class="ident">def</span>.<span class="ident">scope_spec_address</span> <span class="op">=</span> <span class="string">&quot;new-spec-address&quot;</span>.<span class="ident">to_string</span>();
-        <span class="ident">replace_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
+        <span class="ident">def</span>.<span class="ident">enabled</span> <span class="op">=</span> <span class="op">!</span><span class="ident">def</span>.<span class="ident">enabled</span>;
+        <span class="ident">replace_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;update should work correctly&quot;</span>);
         <span class="kw">let</span> <span class="ident">loaded_asset_definition</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;asset definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">loaded_asset_definition</span>, <span class="ident">def</span>,
@@ -1255,17 +1123,17 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_may_load_asset_definition_by_type</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
+        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert without error&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">may_load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;not-heloc&quot;</span>)
+            <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;not-heloc&quot;</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
                 .<span class="ident">is_none</span>(),
             <span class="string">&quot;expected the missing asset definition to return an empty Option&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">may_load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
+            <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition loaded by a populated type to be present&quot;</span>),
             <span class="ident">heloc</span>,
@@ -1276,71 +1144,18 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_load_asset_definition_by_type</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">mortgage</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;mortgage-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
+        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="kw">let</span> <span class="ident">mortgage</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;DEATH PLEDGE&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert appropriately&quot;</span>);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>)
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should insert appropriately&quot;</span>);
         <span class="kw">let</span> <span class="ident">heloc_from_storage</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should load without error&quot;</span>);
         <span class="kw">let</span> <span class="ident">mortgage_from_storage</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should load without error&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">heloc</span>, <span class="ident">heloc_from_storage</span>,
-            <span class="string">&quot;the heloc definition should be the same after loading from storage&quot;</span>
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">mortgage</span>, <span class="ident">mortgage_from_storage</span>,
-            <span class="string">&quot;the mortgage definition should be the same after loading from storage&quot;</span>
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_may_load_asset_definition_by_scope_spec_address</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert without error&quot;</span>);
-        <span class="macro">assert!</span>(
-            <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>(
-                <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-                <span class="string">&quot;not-heloc-scope-spec&quot;</span>
-            )
-            .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by scope spec should execute without error&quot;</span>)
-            .<span class="ident">is_none</span>(),
-            <span class="string">&quot;expected the missing asset definition to return an empty Option&quot;</span>,
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">may_load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">scope_spec_address</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by scope spec should execute without error&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition loaded by a populated scope spec address to be present&quot;</span>),
-            <span class="ident">heloc</span>,
-            <span class="string">&quot;expected the loaded asset definition to equate to the original value that was inserted&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_load_asset_definition_by_scope_spec</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">mortgage</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;mortgage-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert appropriately&quot;</span>);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should insert appropriately&quot;</span>);
-        <span class="kw">let</span> <span class="ident">heloc_from_storage</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_scope_spec</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">scope_spec_address</span>,
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should load without error&quot;</span>);
-        <span class="kw">let</span> <span class="ident">mortgage_from_storage</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_scope_spec</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">mortgage</span>.<span class="ident">scope_spec_address</span>,
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">heloc</span>, <span class="ident">heloc_from_storage</span>,
             <span class="string">&quot;the heloc definition should be the same after loading from storage&quot;</span>
@@ -1354,27 +1169,18 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_delete_asset_definition_by_type</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
+        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
             <span class="ident">def</span>,
             <span class="string">&quot;sanity check: asset definition should be accessible by asset type&quot;</span>,
         );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;sanity check: asset definition should be accessible by scope spec address&quot;</span>,
-        );
-        <span class="ident">delete_asset_definition_v2_by_qualifier</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::asset_type</span>(<span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>),
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+        <span class="ident">delete_asset_definition_by_asset_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
             .<span class="ident">expect_err</span>(
                 <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
             );
@@ -1383,115 +1189,23 @@
             <span class="string">&quot;expected the record not found error to occur when attempting to load by asset type, but got: {:?}&quot;</span>,
             <span class="ident">err</span>,
         );
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect_err</span>(
-                    <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
-                );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
-            <span class="string">&quot;expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
-        );
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored again without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
             <span class="ident">def</span>,
             <span class="string">&quot;the definition should be once again successfully attainable by asset type&quot;</span>,
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;the definition should be once again successfully attainable by scope spec address&quot;</span>,
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_delete_nonexistent_asset_definition_by_type_failure</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_asset_definition_v2_by_qualifier</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::asset_type</span>(<span class="string">&quot;fake-type&quot;</span>),
-        )
-        .<span class="ident">expect_err</span>(<span class="string">&quot;expected an error to occur when attempting to delete a missing asset type&quot;</span>);
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
-            <span class="string">&quot;expected a record not found error to be emitted when the definition does not exist, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_delete_asset_definition_by_scope_spec_address</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;heloc-scope-spec&quot;</span>, <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored without error&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;sanity check: asset definition should be accessible by asset type&quot;</span>,
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;sanity check: asset definition should be accessible by scope spec address&quot;</span>,
-        );
-        <span class="ident">delete_asset_definition_v2_by_qualifier</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::scope_spec_address</span>(<span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>),
-        )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_asset_definition_by_asset_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="string">&quot;fake-type&quot;</span>)
             .<span class="ident">expect_err</span>(
-                <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
+                <span class="string">&quot;expected an error to occur when attempting to delete a missing asset type&quot;</span>,
             );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
-            <span class="string">&quot;expected the record not found error to occur when attempting to load by asset type, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
-        );
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect_err</span>(
-                    <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
-                );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
-            <span class="string">&quot;expected the record not found error to occur when attempting to load by scope spec address, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
-        );
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored again without error&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;the definition should be once again successfully attainable by asset type&quot;</span>,
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_v2_by_scope_spec</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">scope_spec_address</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
-            <span class="string">&quot;the definition should be once again successfully attainable by scope spec address&quot;</span>,
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_delete_nonexistent_asset_definition_by_scope_spec_address_failure</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_asset_definition_v2_by_qualifier</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">AssetQualifier::scope_spec_address</span>(<span class="string">&quot;fake-scope-spec-address&quot;</span>),
-        )
-        .<span class="ident">expect_err</span>(
-            <span class="string">&quot;expected an error to occur when attempting to delete by a missing scope spec address&quot;</span>,
-        );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
             <span class="string">&quot;expected a record not found error to be emitted when the definition does not exist, but got: {:?}&quot;</span>,
@@ -1502,7 +1216,12 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_insert_and_load_fee_payment_detail</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">expect_err</span>(
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect_err</span>(
             <span class="string">&quot;an error should occur when trying to load a payment detail that does not exist&quot;</span>,
         );
         <span class="macro">assert!</span>(
@@ -1511,19 +1230,24 @@
             <span class="ident">err</span>,
         );
         <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>)
+        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span>
-            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;loading the stored payment detail should succeed&quot;</span>);
+        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;loading the stored payment detail should succeed&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">payment_detail</span>, <span class="ident">loaded_payment_detail</span>,
             <span class="string">&quot;the loaded payment detail should equate to the stored value&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">loaded_payment_detail</span>)
-            .<span class="ident">expect_err</span>(
-                <span class="string">&quot;an error should occur when attempting to insert a duplicate payment detail&quot;</span>,
-            );
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">insert_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
+            <span class="kw-2">&amp;</span><span class="ident">loaded_payment_detail</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect_err</span>(<span class="string">&quot;an error should occur when attempting to insert a duplicate payment detail&quot;</span>);
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordAlreadyExists</span> { .. }),
             <span class="string">&quot;a record already exists error should occur, but got: {:?}&quot;</span>,
@@ -1535,15 +1259,23 @@
     <span class="kw">fn</span> <span class="ident">test_may_load_fee_payment_detail</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
         <span class="macro">assert!</span>(
-            <span class="ident">may_load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">is_none</span>(),
+            <span class="ident">may_load_fee_payment_detail</span>(
+                <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+                <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+                <span class="ident">DEFAULT_ASSET_TYPE</span>
+            )
+            .<span class="ident">is_none</span>(),
             <span class="string">&quot;attempting to load a detail that does not exist should produce a None variant&quot;</span>,
         );
         <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>)
+        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span>
-            <span class="ident">may_load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;the fee payment detail should load successfully&quot;</span>);
+        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span> <span class="ident">may_load_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;the fee payment detail should load successfully&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">payment_detail</span>, <span class="ident">loaded_payment_detail</span>,
             <span class="string">&quot;the loaded payment detail should equate to the inserted value&quot;</span>,
@@ -1553,7 +1285,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_delete_fee_payment_detail</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">expect_err</span>(
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>).<span class="ident">expect_err</span>(
             <span class="string">&quot;an error should occur when attempting to delete a fee payment detail that does not exist&quot;</span>
         );
         <span class="macro">assert!</span>(
@@ -1562,21 +1294,167 @@
             <span class="ident">err</span>,
         );
         <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>)
+        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;inserting a payment detail should succeed&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">is_ok</span>(),
+            <span class="ident">load_fee_payment_detail</span>(
+                <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+                <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+                <span class="ident">DEFAULT_ASSET_TYPE</span>
+            )
+            .<span class="ident">is_ok</span>(),
             <span class="string">&quot;sanity check: fee payment detail should be available after insert&quot;</span>,
         );
-        <span class="ident">delete_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;deleting a payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>).<span class="ident">expect_err</span>(
+        <span class="ident">delete_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;deleting a payment detail should succeed&quot;</span>);
+        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
+            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        )
+        .<span class="ident">expect_err</span>(
             <span class="string">&quot;an error should occur when trying to load a payment detail after it has been deleted&quot;</span>,
         );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::Std</span>(<span class="ident">StdError::NotFound</span> { .. })),
             <span class="string">&quot;a not found error should occur when the payment detail is loaded after deletion, but got: {:?}&quot;</span>,
             <span class="ident">err</span>,
+        );
+    }
+
+    <span class="comment">// TEMPORARY SANITY TEST FOR GOING FROM IndexedMap -&gt; Map</span>
+    <span class="doccomment">/// Boilerplate implementation of indexes for an IndexMap around state.</span>
+    <span class="doccomment">/// This establishes a unique index on the scope spec address to ensure</span>
+    <span class="doccomment">/// that saves cannot include duplicate scope specs.</span>
+    <span class="doccomment">/// If it becomes a requirement in the future that we have duplicate scope specs,</span>
+    <span class="doccomment">/// we will need to swap to a MultiIndex, and a lot of the lookups in the contract</span>
+    <span class="doccomment">/// will fall apart.</span>
+
+    <span class="doccomment">/// old asset definition</span>
+    <span class="doccomment">/// /// Defines a specific asset type associated with the contract.  Allows its specified type to be</span>
+    <span class="doccomment">/// onboarded and verified.</span>
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionV2</span> {
+        <span class="doccomment">/// The unique name of the asset associated with the definition.</span>
+        <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// A link to a scope specification that defines this asset type.</span>
+        <span class="kw">pub</span> <span class="ident">scope_spec_address</span>: <span class="ident">String</span>,
+        <span class="doccomment">/// Individual verifier definitions.  There can be many verifiers for a single asset type.</span>
+        <span class="kw">pub</span> <span class="ident">verifiers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,</span>
+        <span class="doccomment">/// requests to onboard assets of this type will be rejected.</span>
+        <span class="kw">pub</span> <span class="ident">enabled</span>: <span class="ident">bool</span>,
+    }
+    <span class="kw">impl</span> <span class="ident">AssetDefinitionV2</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">storage_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+            <span class="self">self</span>.<span class="ident">asset_type</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_bytes</span>().<span class="ident">to_vec</span>()
+        }
+    }
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+        <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">String</span>, <span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span>,
+    }
+    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IndexList</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">get_indexes</span>(
+            <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="self">self</span>,
+        ) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">scope_spec</span>];
+            <span class="ident">Box::new</span>(<span class="ident">v</span>.<span class="ident">into_iter</span>())
+        }
+    }
+
+    <span class="doccomment">/// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.</span>
+    <span class="doccomment">/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator</span>
+    <span class="doccomment">/// functionality. Private access to ensure only helper functions below are used.</span>
+    <span class="kw">fn</span> <span class="ident">asset_definitions_v2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
+    ) -&gt; <span class="ident">IndexedMap</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">AssetDefinitionV2</span>, <span class="ident">AssetDefinitionIndexesV2</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">indexes</span> <span class="op">=</span> <span class="ident">AssetDefinitionIndexesV2</span> {
+            <span class="ident">scope_spec</span>: <span class="ident">UniqueIndex::new</span>(
+                <span class="op">|</span><span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">scope_spec_address</span>.<span class="ident">clone</span>().<span class="ident">to_lowercase</span>(),
+                <span class="string">&quot;asset_definitions_v2__scope_spec_address&quot;</span>,
+            ),
+        };
+        <span class="ident">IndexedMap::new</span>(<span class="string">&quot;asset_definitions_v2&quot;</span>, <span class="ident">indexes</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">asset_definition_v2_to_v3</span>(<span class="ident">v2</span>: <span class="ident">AssetDefinitionV2</span>) -&gt; <span class="ident">AssetDefinitionV3</span> {
+        <span class="ident">AssetDefinitionV3</span> {
+            <span class="ident">asset_type</span>: <span class="ident">v2</span>.<span class="ident">asset_type</span>,
+            <span class="ident">display_name</span>: <span class="prelude-val">None</span>,
+            <span class="ident">verifiers</span>: <span class="ident">v2</span>.<span class="ident">verifiers</span>,
+            <span class="ident">enabled</span>: <span class="ident">v2</span>.<span class="ident">enabled</span>,
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_default_asset_definition_v2</span>() -&gt; <span class="ident">AssetDefinitionV2</span> {
+        <span class="ident">AssetDefinitionV2</span> {
+            <span class="ident">asset_type</span>: <span class="ident">DEFAULT_ASSET_TYPE</span>.<span class="ident">to_string</span>(),
+            <span class="ident">scope_spec_address</span>: <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>.<span class="ident">to_string</span>(),
+            <span class="ident">verifiers</span>: <span class="macro">vec!</span>[<span class="ident">get_default_verifier_detail</span>()],
+            <span class="ident">enabled</span>: <span class="bool-val">true</span>,
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_read_data_from_old_storage</span>() {
+        <span class="comment">// insert using old IndexedMap style</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let</span> <span class="ident">def1</span> <span class="op">=</span> <span class="ident">get_default_asset_definition_v2</span>();
+        <span class="kw">let</span> <span class="ident">def2</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2</span> {
+            <span class="ident">asset_type</span>: <span class="ident">DEFAULT_SECONDARY_ASSET_TYPE</span>.<span class="ident">into</span>(),
+            <span class="ident">scope_spec_address</span>: <span class="macro">format!</span>(<span class="string">&quot;{}2&quot;</span>, <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>),
+            ..<span class="ident">get_default_asset_definition_v2</span>()
+        };
+        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">asset_definitions_v2</span>();
+        <span class="ident">state</span>
+            .<span class="ident">replace</span>(
+                <span class="ident">deps</span>.<span class="ident">storage</span>.<span class="ident">borrow_mut</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">def1</span>.<span class="ident">storage_key</span>(),
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">def1</span>),
+                <span class="prelude-val">None</span>,
+            )
+            .<span class="ident">expect</span>(<span class="string">&quot;asset definition should be saved using old storage&quot;</span>);
+        <span class="ident">state</span>
+            .<span class="ident">replace</span>(
+                <span class="ident">deps</span>.<span class="ident">storage</span>.<span class="ident">borrow_mut</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">def2</span>.<span class="ident">storage_key</span>(),
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">def2</span>),
+                <span class="prelude-val">None</span>,
+            )
+            .<span class="ident">expect</span>(<span class="string">&quot;asset definition should be saved using old storage&quot;</span>);
+        <span class="comment">// retrieve with new methods</span>
+        <span class="kw">let</span> <span class="ident">retrieved1</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;should be able to retrieve existing asset definition with new storage&quot;</span>);
+        <span class="kw">let</span> <span class="ident">retrieved2</span> <span class="op">=</span>
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">storage</span>, <span class="ident">DEFAULT_SECONDARY_ASSET_TYPE</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;should be able to retrieve existing asset definition with new storage&quot;</span>);
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">asset_definition_v2_to_v3</span>(<span class="ident">def1</span>),
+            <span class="ident">retrieved1</span>,
+            <span class="string">&quot;asset definition fetched via new method should match existing&quot;</span>
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">asset_definition_v2_to_v3</span>(<span class="ident">def2</span>),
+            <span class="ident">retrieved2</span>,
+            <span class="string">&quot;asset definition fetched via new method should match existing&quot;</span>
+        );
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">definition_iterator</span> <span class="op">=</span> <span class="ident">list_asset_definitions_v3</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">storage</span>);
+        <span class="ident">definition_iterator</span>.<span class="ident">sort_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">asset_type</span> <span class="op">&lt;</span> <span class="ident">b</span>.<span class="ident">asset_type</span> {
+                <span class="ident">Ordering::Less</span>
+            } <span class="kw">else</span> {
+                <span class="ident">Ordering::Greater</span>
+            }
+        });
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">vec!</span>[<span class="ident">retrieved1</span>, <span class="ident">retrieved2</span>],
+            <span class="ident">definition_iterator</span>,
+            <span class="string">&quot;existing asset definitions should be able to be iterated over&quot;</span>
         );
     }
 }

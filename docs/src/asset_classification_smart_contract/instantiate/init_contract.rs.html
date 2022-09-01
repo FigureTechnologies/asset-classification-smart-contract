@@ -359,16 +359,8 @@
 <span id="353">353</span>
 <span id="354">354</span>
 <span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_v2</span>, <span class="ident">insert_asset_definition_v2</span>, <span class="ident">StateV2</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_v2</span>, <span class="ident">insert_asset_definition_v3</span>, <span class="ident">StateV2</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::version_info::migrate_version_info</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty</span>;
@@ -380,7 +372,7 @@
 
 <span class="doccomment">/// The main functionality executed when the smart contract is first instantiated.   This creates</span>
 <span class="doccomment">/// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided</span>
-<span class="doccomment">/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV2) provided in the init</span>
+<span class="doccomment">/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init</span>
 <span class="doccomment">/// msg.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
@@ -415,9 +407,9 @@
     <span class="comment">// append new definitions. When no definitions are supplied, this contract will not be able to</span>
     <span class="comment">// take execution input until they are</span>
     <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="ident">msg</span>.<span class="ident">asset_definitions</span>.<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">as_asset_definition</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">as_asset_definition</span>();
         <span class="comment">// Create a new state storage for the provided asset definition</span>
-        <span class="ident">insert_asset_definition_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
+        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
         <span class="comment">// Default to true for name bind if no value is specified.</span>
         <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">bind_name</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>) {
             <span class="ident">messages</span>.<span class="ident">push</span>(<span class="ident">bind_name</span>(
@@ -447,17 +439,15 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::contract::instantiate</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_v2_by_type</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV2</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_by_type_v3</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::scope_spec_identifier::ScopeSpecIdentifier</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::version_info</span>::{<span class="ident">get_version_info</span>, <span class="ident">CONTRACT_NAME</span>, <span class="ident">CONTRACT_VERSION</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::msg_utilities</span>::{<span class="ident">test_for_default_base_name</span>, <span class="ident">test_message_is_name_bind</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
         <span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>,
-        <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_ONBOARDING_DENOM</span>, <span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>,
-        <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+        <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_ONBOARDING_DENOM</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
     };
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
         <span class="ident">get_default_asset_definition</span>, <span class="ident">get_default_asset_definition_inputs</span>,
@@ -494,7 +484,7 @@
         <span class="ident">test_for_default_base_name</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>);
         <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>);
         <span class="kw">let</span> <span class="ident">asset_state</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;expected the asset state data should be added to storage&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">asset_state</span>.<span class="ident">asset_type</span>,
@@ -525,10 +515,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_valid_init_with_multiple_asset_definitions</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">first_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV2::new</span>(
+        <span class="kw">let</span> <span class="ident">first_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV3::new</span>(
             <span class="string">&quot;heloc&quot;</span>,
-            <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1q3360lsz5zwprm9wl5mew58974vsfpfwzn&quot;</span>)
-                .<span class="ident">to_serialized_enum</span>(),
+            <span class="string">&quot;Home Equity Line of Street Cred&quot;</span>.<span class="ident">to_some</span>(),
             <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
                 <span class="ident">DEFAULT_ONBOARDING_COST</span>.<span class="ident">into</span>(),
@@ -542,10 +531,9 @@
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">second_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV2::new</span>(
+        <span class="kw">let</span> <span class="ident">second_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV3::new</span>(
             <span class="string">&quot;mortgage&quot;</span>,
-            <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1q3unwk5g5zwprm9a2kpaf5099dws4vc6x3&quot;</span>)
-                .<span class="ident">to_serialized_enum</span>(),
+            <span class="string">&quot;DEATH PLEDGE&quot;</span>.<span class="ident">to_some</span>(),
             <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq&quot;</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">300</span>),
@@ -586,23 +574,19 @@
         <span class="ident">test_for_default_base_name</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>);
         <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="string">&quot;heloc&quot;</span>);
         <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="string">&quot;mortgage&quot;</span>);
-        <span class="kw">let</span> <span class="ident">heloc_asset_state</span> <span class="op">=</span> <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;heloc&quot;</span>)
+        <span class="kw">let</span> <span class="ident">heloc_asset_state</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;heloc&quot;</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the heloc asset definition should be added to the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">heloc_asset_state</span>,
-            <span class="ident">first_asset_def</span>
-                .<span class="ident">into_asset_definition</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;failed to convert input to asset definition&quot;</span>),
+            <span class="ident">first_asset_def</span>.<span class="ident">into_asset_definition</span>(),
             <span class="string">&quot;the heloc asset state should equate to the heloc input&quot;</span>
         );
         <span class="kw">let</span> <span class="ident">mortgage_asset_state</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;mortgage&quot;</span>)
+            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;mortgage&quot;</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;the mortgage asset definition should be added to the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">mortgage_asset_state</span>,
-            <span class="ident">second_asset_def</span>
-                .<span class="ident">into_asset_definition</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;failed to convert input to asset definition&quot;</span>),
+            <span class="ident">second_asset_def</span>.<span class="ident">into_asset_definition</span>(),
             <span class="string">&quot;the mortgage asset state should equate to the mortgage input&quot;</span>
         );
     }
@@ -661,9 +645,9 @@
             <span class="ident">InitMsg</span> {
                 <span class="ident">base_contract_name</span>: <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>.<span class="ident">to_string</span>(),
                 <span class="ident">bind_base_name</span>: <span class="bool-val">false</span>,
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="ident">DEFAULT_ASSET_TYPE</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="ident">DEFAULT_SCOPE_SPEC_ADDRESS</span>).<span class="ident">to_serialized_enum</span>(),
+                    <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
                     <span class="macro">vec!</span>[<span class="ident">get_default_verifier_detail</span>()],
                     <span class="bool-val">true</span>.<span class="ident">to_some</span>(),
                     <span class="comment">// bind_name == false</span>
@@ -677,7 +661,7 @@
             <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">is_empty</span>(),
             <span class="string">&quot;no messages should be added when no bindings are added&quot;</span>
         );
-        <span class="ident">load_asset_definition_v2_by_type</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
+        <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;the asset definition should be added, regardless of name binding&quot;</span>);
     }
 
@@ -702,9 +686,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_invalid_init_fails_for_invalid_init_msg</span>() {
         <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">InstArgs</span> {
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV2::new</span>(
+            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
                 <span class="string">&quot;&quot;</span>,
-                <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
                 <span class="macro">vec!</span>[],
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,

@@ -729,67 +729,9 @@
 <span id="723">723</span>
 <span id="724">724</span>
 <span id="725">725</span>
-<span id="726">726</span>
-<span id="727">727</span>
-<span id="728">728</span>
-<span id="729">729</span>
-<span id="730">730</span>
-<span id="731">731</span>
-<span id="732">732</span>
-<span id="733">733</span>
-<span id="734">734</span>
-<span id="735">735</span>
-<span id="736">736</span>
-<span id="737">737</span>
-<span id="738">738</span>
-<span id="739">739</span>
-<span id="740">740</span>
-<span id="741">741</span>
-<span id="742">742</span>
-<span id="743">743</span>
-<span id="744">744</span>
-<span id="745">745</span>
-<span id="746">746</span>
-<span id="747">747</span>
-<span id="748">748</span>
-<span id="749">749</span>
-<span id="750">750</span>
-<span id="751">751</span>
-<span id="752">752</span>
-<span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
-<span id="771">771</span>
-<span id="772">772</span>
-<span id="773">773</span>
-<span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
-<span id="782">782</span>
-<span id="783">783</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV2</span>, <span class="ident">AssetDefinitionV2</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
@@ -800,7 +742,7 @@
 <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
 
 <span class="doccomment">/// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its</span>
-<span class="doccomment">/// associated [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) values.</span>
+<span class="doccomment">/// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
@@ -840,8 +782,8 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `input` The asset definition input value to validate for issues.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV2</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>()<span class="question-mark">?</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV3</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>())
 }
 
 <span class="doccomment">/// Validates that an asset definition value is properly formed, ensuring that all fields are</span>
@@ -850,7 +792,7 @@
 <span class="doccomment">/// # Parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `asset_definition` The asset definition value to validate for issues.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">invalid_fields</span> <span class="op">=</span> <span class="ident">validate_asset_definition_internal</span>(<span class="ident">asset_definition</span>);
     <span class="kw">if</span> <span class="op">!</span><span class="ident">invalid_fields</span>.<span class="ident">is_empty</span>() {
         <span class="ident">ContractError::InvalidMessageFields</span> {
@@ -902,22 +844,14 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">validate_asset_definition_input_internal</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV2</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">as_asset_definition</span>() {
-        <span class="comment">// If the input can properly convert to an actual asset definition, return any invalid fields it contains</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">definition</span>) =&gt; <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">definition</span>),
-        <span class="comment">// If the input cannot convert, then the scope spec conversion must be invalid. Just return the contract error&#39;s description of the problem</span>
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">vec!</span>[<span class="macro">format!</span>(<span class="string">&quot;Invalid scope spec identifier provided: {:?}&quot;</span>, <span class="ident">e</span>)],
-    }
+<span class="kw">fn</span> <span class="ident">validate_asset_definition_input_internal</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV3</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">validate_asset_definition_internal</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">validate_asset_definition_internal</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
     <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
         <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_definition:asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>());
-    }
-    <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">scope_spec_address</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_definition:scope_spec_address: must not be blank&quot;</span>.<span class="ident">to_string</span>());
     }
     <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">verifiers</span>.<span class="ident">is_empty</span>() {
         <span class="ident">invalid_fields</span>.<span class="ident">push</span>(
@@ -985,17 +919,16 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV2</span>, <span class="ident">AssetDefinitionV2</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::entity_detail::EntityDetail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::scope_spec_identifier::ScopeSpecIdentifier</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_default_entity_detail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">NHASH</span>, <span class="ident">VALID_VERIFIER_DENOMS</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg</span>::{
-        <span class="ident">validate_asset_definition_input_internal</span>, <span class="ident">validate_asset_definition_internal</span>,
-        <span class="ident">validate_destination_internal</span>, <span class="ident">validate_init_msg</span>, <span class="ident">validate_verifier_internal</span>,
+        <span class="ident">validate_asset_definition_internal</span>, <span class="ident">validate_destination_internal</span>, <span class="ident">validate_init_msg</span>,
+        <span class="ident">validate_verifier_internal</span>,
     };
     <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
 
@@ -1015,10 +948,9 @@
             <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
             <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV2::new</span>(
+            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
                 <span class="string">&quot;heloc&quot;</span>,
-                <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt&quot;</span>)
-                    .<span class="ident">to_serialized_enum</span>(),
+                <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
                 <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                     <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
                     <span class="ident">Uint128::new</span>(<span class="number">200</span>),
@@ -1042,10 +974,9 @@
             <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
             <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
             <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[
-                <span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="string">&quot;heloc&quot;</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1qjy5xyvs5z0prm90w5l36l4dhu4qa3hupt&quot;</span>)
-                        .<span class="ident">to_serialized_enum</span>(),
+                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
                     <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                         <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
                         <span class="ident">Uint128::new</span>(<span class="number">200</span>),
@@ -1059,10 +990,9 @@
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 ),
-                <span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="string">&quot;mortgage&quot;</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1qj8dy8pg5z0prmy89r9nvxlu7mnquegf86&quot;</span>)
-                        .<span class="ident">to_serialized_enum</span>(),
+                    <span class="string">&quot;MORTGAGE&quot;</span>.<span class="ident">to_some</span>(),
                     <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                         <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
                         <span class="ident">Uint128::new</span>(<span class="number">500</span>),
@@ -1082,10 +1012,9 @@
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 ),
-                <span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="string">&quot;pl&quot;</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1qj4l668j5z0prmy458tk8lrsyv4quyn084&quot;</span>)
-                        .<span class="ident">to_serialized_enum</span>(),
+                    <span class="string">&quot;Personal Loan&quot;</span>.<span class="ident">to_some</span>(),
                     <span class="macro">vec!</span>[
                         <span class="ident">VerifierDetailV2::new</span>(
                             <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
@@ -1131,10 +1060,9 @@
                 <span class="ident">base_contract_name</span>: <span class="ident">String::new</span>(),
                 <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
                 <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="string">&quot;heloc&quot;</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1q3qgqhtdq9wygn5kjdny9fxjcugqj40jgz&quot;</span>)
-                        .<span class="ident">to_serialized_enum</span>(),
+                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
                     <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                         <span class="string">&quot;address&quot;</span>,
                         <span class="ident">Uint128::new</span>(<span class="number">100</span>),
@@ -1158,22 +1086,16 @@
                 <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
                 <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
                 <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[
-                    <span class="ident">AssetDefinitionInputV2::new</span>(
+                    <span class="ident">AssetDefinitionInputV3::new</span>(
                         <span class="string">&quot;heloc&quot;</span>,
-                        <span class="ident">ScopeSpecIdentifier::address</span>(
-                            <span class="string">&quot;scopespec1qsk66j3kgkjyk4985ll8xmx68z9q4xfkjk&quot;</span>,
-                        )
-                        .<span class="ident">to_serialized_enum</span>(),
+                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
                         <span class="macro">vec!</span>[],
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     ),
-                    <span class="ident">AssetDefinitionInputV2::new</span>(
+                    <span class="ident">AssetDefinitionInputV3::new</span>(
                         <span class="string">&quot;heloc&quot;</span>,
-                        <span class="ident">ScopeSpecIdentifier::address</span>(
-                            <span class="string">&quot;scopespec1q35x472s9tp54t4dcrygrdwdyl0qagw7y2&quot;</span>,
-                        )
-                        .<span class="ident">to_serialized_enum</span>(),
+                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
                         <span class="macro">vec!</span>[],
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
@@ -1191,10 +1113,9 @@
                 <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
                 <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV2::new</span>(
+                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
                     <span class="string">&quot;&quot;</span>,
-                    <span class="ident">ScopeSpecIdentifier::address</span>(<span class="string">&quot;scopespec1q3wmtzhy5z0prm928emua4wcgq7sgq0gwn&quot;</span>)
-                        .<span class="ident">to_serialized_enum</span>(),
+                    <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
                     <span class="macro">vec!</span>[],
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
@@ -1206,9 +1127,9 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_valid_asset_definition</span>() {
-        <span class="kw">let</span> <span class="ident">definition</span> <span class="op">=</span> <span class="ident">AssetDefinitionV2::new</span>(
+        <span class="kw">let</span> <span class="ident">definition</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(
             <span class="string">&quot;heloc&quot;</span>,
-            <span class="string">&quot;scopespec1q3psjkty5z0prmyfqvflyhkvuw6sfx9tnz&quot;</span>,
+            <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
             <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                 <span class="string">&quot;tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g&quot;</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">200</span>),
@@ -1231,9 +1152,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_asset_type</span>() {
         <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(
                 <span class="string">&quot;&quot;</span>,
-                <span class="string">&quot;scope-spec-address&quot;</span>,
+                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
                 <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                     <span class="string">&quot;address&quot;</span>,
                     <span class="ident">Uint128::new</span>(<span class="number">100</span>),
@@ -1247,27 +1168,9 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_scope_spec_address</span>() {
-        <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2::new</span>(
-                <span class="string">&quot;heloc&quot;</span>,
-                <span class="string">&quot;&quot;</span>,
-                <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
-                    <span class="string">&quot;address&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                    <span class="ident">NHASH</span>,
-                    <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">100</span>))],
-                    <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
-                )],
-            ),
-            <span class="string">&quot;asset_definition:scope_spec_address: must not be blank&quot;</span>,
-        )
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_empty_verifiers</span>() {
         <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;scope-spec-address&quot;</span>, <span class="macro">vec!</span>[]),
+            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;MORTGAGE&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]),
             <span class="string">&quot;asset_definition:verifiers: at least one verifier must be supplied per asset type&quot;</span>,
         );
     }
@@ -1275,9 +1178,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_picks_up_invalid_verifier_scenarios</span>() {
         <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(
                 <span class="string">&quot;&quot;</span>,
-                <span class="string">&quot;scope-spec-address&quot;</span>,
+                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
                 <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
                     <span class="string">&quot;&quot;</span>,
                     <span class="ident">Uint128::new</span>(<span class="number">100</span>),
@@ -1479,25 +1382,6 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_asset_definition_input_internal_bad_scope_spec_identifier</span>() {
-        <span class="kw">let</span> <span class="ident">error_strings</span> <span class="op">=</span> <span class="ident">validate_asset_definition_input_internal</span>(<span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV2::new</span>(
-            <span class="string">&quot;heloc&quot;</span>,
-            <span class="ident">ScopeSpecIdentifier::uuid</span>(<span class="string">&quot;not even a real uuid at all&quot;</span>).<span class="ident">to_serialized_enum</span>(),
-            <span class="macro">vec!</span>[],
-            <span class="prelude-val">None</span>,
-            <span class="prelude-val">None</span>,
-        ));
-        <span class="macro">assert_eq!</span>(
-            <span class="number">1</span>, <span class="ident">error_strings</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;only one error should be returned when the definition input cannot be converted into an asset definition&quot;</span>,
-        );
-        <span class="macro">assert!</span>(
-            <span class="ident">error_strings</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">contains</span>(<span class="string">&quot;Invalid scope spec identifier provided: &quot;</span>),
-            <span class="string">&quot;unexpected error contents. should contain information about invalid scope spec conversion&quot;</span>,
-        );
-    }
-
     <span class="kw">fn</span> <span class="ident">test_valid_init_msg</span>(<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">InitMsg</span>) {
         <span class="kw">match</span> <span class="ident">validate_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
@@ -1540,7 +1424,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition</span>(<span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV2</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition</span>(<span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
         <span class="kw">let</span> <span class="ident">results</span> <span class="op">=</span> <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">definition</span>);
         <span class="macro">assert!</span>(
             <span class="ident">results</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">expected_message</span>.<span class="ident">to_string</span>()),

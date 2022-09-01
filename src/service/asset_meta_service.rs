@@ -304,18 +304,16 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // Pay the verifier detail fees after verification has successfully been completed
         self.append_messages(&payment_detail.to_bank_send_msgs()?);
 
-        if success {
-            // Remove the fee payment detail after it has been successfully used for verification.
-            // Stored fee payment amounts are no longer needed after the custom bank send messages have been
-            // used, as it can easily become outdated in the future
-            self.use_deps(|deps| {
-                delete_fee_payment_detail(
-                    deps.storage,
-                    &attribute.scope_address,
-                    &attribute.asset_type,
-                )
-            })?;
-        }
+        // Remove the fee payment detail after it has been used for verification.
+        // Stored fee payment amounts are no longer needed after the custom bank send messages have been
+        // used, as it can easily become outdated in the future
+        self.use_deps(|deps| {
+            delete_fee_payment_detail(
+                deps.storage,
+                &attribute.scope_address,
+                &attribute.asset_type,
+            )
+        })?;
 
         Ok(())
     }

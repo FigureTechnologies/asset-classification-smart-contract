@@ -1,8 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{
-    config_read_v2, delete_fee_payment_detail, load_asset_definition_by_type_v3,
-};
+use crate::core::state::{config_read_v2, load_asset_definition_by_type_v3};
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
@@ -203,19 +201,7 @@ where
             }
             // If the attribute indicates that the asset is pending, then it's been denied by a verifier, and this is a secondary
             // attempt to onboard the asset
-            AssetOnboardingStatus::Denied => {
-                // Remove the fee payment detail originally stored. The new attribute may point to a wholly new verifier, or the
-                // fees may have changed.  Deleting the existing fee payment detail ensures that a
-                // new one with the correct values may be saved.
-                repository.use_deps(|deps| {
-                    delete_fee_payment_detail(
-                        deps.storage,
-                        &existing_attribute.scope_address,
-                        &existing_attribute.asset_type,
-                    )
-                })?;
-                true
-            }
+            AssetOnboardingStatus::Denied => true,
         }
     } else {
         // If no scope attribute exists, it's safe to simply add the attribute to the scope
@@ -826,7 +812,19 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let payment_detail_before_retry = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be stored for the asset after onboarding");
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect_err("no fee payment detail should be present after success=false verification");
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should have an attribute attached to it");
@@ -835,12 +833,6 @@ mod tests {
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
-        let payment_detail_before_retry = load_fee_payment_detail(
-            deps.as_ref().storage,
-            DEFAULT_SCOPE_ADDRESS,
-            DEFAULT_ASSET_TYPE,
-        )
-        .expect("a fee payment detail should be stored for the asset");
         let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         assert_eq!(
             2,
@@ -913,7 +905,19 @@ mod tests {
         )
         .expect("adding the second verifier should succeed without error");
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        let payment_detail_before = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be stored for the asset after onboarding");
         test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
+        )
+        .expect_err("no fee payment detail should be present after success=false verification");
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should have an attribute attached to it");
@@ -922,12 +926,6 @@ mod tests {
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
-        let payment_detail_before = load_fee_payment_detail(
-            deps.as_ref().storage,
-            DEFAULT_SCOPE_ADDRESS,
-            DEFAULT_ASSET_TYPE,
-        )
-        .expect("a fee payment detail should be stored for the asset");
         let response = test_onboard_asset(
             &mut deps,
             TestOnboardAsset {

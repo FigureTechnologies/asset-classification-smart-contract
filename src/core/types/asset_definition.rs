@@ -166,7 +166,7 @@ impl AssetDefinitionInputV3 {
     }
 
     /// Clones the values contained within this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3).
-    /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV2::into_asset_definition).
+    /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV3::into_asset_definition).
     pub fn as_asset_definition(&self) -> AssetDefinitionV3 {
         AssetDefinitionV3 {
             asset_type: self.asset_type.clone(),

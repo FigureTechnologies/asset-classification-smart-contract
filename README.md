@@ -107,10 +107,10 @@ provided name uses a restricted root name, so using a value of `false` can circu
 bound later or potentially not at all.  The contract needs to own the subnames used for generated attributes in order
 for its bindings to work, but owning the root name is not necessary.
 
-* `asset_definitions`: An array of [AssetDefinitionInputV2](src/core/types/asset_definition.rs) values that will be used
+* `asset_definitions`: An array of [AssetDefinitionInputV3](src/core/types/asset_definition.rs) values that will be used
 to establish an initial set of [AssetDefinitionV3](src/core/types/asset_definition.rs)s in the contract's internal storage.
 These definitions will automatically attempt to bind their own names, branching from the `base_contract_name`, but the
-[AssetDefinitionInputV2](src/core/types/asset_definition.rs) includes a `bind_name` boolean that allows this functionality
+[AssetDefinitionInputV3](src/core/types/asset_definition.rs) includes a `bind_name` boolean that allows this functionality
 to be disabled if that behavior is not desired.
 
 * `is_test`: A boolean value allowing for less restrictions to be placed on certain functionalities across the contract's
@@ -372,7 +372,7 @@ two criteria:
 
 ##### Request Parameters
 
-* `asset_definition`: An [AssetDefinitionInputV2](src/core/types/asset_definition.rs) value defining all of the new
+* `asset_definition`: An [AssetDefinitionInputV3](src/core/types/asset_definition.rs) value defining all of the new
 [AssetDefinitionV3](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
 asset definition.
 
@@ -428,7 +428,7 @@ existing values.  If no asset definition exists for the given type, the request 
 
 ##### Request Parameters
 
-* `asset_definition`: An [AssetDefinitionInputV2](src/core/types/asset_definition.rs) value defining all of the updated
+* `asset_definition`: An [AssetDefinitionInputV3](src/core/types/asset_definition.rs) value defining all of the updated
   [AssetDefinitionV3](src/core/types/asset_definition.rs)'s values.  The execution route converts the incoming value to an
   asset definition.
 

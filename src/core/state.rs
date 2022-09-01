@@ -71,12 +71,14 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
     singleton_read(storage, STATE_V2_KEY)
 }
 
-const ASSET_DEFINITIONS_V2_NAMESPACE: &str = "asset_definitions_v2";
+/// Value is currently 'asset_definitions_v2' due to a structural change of data (removing an existing field, scope_spec_address) and switching from
+/// and IndexedMap to a regular Map... so everything was changed to be called 'v3', but no migration was actually needed to transition all values to new
+/// keys as the existing config was able to be read as a Map as-is.
+const ASSET_DEFINITIONS_NAMESPACE: &str = "asset_definitions_v2";
 /// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
 /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
 /// functionality. Private access to ensure only helper functions below are used.
-const ASSET_DEFINITIONS_V3: Map<String, AssetDefinitionV3> =
-    Map::new(ASSET_DEFINITIONS_V2_NAMESPACE);
+const ASSET_DEFINITIONS_V3: Map<String, AssetDefinitionV3> = Map::new(ASSET_DEFINITIONS_NAMESPACE);
 
 pub fn list_asset_definitions_v3(storage: &dyn Storage) -> Vec<AssetDefinitionV3> {
     ASSET_DEFINITIONS_V3

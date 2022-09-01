@@ -10,18 +10,18 @@
   ],
   "properties": {
     "asset_definitions": {
-      "description": "All the initial [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
+      "description": "All the initial [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) for the contract.  This can be left empty and new definitions can be added later using the [Add Asset Definition](crate::execute::add_asset_definition) functionality.",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/AssetDefinitionInputV2"
+        "$ref": "#/definitions/AssetDefinitionInputV3"
       }
     },
     "base_contract_name": {
-      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV2s](super::types::asset_definition::AssetDefinitionV2) will use this value as their parent name.",
+      "description": "The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) will use this value as their parent name.",
       "type": "string"
     },
     "bind_base_name": {
-      "description": "If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name) during the instantiation process to itself.  No action will be taken if the value is `false`, but the base name will still be recorded in the contract's [state](super::state::StateV2) and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV2).",
+      "description": "If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name) during the instantiation process to itself.  No action will be taken if the value is `false`, but the base name will still be recorded in the contract's [state](super::state::StateV2) and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV3).",
       "type": "boolean"
     },
     "is_test": {
@@ -33,7 +33,7 @@
     }
   },
   "definitions": {
-    "AssetDefinitionInputV2": {
+    "AssetDefinitionInputV3": {
       "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
       "type": "object",
       "required": [
@@ -49,6 +49,13 @@
           "description": "Whether or not to bind a Provenance Blockchain Name Module name to this contract when this struct is used to add a new asset type to the contract.  If this value is omitted OR set to true in a request that adds an asset definition, the name derived by combining the [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type` will be bound to the contract.  For example, if the base name is \"pb\" and the asset type is \"myasset,\" the resulting bound name would be \"myasset.pb\".",
           "type": [
             "boolean",
+            "null"
+          ]
+        },
+        "display_name": {
+          "description": "A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)",
+          "type": [
+            "string",
             "null"
           ]
         },
@@ -140,7 +147,7 @@
       "type": "string"
     },
     "VerifierDetailV2": {
-      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).",
       "type": "object",
       "required": [
         "address",

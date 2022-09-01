@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AssetDefinitionInputV2",
+  "title": "AssetDefinitionInputV3",
   "description": "Allows the user to optionally specify the enabled flag on an asset definition, versus forcing it to be added manually on every request, when it will likely always be specified as `true`.",
   "type": "object",
   "required": [
@@ -16,6 +16,13 @@
       "description": "Whether or not to bind a Provenance Blockchain Name Module name to this contract when this struct is used to add a new asset type to the contract.  If this value is omitted OR set to true in a request that adds an asset definition, the name derived by combining the [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type` will be bound to the contract.  For example, if the base name is \"pb\" and the asset type is \"myasset,\" the resulting bound name would be \"myasset.pb\".",
       "type": [
         "boolean",
+        "null"
+      ]
+    },
+    "display_name": {
+      "description": "A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)",
+      "type": [
+        "string",
         "null"
       ]
     },
@@ -107,7 +114,7 @@
       "type": "string"
     },
     "VerifierDetailV2": {
-      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](super::asset_definition::AssetDefinitionV2).",
+      "description": "Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).",
       "type": "object",
       "required": [
         "address",

@@ -121,8 +121,8 @@ pub fn insert_asset_definition_v3(
 }
 
 /// Replaces an existing asset definition in state with the provided value.  If no value exists for
-/// the given definition, an error will be returned.  Note: IndexedMap (the type [asset_definitions_v2](self::asset_definitions_v2)
-/// function returns) provides a really nice update() function that allows two branches (one for
+/// the given definition, an error will be returned.  Note: Map (the internal storage type)
+/// provides a really nice update() function that allows two branches (one for
 /// success and one for failure to find) that seems ideal for this functionality, but it requires a
 /// non-reference version of the data to be used. This requires that the provided definition must be
 /// cloned, which makes it vastly inefficient compared to this implementation.
@@ -138,21 +138,19 @@ pub fn replace_asset_definition_v3(
 ) -> AssetResult<()> {
     let state = ASSET_DEFINITIONS_V3;
     let key = definition.storage_key();
-    state
-        .update(storage, key, |existing| {
-            if let None = existing {
-                ContractError::RecordNotFound {
-                    explanation: format!(
-                        "no record exists to update for asset type [{}]",
-                        &definition.asset_type
-                    ),
-                }
-                .to_err()
-            } else {
-                definition.to_owned().to_ok()
-            }
-        })
-        .map(|_| ())
+    if let Ok(Some(_)) = state.may_load(storage, key.to_string()) {
+        state
+            .save(storage, key, definition)
+            .map_err(ContractError::Std)
+    } else {
+        ContractError::RecordNotFound {
+            explanation: format!(
+                "no record exists to update for asset type [{}]",
+                &definition.asset_type
+            ),
+        }
+        .to_err()
+    }
 }
 
 /// Finds an existing asset definition in state by checking against the provided asset type,

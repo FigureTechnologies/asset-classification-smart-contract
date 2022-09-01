@@ -52,7 +52,7 @@ impl FeePaymentDetail {
             });
             fee_total += destination.fee_amount.u128();
         }
-        // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
+        // Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
         if fee_total > verifier.onboarding_cost.u128() / 2 {
@@ -107,8 +107,8 @@ impl FeePaymentDetail {
 pub struct FeePayment {
     /// The amount to be charged during the asset verification process.  The denom will always
     /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
-    /// amount.  The coin's amount will be double the amount specified in the verifier detail to
-    /// account for Provenance MsgFees 50% charge.
+    /// amount.  The coin's amount will be equal to the amount for a fee_destination in the verifier detail,
+    /// and (onboarding_cost / 2) - fee_destination_total for the verifier itself if that amount is > 0.
     pub amount: Coin,
     /// A name describing to the end user (requestor) the purpose and target of the fee.
     pub name: String,

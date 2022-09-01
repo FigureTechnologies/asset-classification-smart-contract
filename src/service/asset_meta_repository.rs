@@ -14,6 +14,7 @@ pub trait AssetMetaRepository {
     ///
     /// * `scope_address` The Provenance Metadata Scope bech32 address with an hrp of "scope" that
     /// refers to an existing scope.
+    /// * `asset_type` The asset type to query for existence
     fn has_asset<S1: Into<String>, S2: Into<String>>(
         &self,
         scope_address: S1,

@@ -25,5 +25,5 @@ pub mod fee_payment_detail;
 /// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:
 /// [AssetIdentifier](self::asset_identifier::AssetIdentifier)
 pub mod serialized_enum;
-/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV2](self::asset_definition::AssetDefinitionV2).
+/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](self::asset_definition::AssetDefinitionV3).
 pub mod verifier_detail;

@@ -29,7 +29,7 @@ pub struct AssetDefinitionV3 {
     pub enabled: bool,
 }
 impl AssetDefinitionV3 {
-    /// Constructs a new instance of AssetDefinitionV2, setting enabled to `true` by default.
+    /// Constructs a new instance of AssetDefinitionV3, setting enabled to `true` by default.
     ///
     /// # Parameters
     ///
@@ -155,7 +155,7 @@ impl AssetDefinitionInputV3 {
         }
     }
 
-    /// Moves this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2)
+    /// Moves this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3)
     pub fn into_asset_definition(self) -> AssetDefinitionV3 {
         AssetDefinitionV3 {
             asset_type: self.asset_type,
@@ -165,7 +165,7 @@ impl AssetDefinitionInputV3 {
         }
     }
 
-    /// Clones the values contained within this struct into an instance of [AssetDefinitionV2](self::AssetDefinitionV2).
+    /// Clones the values contained within this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3).
     /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV2::into_asset_definition).
     pub fn as_asset_definition(&self) -> AssetDefinitionV3 {
         AssetDefinitionV3 {

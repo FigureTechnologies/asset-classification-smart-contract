@@ -3,7 +3,7 @@ use crate::util::aliases::{AssetResult, DepsC};
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{to_binary, Binary};
 
-/// A query that fetches a target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// A query that fetches a target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.
 ///
 /// # Parameters
@@ -11,7 +11,7 @@ use cosmwasm_std::{to_binary, Binary};
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
 /// * `asset_type` The asset type corresponding to the stored
-/// [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) to look up.
+/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) to look up.
 pub fn query_asset_definition(deps: &DepsC, asset_type: &str) -> AssetResult<Binary> {
     let asset_definition = may_load_asset_definition_by_type_v3(deps.storage, asset_type)?;
     to_binary(&asset_definition)?.to_ok()

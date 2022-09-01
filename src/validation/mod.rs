@@ -3,5 +3,5 @@
 /// Validates the integrity of an intercepted [ExecuteMsg](crate::core::msg::ExecuteMsg) variant.
 pub mod validate_execute_msg;
 /// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its
-/// associated [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) values.
+/// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.
 pub mod validate_init_msg;

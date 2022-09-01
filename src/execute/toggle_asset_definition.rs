@@ -16,10 +16,10 @@ use crate::{
 ///
 /// # Parameters
 ///
-/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinitionV2),
-/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+/// * `asset_type` The unique identifier for the target [AssetDefinition](crate::core::types::asset_definition::AssetDefinitionV3),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
 /// property.
-/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
+/// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV3::enabled)
 /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
 /// in succession (either by accident or by various unrelated callers) will only be honored if
 /// the asset definition is in the intended state during the execution of the route.
@@ -33,10 +33,10 @@ impl ToggleAssetDefinitionV1 {
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
-    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+    /// * `asset_type` The unique identifier for the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
     /// property.
-    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
+    /// * `expected_result` The value of [enabled](crate::core::types::asset_definition::AssetDefinitionV3::enabled)
     /// after the toggle takes place.  This value is required to ensure that multiple toggles executed
     /// in succession (either by accident or by various unrelated callers) will only be honored if
     /// the asset definition is in the intended state during the execution of the route.
@@ -70,7 +70,7 @@ impl ToggleAssetDefinitionV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition)
-/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinitionV2::enabled)
+/// message is provided.  Attempts to swap the [enabled](crate::core::types::asset_definition::AssetDefinitionV3::enabled)
 /// property from true to false, or false to true.
 ///
 /// # Parameters

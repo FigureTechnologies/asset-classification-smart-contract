@@ -6,7 +6,7 @@ use crate::util::{
     traits::ResultExtensions,
 };
 
-/// A query that fetches all [AssetDefinitionV2s](crate::core::types::asset_definition::AssetDefinitionV2)
+/// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.
 ///
 /// # Parameters

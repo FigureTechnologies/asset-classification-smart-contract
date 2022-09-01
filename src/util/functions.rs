@@ -38,8 +38,8 @@ where
 /// # Parameters
 ///
 /// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the
-/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type) property of an
-/// [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an
+/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
 /// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should
 /// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the
 /// contract's [StateV2](crate::core::state::StateV2) internally-stored value.

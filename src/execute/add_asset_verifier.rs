@@ -13,8 +13,8 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
-/// value of an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+/// value of an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// in contract storage.
 /// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)
 /// request.
@@ -28,8 +28,8 @@ impl AddAssetVerifierV1 {
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
-    /// value of an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+    /// * `asset_type` The type of asset, corresponding to the [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+    /// value of an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
     /// in contract storage.
     /// * `verifier` The verifier detail to use in the [add_asset_verifier](self::add_asset_verifier)
     /// request.
@@ -64,7 +64,7 @@ impl AddAssetVerifierV1 {
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier)
 /// message is provided.  Attempts to add a new [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
-/// to an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2) if no
+/// to an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) if no
 /// verifier exists with a matching [address](crate::core::types::verifier_detail::VerifierDetailV2::address).
 ///
 /// # Parameters

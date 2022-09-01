@@ -13,7 +13,7 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
 /// property that matches an existing asset definition in contract storage.
 #[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAssetDefinitionV1 {
@@ -24,7 +24,7 @@ impl UpdateAssetDefinitionV1 {
     ///
     /// # Parameters
     ///
-    /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+    /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
     /// property that matches an existing asset definition in contract storage.
     pub fn new(asset_definition: AssetDefinitionV3) -> Self {
         UpdateAssetDefinitionV1 { asset_definition }
@@ -53,8 +53,8 @@ impl UpdateAssetDefinitionV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
-/// message is provided.  Attempts to replace an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
-/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
+/// message is provided.  Attempts to replace an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
 /// property.  If no matching type is present, the request will be rejected.
 ///
 /// # Parameters

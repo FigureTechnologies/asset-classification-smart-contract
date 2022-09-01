@@ -11,7 +11,7 @@ use provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
 
 /// The main functionality executed when the smart contract is first instantiated.   This creates
 /// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided
-/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV2) provided in the init
+/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init
 /// msg.
 ///
 /// # Parameters

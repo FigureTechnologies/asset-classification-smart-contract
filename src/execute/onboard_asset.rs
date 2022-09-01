@@ -22,12 +22,12 @@ use provwasm_std::ProvenanceQuerier;
 ///
 /// * `identifier` An instance of the asset identifier enum that helps the contract identify which
 /// scope that the requestor is referring to in the request.
-/// * `asset_type` [AssetDefinitionV2's](crate::core::types::asset_definition::AssetDefinitionV2) unique
-/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type) value.  This
+/// * `asset_type` [AssetDefinitionV3's](crate::core::types::asset_definition::AssetDefinitionV3) unique
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) value.  This
 /// value must correspond to an existing type in the contract's internal storage, or the request
 /// for onboarding will be rejected.
 /// * `verifier_address` The bech32 Provenance Blockchain [address](crate::core::types::verifier_detail::VerifierDetailV2::address)
-/// of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) on the [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// referred to by the [asset_type](self::OnboardAssetV1::asset_type) property. If the address does
 /// not refer to any existing verifier detail, the request will be rejected.
 /// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute's](crate::core::types::asset_scope_attribute::AssetScopeAttribute)

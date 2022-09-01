@@ -16,10 +16,10 @@ use provwasm_std::{bind_name, NameBinding};
 /// # Parameters
 ///
 /// * `asset_definition` The asset definition to add to the internal storage.  Must have a unique
-/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type).
 /// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
 /// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
-/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type).
+/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type).
 #[derive(Clone, PartialEq, Eq)]
 pub struct AddAssetDefinitionV1 {
     pub asset_definition: AssetDefinitionV3,
@@ -50,7 +50,7 @@ impl AddAssetDefinitionV1 {
 }
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
-/// message is provided.  Attempts to add a new [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2)
+/// message is provided.  Attempts to add a new [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
 /// to the contract's internal storage.
 ///
 /// # Parameters

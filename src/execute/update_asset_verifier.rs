@@ -16,12 +16,12 @@ use cosmwasm_std::{MessageInfo, Response};
 ///
 /// # Parameters
 ///
-/// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
-/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
-/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)
+/// * `asset_type` The unique identifier for the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3),
+/// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+/// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV3::verifiers)
 /// property.
 /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
-/// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
+/// will replace the existing detail on the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
 #[derive(Clone, PartialEq, Eq)]
 pub struct UpdateAssetVerifierV1 {
     pub asset_type: String,
@@ -32,12 +32,12 @@ impl UpdateAssetVerifierV1 {
     ///
     /// # Parameters
     ///
-    /// * `asset_type` The unique identifier for the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2),
-    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV2::asset_type)
-    /// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV2::verifiers)
+    /// * `asset_type` The unique identifier for the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3),
+    /// keyed on its [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+    /// property that the target verifier detail lives in, in its [verifiers](crate::core::types::asset_definition::AssetDefinitionV3::verifiers)
     /// property.
     /// * `verifier` The verifier detail that will be updated.  All values within this provided struct
-    /// will replace the existing detail on the target [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
+    /// will replace the existing detail on the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
     pub fn new<S: Into<String>>(asset_type: S, verifier: VerifierDetailV2) -> Self {
         UpdateAssetVerifierV1 {
             asset_type: asset_type.into(),
@@ -69,7 +69,7 @@ impl UpdateAssetVerifierV1 {
 
 /// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
 /// message is provided.  Replaces an existing [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
-/// on an existing [AssetDefinitionV2](crate::core::types::asset_definition::AssetDefinitionV2).
+/// on an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
 ///
 /// # Parameters
 ///

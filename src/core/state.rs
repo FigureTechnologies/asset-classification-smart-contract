@@ -75,7 +75,7 @@ pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
 /// and IndexedMap to a regular Map... so everything was changed to be called 'v3', but no migration was actually needed to transition all values to new
 /// keys as the existing config was able to be read as a Map as-is.
 const ASSET_DEFINITIONS_NAMESPACE: &str = "asset_definitions_v2";
-/// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
+/// The main entrypoint access for [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) state.
 /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
 /// functionality. Private access to ensure only helper functions below are used.
 const ASSET_DEFINITIONS_V3: Map<String, AssetDefinitionV3> = Map::new(ASSET_DEFINITIONS_NAMESPACE);
@@ -90,7 +90,7 @@ pub fn list_asset_definitions_v3(storage: &dyn Storage) -> Vec<AssetDefinitionV3
 }
 
 /// Inserts a new asset definition into storage. If a value already exists, an error will be returned.
-/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
+/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// value. An error will be returned if this unique constraint is violated.
 ///
 /// # Parameters
@@ -130,7 +130,7 @@ pub fn insert_asset_definition_v3(
 /// # Parameters
 ///
 /// * `storage` A mutable reference to the contract's internal storage.
-/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
+/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// property.
 pub fn replace_asset_definition_v3(
     storage: &mut dyn Storage,
@@ -161,7 +161,7 @@ pub fn replace_asset_definition_v3(
 /// # Parameters
 ///
 /// * `storage` A reference to the contract's internal storage.
-/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// for the requested asset definition.
 pub fn may_load_asset_definition_by_type_v3<S: Into<String>>(
     storage: &dyn Storage,
@@ -178,7 +178,7 @@ pub fn may_load_asset_definition_by_type_v3<S: Into<String>>(
 /// # Parameters
 ///
 /// * `storage` A reference to the contract's internal storage.
-/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV2::asset_type)
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// for the requested asset definition.
 pub fn load_asset_definition_by_type_v3<S: Into<String>>(
     storage: &dyn Storage,

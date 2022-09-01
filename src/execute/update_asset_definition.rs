@@ -95,7 +95,8 @@ mod tests {
         update_asset_definition, UpdateAssetDefinitionV1,
     };
     use crate::testutil::test_constants::{
-        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_SENDER_ADDRESS,
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_TYPE_DISPLAY_NAME,
+        DEFAULT_SENDER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
@@ -165,7 +166,13 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
-            asset_definition: AssetDefinitionInputV3::new(DEFAULT_ASSET_TYPE, vec![], None, None),
+            asset_definition: AssetDefinitionInputV3::new(
+                DEFAULT_ASSET_TYPE,
+                DEFAULT_ASSET_TYPE_DISPLAY_NAME,
+                vec![],
+                None,
+                None,
+            ),
         };
         let error = execute(
             deps.as_mut(),
@@ -222,6 +229,7 @@ mod tests {
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         let missing_asset_definition = AssetDefinitionV3::new(
             "nonexistent-type",
+            "WHOAMI".to_some(),
             vec![VerifierDetailV2::new(
                 "verifier",
                 Uint128::new(100),
@@ -263,6 +271,7 @@ mod tests {
     fn get_update_asset_definition() -> AssetDefinitionInputV3 {
         let def = AssetDefinitionInputV3::new(
             DEFAULT_ASSET_TYPE,
+            DEFAULT_ASSET_TYPE_DISPLAY_NAME,
             vec![VerifierDetailV2::new(
                 "tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs",
                 Uint128::new(1500000),

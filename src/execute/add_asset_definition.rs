@@ -232,6 +232,7 @@ mod tests {
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInputV3::new(
                 "",
+                None::<String>,
                 vec![],
                 true.to_some(),
                 true.to_some(),
@@ -330,6 +331,7 @@ mod tests {
     fn get_valid_asset_definition() -> AssetDefinitionInputV3 {
         let def = AssetDefinitionInputV3::new(
             TEST_ASSET_TYPE,
+            Some("TEST YO'SELF"),
             // Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers
             vec![VerifierDetailV2::new(

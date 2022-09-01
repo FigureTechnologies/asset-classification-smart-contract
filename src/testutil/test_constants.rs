@@ -16,6 +16,8 @@ pub const DEFAULT_FEE_ADDRESS: &str = "tp1kq5zx7w0x6jvavcay8tutqldync62r29gp8e68
 pub const DEFAULT_SCOPE_ADDRESS: &str = "scope1qrz4elswnlk3rmypjy9etj9pywwqz6myzw";
 /// The default asset definition when using test_instantiate should be expected to be of this type
 pub const DEFAULT_ASSET_TYPE: &str = "test_asset";
+/// The default asset definition when using test_instantiate should be expected to be of this type
+pub const DEFAULT_ASSET_TYPE_DISPLAY_NAME: Option<&str> = Some("Your Favorite Asset");
 /// An alternate asset type to use for secondary classification
 pub const DEFAULT_SECONDARY_ASSET_TYPE: &str = "test_asset_2";
 /// This address should be implicitly be associated with DEFAULT_SCOPE_ADDRESS

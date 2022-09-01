@@ -78,6 +78,7 @@ mod tests {
             .map(|id| {
                 AssetDefinitionInputV3::new(
                     format!("asset_type_{}", id),
+                    format!("Display Name for {}", id).to_some(),
                     vec![VerifierDetailV2::new(
                         DEFAULT_VERIFIER_ADDRESS,
                         Uint128::new(150),

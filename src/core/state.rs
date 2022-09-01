@@ -228,8 +228,9 @@ pub fn insert_fee_payment_detail(
     if load_fee_payment_detail(storage, &fee_payment_detail.scope_address, asset_type).is_ok() {
         return ContractError::RecordAlreadyExists {
             explanation: format!(
-                "cannot insert payment detail for scope [{}] because a record already exists with that address",
-                &fee_payment_detail.scope_address
+                "cannot insert payment detail for scope [{}] and asset type [{}] because a record already exists with that address and asset type",
+                &fee_payment_detail.scope_address,
+                &asset_type
             )
         }.to_err();
     }
@@ -331,11 +332,12 @@ mod tests {
     use crate::testutil::test_utilities::{
         get_default_verifier_detail, get_duped_fee_payment_detail,
     };
+    use crate::util::traits::OptionExtensions;
 
     #[test]
     fn test_insert_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV3::new("heloc", vec![]);
+        let def = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
         let error = insert_asset_definition_v3(deps.as_mut().storage, &def).unwrap_err();
@@ -361,7 +363,8 @@ mod tests {
     #[test]
     fn test_replace_asset_definition() {
         let mut deps = mock_dependencies(&[]);
-        let mut def = AssetDefinitionV3::new("heloc", vec![]);
+        let mut def =
+            AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         let error = replace_asset_definition_v3(deps.as_mut().storage, &def).unwrap_err();
         match error {
             ContractError::RecordNotFound { explanation } => {
@@ -389,7 +392,7 @@ mod tests {
     #[test]
     fn test_may_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV3::new("heloc", vec![]);
+        let heloc = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert without error");
         assert!(
@@ -410,8 +413,8 @@ mod tests {
     #[test]
     fn test_load_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let heloc = AssetDefinitionV3::new("heloc", vec![]);
-        let mortgage = AssetDefinitionV3::new("mortgage", vec![]);
+        let heloc = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
+        let mortgage = AssetDefinitionV3::new("mortgage", "DEATH PLEDGE".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert appropriately");
         insert_asset_definition_v3(deps.as_mut().storage, &mortgage)
@@ -435,7 +438,7 @@ mod tests {
     #[test]
     fn test_delete_asset_definition_by_type() {
         let mut deps = mock_dependencies(&[]);
-        let def = AssetDefinitionV3::new("heloc", vec![]);
+        let def = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored without error");
         assert_eq!(
@@ -650,6 +653,7 @@ mod tests {
     fn asset_definition_v2_to_v3(v2: AssetDefinitionV2) -> AssetDefinitionV3 {
         AssetDefinitionV3 {
             asset_type: v2.asset_type,
+            display_name: None,
             verifiers: v2.verifiers,
             enabled: v2.enabled,
         }

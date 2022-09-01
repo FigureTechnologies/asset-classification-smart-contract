@@ -219,6 +219,7 @@ pub mod tests {
             is_test: false.to_some(),
             asset_definitions: vec![AssetDefinitionInputV3::new(
                 "heloc",
+                "Home Equity Line of Credit".to_some(),
                 vec![VerifierDetailV2::new(
                     "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                     Uint128::new(200),
@@ -244,6 +245,7 @@ pub mod tests {
             asset_definitions: vec![
                 AssetDefinitionInputV3::new(
                     "heloc",
+                    "Home Equity Line of Credit".to_some(),
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(200),
@@ -259,6 +261,7 @@ pub mod tests {
                 ),
                 AssetDefinitionInputV3::new(
                     "mortgage",
+                    "MORTGAGE".to_some(),
                     vec![VerifierDetailV2::new(
                         "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
                         Uint128::new(500),
@@ -280,6 +283,7 @@ pub mod tests {
                 ),
                 AssetDefinitionInputV3::new(
                     "pl",
+                    "Personal Loan".to_some(),
                     vec![
                         VerifierDetailV2::new(
                             "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
@@ -327,6 +331,7 @@ pub mod tests {
                 is_test: false.to_some(),
                 asset_definitions: vec![AssetDefinitionInputV3::new(
                     "heloc",
+                    "Home Equity Line of Credit".to_some(),
                     vec![VerifierDetailV2::new(
                         "address",
                         Uint128::new(100),
@@ -350,8 +355,20 @@ pub mod tests {
                 bind_base_name: true,
                 is_test: false.to_some(),
                 asset_definitions: vec![
-                    AssetDefinitionInputV3::new("heloc", vec![], None, None),
-                    AssetDefinitionInputV3::new("heloc", vec![], None, None),
+                    AssetDefinitionInputV3::new(
+                        "heloc",
+                        "Home Equity Line of Credit".to_some(),
+                        vec![],
+                        None,
+                        None,
+                    ),
+                    AssetDefinitionInputV3::new(
+                        "heloc",
+                        "Home Equity Line of Credit".to_some(),
+                        vec![],
+                        None,
+                        None,
+                    ),
                 ],
             },
             "asset_definitions: each definition must specify a unique asset type",
@@ -365,7 +382,13 @@ pub mod tests {
                 base_contract_name: "asset".to_string(),
                 bind_base_name: true,
                 is_test: false.to_some(),
-                asset_definitions: vec![AssetDefinitionInputV3::new("", vec![], None, None)],
+                asset_definitions: vec![AssetDefinitionInputV3::new(
+                    "",
+                    None::<String>,
+                    vec![],
+                    None,
+                    None,
+                )],
             },
             "asset_definition:asset_type: must not be blank",
         );
@@ -375,6 +398,7 @@ pub mod tests {
     fn test_valid_asset_definition() {
         let definition = AssetDefinitionV3::new(
             "heloc",
+            "Home Equity Line of Credit".to_some(),
             vec![VerifierDetailV2::new(
                 "tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g",
                 Uint128::new(200),
@@ -399,6 +423,7 @@ pub mod tests {
         test_invalid_asset_definition(
             &AssetDefinitionV3::new(
                 "",
+                None::<String>,
                 vec![VerifierDetailV2::new(
                     "address",
                     Uint128::new(100),
@@ -414,7 +439,7 @@ pub mod tests {
     #[test]
     fn test_invalid_asset_definition_empty_verifiers() {
         test_invalid_asset_definition(
-            &AssetDefinitionV3::new("mortgage", vec![]),
+            &AssetDefinitionV3::new("mortgage", "MORTGAGE".to_some(), vec![]),
             "asset_definition:verifiers: at least one verifier must be supplied per asset type",
         );
     }
@@ -424,6 +449,7 @@ pub mod tests {
         test_invalid_asset_definition(
             &AssetDefinitionV3::new(
                 "",
+                None::<String>,
                 vec![VerifierDetailV2::new(
                     "",
                     Uint128::new(100),

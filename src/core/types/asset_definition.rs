@@ -20,6 +20,8 @@ use crate::{
 pub struct AssetDefinitionV3 {
     /// The unique name of the asset associated with the definition.
     pub asset_type: String,
+    /// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)
+    pub display_name: Option<String>,
     /// Individual verifier definitions.  There can be many verifiers for a single asset type.
     pub verifiers: Vec<VerifierDetailV2>,
     /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
@@ -33,9 +35,14 @@ impl AssetDefinitionV3 {
     ///
     /// * `asset_type` The unique name of the asset associated with the definition.
     /// * `verifiers` Individual verifier definitions.
-    pub fn new<S1: Into<String>>(asset_type: S1, verifiers: Vec<VerifierDetailV2>) -> Self {
+    pub fn new<S1: Into<String>, S2: Into<String>>(
+        asset_type: S1,
+        display_name: Option<S2>,
+        verifiers: Vec<VerifierDetailV2>,
+    ) -> Self {
         AssetDefinitionV3 {
             asset_type: asset_type.into(),
+            display_name: display_name.map(|n| n.into()),
             verifiers,
             enabled: true,
         }
@@ -103,6 +110,8 @@ pub struct AssetDefinitionInputV3 {
     /// The name of the asset associated with the definition.  This value must be unique across all
     /// instances persisted in contract storage, or requests to add will be rejected.
     pub asset_type: String,
+    /// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)
+    pub display_name: Option<String>,
     /// Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
     /// value must have a unique `address` property or requests to add will be rejected.
     pub verifiers: Vec<VerifierDetailV2>,
@@ -130,14 +139,16 @@ impl AssetDefinitionInputV3 {
     /// requests to onboard assets of this type will be rejected.
     /// * `bind_name` Whether or not to bind a Provenance Blockchain Name Module name to this contract when this
     /// struct is used to add a new asset type to the contract.
-    pub fn new<S1: Into<String>>(
+    pub fn new<S1: Into<String>, S2: Into<String>>(
         asset_type: S1,
+        display_name: Option<S2>,
         verifiers: Vec<VerifierDetailV2>,
         enabled: Option<bool>,
         bind_name: Option<bool>,
     ) -> Self {
         Self {
             asset_type: asset_type.into(),
+            display_name: display_name.map(|n| n.into()),
             verifiers,
             enabled,
             bind_name,
@@ -148,6 +159,7 @@ impl AssetDefinitionInputV3 {
     pub fn into_asset_definition(self) -> AssetDefinitionV3 {
         AssetDefinitionV3 {
             asset_type: self.asset_type,
+            display_name: self.display_name,
             verifiers: self.verifiers,
             enabled: self.enabled.unwrap_or(true),
         }
@@ -158,6 +170,7 @@ impl AssetDefinitionInputV3 {
     pub fn as_asset_definition(&self) -> AssetDefinitionV3 {
         AssetDefinitionV3 {
             asset_type: self.asset_type.clone(),
+            display_name: self.display_name.clone(),
             verifiers: self.verifiers.clone(),
             enabled: self.enabled.unwrap_or(true),
         }

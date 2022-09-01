@@ -156,6 +156,7 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         let first_asset_def = AssetDefinitionInputV3::new(
             "heloc",
+            "Home Equity Line of Street Cred".to_some(),
             vec![VerifierDetailV2::new(
                 DEFAULT_VERIFIER_ADDRESS,
                 DEFAULT_ONBOARDING_COST.into(),
@@ -171,6 +172,7 @@ mod tests {
         );
         let second_asset_def = AssetDefinitionInputV3::new(
             "mortgage",
+            "DEATH PLEDGE".to_some(),
             vec![VerifierDetailV2::new(
                 "tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq",
                 Uint128::new(300),
@@ -284,6 +286,7 @@ mod tests {
                 bind_base_name: false,
                 asset_definitions: vec![AssetDefinitionInputV3::new(
                     DEFAULT_ASSET_TYPE,
+                    None::<String>,
                     vec![get_default_verifier_detail()],
                     true.to_some(),
                     // bind_name == false
@@ -322,7 +325,13 @@ mod tests {
     #[test]
     fn test_invalid_init_fails_for_invalid_init_msg() {
         let args = InstArgs {
-            asset_definitions: vec![AssetDefinitionInputV3::new("", vec![], None, None)],
+            asset_definitions: vec![AssetDefinitionInputV3::new(
+                "",
+                None::<String>,
+                vec![],
+                None,
+                None,
+            )],
             ..Default::default()
         };
         let error = instantiate(

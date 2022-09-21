@@ -28,7 +28,6 @@ impl TestVerifyAsset {
             success: true,
             message: "Verified asset without errors".to_string().to_some(),
             access_routes: get_default_access_routes(),
-            remove_os_gateway_permission: true,
         }
     }
 

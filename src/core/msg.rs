@@ -126,7 +126,10 @@ pub enum ExecuteMsg {
         /// An optional parameter that will cause the emitted events to include values that signal
         /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
         /// watching the events that the selected verifier has permission to inspect the identified
-        /// scope's records via fetch routes.
+        /// scope's records via fetch routes.  This will only cause a gateway to grant permissions
+        /// to a scope to which the gateway itself already has read permissions.  This essentially
+        /// means that a key held by a gateway instance must have been used to store the scope's
+        /// records in [Provenance Object Store](https://github.com/provenance-io/object-store).
         ///
         /// This behavior defaults to TRUE.
         add_os_gateway_permission: Option<bool>,
@@ -161,18 +164,6 @@ pub enum ExecuteMsg {
         /// data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
-        /// An optional parameter that will cause the emitted events to include values that signal
-        /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
-        /// watching the events that the verifier should no longer have permission to inspect the
-        /// identified scope's records via fetch routes.
-        ///
-        /// Note: This route uses a unique identifier based on asset type, so if simultaneous access
-        /// grants were sent to the gateway for different asset types' verifications on a singular
-        /// scope, the verifier will retain access via the gateway until all verifications have been
-        /// completed.
-        ///
-        /// This behavior defaults to TRUE.
-        remove_os_gateway_permission: Option<bool>,
     },
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to

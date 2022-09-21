@@ -35,13 +35,6 @@ use cosmwasm_std::{MessageInfo, Response};
 /// of [AccessRoute](crate::core::types::access_route::AccessRoute) values to allow actors with permission
 /// to easily fetch asset data from a new location, potentially without any Provenance Blockchain
 /// interaction, facilitating the process of data interaction.
-/// * `remove_os_gateway_permission` An optional parameter that will cause the emitted events to
-/// include values that signal to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
-/// watching the events that the verifier should no longer have permission to inspect the identified
-/// scope's records via fetch routes.  This route uses a unique identifier based on asset type, so
-/// if simultaneous access grants were sent to the gateway for different asset types' verifications
-/// on a singular scope, the verifier will retain access via the gateway until all verifications
-/// have been completed.  This behavior defaults to TRUE.
 #[derive(Clone, PartialEq, Eq)]
 pub struct VerifyAssetV1 {
     pub identifier: AssetIdentifier,
@@ -49,7 +42,6 @@ pub struct VerifyAssetV1 {
     pub success: bool,
     pub message: Option<String>,
     pub access_routes: Vec<AccessRoute>,
-    pub remove_os_gateway_permission: bool,
 }
 impl VerifyAssetV1 {
     /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
@@ -68,14 +60,12 @@ impl VerifyAssetV1 {
                 success,
                 message,
                 access_routes,
-                remove_os_gateway_permission,
             } => VerifyAssetV1 {
                 identifier: identifier.to_asset_identifier()?,
                 asset_type,
                 success,
                 message,
                 access_routes: access_routes.unwrap_or_default(),
-                remove_os_gateway_permission: remove_os_gateway_permission.unwrap_or(true),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -148,8 +138,8 @@ where
         msg.access_routes,
     )?;
 
-    // construct/emit verification attribute
-    let response = Response::new()
+    // construct/emit verification attributes
+    Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::VerifyAsset,
@@ -158,42 +148,34 @@ where
             )
             .set_verifier(info.sender.as_str()),
         )
-        .add_messages(repository.get_messages());
-    // TODO: Use os_gateway_contract_attributes lib once it is published to crates.io
-    let response = if msg.remove_os_gateway_permission {
-        response
-            .add_attribute("object_store_gateway_event_type", "access_revoke")
-            .add_attribute(
-                "object_store_gateway_scope_address",
-                &asset_identifiers.scope_address,
-            )
-            .add_attribute(
-                "object_store_gateway_target_account_address",
-                info.sender.as_str(),
-            )
-            .add_attribute(
-                "object_store_gateway_access_grant_id",
-                generate_os_gateway_grant_id(
-                    scope_attribute.asset_type,
-                    asset_identifiers.scope_address,
-                ),
-            )
-    } else {
-        response
-    };
-    response.to_ok()
+        // TODO: Use os_gateway_contract_attributes lib once it is published to crates.io
+        .add_attribute("object_store_gateway_event_type", "access_revoke")
+        .add_attribute(
+            "object_store_gateway_scope_address",
+            &asset_identifiers.scope_address,
+        )
+        .add_attribute(
+            "object_store_gateway_target_account_address",
+            info.sender.as_str(),
+        )
+        .add_attribute(
+            "object_store_gateway_access_grant_id",
+            generate_os_gateway_grant_id(
+                scope_attribute.asset_type,
+                asset_identifiers.scope_address,
+            ),
+        )
+        .add_messages(repository.get_messages())
+        .to_ok()
 }
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::testing::mock_env;
     use cosmwasm_std::Response;
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::ProvenanceMsg;
     use serde_json_wasm::to_string;
 
-    use crate::contract::execute;
-    use crate::core::msg::ExecuteMsg::VerifyAsset;
     use crate::core::state::may_load_fee_payment_detail;
     use crate::execute::onboard_asset::OnboardAssetV1;
     use crate::testutil::test_constants::{
@@ -257,7 +239,6 @@ mod tests {
                 success: true,
                 message: None,
                 access_routes: vec![],
-                remove_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -298,7 +279,6 @@ mod tests {
                 success: true,
                 message: None,
                 access_routes: vec![],
-                remove_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -349,7 +329,6 @@ mod tests {
                 success: true,
                 message: "Your data sucks".to_string().to_some(),
                 access_routes: vec![],
-                remove_os_gateway_permission: false,
             },
         )
         .unwrap();
@@ -602,7 +581,8 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        let response = test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        assert_verify_response_attributes_are_correct(&response);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -618,7 +598,9 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let response =
+            test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        assert_verify_response_attributes_are_correct(&response);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -629,55 +611,9 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_verify_with_object_store_gateway_permissions() {
-        let get_verify_result = |permission_spec: Option<bool>| {
-            let mut deps = mock_dependencies(&[]);
-            setup_test_suite(&mut deps, InstArgs::default());
-            test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-            execute(
-                deps.as_mut(),
-                mock_env(),
-                empty_mock_info(DEFAULT_VERIFIER_ADDRESS),
-                VerifyAsset {
-                    identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS)
-                        .to_serialized_enum(),
-                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                    success: true,
-                    message: "did verification stuff or something".to_string().to_some(),
-                    access_routes: None,
-                    remove_os_gateway_permission: permission_spec,
-                },
-            )
-        };
-
-        // Proves that omitting the permission param will default to true and produce all expected
-        // os gateway permission attributes
-        let default_response = get_verify_result(None).expect(
-            "verification should succeed with good params and default os gateway permissions",
-        );
-        assert_verify_response_attributes_are_correct(&default_response, true);
-
-        // Proves that explicitly providing the permission param as true will produce all expected os
-        // gateway permission attributes
-        let explicit_true_response = get_verify_result(true.to_some()).expect(
-            "verification should succeed with good params and explicit true os gateway permissions",
-        );
-        assert_verify_response_attributes_are_correct(&explicit_true_response, true);
-
-        // Proves that explicitly providing the permission param as false will omit all the os
-        // gateway permission attributes
-        let explicit_false_response = get_verify_result(false.to_some())
-            .expect("verification should succeed with good params and explicit false os gateway permissions");
-        assert_verify_response_attributes_are_correct(&explicit_false_response, false);
-    }
-
-    fn assert_verify_response_attributes_are_correct(
-        response: &Response<ProvenanceMsg>,
-        expect_os_gateway_values: bool,
-    ) {
+    fn assert_verify_response_attributes_are_correct(response: &Response<ProvenanceMsg>) {
         assert_eq!(
-            4 + if expect_os_gateway_values { 4 } else { 0 },
+            8,
             response.attributes.len(),
             "the correct number of response attributes should be emitted",
         );
@@ -701,9 +637,6 @@ mod tests {
             single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
             "the correct verifier address attribute should be emitted",
         );
-        if !expect_os_gateway_values {
-            return;
-        }
         // TODO: Replace these values with constants provided by the os_gateway_contract_attributes crate
         assert_eq!(
             "access_revoke",

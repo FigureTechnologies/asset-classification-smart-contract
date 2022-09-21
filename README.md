@@ -255,6 +255,13 @@ can be leveraged to easily determine the source of the underlying data.  If thes
 they can always be added by using the `UpdateAccessRoutes` execution route.  Note: Access routes can specify a `name`
 parameter, as well, to indicate the reason for the route, but this is entirely optional.
 
+* `add_os_gateway_permission`: An optional parameter that will cause the emitted events to include values that signal
+to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway) watching the events that the
+selected verifier has permission to inspect the identified scope's records via fetch routes. This will only cause a
+gateway to grant permissions to a scope to which the gateway itself already has read permissions.  This essentially
+means that a key held by a gateway instance must have been used to store the scope's records in [Provenance Object Store](https://github.com/provenance-io/object-store).
+This behavior defaults to TRUE if not explicitly provided in the json payload.
+
 ##### Emitted Attributes
 * `asset_event_type`: This value will always be populated as `onboard_asset`.
 
@@ -268,6 +275,25 @@ execution route.
 * `asset_scope_owner_address`: This value will be the bech32 address of the owner of the scope processed in the request.
 As the request will be rejected unless it is made by the scope owner, this address should match the sender of the message
 as well.
+
+* `object_store_gateway_event_type`: This value is only emitted when `add_os_gateway_permission` is omitted or explicitly
+specified as `true`.  It will always have a value of `access_grant` and indicates to the Object Store Gateway that the
+verifier should receive permissions to inspect the records included in the scope referred to by `asset_scope_address`.
+
+* `object_store_gateway_scope_address`: This value is only emitted when `add_os_gateway_permission` is omitted or
+explicitly specified as `true`.  It will always have the same value as `asset_scope_address`, and indicates the bech32
+scope identifier to use for access grants.
+
+* `object_store_gateway_target_account_address`: This value is only emitted when `add_os_gateway_permission` is omitted
+or explicitly specified as `true`.  It will always have the same value as `asset_verifier_address`, and indicates the
+bech32 account identifier of the verifier, ensuring that the verifier receives a grant to inspect scope records.
+
+* `object_store_gateway_access_grant_id`: This value is only emitted when `add_os_gateway_permission` is omitted or
+explicitly specified as `true`.  It is a concatenation of the `asset_type` and `asset_scope_address` values, creating
+a unique identifier for an asset's verification.  This allows multiple asset type verifications to occur for the same
+scope address, working in tandem with the fact that the `verify_asset` functionality will revoke access grants from the
+verifier based on the same grant id as they are processed.  This will ensure that the verifier can only inspect scope
+data for as long as the verification process is active.
 
 ##### Request Sample
 ```json
@@ -288,7 +314,8 @@ as well.
         "route": "grpc://mycoolgrpcserver.website",
         "name": "GRPC Access"
       }
-    ]
+    ],
+    "add_os_gateway_permission": false
   }
 }
 ```
@@ -304,6 +331,12 @@ has the permission needed to classify an asset.  In this way, the process for ve
 parties' requirements for security are satisfied.  In addition, the verifier used in the process is stored on the scope
 attribute after the fact, ensuring that external inspectors of the generated attribute can choose which verifications to
 acknowledge and which to disregard.
+
+It is important to note that this route emits event attributes automatically that are interpreted by
+[Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway).  However, if the values indicate to
+the gateway that it should remove a permission that was never at first created, then the event will be ignored and take
+no negative actions.  In order to avoid the contract triggering an impact in the gateway, simply provide a value of
+`"add_os_gateway_permission": false` when using the `onboard_asset` route.
 
 ##### Request Parameters
 
@@ -343,6 +376,23 @@ attached to the scope that was previously onboarded before verification.
 
 * `asset_verifier_address`: This value will be the bech32 address of the verifier invoking the execution route.
 
+* `object_store_gateway_event_type`: This value will always have a value of `access_revoke` and indicates to the Object
+Store Gateway that the verifier should have its permissions to inspect the records included in the scope referred to by
+`asset_scope_address` removed.
+
+* `object_store_gateway_scope_address`: This value will always have the same value as `asset_scope_address`, and
+indicates the bech32 scope identifier to target an existing access grant.
+
+* `object_store_gateway_target_account_address`: It will always have the same value as `asset_verifier_address`, and
+indicates the bech32 account identifier of the verifier, ensuring that the verifier has its grant to inspect scope
+records revoked.
+
+* `object_store_gateway_access_grant_id`: It is a concatenation of the `asset_type` and `asset_scope_address` values,
+creating a unique identifier for an asset's verification.  This allows multiple asset type verifications to occur for
+the same scope address, working in tandem with the fact that the `verify_asset` functionality will revoke access grants
+from the verifier based on the same grant id as they are processed.  This will ensure that the verifier can only inspect
+scope data for as long as the verification process is active.
+
 ##### Request Sample
 ```json
 {
@@ -357,7 +407,8 @@ attached to the scope that was previously onboarded before verification.
       {
         "route": "https://www.myverifierhost.verifier/api/v2/asset/417556d2-d6ec-11ec-88d8-8be6d7728b01"
       }
-    ]
+    ],
+    "remove_os_gateway_permission": false
   }
 }
 ```

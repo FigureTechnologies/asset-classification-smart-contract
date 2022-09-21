@@ -9,6 +9,7 @@ use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
+use crate::util::functions::generate_os_gateway_grant_id;
 use crate::util::traits::ResultExtensions;
 use cosmwasm_std::{MessageInfo, Response};
 
@@ -137,7 +138,7 @@ where
         msg.access_routes,
     )?;
 
-    // construct/emit verification attribute
+    // construct/emit verification attributes
     Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
@@ -145,7 +146,24 @@ where
                 &scope_attribute.asset_type,
                 &asset_identifiers.scope_address,
             )
-            .set_verifier(info.sender),
+            .set_verifier(info.sender.as_str()),
+        )
+        // TODO: Use os_gateway_contract_attributes lib once it is published to crates.io
+        .add_attribute("object_store_gateway_event_type", "access_revoke")
+        .add_attribute(
+            "object_store_gateway_scope_address",
+            &asset_identifiers.scope_address,
+        )
+        .add_attribute(
+            "object_store_gateway_target_account_address",
+            info.sender.as_str(),
+        )
+        .add_attribute(
+            "object_store_gateway_access_grant_id",
+            generate_os_gateway_grant_id(
+                scope_attribute.asset_type,
+                asset_identifiers.scope_address,
+            ),
         )
         .add_messages(repository.get_messages())
         .to_ok()
@@ -153,7 +171,9 @@ where
 
 #[cfg(test)]
 mod tests {
+    use cosmwasm_std::Response;
     use provwasm_mocks::mock_dependencies;
+    use provwasm_std::ProvenanceMsg;
     use serde_json_wasm::to_string;
 
     use crate::core::state::may_load_fee_payment_detail;
@@ -161,7 +181,11 @@ mod tests {
     use crate::testutil::test_constants::{
         DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SECONDARY_ASSET_TYPE,
     };
-    use crate::util::functions::generate_asset_attribute_name;
+    use crate::testutil::test_utilities::single_attribute_for_key;
+    use crate::util::constants::{
+        ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VERIFIER_ADDRESS_KEY,
+    };
+    use crate::util::functions::{generate_asset_attribute_name, generate_os_gateway_grant_id};
     use crate::{
         core::{
             error::ContractError,
@@ -557,7 +581,8 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        let response = test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        assert_verify_response_attributes_are_correct(&response);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -573,7 +598,9 @@ mod tests {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let response =
+            test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        assert_verify_response_attributes_are_correct(&response);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -581,6 +608,55 @@ mod tests {
             AssetOnboardingStatus::Denied,
             attribute.onboarding_status,
             "the asset should be in denied status after onboarding with a status of success = false",
+        );
+    }
+
+    fn assert_verify_response_attributes_are_correct(response: &Response<ProvenanceMsg>) {
+        assert_eq!(
+            8,
+            response.attributes.len(),
+            "the correct number of response attributes should be emitted",
+        );
+        assert_eq!(
+            "verify_asset",
+            single_attribute_for_key(response, ASSET_EVENT_TYPE_KEY),
+            "the correct event type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_ASSET_TYPE,
+            single_attribute_for_key(response, ASSET_TYPE_KEY),
+            "the correct asset type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_SCOPE_ADDRESS,
+            single_attribute_for_key(response, ASSET_SCOPE_ADDRESS_KEY),
+            "the correct scope address attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
+            "the correct verifier address attribute should be emitted",
+        );
+        // TODO: Replace these values with constants provided by the os_gateway_contract_attributes crate
+        assert_eq!(
+            "access_revoke",
+            single_attribute_for_key(response, "object_store_gateway_event_type"),
+            "the correct object store gateway event type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_SCOPE_ADDRESS,
+            single_attribute_for_key(response, "object_store_gateway_scope_address"),
+            "the correct object store gateway scope address attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            single_attribute_for_key(response, "object_store_gateway_target_account_address"),
+            "the correct object store gateway target account address attribute should be emitted",
+        );
+        assert_eq!(
+            generate_os_gateway_grant_id(DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS),
+            single_attribute_for_key(response, "object_store_gateway_access_grant_id"),
+            "the correct object store gateway access grant id attribute should be emitted",
         );
     }
 }

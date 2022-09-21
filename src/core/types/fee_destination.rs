@@ -26,10 +26,10 @@ impl FeeDestinationV2 {
     /// * `address` The Provenance Blockchain bech32 address belonging to the account.
     /// * `fee_amount` The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost)
     /// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).
-    pub fn new<S: Into<String>>(address: S, fee_amount: Uint128) -> Self {
+    pub fn new<S: Into<String>>(address: S, fee_amount: u128) -> Self {
         Self {
             address: address.into(),
-            fee_amount,
+            fee_amount: Uint128::new(fee_amount),
             entity_detail: None,
         }
     }

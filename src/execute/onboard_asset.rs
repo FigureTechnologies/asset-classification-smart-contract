@@ -11,6 +11,7 @@ use crate::service::message_gathering_service::MessageGatheringService;
 use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
+use crate::util::functions::generate_os_gateway_grant_id;
 use crate::util::traits::{OptionExtensions, ResultExtensions};
 use cosmwasm_std::{Env, MessageInfo, Response};
 use provwasm_std::ProvenanceQuerier;
@@ -33,12 +34,17 @@ use provwasm_std::ProvenanceQuerier;
 /// * `access_routes` A vector of access routes to be added to the generated [AssetScopeAttribute's](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
 /// [AccessDefinition](crate::core::types::access_definition::AccessDefinition) for the [Requestor](crate::core::types::access_definition::AccessDefinitionType::Requestor)
 /// entry.
+/// * `add_os_gateway_permission` An optional parameter that will cause the emitted events to
+/// include values that signal to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
+/// watching the events that the selected verifier has permission to inspect the identified scope's
+/// records via fetch routes.  This behavior defaults to TRUE.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OnboardAssetV1 {
     pub identifier: AssetIdentifier,
     pub asset_type: String,
     pub verifier_address: String,
     pub access_routes: Vec<AccessRoute>,
+    pub add_os_gateway_permission: bool,
 }
 impl OnboardAssetV1 {
     /// Attempts to create an instance of this struct from a provided execute msg.  If the provided
@@ -56,11 +62,13 @@ impl OnboardAssetV1 {
                 asset_type,
                 verifier_address,
                 access_routes,
+                add_os_gateway_permission,
             } => OnboardAssetV1 {
                 identifier: identifier.to_asset_identifier()?,
                 asset_type,
                 verifier_address,
                 access_routes: access_routes.unwrap_or_default(),
+                add_os_gateway_permission: add_os_gateway_permission.unwrap_or(true),
             }
             .to_ok(),
             _ => ContractError::InvalidMessageType {
@@ -211,36 +219,61 @@ where
     // store asset metadata in contract storage, with assigned verifier and provided fee (in case fee changes between onboarding and verification)
     repository.onboard_asset(&env, &new_asset_attribute, &verifier_config, is_retry)?;
 
-    Ok(Response::new()
+    let response = Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::OnboardAsset,
                 &msg.asset_type,
                 &asset_identifiers.scope_address,
             )
-            .set_verifier(msg.verifier_address)
+            .set_verifier(&msg.verifier_address)
             .set_scope_owner(info.sender),
         )
-        .add_messages(repository.get_messages()))
+        .add_messages(repository.get_messages());
+    // TODO: Use os_gateway_contract_attributes lib once it is published to crates.io
+    let response = if msg.add_os_gateway_permission {
+        response
+            .add_attribute("object_store_gateway_event_type", "access_grant")
+            .add_attribute(
+                "object_store_gateway_scope_address",
+                &asset_identifiers.scope_address,
+            )
+            .add_attribute(
+                "object_store_gateway_target_account_address",
+                msg.verifier_address,
+            )
+            .add_attribute(
+                "object_store_gateway_access_grant_id",
+                generate_os_gateway_grant_id(msg.asset_type, asset_identifiers.scope_address),
+            )
+    } else {
+        response
+    };
+    response.to_ok()
 }
 
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{coins, from_binary, CosmosMsg, StdError, Uint128};
+    use cosmwasm_std::{coins, from_binary, CosmosMsg, Response, StdError, Uint128};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::{
         AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, Process, ProcessId,
         ProvenanceMsg, ProvenanceMsgParams, Record, Records,
     };
 
+    use crate::contract::execute;
+    use crate::core::msg::ExecuteMsg::OnboardAsset;
     use crate::core::state::load_fee_payment_detail;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
+    use crate::testutil::test_utilities::single_attribute_for_key;
     use crate::util::constants::NHASH;
+    use crate::util::functions::generate_os_gateway_grant_id;
+    use crate::util::traits::OptionExtensions;
     use crate::{
         core::{
             error::ContractError,
@@ -295,6 +328,7 @@ mod tests {
                 asset_type: "bogus".into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -332,6 +366,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -356,6 +391,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string() + "bogus".into(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -396,6 +432,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -430,6 +467,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -464,6 +502,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -548,6 +587,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -594,6 +634,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .expect("onboarding should succeed due to test mode being enabled");
@@ -634,6 +675,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .unwrap_err();
@@ -685,6 +727,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: vec![],
+                add_os_gateway_permission: false,
             },
         )
         .expect("onboarding should succeed due to test mode being enabled");
@@ -704,6 +747,7 @@ mod tests {
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                 access_routes: get_default_access_routes(),
+                add_os_gateway_permission: false,
             },
         )
         .unwrap();
@@ -795,16 +839,7 @@ mod tests {
             }
             msg => panic!("Unexpected message from onboard_asset: {:?}", msg),
         });
-        assert_eq!(
-            vec![
-                (ASSET_EVENT_TYPE_KEY, "onboard_asset"),
-                (ASSET_TYPE_KEY, DEFAULT_ASSET_TYPE),
-                (ASSET_SCOPE_ADDRESS_KEY, DEFAULT_SCOPE_ADDRESS),
-                (VERIFIER_ADDRESS_KEY, DEFAULT_VERIFIER_ADDRESS),
-                (SCOPE_OWNER_KEY, DEFAULT_SENDER_ADDRESS)
-            ],
-            result.attributes
-        );
+        assert_onboard_response_attributes_are_correct(&result, false);
     }
 
     #[test]
@@ -890,8 +925,8 @@ mod tests {
             Uint128::new(300),
             NHASH,
             vec![
-                FeeDestinationV2::new("feeperson1", Uint128::new(100)),
-                FeeDestinationV2::new("feeperson2", Uint128::new(50)),
+                FeeDestinationV2::new("feeperson1", 100),
+                FeeDestinationV2::new("feeperson2", 50),
             ],
             None,
         );
@@ -1073,5 +1108,107 @@ mod tests {
                 msg
             ),
         };
+    }
+
+    #[test]
+    fn test_onboard_with_object_store_gateway_permissions() {
+        let get_onboard_result = |permission_spec: Option<bool>| {
+            let mut deps = mock_dependencies(&[]);
+            setup_test_suite(&mut deps, InstArgs::default());
+            execute(
+                deps.as_mut(),
+                mock_env(),
+                empty_mock_info(DEFAULT_SENDER_ADDRESS),
+                OnboardAsset {
+                    identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS)
+                        .to_serialized_enum(),
+                    asset_type: DEFAULT_ASSET_TYPE.into(),
+                    verifier_address: DEFAULT_VERIFIER_ADDRESS.into(),
+                    access_routes: get_default_access_routes().to_some(),
+                    add_os_gateway_permission: permission_spec,
+                },
+            )
+        };
+
+        // Proves that omitting the permission param will default to true and produce all expected
+        // os gateway permission attributes
+        let default_response = get_onboard_result(None).expect(
+            "onboarding should succeed with good params and default os gateway permissions",
+        );
+        assert_onboard_response_attributes_are_correct(&default_response, true);
+
+        // Proves that explicitly providing the permission param as true will produce all expected os
+        // gateway permission attributes
+        let explicit_true_response = get_onboard_result(true.to_some()).expect(
+            "onboarding should succeed with good params and explicit true os gateway permissions",
+        );
+        assert_onboard_response_attributes_are_correct(&explicit_true_response, true);
+
+        // Proves that explicitly providing the permission param as false will omit all the os
+        // gateway permission attributes
+        let explicit_false_response = get_onboard_result(false.to_some()).expect(
+            "onboarding should success with good params and explicit false os gateway permissions",
+        );
+        assert_onboard_response_attributes_are_correct(&explicit_false_response, false);
+    }
+
+    fn assert_onboard_response_attributes_are_correct(
+        response: &Response<ProvenanceMsg>,
+        expect_os_gateway_values: bool,
+    ) {
+        assert_eq!(
+            5 + if expect_os_gateway_values { 4 } else { 0 },
+            response.attributes.len(),
+            "the correct number of response attributes should be emitted",
+        );
+        assert_eq!(
+            "onboard_asset",
+            single_attribute_for_key(response, ASSET_EVENT_TYPE_KEY),
+            "the correct event type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_ASSET_TYPE,
+            single_attribute_for_key(response, ASSET_TYPE_KEY),
+            "the correct asset type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_SCOPE_ADDRESS,
+            single_attribute_for_key(response, ASSET_SCOPE_ADDRESS_KEY),
+            "the correct scope address attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
+            "the correct verifier address attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_SENDER_ADDRESS,
+            single_attribute_for_key(response, SCOPE_OWNER_KEY),
+            "the correct scope owner address attribute should be emitted",
+        );
+        if !expect_os_gateway_values {
+            return;
+        }
+        // TODO: Replace these values with constants provided by the os_gateway_contract_attributes crate
+        assert_eq!(
+            "access_grant",
+            single_attribute_for_key(response, "object_store_gateway_event_type"),
+            "the correct object store gateway event type attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_SCOPE_ADDRESS,
+            single_attribute_for_key(response, "object_store_gateway_scope_address"),
+            "the correct object store gateway scope address attribute should be emitted",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            single_attribute_for_key(response, "object_store_gateway_target_account_address"),
+            "the correct object store gateway target account address attribute should be emitted",
+        );
+        assert_eq!(
+            generate_os_gateway_grant_id(DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS),
+            single_attribute_for_key(response, "object_store_gateway_access_grant_id"),
+            "the correct object store gateway access grant id attribute should be emitted",
+        );
     }
 }

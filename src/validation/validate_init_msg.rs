@@ -226,7 +226,7 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new(
                         "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
-                        Uint128::new(100),
+                        100,
                     )],
                     get_default_entity_detail().to_some(),
                 )],
@@ -252,7 +252,7 @@ pub mod tests {
                         NHASH,
                         vec![FeeDestinationV2::new(
                             "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
-                            Uint128::new(100),
+                            100,
                         )],
                         get_default_entity_detail().to_some(),
                     )],
@@ -267,14 +267,8 @@ pub mod tests {
                         Uint128::new(500),
                         NHASH,
                         vec![
-                            FeeDestinationV2::new(
-                                "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
-                                Uint128::new(125),
-                            ),
-                            FeeDestinationV2::new(
-                                "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
-                                Uint128::new(125),
-                            ),
+                            FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 125),
+                            FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 125),
                         ],
                         get_default_entity_detail().to_some(),
                     )],
@@ -305,11 +299,11 @@ pub mod tests {
                             vec![
                                 FeeDestinationV2::new(
                                     "tp1jdcwtaendn9y75jv9dqnmlm7dy8pv4kgu9fs9g",
-                                    Uint128::new(250000),
+                                    250000,
                                 ),
                                 FeeDestinationV2::new(
                                     "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
-                                    Uint128::new(750000),
+                                    750000,
                                 ),
                             ],
                             get_default_entity_detail().to_some(),
@@ -336,7 +330,7 @@ pub mod tests {
                         "address",
                         Uint128::new(100),
                         NHASH,
-                        vec![FeeDestinationV2::new("fee", Uint128::new(100))],
+                        vec![FeeDestinationV2::new("fee", 100)],
                         get_default_entity_detail().to_some(),
                     )],
                     None,
@@ -405,7 +399,7 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new(
                     "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
-                    Uint128::new(100),
+                    100,
                 )],
                 get_default_entity_detail().to_some(),
             )],
@@ -428,7 +422,7 @@ pub mod tests {
                     "address",
                     Uint128::new(100),
                     NHASH,
-                    vec![FeeDestinationV2::new("fee", Uint128::new(100))],
+                    vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
                 )],
             ),
@@ -454,7 +448,7 @@ pub mod tests {
                     "",
                     Uint128::new(100),
                     NHASH,
-                    vec![FeeDestinationV2::new("fee", Uint128::new(100))],
+                    vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
                 )],
             ),
@@ -487,7 +481,7 @@ pub mod tests {
             NHASH,
             vec![FeeDestinationV2::new(
                 "tp143p2m575fqre9rmaf9tpqwp9ux0mrzv83tdfh6",
-                Uint128::new(50),
+                50,
             )],
             get_default_entity_detail().to_some(),
         );
@@ -506,23 +500,11 @@ pub mod tests {
             Uint128::new(4000),
             NHASH,
             vec![
-                FeeDestinationV2::new(
-                    "tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89",
-                    Uint128::new(100),
-                ),
-                FeeDestinationV2::new(
-                    "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
-                    Uint128::new(1650),
-                ),
-                FeeDestinationV2::new(
-                    "tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p",
-                    Uint128::new(50),
-                ),
-                FeeDestinationV2::new(
-                    "tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7",
-                    Uint128::new(199),
-                ),
-                FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", Uint128::new(1)),
+                FeeDestinationV2::new("tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89", 100),
+                FeeDestinationV2::new("tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95", 1650),
+                FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 50),
+                FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 199),
+                FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", 1),
             ],
             get_default_entity_detail().to_some(),
         );
@@ -585,7 +567,7 @@ pub mod tests {
                 "address",
                 Uint128::new(2020),
                 NHASH,
-                vec![FeeDestinationV2::new("fee", Uint128::new(1011))],
+                vec![FeeDestinationV2::new("fee", 1011)],
                 get_default_entity_detail().to_some(),
             ),
             "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
@@ -600,8 +582,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", Uint128::new(25)),
-                    FeeDestinationV2::new("fee-guy", Uint128::new(25)),
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
                 ],
                 get_default_entity_detail().to_some(),
             ),
@@ -616,7 +598,7 @@ pub mod tests {
                 "address",
                 Uint128::new(100),
                 NHASH,
-                vec![FeeDestinationV2::new("", Uint128::new(100))],
+                vec![FeeDestinationV2::new("", 100)],
                 get_default_entity_detail().to_some(),
             ),
             "fee_destination:address: must be a valid address",
@@ -625,10 +607,7 @@ pub mod tests {
 
     #[test]
     fn test_valid_destination() {
-        let destination = FeeDestinationV2::new(
-            "tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5",
-            Uint128::new(100),
-        );
+        let destination = FeeDestinationV2::new("tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5", 100);
         assert!(
             validate_destination_internal(&destination).is_empty(),
             "a valid fee destination should pass validation and return no error messages",
@@ -638,7 +617,7 @@ pub mod tests {
     #[test]
     fn test_invalid_destination_address() {
         test_invalid_destination(
-            &FeeDestinationV2::new("", Uint128::new(1)),
+            &FeeDestinationV2::new("", 1),
             "fee_destination:address: must be a valid address",
         );
     }
@@ -646,7 +625,7 @@ pub mod tests {
     #[test]
     fn test_invalid_destination_fee_amount_too_low() {
         test_invalid_destination(
-            &FeeDestinationV2::new("good-address", Uint128::zero()),
+            &FeeDestinationV2::new("good-address", 0),
             "fee_destination:fee_amount: must not be zero",
         );
     }

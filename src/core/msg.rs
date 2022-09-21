@@ -123,6 +123,16 @@ pub enum ExecuteMsg {
         /// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)
         /// parameter, as well, to indicate the reason for the route, but this is entirely optional.
         access_routes: Option<Vec<AccessRoute>>,
+        /// An optional parameter that will cause the emitted events to include values that signal
+        /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
+        /// watching the events that the selected verifier has permission to inspect the identified
+        /// scope's records via fetch routes.  This will only cause a gateway to grant permissions
+        /// to a scope to which the gateway itself already has read permissions.  This essentially
+        /// means that a key held by a gateway instance must have been used to store the scope's
+        /// records in [Provenance Object Store](https://github.com/provenance-io/object-store).
+        ///
+        /// This behavior defaults to TRUE.
+        add_os_gateway_permission: Option<bool>,
     },
     /// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
     /// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to

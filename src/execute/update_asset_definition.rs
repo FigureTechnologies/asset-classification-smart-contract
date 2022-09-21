@@ -234,7 +234,7 @@ mod tests {
                 "verifier",
                 Uint128::new(100),
                 NHASH,
-                vec![FeeDestinationV2::new("fee-guy", Uint128::new(25))],
+                vec![FeeDestinationV2::new("fee-guy", 25)],
                 get_default_entity_detail().to_some(),
             )],
         );
@@ -277,14 +277,8 @@ mod tests {
                 Uint128::new(1500000),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new(
-                        "tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7",
-                        Uint128::new(450000),
-                    ),
-                    FeeDestinationV2::new(
-                        "tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52",
-                        Uint128::new(300000),
-                    ),
+                    FeeDestinationV2::new("tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7", 450000),
+                    FeeDestinationV2::new("tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52", 300000),
                 ],
                 get_default_entity_detail().to_some(),
             )],

@@ -660,7 +660,7 @@
             <span class="string">&quot;address&quot;</span>,
             <span class="ident">Uint128::new</span>(<span class="number">200</span>),
             <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">101</span>))],
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">101</span>)],
             <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
         );
         <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">FeePaymentDetail::new</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="kw-2">&amp;</span><span class="ident">verifier</span>).<span class="ident">unwrap_err</span>();
@@ -703,7 +703,7 @@
             <span class="string">&quot;verifier&quot;</span>,
             <span class="ident">Uint128::new</span>(<span class="number">200</span>),
             <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">100</span>))],
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">100</span>)],
             <span class="prelude-val">None</span>,
         );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
@@ -727,7 +727,7 @@
             <span class="string">&quot;verifier&quot;</span>,
             <span class="ident">Uint128::new</span>(<span class="number">200</span>),
             <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">50</span>))],
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">50</span>)],
             <span class="prelude-val">None</span>,
         );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
@@ -755,11 +755,11 @@
             <span class="ident">Uint128::new</span>(<span class="number">400</span>),
             <span class="ident">NHASH</span>,
             <span class="macro">vec!</span>[
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">20</span>)),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">20</span>)),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;third&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">40</span>)),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fourth&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">5</span>)),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fifth&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">15</span>)),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">20</span>),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">20</span>),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;third&quot;</span>, <span class="number">40</span>),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fourth&quot;</span>, <span class="number">5</span>),
+                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fifth&quot;</span>, <span class="number">15</span>),
             ],
             <span class="prelude-val">None</span>,
         );

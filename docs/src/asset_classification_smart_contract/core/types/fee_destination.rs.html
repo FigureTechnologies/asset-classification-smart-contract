@@ -89,10 +89,10 @@
     <span class="doccomment">/// * `address` The Provenance Blockchain bech32 address belonging to the account.</span>
     <span class="doccomment">/// * `fee_amount` The amount to be distributed to this account from the designated total [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost)</span>
     <span class="doccomment">/// of the containing [VerifierDetailV2](super::verifier_detail::VerifierDetailV2).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">address</span>: <span class="ident">S</span>, <span class="ident">fee_amount</span>: <span class="ident">Uint128</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">address</span>: <span class="ident">S</span>, <span class="ident">fee_amount</span>: <span class="ident">u128</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">address</span>: <span class="ident">address</span>.<span class="ident">into</span>(),
-            <span class="ident">fee_amount</span>,
+            <span class="ident">fee_amount</span>: <span class="ident">Uint128::new</span>(<span class="ident">fee_amount</span>),
             <span class="ident">entity_detail</span>: <span class="prelude-val">None</span>,
         }
     }

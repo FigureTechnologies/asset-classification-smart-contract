@@ -301,12 +301,6 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::replace_asset_definition_v3</span>;
@@ -543,7 +537,7 @@
                 <span class="string">&quot;verifier&quot;</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">100</span>),
                 <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">25</span>))],
+                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>)],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             )],
         );
@@ -586,14 +580,8 @@
                 <span class="ident">Uint128::new</span>(<span class="number">1500000</span>),
                 <span class="ident">NHASH</span>,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(
-                        <span class="string">&quot;tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">450000</span>),
-                    ),
-                    <span class="ident">FeeDestinationV2::new</span>(
-                        <span class="string">&quot;tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">300000</span>),
-                    ),
+                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7&quot;</span>, <span class="number">450000</span>),
+                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52&quot;</span>, <span class="number">300000</span>),
                 ],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             )],

@@ -361,9 +361,6 @@
 <span id="355">355</span>
 <span id="356">356</span>
 <span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">insert_asset_definition_v3</span>};
@@ -704,10 +701,7 @@
                 <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
                 <span class="ident">Uint128::new</span>(<span class="number">1000</span>),
                 <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
-                    <span class="ident">DEFAULT_FEE_ADDRESS</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">500</span>),
-                )],
+                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="ident">DEFAULT_FEE_ADDRESS</span>, <span class="number">500</span>)],
                 <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
             )],
             <span class="prelude-val">None</span>,

@@ -282,6 +282,16 @@
 <span id="276">276</span>
 <span id="277">277</span>
 <span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
@@ -407,6 +417,16 @@
         <span class="doccomment">/// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)</span>
         <span class="doccomment">/// parameter, as well, to indicate the reason for the route, but this is entirely optional.</span>
         <span class="ident">access_routes</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// An optional parameter that will cause the emitted events to include values that signal</span>
+        <span class="doccomment">/// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)</span>
+        <span class="doccomment">/// watching the events that the selected verifier has permission to inspect the identified</span>
+        <span class="doccomment">/// scope&#39;s records via fetch routes.  This will only cause a gateway to grant permissions</span>
+        <span class="doccomment">/// to a scope to which the gateway itself already has read permissions.  This essentially</span>
+        <span class="doccomment">/// means that a key held by a gateway instance must have been used to store the scope&#39;s</span>
+        <span class="doccomment">/// records in [Provenance Object Store](https://github.com/provenance-io/object-store).</span>
+        <span class="doccomment">///</span>
+        <span class="doccomment">/// This behavior defaults to TRUE.</span>
+        <span class="ident">add_os_gateway_permission</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     },
     <span class="doccomment">/// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
     <span class="doccomment">/// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to</span>

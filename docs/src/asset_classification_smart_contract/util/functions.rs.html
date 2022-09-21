@@ -362,6 +362,37 @@
 <span id="356">356</span>
 <span id="357">357</span>
 <span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
@@ -422,6 +453,25 @@
     <span class="ident">base_contract_name</span>: <span class="ident">U</span>,
 ) -&gt; <span class="ident">String</span> {
     <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">base_contract_name</span>.<span class="ident">into</span>())
+}
+
+<span class="doccomment">/// Converts an asset type and scope address into a grant id for use with [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway).</span>
+<span class="doccomment">/// This combination will create a value unique to each verification&#39;s process, ensuring that each</span>
+<span class="doccomment">/// selected verifier will always have access to its required scope values until any number of</span>
+<span class="doccomment">/// pending verifications complete.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Parameters</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * `asset_type` The value to use at the beginning of the grant id.  Should refer to the</span>
+<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an</span>
+<span class="doccomment">/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).</span>
+<span class="doccomment">/// * `scope_address` The bech32 address with a prefix of &quot;scope&quot; that uniquely defines the scope</span>
+<span class="doccomment">/// that is currently in the process of classification.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_os_gateway_grant_id</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">U</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+    <span class="ident">asset_type</span>: <span class="ident">T</span>,
+    <span class="ident">scope_address</span>: <span class="ident">U</span>,
+) -&gt; <span class="ident">String</span> {
+    <span class="macro">format!</span>(<span class="string">&quot;{}-{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">scope_address</span>.<span class="ident">into</span>())
 }
 
 <span class="doccomment">/// Takes an existing vector, moves it into this function, swaps out a single existing item for</span>
@@ -514,7 +564,10 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">types::access_route::AccessRoute</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::assert_single_item</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions</span>::{<span class="ident">filter_valid_access_routes</span>, <span class="ident">replace_single_matching_vec_element</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions</span>::{
+        <span class="ident">filter_valid_access_routes</span>, <span class="ident">generate_os_gateway_grant_id</span>,
+        <span class="ident">replace_single_matching_vec_element</span>,
+    };
     <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">BankMsg</span>, <span class="ident">CosmosMsg</span>};
 
     <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::bank_send</span>;
@@ -717,6 +770,15 @@
             <span class="number">2</span>,
             <span class="ident">result</span>.<span class="ident">len</span>(),
             <span class="string">&quot;both routes should be kept because one has a name and the other does not&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_generate_os_gateway_grant_id</span>() {
+        <span class="macro">assert_eq!</span>(
+            <span class="string">&quot;heloc-scopescopescope&quot;</span>,
+            <span class="ident">generate_os_gateway_grant_id</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;scopescopescope&quot;</span>),
+            <span class="string">&quot;the output value should equate to the asset type concatenated to the scope address with a hyphen&quot;</span>,
         );
     }
 }

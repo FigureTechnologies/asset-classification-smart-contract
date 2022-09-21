@@ -60,6 +60,25 @@ pub fn generate_asset_attribute_name<T: Into<String>, U: Into<String>>(
     format!("{}.{}", asset_type.into(), base_contract_name.into())
 }
 
+/// Converts an asset type and scope address into a grant id for use with [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway).
+/// This combination will create a value unique to each verification's process, ensuring that each
+/// selected verifier will always have access to its required scope values until any number of
+/// pending verifications complete.
+///
+/// # Parameters
+///
+/// * `asset_type` The value to use at the beginning of the grant id.  Should refer to the
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an
+/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
+/// * `scope_address` The bech32 address with a prefix of "scope" that uniquely defines the scope
+/// that is currently in the process of classification.
+pub fn generate_os_gateway_grant_id<T: Into<String>, U: Into<String>>(
+    asset_type: T,
+    scope_address: U,
+) -> String {
+    format!("{}-{}", asset_type.into(), scope_address.into())
+}
+
 /// Takes an existing vector, moves it into this function, swaps out a single existing item for
 /// a specified replacement item.  If less or more than one existing item matches the given
 /// predicate closure, an error is returned.
@@ -150,7 +169,10 @@ pub fn filter_valid_access_routes(routes: Vec<AccessRoute>) -> Vec<AccessRoute> 
 mod tests {
     use crate::core::{error::ContractError, types::access_route::AccessRoute};
     use crate::testutil::test_utilities::assert_single_item;
-    use crate::util::functions::{filter_valid_access_routes, replace_single_matching_vec_element};
+    use crate::util::functions::{
+        filter_valid_access_routes, generate_os_gateway_grant_id,
+        replace_single_matching_vec_element,
+    };
     use cosmwasm_std::{BankMsg, CosmosMsg};
 
     use super::bank_send;
@@ -353,6 +375,15 @@ mod tests {
             2,
             result.len(),
             "both routes should be kept because one has a name and the other does not",
+        );
+    }
+
+    #[test]
+    fn test_generate_os_gateway_grant_id() {
+        assert_eq!(
+            "heloc-scopescopescope",
+            generate_os_gateway_grant_id("heloc", "scopescopescope"),
+            "the output value should equate to the asset type concatenated to the scope address with a hyphen",
         );
     }
 }

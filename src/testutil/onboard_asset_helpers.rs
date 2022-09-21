@@ -23,6 +23,7 @@ impl TestOnboardAsset {
             asset_type: DEFAULT_ASSET_TYPE.to_string(),
             verifier_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
             access_routes: get_default_access_routes(),
+            add_os_gateway_permission: true,
         }
     }
 

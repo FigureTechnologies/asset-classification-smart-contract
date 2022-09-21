@@ -123,6 +123,13 @@ pub enum ExecuteMsg {
         /// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)
         /// parameter, as well, to indicate the reason for the route, but this is entirely optional.
         access_routes: Option<Vec<AccessRoute>>,
+        /// An optional parameter that will cause the emitted events to include values that signal
+        /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
+        /// watching the events that the selected verifier has permission to inspect the identified
+        /// scope's records via fetch routes.
+        ///
+        /// This behavior defaults to TRUE.
+        add_os_gateway_permission: Option<bool>,
     },
     /// This route is specifically designed to allow a Verifier specified in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
     /// of a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#scope-data-structures) to indicate to
@@ -154,6 +161,18 @@ pub enum ExecuteMsg {
         /// data from a new location, potentially without any Provenance Blockchain interaction, facilitating the process of data
         /// interaction.
         access_routes: Option<Vec<AccessRoute>>,
+        /// An optional parameter that will cause the emitted events to include values that signal
+        /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
+        /// watching the events that the verifier should no longer have permission to inspect the
+        /// identified scope's records via fetch routes.
+        ///
+        /// Note: This route uses a unique identifier based on asset type, so if simultaneous access
+        /// grants were sent to the gateway for different asset types' verifications on a singular
+        /// scope, the verifier will retain access via the gateway until all verifications have been
+        /// completed.
+        ///
+        /// This behavior defaults to TRUE.
+        remove_os_gateway_permission: Option<bool>,
     },
     /// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
     /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to

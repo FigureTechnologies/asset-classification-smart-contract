@@ -304,32 +304,19 @@ pub fn delete_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::BorrowMut;
-    use std::cmp::Ordering;
-
     use cosmwasm_std::StdError;
-    use cw_storage_plus::{Index, IndexList, IndexedMap, UniqueIndex};
     use provwasm_mocks::mock_dependencies;
-    use schemars::JsonSchema;
-    use serde::{Deserialize, Serialize};
 
     use crate::core::error::ContractError;
     use crate::core::state::{
         delete_asset_definition_by_asset_type_v3, delete_fee_payment_detail,
-        insert_asset_definition_v3, insert_fee_payment_detail, list_asset_definitions_v3,
-        load_asset_definition_by_type_v3, load_fee_payment_detail,
-        may_load_asset_definition_by_type_v3, may_load_fee_payment_detail,
+        insert_asset_definition_v3, insert_fee_payment_detail, load_asset_definition_by_type_v3,
+        load_fee_payment_detail, may_load_asset_definition_by_type_v3, may_load_fee_payment_detail,
         replace_asset_definition_v3,
     };
     use crate::core::types::asset_definition::AssetDefinitionV3;
-    use crate::core::types::verifier_detail::VerifierDetailV2;
-    use crate::testutil::test_constants::{
-        DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS, DEFAULT_SCOPE_SPEC_ADDRESS,
-        DEFAULT_SECONDARY_ASSET_TYPE,
-    };
-    use crate::testutil::test_utilities::{
-        get_default_verifier_detail, get_duped_fee_payment_detail,
-    };
+    use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
+    use crate::testutil::test_utilities::get_duped_fee_payment_detail;
     use crate::util::traits::OptionExtensions;
 
     #[test]
@@ -590,138 +577,6 @@ mod tests {
             matches!(err, ContractError::Std(StdError::NotFound { .. })),
             "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
             err,
-        );
-    }
-
-    // TEMPORARY SANITY TEST FOR GOING FROM IndexedMap -> Map
-    /// Boilerplate implementation of indexes for an IndexMap around state.
-    /// This establishes a unique index on the scope spec address to ensure
-    /// that saves cannot include duplicate scope specs.
-    /// If it becomes a requirement in the future that we have duplicate scope specs,
-    /// we will need to swap to a MultiIndex, and a lot of the lookups in the contract
-    /// will fall apart.
-
-    /// old asset definition
-    /// /// Defines a specific asset type associated with the contract.  Allows its specified type to be
-    /// onboarded and verified.
-    #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-    #[serde(rename_all = "snake_case")]
-    pub struct AssetDefinitionV2 {
-        /// The unique name of the asset associated with the definition.
-        pub asset_type: String,
-        /// A link to a scope specification that defines this asset type.
-        pub scope_spec_address: String,
-        /// Individual verifier definitions.  There can be many verifiers for a single asset type.
-        pub verifiers: Vec<VerifierDetailV2>,
-        /// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
-        /// requests to onboard assets of this type will be rejected.
-        pub enabled: bool,
-    }
-    impl AssetDefinitionV2 {
-        pub fn storage_key(&self) -> Vec<u8> {
-            self.asset_type.to_lowercase().as_bytes().to_vec()
-        }
-    }
-    pub struct AssetDefinitionIndexesV2<'a> {
-        scope_spec: UniqueIndex<'a, String, AssetDefinitionV2>,
-    }
-    impl<'a> IndexList<AssetDefinitionV2> for AssetDefinitionIndexesV2<'a> {
-        fn get_indexes(
-            &'_ self,
-        ) -> Box<dyn Iterator<Item = &'_ dyn Index<AssetDefinitionV2>> + '_> {
-            let v: Vec<&dyn Index<AssetDefinitionV2>> = vec![&self.scope_spec];
-            Box::new(v.into_iter())
-        }
-    }
-
-    /// The main entrypoint access for [AssetDefinitionV2](super::types::asset_definition::AssetDefinitionV2) state.
-    /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
-    /// functionality. Private access to ensure only helper functions below are used.
-    fn asset_definitions_v2<'a>(
-    ) -> IndexedMap<'a, &'a [u8], AssetDefinitionV2, AssetDefinitionIndexesV2<'a>> {
-        let indexes = AssetDefinitionIndexesV2 {
-            scope_spec: UniqueIndex::new(
-                |d: &AssetDefinitionV2| d.scope_spec_address.clone().to_lowercase(),
-                "asset_definitions_v2__scope_spec_address",
-            ),
-        };
-        IndexedMap::new("asset_definitions_v2", indexes)
-    }
-
-    fn asset_definition_v2_to_v3(v2: AssetDefinitionV2) -> AssetDefinitionV3 {
-        AssetDefinitionV3 {
-            asset_type: v2.asset_type,
-            display_name: None,
-            verifiers: v2.verifiers,
-            enabled: v2.enabled,
-        }
-    }
-
-    fn get_default_asset_definition_v2() -> AssetDefinitionV2 {
-        AssetDefinitionV2 {
-            asset_type: DEFAULT_ASSET_TYPE.to_string(),
-            scope_spec_address: DEFAULT_SCOPE_SPEC_ADDRESS.to_string(),
-            verifiers: vec![get_default_verifier_detail()],
-            enabled: true,
-        }
-    }
-
-    #[test]
-    fn test_read_data_from_old_storage() {
-        // insert using old IndexedMap style
-        let mut deps = mock_dependencies(&[]);
-        let def1 = get_default_asset_definition_v2();
-        let def2 = AssetDefinitionV2 {
-            asset_type: DEFAULT_SECONDARY_ASSET_TYPE.into(),
-            scope_spec_address: format!("{}2", DEFAULT_SCOPE_SPEC_ADDRESS),
-            ..get_default_asset_definition_v2()
-        };
-        let state = asset_definitions_v2();
-        state
-            .replace(
-                deps.storage.borrow_mut(),
-                &def1.storage_key(),
-                Some(&def1),
-                None,
-            )
-            .expect("asset definition should be saved using old storage");
-        state
-            .replace(
-                deps.storage.borrow_mut(),
-                &def2.storage_key(),
-                Some(&def2),
-                None,
-            )
-            .expect("asset definition should be saved using old storage");
-        // retrieve with new methods
-        let retrieved1 = load_asset_definition_by_type_v3(&deps.storage, DEFAULT_ASSET_TYPE)
-            .expect("should be able to retrieve existing asset definition with new storage");
-        let retrieved2 =
-            load_asset_definition_by_type_v3(&deps.storage, DEFAULT_SECONDARY_ASSET_TYPE)
-                .expect("should be able to retrieve existing asset definition with new storage");
-
-        assert_eq!(
-            asset_definition_v2_to_v3(def1),
-            retrieved1,
-            "asset definition fetched via new method should match existing"
-        );
-        assert_eq!(
-            asset_definition_v2_to_v3(def2),
-            retrieved2,
-            "asset definition fetched via new method should match existing"
-        );
-        let mut definition_iterator = list_asset_definitions_v3(&deps.storage);
-        definition_iterator.sort_by(|a, b| {
-            if a.asset_type < b.asset_type {
-                Ordering::Less
-            } else {
-                Ordering::Greater
-            }
-        });
-        assert_eq!(
-            vec![retrieved1, retrieved2],
-            definition_iterator,
-            "existing asset definitions should be able to be iterated over"
         );
     }
 }

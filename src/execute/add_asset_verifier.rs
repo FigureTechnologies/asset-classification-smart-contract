@@ -310,7 +310,7 @@ mod tests {
             TEST_VERIFIER_ADDRESS,
             Uint128::new(500000),
             NHASH,
-            vec![FeeDestinationV2::new(TEST_FEE_ADDRESS, Uint128::new(500))],
+            vec![FeeDestinationV2::new(TEST_FEE_ADDRESS, 500)],
             get_default_entity_detail().to_some(),
         );
         validate_verifier(&verifier).expect("expected the new verifier to pass validation");

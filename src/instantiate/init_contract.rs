@@ -163,7 +163,7 @@ mod tests {
                 DEFAULT_ONBOARDING_DENOM,
                 vec![FeeDestinationV2::new(
                     "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
-                    Uint128::new(DEFAULT_ONBOARDING_COST / 4),
+                    DEFAULT_ONBOARDING_COST / 4,
                 )],
                 get_default_entity_detail().to_some(),
             )],
@@ -178,14 +178,8 @@ mod tests {
                 Uint128::new(300),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new(
-                        "tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a",
-                        Uint128::new(75),
-                    ),
-                    FeeDestinationV2::new(
-                        "tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn",
-                        Uint128::new(75),
-                    ),
+                    FeeDestinationV2::new("tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a", 75),
+                    FeeDestinationV2::new("tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn", 75),
                 ],
                 get_default_entity_detail().to_some(),
             )],

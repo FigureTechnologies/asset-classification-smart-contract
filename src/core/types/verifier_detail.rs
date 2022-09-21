@@ -83,7 +83,7 @@ mod tests {
             "address",
             Uint128::new(100),
             NHASH,
-            vec![FeeDestinationV2::new("fee-address", Uint128::new(55))],
+            vec![FeeDestinationV2::new("fee-address", 55)],
             None,
         );
         assert_eq!(
@@ -99,12 +99,12 @@ mod tests {
             Uint128::new(1000),
             NHASH,
             vec![
-                FeeDestinationV2::new("fee-address-1", Uint128::new(10)),
-                FeeDestinationV2::new("fee-address-2", Uint128::new(20)),
-                FeeDestinationV2::new("fee-address-3", Uint128::new(30)),
-                FeeDestinationV2::new("fee-address-4", Uint128::new(40)),
-                FeeDestinationV2::new("fee-address-5", Uint128::new(50)),
-                FeeDestinationV2::new("fee-address-6", Uint128::new(60)),
+                FeeDestinationV2::new("fee-address-1", 10),
+                FeeDestinationV2::new("fee-address-2", 20),
+                FeeDestinationV2::new("fee-address-3", 30),
+                FeeDestinationV2::new("fee-address-4", 40),
+                FeeDestinationV2::new("fee-address-5", 50),
+                FeeDestinationV2::new("fee-address-6", 60),
             ],
             None,
         );

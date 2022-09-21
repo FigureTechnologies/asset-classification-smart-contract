@@ -223,7 +223,7 @@ mod tests {
             "address",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee", Uint128::new(101))],
+            vec![FeeDestinationV2::new("fee", 101)],
             get_default_entity_detail().to_some(),
         );
         let error = FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &verifier).unwrap_err();
@@ -266,7 +266,7 @@ mod tests {
             "verifier",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee-destination", Uint128::new(100))],
+            vec![FeeDestinationV2::new("fee-destination", 100)],
             None,
         );
         let messages = test_get_messages(&verifier);
@@ -290,7 +290,7 @@ mod tests {
             "verifier",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee-destination", Uint128::new(50))],
+            vec![FeeDestinationV2::new("fee-destination", 50)],
             None,
         );
         let messages = test_get_messages(&verifier);
@@ -318,11 +318,11 @@ mod tests {
             Uint128::new(400),
             NHASH,
             vec![
-                FeeDestinationV2::new("first", Uint128::new(20)),
-                FeeDestinationV2::new("second", Uint128::new(20)),
-                FeeDestinationV2::new("third", Uint128::new(40)),
-                FeeDestinationV2::new("fourth", Uint128::new(5)),
-                FeeDestinationV2::new("fifth", Uint128::new(15)),
+                FeeDestinationV2::new("first", 20),
+                FeeDestinationV2::new("second", 20),
+                FeeDestinationV2::new("third", 40),
+                FeeDestinationV2::new("fourth", 5),
+                FeeDestinationV2::new("fifth", 15),
             ],
             None,
         );

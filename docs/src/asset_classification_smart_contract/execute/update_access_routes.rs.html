@@ -618,6 +618,7 @@
 <span id="612">612</span>
 <span id="613">613</span>
 <span id="614">614</span>
+<span id="615">615</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_read_v2</span>;
@@ -631,8 +632,9 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::filter_valid_access_routes</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
+
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)</span>
 <span class="doccomment">/// for ease of use in the underlying [update_access_routes](self::update_access_routes) function.</span>

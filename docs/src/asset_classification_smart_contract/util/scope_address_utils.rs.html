@@ -243,15 +243,13 @@
 <span id="237">237</span>
 <span id="238">238</span>
 <span id="239">239</span>
-<span id="240">240</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryInto</span>, <span class="ident">str::FromStr</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">core::error::ContractError</span>, <span class="ident">util::aliases::AssetResult</span>};
 <span class="kw">use</span> <span class="ident">bech32</span>::{<span class="ident">FromBase32</span>, <span class="ident">ToBase32</span>, <span class="ident">Variant</span>};
 <span class="kw">use</span> <span class="ident">cosmwasm_std::Addr</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">uuid::Uuid</span>;
-
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::traits::ResultExtensions</span>;
 
 <span class="comment">// Standard scope key prefix from the Provenance libs</span>
 <span class="kw">const</span> <span class="ident">KEY_SCOPE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x00</span>;

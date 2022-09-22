@@ -301,6 +301,7 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
+<span id="298">298</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::replace_asset_definition_v3</span>;
@@ -308,8 +309,9 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers</span>::{<span class="ident">check_admin_only</span>, <span class="ident">check_funds_are_empty</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
+
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)</span>
 <span class="doccomment">/// for ease of use in the underlying [update_asset_definition](self::update_asset_definition) function.</span>

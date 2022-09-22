@@ -123,15 +123,11 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Binary</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::list_asset_definitions_v3</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{
-    <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
-    <span class="ident">traits::ResultExtensions</span>,
-};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
 
 <span class="doccomment">/// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)</span>
 <span class="doccomment">/// from the contract&#39;s internal storage.</span>

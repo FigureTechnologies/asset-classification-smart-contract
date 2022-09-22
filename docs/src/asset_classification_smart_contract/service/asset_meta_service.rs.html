@@ -1454,10 +1454,12 @@
 <span id="1448">1448</span>
 <span id="1449">1449</span>
 <span id="1450">1450</span>
+<span id="1451">1451</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Env</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">assess_custom_fee</span>, <span class="ident">update_attribute</span>, <span class="ident">AttributeValueType</span>, <span class="ident">ProvenanceMsg</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{
     <span class="ident">delete_fee_payment_detail</span>, <span class="ident">insert_fee_payment_detail</span>, <span class="ident">load_fee_payment_detail</span>,
@@ -1485,9 +1487,9 @@
     },
     <span class="ident">util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>},
     <span class="ident">util::deps_container::DepsContainer</span>,
+    <span class="ident">util::functions::filter_valid_access_routes</span>,
     <span class="ident">util::functions::generate_asset_attribute_name</span>,
     <span class="ident">util::vec_container::VecContainer</span>,
-    <span class="ident">util</span>::{<span class="ident">functions::filter_valid_access_routes</span>, <span class="ident">traits::ResultExtensions</span>},
     <span class="ident">util</span>::{
         <span class="ident">provenance_util::get_add_attribute_to_scope_msg</span>, <span class="ident">scope_address_utils::bech32_string_to_addr</span>,
     },

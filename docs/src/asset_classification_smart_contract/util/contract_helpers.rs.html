@@ -68,11 +68,13 @@
 <span id="62">62</span>
 <span id="63">63</span>
 <span id="64">64</span>
+<span id="65">65</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_read_v2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
+
 <span class="kw">use</span> <span class="ident">cosmwasm_std::MessageInfo</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// Ensures that only the admin of the contract can call into a route.</span>
 <span class="doccomment">///</span>

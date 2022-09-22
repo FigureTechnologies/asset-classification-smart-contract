@@ -58,16 +58,12 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Binary</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core::state::config_read_v2</span>,
-    <span class="ident">util</span>::{
-        <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
-        <span class="ident">traits::ResultExtensions</span>,
-    },
+    <span class="ident">util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
 };
 
 <span class="doccomment">/// A query that directly returns the contract&#39;s stored [StateV2](crate::core::state::StateV2) value.</span>

@@ -330,6 +330,7 @@
 <span id="324">324</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Addr</span>, <span class="ident">Binary</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceQuerier</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">core</span>::{
@@ -340,7 +341,6 @@
     <span class="ident">util</span>::{
         <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
         <span class="ident">scope_address_utils::asset_uuid_to_scope_address</span>,
-        <span class="ident">traits::ResultExtensions</span>,
     },
 };
 

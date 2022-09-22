@@ -182,7 +182,8 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
@@ -193,7 +194,6 @@
     <span class="ident">util</span>::{
         <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
         <span class="ident">functions::generate_asset_attribute_name</span>,
-        <span class="ident">traits::ResultExtensions</span>,
     },
 };
 

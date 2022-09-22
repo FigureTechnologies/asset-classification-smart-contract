@@ -57,13 +57,11 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
-<span id="54">54</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{
-    <span class="ident">aliases::AssetResult</span>, <span class="ident">scope_address_utils::bech32_string_to_addr</span>, <span class="ident">traits::ResultExtensions</span>,
-};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{<span class="ident">aliases::AssetResult</span>, <span class="ident">scope_address_utils::bech32_string_to_addr</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::access_route::AccessRoute</span>;
 

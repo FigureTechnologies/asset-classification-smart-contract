@@ -584,17 +584,13 @@
 <span id="578">578</span>
 <span id="579">579</span>
 <span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">core::msg::InitMsg</span>,
-    <span class="ident">util</span>::{<span class="ident">aliases::AssetResult</span>, <span class="ident">traits::ResultExtensions</span>},
-};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">core::msg::InitMsg</span>, <span class="ident">util::aliases::AssetResult</span>};
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Addr</span>, <span class="ident">Storage</span>};
 <span class="kw">use</span> <span class="ident">cosmwasm_storage</span>::{<span class="ident">singleton</span>, <span class="ident">singleton_read</span>, <span class="ident">ReadonlySingleton</span>, <span class="ident">Singleton</span>};
 <span class="kw">use</span> <span class="ident">cw_storage_plus::Map</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 

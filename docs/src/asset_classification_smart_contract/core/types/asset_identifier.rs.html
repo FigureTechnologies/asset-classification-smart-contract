@@ -310,13 +310,13 @@
 <span id="304">304</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{
     <span class="ident">aliases::AssetResult</span>,
     <span class="ident">scope_address_utils</span>::{<span class="ident">asset_uuid_to_scope_address</span>, <span class="ident">scope_address_to_asset_uuid</span>},
-    <span class="ident">traits::ResultExtensions</span>,
 };
 
 <span class="kw">const</span> <span class="ident">ASSET_UUID_NAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;asset_uuid&quot;</span>;

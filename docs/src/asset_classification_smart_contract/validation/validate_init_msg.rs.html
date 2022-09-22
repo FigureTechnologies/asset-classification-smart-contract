@@ -708,6 +708,7 @@
 <span id="702">702</span>
 <span id="703">703</span>
 <span id="704">704</span>
+<span id="705">705</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
@@ -717,8 +718,9 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::VALID_VERIFIER_DENOMS</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::distinct_count_by_property</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
+
 <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its</span>
 <span class="doccomment">/// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.</span>

@@ -620,16 +620,18 @@
 <span id="614">614</span>
 <span id="615">615</span>
 <span id="616">616</span>
+<span id="617">617</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits</span>::{<span class="ident">OptionExtensions</span>, <span class="ident">ResultExtensions</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg</span>::{
     <span class="ident">validate_asset_definition</span>, <span class="ident">validate_verifier_with_provided_errors</span>,
 };
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// The main branch of validation for an execute msg.  Funnels the intercepted value based on variant</span>
 <span class="doccomment">/// to one of the various sub-functions in this module.</span>

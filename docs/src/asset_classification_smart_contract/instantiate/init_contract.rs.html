@@ -353,6 +353,7 @@
 <span id="347">347</span>
 <span id="348">348</span>
 <span id="349">349</span>
+<span id="350">350</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_v2</span>, <span class="ident">insert_asset_definition_v3</span>, <span class="ident">StateV2</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::version_info::migrate_version_info</span>;
@@ -360,9 +361,10 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::generate_asset_attribute_name</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::ResultExtensions</span>;
+
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">CosmosMsg</span>, <span class="ident">Env</span>, <span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">bind_name</span>, <span class="ident">NameBinding</span>, <span class="ident">ProvenanceMsg</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
 <span class="doccomment">/// The main functionality executed when the smart contract is first instantiated.   This creates</span>
 <span class="doccomment">/// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided</span>

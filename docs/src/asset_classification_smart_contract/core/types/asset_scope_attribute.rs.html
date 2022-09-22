@@ -350,7 +350,9 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
+<span id="347">347</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::Addr</span>;
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
@@ -358,7 +360,7 @@
     <span class="ident">core::types::access_definition::AccessDefinitionType</span>,
     <span class="ident">util</span>::{
         <span class="ident">aliases::AssetResult</span>, <span class="ident">functions::filter_valid_access_routes</span>,
-        <span class="ident">scope_address_utils::bech32_string_to_addr</span>, <span class="ident">traits::ResultExtensions</span>,
+        <span class="ident">scope_address_utils::bech32_string_to_addr</span>,
     },
 };
 

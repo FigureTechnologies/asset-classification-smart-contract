@@ -291,6 +291,7 @@
 <span id="285">285</span>
 <span id="286">286</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Response</span>, <span class="ident">Storage</span>};
+<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 <span class="kw">use</span> <span class="ident">semver::Version</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::MigrationOptions</span>;
@@ -302,7 +303,6 @@
     <span class="ident">util</span>::{
         <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>},
         <span class="ident">event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>},
-        <span class="ident">traits::ResultExtensions</span>,
     },
 };
 

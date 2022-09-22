@@ -1,4 +1,5 @@
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 use crate::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3};
 use crate::{
@@ -7,7 +8,6 @@ use crate::{
         aliases::{AssetResult, DepsMutC, EntryPointResponse},
         contract_helpers::{check_admin_only, check_funds_are_empty},
         event_attributes::{EventAttributes, EventType},
-        traits::ResultExtensions,
     },
 };
 

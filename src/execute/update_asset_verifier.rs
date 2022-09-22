@@ -8,8 +8,9 @@ use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::replace_single_matching_vec_element;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
 /// for ease of use in the underlying [update_asset_verifier](self::update_asset_verifier) function.

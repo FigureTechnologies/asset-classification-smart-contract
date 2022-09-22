@@ -1,5 +1,6 @@
 use cosmwasm_std::{to_binary, Addr, Binary};
 use provwasm_std::ProvenanceQuerier;
+use result_extensions::ResultExtensions;
 
 use crate::{
     core::{
@@ -10,7 +11,6 @@ use crate::{
     util::{
         aliases::{AssetResult, DepsC},
         scope_address_utils::asset_uuid_to_scope_address,
-        traits::ResultExtensions,
     },
 };
 

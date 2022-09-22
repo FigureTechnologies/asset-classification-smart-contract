@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env};
 use provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
+use result_extensions::ResultExtensions;
 
 use crate::core::state::{
     delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail,
@@ -29,9 +30,9 @@ use crate::{
     },
     util::aliases::{AssetResult, DepsMutC},
     util::deps_container::DepsContainer,
+    util::functions::filter_valid_access_routes,
     util::functions::generate_asset_attribute_name,
     util::vec_container::VecContainer,
-    util::{functions::filter_valid_access_routes, traits::ResultExtensions},
     util::{
         provenance_util::get_add_attribute_to_scope_msg, scope_address_utils::bech32_string_to_addr,
     },

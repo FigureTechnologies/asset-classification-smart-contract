@@ -1,8 +1,9 @@
 use crate::core::error::ContractError;
 use crate::core::state::config_read_v2;
 use crate::util::aliases::{AssetResult, DepsC};
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::MessageInfo;
+use result_extensions::ResultExtensions;
 
 /// Ensures that only the admin of the contract can call into a route.
 ///

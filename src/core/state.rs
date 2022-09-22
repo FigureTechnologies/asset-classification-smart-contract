@@ -1,12 +1,10 @@
 use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
-use crate::{
-    core::msg::InitMsg,
-    util::{aliases::AssetResult, traits::ResultExtensions},
-};
+use crate::{core::msg::InitMsg, util::aliases::AssetResult};
 use cosmwasm_std::{Addr, Storage};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 use cw_storage_plus::Map;
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

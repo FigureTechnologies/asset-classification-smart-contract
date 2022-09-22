@@ -7,8 +7,9 @@ use crate::util::aliases::AssetResult;
 use crate::util::constants::VALID_VERIFIER_DENOMS;
 use crate::util::functions::distinct_count_by_property;
 use crate::util::scope_address_utils::bech32_string_to_addr;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::Uint128;
+use result_extensions::ResultExtensions;
 
 /// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its
 /// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.

@@ -1,4 +1,5 @@
 use cosmwasm_std::Addr;
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +7,7 @@ use crate::{
     core::types::access_definition::AccessDefinitionType,
     util::{
         aliases::AssetResult, functions::filter_valid_access_routes,
-        scope_address_utils::bech32_string_to_addr, traits::ResultExtensions,
+        scope_address_utils::bech32_string_to_addr,
     },
 };
 

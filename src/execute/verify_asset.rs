@@ -10,8 +10,10 @@ use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::generate_os_gateway_grant_id;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use os_gateway_contract_attributes::OsGatewayAttributeGenerator;
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset)
 /// for ease of use in the underlying [verify_asset](self::verify_asset) function.
@@ -148,22 +150,15 @@ where
             )
             .set_verifier(info.sender.as_str()),
         )
-        // TODO: Use os_gateway_contract_attributes lib once it is published to crates.io
-        .add_attribute("object_store_gateway_event_type", "access_revoke")
-        .add_attribute(
-            "object_store_gateway_scope_address",
-            &asset_identifiers.scope_address,
-        )
-        .add_attribute(
-            "object_store_gateway_target_account_address",
-            info.sender.as_str(),
-        )
-        .add_attribute(
-            "object_store_gateway_access_grant_id",
-            generate_os_gateway_grant_id(
+        .add_attributes(
+            OsGatewayAttributeGenerator::access_revoke(
+                &asset_identifiers.scope_address,
+                info.sender.as_str(),
+            )
+            .with_access_grant_id(generate_os_gateway_grant_id(
                 scope_attribute.asset_type,
                 asset_identifiers.scope_address,
-            ),
+            )),
         )
         .add_messages(repository.get_messages())
         .to_ok()
@@ -172,6 +167,7 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Response;
+    use os_gateway_contract_attributes::{OS_GATEWAY_EVENT_TYPES, OS_GATEWAY_KEYS};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::ProvenanceMsg;
     use serde_json_wasm::to_string;
@@ -637,25 +633,24 @@ mod tests {
             single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
             "the correct verifier address attribute should be emitted",
         );
-        // TODO: Replace these values with constants provided by the os_gateway_contract_attributes crate
         assert_eq!(
-            "access_revoke",
-            single_attribute_for_key(response, "object_store_gateway_event_type"),
+            OS_GATEWAY_EVENT_TYPES.access_revoke,
+            single_attribute_for_key(response, OS_GATEWAY_KEYS.event_type),
             "the correct object store gateway event type attribute should be emitted",
         );
         assert_eq!(
             DEFAULT_SCOPE_ADDRESS,
-            single_attribute_for_key(response, "object_store_gateway_scope_address"),
+            single_attribute_for_key(response, OS_GATEWAY_KEYS.scope_address),
             "the correct object store gateway scope address attribute should be emitted",
         );
         assert_eq!(
             DEFAULT_VERIFIER_ADDRESS,
-            single_attribute_for_key(response, "object_store_gateway_target_account_address"),
+            single_attribute_for_key(response, OS_GATEWAY_KEYS.target_account),
             "the correct object store gateway target account address attribute should be emitted",
         );
         assert_eq!(
             generate_os_gateway_grant_id(DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS),
-            single_attribute_for_key(response, "object_store_gateway_access_grant_id"),
+            single_attribute_for_key(response, OS_GATEWAY_KEYS.access_grant_id),
             "the correct object store gateway access grant id attribute should be emitted",
         );
     }

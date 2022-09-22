@@ -1,10 +1,8 @@
 use cosmwasm_std::{to_binary, Binary};
+use result_extensions::ResultExtensions;
 
 use crate::core::state::list_asset_definitions_v3;
-use crate::util::{
-    aliases::{AssetResult, DepsC},
-    traits::ResultExtensions,
-};
+use crate::util::aliases::{AssetResult, DepsC};
 
 /// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.

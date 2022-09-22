@@ -4,8 +4,9 @@ use crate::core::state::delete_asset_definition_by_asset_type_v3;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition)
 /// for ease of use in the underlying [delete_asset_definition](self::delete_asset_definition) function.

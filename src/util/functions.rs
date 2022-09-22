@@ -1,9 +1,10 @@
 use crate::core::error::ContractError;
 use crate::core::types::access_route::AccessRoute;
 use crate::util::aliases::AssetResult;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{coin, BankMsg, CosmosMsg};
 use provwasm_std::ProvenanceMsg;
+use result_extensions::ResultExtensions;
 use std::collections::HashSet;
 use std::hash::Hash;
 

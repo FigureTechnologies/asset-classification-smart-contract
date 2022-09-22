@@ -5,9 +5,10 @@ use crate::util::aliases::{DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::generate_asset_attribute_name;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
 use provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
+use result_extensions::ResultExtensions;
 
 /// The main functionality executed when the smart contract is first instantiated.   This creates
 /// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided

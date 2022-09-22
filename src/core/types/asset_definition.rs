@@ -1,3 +1,4 @@
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +10,6 @@ use crate::{
     util::{
         aliases::{AssetResult, DepsC},
         functions::generate_asset_attribute_name,
-        traits::ResultExtensions,
     },
 };
 

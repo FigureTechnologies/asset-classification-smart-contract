@@ -11,8 +11,9 @@ use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::filter_valid_access_routes;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes)
 /// for ease of use in the underlying [update_access_routes](self::update_access_routes) function.

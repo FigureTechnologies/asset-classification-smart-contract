@@ -1,8 +1,9 @@
 use crate::core::state::may_load_fee_payment_detail;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::util::aliases::{AssetResult, DepsC};
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{to_binary, Binary};
+use result_extensions::ResultExtensions;
 
 /// A query that fetches a target [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
 /// from the contract's internal storage and serializes it to a [Binary](cosmwasm_std::Binary)

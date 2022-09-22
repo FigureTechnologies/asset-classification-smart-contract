@@ -1,11 +1,9 @@
 use cosmwasm_std::{to_binary, Binary};
+use result_extensions::ResultExtensions;
 
 use crate::{
     core::state::config_read_v2,
-    util::{
-        aliases::{AssetResult, DepsC},
-        traits::ResultExtensions,
-    },
+    util::aliases::{AssetResult, DepsC},
 };
 
 /// A query that directly returns the contract's stored [StateV2](crate::core::state::StateV2) value.

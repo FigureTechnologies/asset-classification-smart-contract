@@ -5,8 +5,9 @@ use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
 /// for ease of use in the underlying [update_asset_definition](self::update_asset_definition) function.

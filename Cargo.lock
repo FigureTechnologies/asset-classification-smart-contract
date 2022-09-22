@@ -4,15 +4,17 @@ version = 3
 
 [[package]]
 name = "asset-classification-smart-contract"
-version = "3.1.0"
+version = "3.1.1"
 dependencies = [
  "bech32",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
  "cw-storage-plus",
+ "os-gateway-contract-attributes",
  "provwasm-mocks",
  "provwasm-std",
+ "result-extensions",
  "schemars",
  "semver",
  "serde",
@@ -368,6 +370,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
+name = "os-gateway-contract-attributes"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "074b93795d3cc939d472278081f9b419414776e8ef0c8d315c600559495fd93b"
+
+[[package]]
 name = "pkcs8"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -436,6 +444,12 @@ checksum = "d34f1408f55294453790c48b2f1ebbb1c5b4b7563eb1f418bcfcfdbb06ebb4e7"
 dependencies = [
  "getrandom 0.2.6",
 ]
+
+[[package]]
+name = "result-extensions"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6a16927a77de33f43b4f98a52bd08ae9d17e3a5d98e4a413d54b5fb431cfd6b"
 
 [[package]]
 name = "rfc6979"

@@ -4,10 +4,11 @@ use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
-use crate::util::traits::{OptionExtensions, ResultExtensions};
+use crate::util::traits::OptionExtensions;
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_verifier_with_provided_errors,
 };
+use result_extensions::ResultExtensions;
 
 /// The main branch of validation for an execute msg.  Funnels the intercepted value based on variant
 /// to one of the various sub-functions in this module.

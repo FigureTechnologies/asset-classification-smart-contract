@@ -3,9 +3,8 @@ use std::{convert::TryInto, str::FromStr};
 use crate::{core::error::ContractError, util::aliases::AssetResult};
 use bech32::{FromBase32, ToBase32, Variant};
 use cosmwasm_std::Addr;
+use result_extensions::ResultExtensions;
 use uuid::Uuid;
-
-use super::traits::ResultExtensions;
 
 // Standard scope key prefix from the Provenance libs
 const KEY_SCOPE: u8 = 0x00;

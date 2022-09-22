@@ -5,8 +5,9 @@ use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{MessageInfo, Response};
+use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier)
 /// for ease of use in the underlying [add_asset_verifier](self::add_asset_verifier) function.

@@ -1,11 +1,9 @@
 use cosmwasm_std::{to_binary, Binary};
+use result_extensions::ResultExtensions;
 
 use crate::{
     migrate::version_info::get_version_info,
-    util::{
-        aliases::{AssetResult, DepsC},
-        traits::ResultExtensions,
-    },
+    util::aliases::{AssetResult, DepsC},
 };
 
 /// Pulls the version info for the contract out of the version store.

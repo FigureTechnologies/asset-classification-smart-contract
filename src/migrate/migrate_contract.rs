@@ -1,4 +1,5 @@
 use cosmwasm_std::{Response, Storage};
+use result_extensions::ResultExtensions;
 use semver::Version;
 
 use crate::core::msg::MigrationOptions;
@@ -10,7 +11,6 @@ use crate::{
     util::{
         aliases::{AssetResult, DepsMutC, EntryPointResponse},
         event_attributes::{EventAttributes, EventType},
-        traits::ResultExtensions,
     },
 };
 

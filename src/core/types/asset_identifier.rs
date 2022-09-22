@@ -1,12 +1,12 @@
 use crate::core::error::ContractError;
 use crate::core::types::serialized_enum::SerializedEnum;
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::util::{
     aliases::AssetResult,
     scope_address_utils::{asset_uuid_to_scope_address, scope_address_to_asset_uuid},
-    traits::ResultExtensions,
 };
 
 const ASSET_UUID_NAME: &str = "asset_uuid";

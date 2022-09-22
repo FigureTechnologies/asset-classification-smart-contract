@@ -3,9 +3,10 @@ use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
 use crate::util::functions::bank_send;
-use crate::util::traits::ResultExtensions;
+
 use cosmwasm_std::{coin, Addr, Coin, CosmosMsg};
 use provwasm_std::ProvenanceMsg;
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

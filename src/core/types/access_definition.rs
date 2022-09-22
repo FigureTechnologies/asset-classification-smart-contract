@@ -1,9 +1,8 @@
+use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::util::{
-    aliases::AssetResult, scope_address_utils::bech32_string_to_addr, traits::ResultExtensions,
-};
+use crate::util::{aliases::AssetResult, scope_address_utils::bech32_string_to_addr};
 
 use super::access_route::AccessRoute;
 

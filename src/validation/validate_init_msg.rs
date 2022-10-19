@@ -151,7 +151,7 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
         ));
     }
     invalid_fields.append(&mut validate_onboarding_cost_internal(
-        &verifier.get_onboarding_cost(),
+        &verifier.get_default_cost(),
         "verifier onboarding costs",
     ));
     // Ensure that retry costs follow the same standards as the root onboarding cost, if provided.

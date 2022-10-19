@@ -72,19 +72,30 @@ impl VerifierDetailV2 {
             .sum::<u128>()
     }
 
-    /// TODO: Tests for all the new get costs fields
-    pub fn get_onboarding_cost(&self) -> OnboardingCost {
+    /// Packs the root-level onboarding_cost and fee_destinations fields into an OnboardingCost
+    /// struct.
+    pub fn get_default_cost(&self) -> OnboardingCost {
         OnboardingCost::new(self.onboarding_cost.u128(), &self.fee_destinations)
     }
 
+    /// Determines the values to use for retrying classification on an asset that has been rejected
+    /// by a verifier.  Will try to use the root retry_cost values, if present.  If missing, the
+    /// default costs will be used.
     pub fn get_retry_cost(&self) -> OnboardingCost {
         if let Some(ref retry_cost) = self.retry_cost {
             retry_cost.to_owned()
         } else {
-            self.get_onboarding_cost()
+            self.get_default_cost()
         }
     }
 
+    /// Determines the values to use for classifying an asset that has been previously classified
+    /// as a different asset type.  If the subsequent_classification_detail field is populated, its
+    /// asset_type_specifications will be polled to determine if they contain a specification for
+    /// the given asset type.  If none exists, and a default_cost is specified on the
+    /// subsequent_classification_detail node, that value will be used.  If no applicable values are
+    /// populated on the subsequent classification node, or the node itself is not populated, the
+    /// default costs will be used.
     pub fn get_subsequent_classification_cost<S: Into<String>>(
         &self,
         asset_type: S,
@@ -100,10 +111,10 @@ impl VerifierDetailV2 {
             } else if let Some(ref default_cost) = subsequent_detail.default_cost {
                 default_cost.to_owned()
             } else {
-                self.get_onboarding_cost()
+                self.get_default_cost()
             }
         } else {
-            self.get_onboarding_cost()
+            self.get_default_cost()
         }
     }
 }
@@ -111,8 +122,14 @@ impl VerifierDetailV2 {
 #[cfg(test)]
 mod tests {
     use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::onboarding_cost::OnboardingCost;
+    use crate::core::types::subsequent_classification_detail::{
+        SubsequentClassificationDetail, SubsequentClassificationSpecification,
+    };
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::DEFAULT_ASSET_TYPE;
     use crate::util::constants::NHASH;
+    use crate::util::traits::OptionExtensions;
     use cosmwasm_std::Uint128;
 
     #[test]
@@ -128,7 +145,7 @@ mod tests {
         );
         assert_eq!(
             0,
-            verifier.get_onboarding_cost().get_fee_total(),
+            verifier.get_default_cost().get_fee_total(),
             "expected the fee total to be zero when no fee definitions are listed",
         );
     }
@@ -145,7 +162,7 @@ mod tests {
             None,
         );
         assert_eq!(
-            55, verifier.get_onboarding_cost().get_fee_total(),
+            55, verifier.get_default_cost().get_fee_total(),
             "expected the fee total to directly reflect the amount listed in the single fee destination",
         );
     }
@@ -169,8 +186,200 @@ mod tests {
             None,
         );
         assert_eq!(
-            210, verifier.get_onboarding_cost().get_fee_total(),
+            210, verifier.get_default_cost().get_fee_total(),
             "expected the fee total to be the sum of all fee destinations' fee amounts (10 + 20 + 30 + 40 + 50 + 60 = 210)",
+        );
+    }
+
+    #[test]
+    fn test_get_default_cost_uses_the_root_fields_as_source() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            None,
+        );
+        let onboarding_cost = verifier.get_default_cost();
+        assert_eq!(
+            verifier.onboarding_cost, onboarding_cost.cost,
+            "the cost of the onboarding cost should equate to the value specified in the root of the verifier",
+        );
+        assert_eq!(
+            verifier.fee_destinations,
+            onboarding_cost.fee_destinations,
+            "the fee destinations of the onboarding cost should equate to the value specified in the root of the verifier",
+        );
+    }
+
+    #[test]
+    fn test_get_retry_cost_uses_default_when_not_specified() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            None,
+        );
+        assert_eq!(
+            verifier.get_default_cost(),
+            verifier.get_retry_cost(),
+            "the retry cost should equate to the default cost when the retry node is not specified",
+        );
+    }
+
+    #[test]
+    fn test_get_retry_cost_uses_provided_values_when_specified() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            OnboardingCost::new(150, &[FeeDestinationV2::new("fee-2", 5)]).to_some(),
+            None,
+        );
+        let root_retry_cost = verifier
+            .retry_cost
+            .clone()
+            .expect("retry cost should be set on the root of the verifier");
+        assert_eq!(
+            root_retry_cost,
+            verifier.get_retry_cost(),
+            "the root retry cost should be returned when it is set on the verifier",
+        );
+    }
+
+    #[test]
+    fn test_get_subsequent_classification_cost_uses_default_when_none_specified() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            None,
+        );
+        assert_eq!(
+            verifier.get_default_cost(),
+            verifier.get_subsequent_classification_cost(DEFAULT_ASSET_TYPE),
+            "the default costs should be used for subsequent classification cost when no subsequent detail is provided",
+        );
+    }
+
+    #[test]
+    fn test_get_subsequent_classification_cost_uses_default_when_subsequent_node_is_empty() {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(None, &[]).to_some(),
+        );
+        assert_eq!(
+            verifier.get_default_cost(),
+            verifier.get_subsequent_classification_cost(DEFAULT_ASSET_TYPE),
+            "the default costs should be used for subsequent classification cost when the subsequent detail is blank",
+        );
+    }
+
+    #[test]
+    fn test_get_subsequent_classification_cost_uses_inner_default_when_no_relevant_asset_type_spec_exists(
+    ) {
+        let expected_onboarding_cost =
+            OnboardingCost::new(100, &[FeeDestinationV2::new("default_cost_fee", 7)]);
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                expected_onboarding_cost.clone().to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    "other-asset-type",
+                    OnboardingCost::new(50, &[]),
+                )],
+            )
+            .to_some(),
+        );
+        assert_eq!(
+            expected_onboarding_cost,
+            verifier.get_subsequent_classification_cost(DEFAULT_ASSET_TYPE),
+            "the default subsequent classification cost should be used when no asset type targets match",
+        );
+    }
+
+    #[test]
+    fn test_get_subsequent_classification_cost_uses_proper_asset_type_when_provided() {
+        let expected_onboarding_cost =
+            OnboardingCost::new(990, &[FeeDestinationV2::new("asset-fee", 17)]);
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(200, &[]).to_some(),
+                &[
+                    SubsequentClassificationSpecification::new(
+                        DEFAULT_ASSET_TYPE,
+                        expected_onboarding_cost.clone(),
+                    ),
+                    SubsequentClassificationSpecification::new(
+                        "other-asset-type",
+                        OnboardingCost::new(50, &[]),
+                    ),
+                ],
+            )
+            .to_some(),
+        );
+        assert_eq!(
+            expected_onboarding_cost,
+            verifier.get_subsequent_classification_cost(DEFAULT_ASSET_TYPE),
+            "expected the target asset type cost to be used when applicable",
+        );
+    }
+
+    #[test]
+    fn test_subsequent_classification_cost_uses_default_verifier_cost_when_only_unrelated_asset_specs_exist(
+    ) {
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![FeeDestinationV2::new("fee", 1)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                None,
+                &[
+                    SubsequentClassificationSpecification::new(
+                        "not-default-asset-type",
+                        OnboardingCost::new(90000, &[]),
+                    ),
+                    SubsequentClassificationSpecification::new(
+                        "other-asset-type",
+                        OnboardingCost::new(50, &[]),
+                    ),
+                ],
+            )
+            .to_some(),
+        );
+        assert_eq!(
+            verifier.get_default_cost(),
+            verifier.get_subsequent_classification_cost(DEFAULT_ASSET_TYPE),
+            "the default verifier costs should be used when no asset type targets match",
         );
     }
 }

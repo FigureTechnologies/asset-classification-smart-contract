@@ -183,7 +183,7 @@ fn calc_onboarding_cost_source<S: Into<String>>(
         verifier.get_subsequent_classification_cost(asset_type)
     } else {
         // Default out to using the root costs in all other scenarios
-        verifier.get_onboarding_cost()
+        verifier.get_default_cost()
     }
 }
 
@@ -729,6 +729,54 @@ mod tests {
             &messages,
             "second",
             10,
+            NHASH,
+            "the fee destination should receive its full requested amount",
+        );
+    }
+
+    #[test]
+    fn test_subsequent_classification_is_not_detected_when_previous_classification_does_not_match_the_verifier(
+    ) {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(900),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 50)],
+            None,
+            OnboardingCost::new(1000, &[FeeDestinationV2::new("second", 10)]).to_some(),
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(5000, &[FeeDestinationV2::new("third", 1000)]).to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    "other_other_asset_type",
+                    OnboardingCost::new(150, &[FeeDestinationV2::new("fourth", 5)]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            // Random other bech32 to indicate a totally different verifier
+            "tp1jcegrfy3fzfr8ejwnlqqnr5snlrt46v9mg4882",
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        // Run as non-retry for a different verifier, which IS a subsequent classification, but not
+        // a subsequent classification that is controlled by the same verifier
+        let messages = test_get_messages_provided(&verifier, false, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            400,
+            NHASH,
+            "the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "first",
+            50,
             NHASH,
             "the fee destination should receive its full requested amount",
         );

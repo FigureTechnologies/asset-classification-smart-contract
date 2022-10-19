@@ -263,12 +263,15 @@ mod tests {
     use crate::contract::execute;
     use crate::core::msg::ExecuteMsg::OnboardAsset;
     use crate::core::state::{load_asset_definition_by_type_v3, load_fee_payment_detail};
+    use crate::core::types::asset_definition::AssetDefinitionV3;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
     use crate::core::types::onboarding_cost::OnboardingCost;
+    use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
-    use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
+    use crate::testutil::test_constants::{DEFAULT_ONBOARDING_COST, DEFAULT_SECONDARY_ASSET_TYPE};
     use crate::testutil::test_utilities::{assert_single_item, single_attribute_for_key};
     use crate::util::constants::NHASH;
     use crate::util::functions::generate_os_gateway_grant_id;
@@ -1063,21 +1066,139 @@ mod tests {
         );
     }
 
-    // TODO: Test subsequent classification fees
-    // #[test]
-    // fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
-    //     let mut deps = mock_dependencies(&[]);
-    //     setup_test_suite(&mut deps, InstArgs::default());
-    //     let result = onboard_asset(
-    //         AssetMetaService::new(deps.as_mut()),
-    //         mock_env(),
-    //         empty_mock_info(),
-    //         OnboardAssetV1 {
-    //             identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-    //             asset_type
-    //         }
-    //     )
-    // }
+    #[test]
+    fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let secondary_verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(300),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("feeperson1", 100),
+                FeeDestinationV2::new("feeperson2", 50),
+            ],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(600, &[]).to_some(),
+                &[DEFAULT_ASSET_TYPE],
+            )
+            .to_some(),
+        );
+        let secondary_asset_definition = AssetDefinitionV3::new(
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            Some("secondary asset"),
+            vec![secondary_verifier.clone()],
+        );
+        add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetDefinitionV1 {
+                asset_definition: secondary_asset_definition.clone(),
+                bind_name: Some(false),
+            },
+        )
+        .expect("adding the secondary asset definition should succeed");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding as the default asset type should succeed");
+        let existing_scope_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect("the existing asset type should have an asset scope attribute");
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .expect("onboarding the subsequent asset type should succeed");
+        let secondary_payment_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be available for the subsequent asset");
+        assert_eq!(
+            1,
+            secondary_payment_detail.payments.len(),
+            "only one payment should be emitted for the secondary payment detail, proving that subsequent detail was used",
+        );
+        let expected_fee_payment_detail = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &secondary_verifier,
+            false,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            &[existing_scope_attribute],
+        )
+        .expect("fee payment detail generation using the correct values should succeed");
+        assert_eq!(
+            expected_fee_payment_detail,
+            secondary_payment_detail,
+            "the subsequent classification detail should have been used to generate the correct fee",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_as_subsequent_illegal_type_produces_an_error() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let secondary_verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(300),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("feeperson1", 100),
+                FeeDestinationV2::new("feeperson2", 50),
+            ],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(600, &[]).to_some(),
+                &["some-other-asset-type"],
+            )
+            .to_some(),
+        );
+        let secondary_asset_definition = AssetDefinitionV3::new(
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            Some("secondary asset"),
+            vec![secondary_verifier.clone()],
+        );
+        add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetDefinitionV1 {
+                asset_definition: secondary_asset_definition.clone(),
+                bind_name: Some(false),
+            },
+        )
+        .expect("adding the secondary asset definition should succeed");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding as the default asset type should succeed");
+        let err = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .expect_err(
+            "an error should be emitted when onboarding as an illegal subsequent asset type",
+        );
+        assert!(
+            matches!(err, ContractError::UnsupportedSubsequentAssetType { .. }),
+            "unexpected error emitted when onboarding with an illegal subsequent asset type: {:?}",
+            err,
+        );
+    }
 
     #[test]
     fn test_update_attribute_generates_appropriate_messages() {

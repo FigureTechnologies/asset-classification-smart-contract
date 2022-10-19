@@ -9,44 +9,24 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct SubsequentClassificationDetail {
-    /// The default onboarding costs to use when classifying a subsequent asset type on a scope.  If
-    /// no asset type specification is provided for a subsequent type, this value will be used.  If
-    /// this value is not present in that circumstance and no specific asset type target is supplied,
-    /// the default onboarding costs in the root of the verifier detail will be used.
-    pub default_cost: Option<OnboardingCost>,
-    /// Specific asset type onboarding costs to use when onboarding a subsequent asset to a verifier.
-    /// This value is preferred over the default cost values when both are present.
-    pub asset_type_specifications: Vec<SubsequentClassificationSpecification>,
+    /// The onboarding cost to use when classifying an asset using the associated verifier after
+    /// having already classified it as a different type with the same verifier.  If not set, the
+    /// default verifier costs are used.
+    pub cost: Option<OnboardingCost>,
+    /// Specifies the asset types that an asset can already be classified as when using this verifier.
+    /// If not set, any asset type may be used.  This value will be rejected if it is supplied as
+    /// an empty vector.
+    pub allowed_asset_types: Option<Vec<String>>,
 }
 impl SubsequentClassificationDetail {
-    pub fn new(
-        default_cost: Option<OnboardingCost>,
-        asset_type_specifications: &[SubsequentClassificationSpecification],
-    ) -> Self {
+    pub fn new<S: Into<String>>(cost: Option<OnboardingCost>, allowed_asset_types: &[S]) -> Self {
         Self {
-            default_cost,
-            asset_type_specifications: asset_type_specifications.iter().cloned().collect(),
-        }
-    }
-}
-
-/// TODO: Doc comments to link other relevant structs.
-/// Costs specified for onboarding an asset as a subsequent type to the contract with the same
-/// verifier.  These values are preferred over default costs when provided.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SubsequentClassificationSpecification {
-    /// The type of asset.  Must be unique when compared against other SubsequentClassificationSpecifications
-    /// on a SubsequentClassificationDetail.
-    pub asset_type: String,
-    /// The cost to onboard this specific asset type in subsequent classification scenarios.
-    pub cost: OnboardingCost,
-}
-impl SubsequentClassificationSpecification {
-    pub fn new<S: Into<String>>(asset_type: S, cost: OnboardingCost) -> Self {
-        Self {
-            asset_type: asset_type.into(),
             cost,
+            allowed_asset_types: allowed_asset_types
+                .iter()
+                .cloned()
+                .map(|s| s.into())
+                .collect(),
         }
     }
 }

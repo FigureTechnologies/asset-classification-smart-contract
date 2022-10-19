@@ -107,6 +107,15 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             }.to_err();
         }
 
+        // Fetch any existing scope attributes for use in calculating the onboarding cost, which
+        // may change if an existing scope attribute on this asset has used a different asset type
+        // from the same verifier address.
+        let existing_scope_attributes = self
+            .use_deps(|deps| {
+                may_query_scope_attribute_by_scope_address(&deps.as_ref(), &attribute.scope_address)
+            })?
+            .unwrap_or_default();
+
         // generate attribute -> scope bind messages
         // On a retry, update the existing attribute with the given values
         if is_retry {
@@ -123,19 +132,23 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             )?);
         }
 
-        // Fetch any existing scope attributes for use in calculating the onboarding cost, which
-        // may change if an existing scope attribute on this asset has used a different asset type
-        // from the same verifier address.
-        let existing_scope_attributes = self
-            .use_deps(|deps| {
-                may_query_scope_attribute_by_scope_address(&deps.as_ref(), &attribute.scope_address)
-            })?
-            .unwrap_or_default();
+        // Retry fees should only be used when an asset is classified as a specific asset type with
+        // a specific verifier and rejected.  After rejection, the retry fee amount should be used
+        // in place of normal onboarding costs ONLY if the asset is onboarded as the same type of
+        // asset with the same verifier.  Without this check, an asset could fail onboarding with
+        // one verifier, and then take advantage of a retry fee reduction by using a wholly
+        // different verifier.
+        let calculate_retry_fees = is_retry
+            && existing_scope_attributes
+                .iter()
+                .find(|attr| attr.asset_type == attribute.asset_type)
+                .map(|attr| attr.verifier_address.as_str() == attribute.verifier_address.as_str())
+                .unwrap_or(false);
 
         let payment_detail = FeePaymentDetail::new(
             &attribute.scope_address,
             verifier_detail,
-            is_retry,
+            calculate_retry_fees,
             &attribute.asset_type,
             &existing_scope_attributes,
         )?;

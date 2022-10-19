@@ -265,6 +265,7 @@ mod tests {
     use crate::core::state::{load_asset_definition_by_type_v3, load_fee_payment_detail};
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
+    use crate::core::types::onboarding_cost::OnboardingCost;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
@@ -922,6 +923,7 @@ mod tests {
         let expected_payment_detail_after_retry = FeePaymentDetail::new(
             DEFAULT_SCOPE_ADDRESS,
             &default_verifier,
+            // Proves that this retry used the retry fees in the default verifier
             true,
             DEFAULT_ASSET_TYPE,
             &[attribute],
@@ -955,7 +957,9 @@ mod tests {
                 FeeDestinationV2::new("feeperson2", 50),
             ],
             None,
-            None,
+            // This other verifier has a super hefty retry cost, but this value should not be used
+            // because the first failed verification was with a different verifier
+            OnboardingCost::new(40000, &[FeeDestinationV2::new("bad_fee", 2000)]).to_some(),
             None,
         );
         add_asset_verifier(
@@ -1050,11 +1054,28 @@ mod tests {
             "the payment details should not match due to changing verifiers",
         );
         assert_eq!(
-            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, true, DEFAULT_ASSET_TYPE, &[])
+            // Proves that this subsequent retry using a different verifier will not load the
+            // retry fees, because retries should only execute when using the same verifier
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, false, DEFAULT_ASSET_TYPE, &[])
                 .expect("the other verifier should be successfully converted to a fee payment detail"),
             payment_detail_after,
             "the fee payment detail after the retry should equate to the new verifier's fee definitions",
         );
+    }
+
+    #[test]
+    fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let result = onboard_asset(
+            AssetMetaService::new(deps.as_mut()),
+            mock_env(),
+            empty_mock_info(),
+            OnboardAssetV1 {
+                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+                asset_type
+            }
+        )
     }
 
     #[test]

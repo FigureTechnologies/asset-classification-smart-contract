@@ -1,5 +1,5 @@
 use crate::core::types::fee_destination::FeeDestinationV2;
-use crate::core::types::retry_classification_detail::RetryClassificationDetail;
+use crate::core::types::onboarding_cost::OnboardingCost;
 use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
 use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
@@ -25,9 +25,10 @@ pub struct VerifierDetailV2 {
     pub fee_destinations: Vec<FeeDestinationV2>,
     /// An optional set of fields that define the verifier, including its name and home URL location.
     pub entity_detail: Option<EntityDetail>,
-    /// An optional set of fields that define behaviors when classification is being run after a
-    /// rejection from this verifier.
-    pub retry_classification_detail: Option<RetryClassificationDetail>,
+    /// Defines the cost to use in place of the root onboarding_cost and fee_destinations when
+    /// retrying classification for a failed verification.  If not present, the original values
+    /// used for the first verification will be used.
+    pub retry_cost: Option<OnboardingCost>,
     /// An optional set of fields that define behaviors when classification is being run for an
     /// asset that is already classified as a different type.
     pub subsequent_classification_detail: Option<SubsequentClassificationDetail>,
@@ -48,7 +49,7 @@ impl VerifierDetailV2 {
         onboarding_denom: S2,
         fee_destinations: Vec<FeeDestinationV2>,
         entity_detail: Option<EntityDetail>,
-        retry_classification_detail: Option<RetryClassificationDetail>,
+        retry_cost: Option<OnboardingCost>,
         subsequent_classification_detail: Option<SubsequentClassificationDetail>,
     ) -> Self {
         VerifierDetailV2 {
@@ -57,7 +58,7 @@ impl VerifierDetailV2 {
             onboarding_denom: onboarding_denom.into(),
             fee_destinations,
             entity_detail,
-            retry_classification_detail,
+            retry_cost,
             subsequent_classification_detail,
         }
     }

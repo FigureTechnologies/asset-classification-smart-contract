@@ -22,8 +22,8 @@ pub mod fee_destination;
 /// Defines a stored set of values for charging fees to the onboarding account during the asset
 /// classification process.
 pub mod fee_payment_detail;
-/// Defines fees and values that can be used when classification is rejected for an asset.
-pub mod retry_classification_detail;
+/// A node that defines how much onboarding should cost and any specific fees that should be paid.
+pub mod onboarding_cost;
 /// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:
 /// [AssetIdentifier](self::asset_identifier::AssetIdentifier)
 pub mod serialized_enum;

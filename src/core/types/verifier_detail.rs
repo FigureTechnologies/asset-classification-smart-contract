@@ -25,9 +25,10 @@ pub struct VerifierDetailV2 {
     pub fee_destinations: Vec<FeeDestinationV2>,
     /// An optional set of fields that define the verifier, including its name and home URL location.
     pub entity_detail: Option<EntityDetail>,
-    /// Defines the cost to use in place of the root onboarding_cost and fee_destinations when
-    /// retrying classification for a failed verification.  If not present, the original values
-    /// used for the first verification will be used.
+    /// Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost) and
+    /// [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed
+    /// verification.  If not present, the original values used for the first verification will be
+    /// used.
     pub retry_cost: Option<OnboardingCost>,
     /// An optional set of fields that define behaviors when classification is being run for an
     /// asset that is already classified as a different type.
@@ -43,6 +44,12 @@ impl VerifierDetailV2 {
     /// * `onboarding_denom` The coin denomination used for this onboarding process.
     /// * `fee_destinations` Each account that should receive some (or all) of the amount specified in [onboarding_cost](self::VerifierDetailV2::onboarding_cost).
     /// * `entity_detail` An optional set of fields that define the verifier, including its name and home URL location.
+    /// * `retry_cost` Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost)
+    /// and [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed
+    /// verification.  If not present, the original values used for the first verification will be
+    /// used.
+    /// * `subsequent_classification_detail` An optional set of fields that define behaviors when
+    /// classification is being run for an asset that is already classified as a different type.
     pub fn new<S1: Into<String>, S2: Into<String>>(
         address: S1,
         onboarding_cost: Uint128,
@@ -79,8 +86,8 @@ impl VerifierDetailV2 {
     }
 
     /// Determines the values to use for retrying classification on an asset that has been rejected
-    /// by a verifier.  Will try to use the root retry_cost values, if present.  If missing, the
-    /// default costs will be used.
+    /// by a verifier.  Will try to use the root [retry_cost](self::VerifierDetailV2::retry_cost) values, if present.
+    /// If missing, the default costs will be used.
     pub fn get_retry_cost(&self) -> OnboardingCost {
         if let Some(ref retry_cost) = self.retry_cost {
             retry_cost.to_owned()
@@ -90,15 +97,11 @@ impl VerifierDetailV2 {
     }
 
     /// Determines the values to use for classifying an asset that has been previously classified
-    /// as a different asset type.  If the subsequent_classification_detail field is populated, its
-    /// allowed_asset_types will be polled to determine if the target asset type is allowed.  If none exists, and a default_cost is specified on the
-    /// subsequent_classification_detail node, that value will be used.  If no applicable values are
-    /// populated on the subsequent classification node, or the node itself is not populated, the
-    /// default costs will be used.
+    /// as a different asset type.  If the [subsequent_classification_detail](self::VerifierDetailV2::subsequent_classification_detail)
+    /// field is populated, its [cost](super::subsequent_classification_detail::SubsequentClassificationDetail::cost) field will be
+    /// used to determine costs paid during onboarding.  If it is not populated, the default costs
+    /// will be used.
     pub fn get_subsequent_classification_cost(&self) -> OnboardingCost {
-        if self.subsequent_classification_detail.is_none() {
-            return self.get_default_cost();
-        }
         if let Some(ref subsequent_detail) = self.subsequent_classification_detail {
             if let Some(ref cost) = subsequent_detail.cost {
                 return cost.to_owned();

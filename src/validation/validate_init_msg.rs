@@ -167,31 +167,25 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
     if let Some(ref subsequent_detail) = verifier.subsequent_classification_detail {
         // Ensure that the default cost of the subsequent detail follows the same standards as the
         // root onboarding cost.
-        if let Some(ref default_cost) = subsequent_detail.default_cost {
+        if let Some(ref cost) = subsequent_detail.cost {
             invalid_fields.append(&mut validate_onboarding_cost_internal(
-                default_cost,
-                "verifier default subsequent classification cost",
+                cost,
+                "verifier subsequent classification cost",
             ));
         }
-        // Ensure that each asset type specification follows the same standards as the root
-        // onboarding cost.
-        subsequent_detail
-            .asset_type_specifications
-            .iter()
-            .for_each(|asset_spec| {
-                invalid_fields.append(&mut validate_onboarding_cost_internal(
-                    &asset_spec.cost,
-                    format!(
-                        "verifier subsequent cost for asset type [{}]",
-                        &asset_spec.asset_type
-                    ),
-                ));
-            });
-        if distinct_count_by_property(&subsequent_detail.asset_type_specifications, |spec| {
-            &spec.asset_type
-        }) != subsequent_detail.asset_type_specifications.len()
-        {
-            invalid_fields.push("verifier subsequent costs: each asset type specification must have a unique asset type".to_string());
+        // Ensure that if allowed asset types are specified, they are not empty and do not contain
+        // duplicates.  It is perfectly valid for this field to be a None variant, but if supplied
+        // it must be held to standards required downstream by fee payment detail generation.
+        if let Some(ref allowed_asset_types) = subsequent_detail.allowed_asset_types {
+            if allowed_asset_types.is_empty() {
+                invalid_fields.push(
+                    "verifier subsequent classification: allowed_asset_types must not be empty if provided"
+                        .to_string(),
+                );
+            }
+            if distinct_count_by_property(allowed_asset_types, |t| t) != allowed_asset_types.len() {
+                invalid_fields.push("verifier subsequent classification: each value in allowed_asset_types must be unique".to_string());
+            }
         }
     }
     invalid_fields
@@ -261,9 +255,7 @@ pub mod tests {
     use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::onboarding_cost::OnboardingCost;
-    use crate::core::types::subsequent_classification_detail::{
-        SubsequentClassificationDetail, SubsequentClassificationSpecification,
-    };
+    use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
@@ -733,7 +725,7 @@ pub mod tests {
     }
 
     #[test]
-    fn test_invalid_verifier_subsequent_classification_detail_default_cost() {
+    fn test_invalid_verifier_subsequent_classification_detail_cost() {
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
@@ -745,10 +737,13 @@ pub mod tests {
                 ],
                 get_default_entity_detail().to_some(),
                 None,
-                SubsequentClassificationDetail::new(OnboardingCost::new(3, &[]).to_some(), &[])
-                    .to_some(),
+                SubsequentClassificationDetail::new::<String>(
+                    OnboardingCost::new(3, &[]).to_some(),
+                    &[],
+                )
+                .to_some(),
             ),
-            "verifier default subsequent classification cost: onboarding_cost:cost must be an even number",
+            "verifier subsequent classification cost: onboarding_cost:cost must be an even number",
         );
         test_invalid_verifier(
             &VerifierDetailV2::new(
@@ -761,18 +756,18 @@ pub mod tests {
                 ],
                 get_default_entity_detail().to_some(),
                 None,
-                SubsequentClassificationDetail::new(
+                SubsequentClassificationDetail::new::<String>(
                     OnboardingCost::new(4, &[FeeDestinationV2::new("", 2)]).to_some(),
                     &[],
                 )
                 .to_some(),
             ),
-            "verifier default subsequent classification cost: fee_destination:address: must be a valid address",
+            "verifier subsequent classification cost: fee_destination:address: must be a valid address",
         );
     }
 
     #[test]
-    fn test_invalid_verifier_subsequent_classification_detail_asset_specs() {
+    fn test_invalid_verifier_subsequent_classification_detail_allowed_asset_types() {
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
@@ -784,12 +779,13 @@ pub mod tests {
                 ],
                 get_default_entity_detail().to_some(),
                 None,
-                SubsequentClassificationDetail::new(None, &[
-                    SubsequentClassificationSpecification::new("heloc", OnboardingCost::new(3, &[])),
-                ])
-                    .to_some(),
+                SubsequentClassificationDetail {
+                    cost: None,
+                    allowed_asset_types: vec![].to_some(),
+                }
+                .to_some(),
             ),
-            "verifier subsequent cost for asset type [heloc]: onboarding_cost:cost must be an even number",
+            "verifier subsequent classification: allowed_asset_types must not be empty if provided",
         );
         test_invalid_verifier(
             &VerifierDetailV2::new(
@@ -802,31 +798,9 @@ pub mod tests {
                 ],
                 get_default_entity_detail().to_some(),
                 None,
-                SubsequentClassificationDetail::new(None, &[
-                    SubsequentClassificationSpecification::new("dragon", OnboardingCost::new(4, &[FeeDestinationV2::new("", 2)])),
-                ])
-                    .to_some(),
+                SubsequentClassificationDetail::new(None, &["dragon", "dragon"]).to_some(),
             ),
-            "verifier subsequent cost for asset type [dragon]: fee_destination:address: must be a valid address",
-        );
-        test_invalid_verifier(
-            &VerifierDetailV2::new(
-                "address",
-                Uint128::new(100),
-                NHASH,
-                vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
-                ],
-                get_default_entity_detail().to_some(),
-                None,
-                SubsequentClassificationDetail::new(None, &[
-                    SubsequentClassificationSpecification::new("leroyjenkins", OnboardingCost::new(4, &[FeeDestinationV2::new("addr", 2)])),
-                    SubsequentClassificationSpecification::new("leroyjenkins", OnboardingCost::new(100, &[FeeDestinationV2::new("addr", 20)])),
-                ])
-                    .to_some(),
-            ),
-            "verifier subsequent costs: each asset type specification must have a unique asset type",
+            "verifier subsequent classification: each value in allowed_asset_types must be unique",
         );
     }
 

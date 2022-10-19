@@ -40,8 +40,8 @@ impl FeePaymentDetail {
     /// * `asset_type` The type of asset for which classification is being run.  Helps determine
     /// subsequent classification fees, if applicable.
     /// * `existing_scope_attributes` Any current scope attributes that have already been placed
-    /// onto the asset being classified.  Helps determine subsequent classification fees, if
-    /// applicable.
+    /// onto the asset being classified.  Helps determine if the subsequent run with this verifier
+    /// is allowed.
     pub fn new<S1: Into<String>, S2: Into<String>>(
         scope_address: S1,
         verifier: &VerifierDetailV2,
@@ -52,7 +52,7 @@ impl FeePaymentDetail {
         let mut payments = vec![];
         let mut fee_total: u128 = 0;
         let onboarding_cost =
-            calc_onboarding_cost_source(verifier, is_retry, asset_type, existing_scope_attributes);
+            calc_onboarding_cost_source(verifier, is_retry, asset_type, existing_scope_attributes)?;
         // Append a message for each destination
         for destination in onboarding_cost.fee_destinations.iter() {
             payments.push(FeePayment {
@@ -162,28 +162,56 @@ fn calc_onboarding_cost_source<S: Into<String>>(
     is_retry: bool,
     asset_type: S,
     existing_scope_attributes: &[AssetScopeAttribute],
-) -> OnboardingCost {
+) -> AssetResult<OnboardingCost> {
     let asset_type = asset_type.into();
-    if is_retry {
-        // Always favor retry cost.  Regardless of the scenario, retries should override the specified
-        // root costs and/or subsequent classification costs
-        verifier.get_retry_cost()
-    } else if existing_scope_attributes
+    // Fetch all scope attributes on the asset that used this verifier and were not for this target
+    // asset type.  If this is not empty, that means that this request is a subsequent classification
+    // for the same verifier and can use subsequent costs.
+    let other_classifications = existing_scope_attributes
         .iter()
-        // Scope attributes are only applicable as subsequent classification criteria when they
-        // are using the same verifier as before, and when they are not the same asset type.
-        // Validation should not allow multiple same asset type verifications to occur, but this
-        // criteria wholly ensures it
-        .any(|attr| {
+        .filter(|attr| {
             attr.verifier_address.as_str() == verifier.address && attr.asset_type != asset_type
         })
-    {
+        .collect::<Vec<&AssetScopeAttribute>>();
+    // Always favor retry cost.  Regardless of the scenario, retries should override the specified
+    // root costs and/or subsequent classification costs
+    if is_retry {
+        verifier.get_retry_cost().to_ok()
+    } else if !other_classifications.is_empty() {
+        // If at least one other classification that used this verifier is present in the existing
+        // scope attributes, then this qualifies as a subsequent classification.
+        if let Some(ref allowed_types) = verifier
+            .subsequent_classification_detail
+            .clone()
+            .and_then(|d| d.allowed_asset_types)
+        {
+            let classified_asset_types = other_classifications
+                .iter()
+                .cloned()
+                .map(|attr| attr.asset_type.to_owned())
+                .collect::<Vec<String>>();
+            // If the allowed asset types node is set, and at least one type that this asset is
+            // classified as is not present in that vector, then this is an unsupported
+            // subsequent classification with this verifier and the request needs to be rejected.
+            if !classified_asset_types
+                .iter()
+                .all(|asset_type| allowed_types.contains(&asset_type))
+            {
+                return ContractError::UnsupportedSubsequentAssetType {
+                    target_asset_type: asset_type,
+                    verifier_address: verifier.address.to_owned(),
+                    existing_asset_types: classified_asset_types,
+                    accepted_asset_types: allowed_types.to_owned(),
+                }
+                .to_err();
+            }
+        }
         // If any previously-established scope attributes were created for this verifier, then
         // subsequent classification costs apply if set
-        verifier.get_subsequent_classification_cost(asset_type)
+        verifier.get_subsequent_classification_cost().to_ok()
     } else {
         // Default out to using the root costs in all other scenarios
-        verifier.get_default_cost()
+        verifier.get_default_cost().to_ok()
     }
 }
 
@@ -199,13 +227,11 @@ mod tests {
         generate_fee_destination_fee_name, generate_verifier_fee_name, FeePaymentDetail,
     };
     use crate::core::types::onboarding_cost::OnboardingCost;
-    use crate::core::types::subsequent_classification_detail::{
-        SubsequentClassificationDetail, SubsequentClassificationSpecification,
-    };
+    use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::testutil::test_constants::{
-        DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
-        DEFAULT_VERIFIER_ADDRESS,
+        DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS,
+        DEFAULT_SECONDARY_ASSET_TYPE, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::NHASH;
@@ -495,12 +521,9 @@ mod tests {
             vec![FeeDestinationV2::new("first", 100)],
             None,
             OnboardingCost::new(600, &[FeeDestinationV2::new("second", 200)]).to_some(),
-            SubsequentClassificationDetail::new(
+            SubsequentClassificationDetail::new::<String>(
                 OnboardingCost::new(500, &[FeeDestinationV2::new("third", 100)]).to_some(),
-                &[SubsequentClassificationSpecification::new(
-                    "other_type",
-                    OnboardingCost::new(150, &[]),
-                )],
+                &[],
             )
             .to_some(),
         );
@@ -559,7 +582,7 @@ mod tests {
     }
 
     #[test]
-    fn test_subsequent_classification_fees_use_defaults_when_necessary() {
+    fn test_subsequent_classification_fees_specified_costs_when_necessary() {
         let verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(200),
@@ -567,12 +590,9 @@ mod tests {
             vec![FeeDestinationV2::new("first", 100)],
             None,
             None,
-            SubsequentClassificationDetail::new(
+            SubsequentClassificationDetail::new::<String>(
                 OnboardingCost::new(500, &[FeeDestinationV2::new("second", 100)]).to_some(),
-                &[SubsequentClassificationSpecification::new(
-                    "other_type",
-                    OnboardingCost::new(150, &[]),
-                )],
+                &[],
             )
             .to_some(),
         );
@@ -603,51 +623,7 @@ mod tests {
     }
 
     #[test]
-    fn test_subsequent_classification_fees_use_targeted_asset_types_when_available() {
-        let verifier = VerifierDetailV2::new(
-            DEFAULT_VERIFIER_ADDRESS,
-            Uint128::new(200),
-            NHASH,
-            vec![FeeDestinationV2::new("first", 100)],
-            None,
-            None,
-            SubsequentClassificationDetail::new(
-                OnboardingCost::new(500, &[FeeDestinationV2::new("second", 100)]).to_some(),
-                &[SubsequentClassificationSpecification::new(
-                    DEFAULT_ASSET_TYPE,
-                    OnboardingCost::new(150, &[FeeDestinationV2::new("third", 5)]),
-                )],
-            )
-            .to_some(),
-        );
-        let existing_scope_attribute = AssetScopeAttribute::new(
-            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            "some_other_asset_type",
-            DEFAULT_SENDER_ADDRESS,
-            DEFAULT_VERIFIER_ADDRESS,
-            AssetOnboardingStatus::Approved.to_some(),
-            vec![],
-        )
-        .expect("scope attribute should be generated without issue");
-        let messages = test_get_messages_provided(&verifier, false, &[existing_scope_attribute]);
-        test_messages_contains_fee_for_address(
-            &messages,
-            DEFAULT_VERIFIER_ADDRESS,
-            70,
-            NHASH,
-            "the verifier should receive the correct amount of nhash: 150 / 2 - 5fee = 70",
-        );
-        test_messages_contains_fee_for_address(
-            &messages,
-            "third",
-            5,
-            NHASH,
-            "the fee destination should receive its full requested amount",
-        );
-    }
-
-    #[test]
-    fn test_subsequent_classification_fees_uses_normal_fee_when_no_default_and_wrong_asset_type() {
+    fn test_subsequent_classification_fees_uses_defaults_when_no_cost_is_available() {
         let verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(200),
@@ -655,14 +631,7 @@ mod tests {
             vec![FeeDestinationV2::new("first", 50)],
             None,
             None,
-            SubsequentClassificationDetail::new(
-                None,
-                &[SubsequentClassificationSpecification::new(
-                    "other_other_asset_type",
-                    OnboardingCost::new(150, &[FeeDestinationV2::new("second", 5)]),
-                )],
-            )
-            .to_some(),
+            SubsequentClassificationDetail::new::<String>(None, &[]).to_some(),
         );
         let existing_scope_attribute = AssetScopeAttribute::new(
             &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
@@ -699,12 +668,9 @@ mod tests {
             vec![FeeDestinationV2::new("first", 50)],
             None,
             OnboardingCost::new(1000, &[FeeDestinationV2::new("second", 10)]).to_some(),
-            SubsequentClassificationDetail::new(
+            SubsequentClassificationDetail::new::<String>(
                 OnboardingCost::new(5000, &[FeeDestinationV2::new("third", 1000)]).to_some(),
-                &[SubsequentClassificationSpecification::new(
-                    "other_other_asset_type",
-                    OnboardingCost::new(150, &[FeeDestinationV2::new("fourth", 5)]),
-                )],
+                &[],
             )
             .to_some(),
         );
@@ -744,12 +710,9 @@ mod tests {
             vec![FeeDestinationV2::new("first", 50)],
             None,
             OnboardingCost::new(1000, &[FeeDestinationV2::new("second", 10)]).to_some(),
-            SubsequentClassificationDetail::new(
+            SubsequentClassificationDetail::new::<String>(
                 OnboardingCost::new(5000, &[FeeDestinationV2::new("third", 1000)]).to_some(),
-                &[SubsequentClassificationSpecification::new(
-                    "other_other_asset_type",
-                    OnboardingCost::new(150, &[FeeDestinationV2::new("fourth", 5)]),
-                )],
+                &[],
             )
             .to_some(),
         );
@@ -780,6 +743,69 @@ mod tests {
             NHASH,
             "the fee destination should receive its full requested amount",
         );
+    }
+
+    #[test]
+    fn test_an_error_is_emitted_when_an_asset_is_classified_as_an_illegal_type() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(900),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 50)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(5000, &[FeeDestinationV2::new("third", 1000)]).to_some(),
+                &["some-other-type"],
+            )
+            .to_some(),
+        );
+        // Asset has already been classified as the default type, which the subsequent detail does
+        // not accept.  This should result in an error
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            DEFAULT_ASSET_TYPE,
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let err = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &verifier,
+            false,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            &[existing_scope_attribute],
+        ).expect_err("An error should be emitted when a new type is classified that does not match the allowed asset types vector");
+        match err {
+            ContractError::UnsupportedSubsequentAssetType {
+                target_asset_type,
+                verifier_address,
+                existing_asset_types,
+                accepted_asset_types,
+            } => {
+                assert_eq!(
+                    DEFAULT_SECONDARY_ASSET_TYPE, target_asset_type,
+                    "the error should specify the asset type being used for classification",
+                );
+                assert_eq!(
+                    DEFAULT_VERIFIER_ADDRESS, verifier_address,
+                    "the error should specify the verifier address being used",
+                );
+                assert_eq!(
+                    vec![DEFAULT_ASSET_TYPE],
+                    existing_asset_types,
+                    "the error should specify the types that the asset is currently classified as",
+                );
+                assert_eq!(
+                    vec!["some-other-type"],
+                    accepted_asset_types,
+                    "the error should specify the allowed asset types from the subsequent detail",
+                );
+            }
+            e => panic!("unexpected error occurred: {:?}", e),
+        };
     }
 
     fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {

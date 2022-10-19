@@ -84,7 +84,7 @@ pub fn get_default_subsequent_classification_detail() -> SubsequentClassificatio
             DEFAULT_SUBSEQUENT_CLASSIFICATION_COST,
             &[],
         )),
-        &[],
+        &[DEFAULT_ASSET_TYPE],
     )
 }
 

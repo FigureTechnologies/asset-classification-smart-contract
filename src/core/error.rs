@@ -250,8 +250,20 @@ pub enum ContractError {
     /// process, but the asset type cannot be found in the contract's internal storage.
     #[error("Unsupported asset type [{asset_type}]")]
     UnsupportedAssetType {
-        /// The type of asset that could not be located for onboarrding.
+        /// The type of asset that could not be located for onboarding.
         asset_type: String,
+    },
+
+    /// This error is encountered when attempting to generate fees for a subsequent classification
+    /// for an asset type with a [SubsequentClassificationDetail](super::types::subsequent_classification_detail::SubsequentClassificationDetail)
+    /// that does not accept one or more of the types with which the asset has already been
+    /// classified.
+    #[error("Verifier [{verifier_address}] for asset type [{target_asset_type}] does not support subsequent verifications for one or more types classified on the given asset. The provided asset has types [{existing_asset_types:?}], but supported types are: [{accepted_asset_types:?}]")]
+    UnsupportedSubsequentAssetType {
+        target_asset_type: String,
+        verifier_address: String,
+        existing_asset_types: Vec<String>,
+        accepted_asset_types: Vec<String>,
     },
 
     /// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)

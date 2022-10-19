@@ -1063,20 +1063,21 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
-        let result = onboard_asset(
-            AssetMetaService::new(deps.as_mut()),
-            mock_env(),
-            empty_mock_info(),
-            OnboardAssetV1 {
-                identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
-                asset_type
-            }
-        )
-    }
+    // TODO: Test subsequent classification fees
+    // #[test]
+    // fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
+    //     let mut deps = mock_dependencies(&[]);
+    //     setup_test_suite(&mut deps, InstArgs::default());
+    //     let result = onboard_asset(
+    //         AssetMetaService::new(deps.as_mut()),
+    //         mock_env(),
+    //         empty_mock_info(),
+    //         OnboardAssetV1 {
+    //             identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+    //             asset_type
+    //         }
+    //     )
+    // }
 
     #[test]
     fn test_update_attribute_generates_appropriate_messages() {

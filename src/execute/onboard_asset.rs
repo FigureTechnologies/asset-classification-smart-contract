@@ -927,6 +927,8 @@ mod tests {
                 FeeDestinationV2::new("feeperson2", 50),
             ],
             None,
+            None,
+            None,
         );
         add_asset_verifier(
             deps.as_mut(),

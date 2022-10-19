@@ -223,7 +223,15 @@ mod tests {
             ExecuteMsg::AddAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 // Invalid because the address is blank
-                verifier: VerifierDetailV2::new("", Uint128::zero(), NHASH, vec![], None),
+                verifier: VerifierDetailV2::new(
+                    "",
+                    Uint128::zero(),
+                    NHASH,
+                    vec![],
+                    None,
+                    None,
+                    None,
+                ),
             },
         )
         .unwrap_err();
@@ -283,6 +291,8 @@ mod tests {
                     NHASH,
                     vec![],
                     None,
+                    None,
+                    None,
                 ),
             ),
         )
@@ -313,6 +323,8 @@ mod tests {
             NHASH,
             vec![FeeDestinationV2::new(TEST_FEE_ADDRESS, 500)],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         validate_verifier(&verifier).expect("expected the new verifier to pass validation");
         verifier

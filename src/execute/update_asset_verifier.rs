@@ -250,6 +250,8 @@ mod tests {
                     NHASH,
                     vec![],
                     None,
+                    None,
+                    None,
                 ),
             },
         )
@@ -304,7 +306,7 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                VerifierDetailV2::new("unknown-address-guy", Uint128::zero(), NHASH, vec![], None),
+                VerifierDetailV2::new("unknown-address-guy", Uint128::zero(), NHASH, vec![], None, None, None),
             ),
         )
         .unwrap_err();
@@ -338,6 +340,8 @@ mod tests {
                 FeeDestinationV2::new("tp169qp36ax8gvtrzszfevqcwhe4hn2g02g35lne8", 105),
             ],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         validate_verifier(&verifier).expect("expected the verifier to pass validation");
         verifier

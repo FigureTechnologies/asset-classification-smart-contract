@@ -195,6 +195,8 @@ mod tests {
                 "",
                 "",
             )),
+            None,
+            None,
         );
         assert_eq!(
             "Jeff's Frozen Pizza Emporium Verifier Fee".to_string(),
@@ -226,6 +228,8 @@ mod tests {
             NHASH,
             vec![FeeDestinationV2::new("fee", 101)],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let error = FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &verifier).unwrap_err();
         match error {
@@ -245,7 +249,15 @@ mod tests {
 
     #[test]
     fn test_only_send_to_verifier() {
-        let verifier = VerifierDetailV2::new("verifier", Uint128::new(200), NHASH, vec![], None);
+        let verifier = VerifierDetailV2::new(
+            "verifier",
+            Uint128::new(200),
+            NHASH,
+            vec![],
+            None,
+            None,
+            None,
+        );
         let messages = test_get_messages(&verifier);
         assert_eq!(
             1,
@@ -268,6 +280,8 @@ mod tests {
             Uint128::new(200),
             NHASH,
             vec![FeeDestinationV2::new("fee-destination", 100)],
+            None,
+            None,
             None,
         );
         let messages = test_get_messages(&verifier);
@@ -292,6 +306,8 @@ mod tests {
             Uint128::new(200),
             NHASH,
             vec![FeeDestinationV2::new("fee-destination", 50)],
+            None,
+            None,
             None,
         );
         let messages = test_get_messages(&verifier);
@@ -325,6 +341,8 @@ mod tests {
                 FeeDestinationV2::new("fourth", 5),
                 FeeDestinationV2::new("fifth", 15),
             ],
+            None,
+            None,
             None,
         );
         let messages = test_get_messages(&verifier);

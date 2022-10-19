@@ -230,6 +230,8 @@ pub mod tests {
                         100,
                     )],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
                 None,
                 None,
@@ -256,6 +258,8 @@ pub mod tests {
                             100,
                         )],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -272,6 +276,8 @@ pub mod tests {
                             FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 125),
                         ],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -292,6 +298,8 @@ pub mod tests {
                                 "https://github.com/kelseyhightower/nocode",
                             )
                             .to_some(),
+                            None,
+                            None,
                         ),
                         VerifierDetailV2::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
@@ -308,6 +316,8 @@ pub mod tests {
                                 ),
                             ],
                             get_default_entity_detail().to_some(),
+                            None,
+                            None,
                         ),
                     ],
                     None,
@@ -333,6 +343,8 @@ pub mod tests {
                         NHASH,
                         vec![FeeDestinationV2::new("fee", 100)],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -403,6 +415,8 @@ pub mod tests {
                     100,
                 )],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             )],
         );
         let response = validate_asset_definition_internal(&definition);
@@ -425,6 +439,8 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
             ),
             "asset_definition:asset_type: must not be blank",
@@ -451,6 +467,8 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
             ),
             "verifier:address: must be a valid address",
@@ -465,6 +483,8 @@ pub mod tests {
             NHASH,
             vec![],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -485,6 +505,8 @@ pub mod tests {
                 50,
             )],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -508,6 +530,8 @@ pub mod tests {
                 FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", 1),
             ],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -526,6 +550,8 @@ pub mod tests {
                 NHASH,
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             "verifier:address: must be a valid address",
         );
@@ -545,6 +571,8 @@ pub mod tests {
                 "",
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             &expected_error_text,
         );
@@ -556,6 +584,8 @@ pub mod tests {
                 "someotherdenom",
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             &expected_error_text,
         )
@@ -570,6 +600,8 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new("fee", 1011)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
         );
@@ -587,6 +619,8 @@ pub mod tests {
                     FeeDestinationV2::new("fee-guy", 25),
                 ],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             "verifier:fee_destinations: all fee destinations within a verifier must have unique addresses",
         );
@@ -601,6 +635,8 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new("", 100)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             "fee_destination:address: must be a valid address",
         );

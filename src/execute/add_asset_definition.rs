@@ -341,6 +341,8 @@ mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new(DEFAULT_FEE_ADDRESS, 500)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             )],
             None,
             None,

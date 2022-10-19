@@ -1,4 +1,6 @@
 use crate::core::types::fee_destination::FeeDestinationV2;
+use crate::core::types::retry_classification_detail::RetryClassificationDetail;
+use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
 use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -23,6 +25,12 @@ pub struct VerifierDetailV2 {
     pub fee_destinations: Vec<FeeDestinationV2>,
     /// An optional set of fields that define the verifier, including its name and home URL location.
     pub entity_detail: Option<EntityDetail>,
+    /// An optional set of fields that define behaviors when classification is being run after a
+    /// rejection from this verifier.
+    pub retry_classification_detail: Option<RetryClassificationDetail>,
+    /// An optional set of fields that define behaviors when classification is being run for an
+    /// asset that is already classified as a different type.
+    pub subsequent_classification_detail: Option<SubsequentClassificationDetail>,
 }
 impl VerifierDetailV2 {
     /// Constructs a new instance of this struct.
@@ -40,6 +48,8 @@ impl VerifierDetailV2 {
         onboarding_denom: S2,
         fee_destinations: Vec<FeeDestinationV2>,
         entity_detail: Option<EntityDetail>,
+        retry_classification_detail: Option<RetryClassificationDetail>,
+        subsequent_classification_detail: Option<SubsequentClassificationDetail>,
     ) -> Self {
         VerifierDetailV2 {
             address: address.into(),
@@ -47,6 +57,8 @@ impl VerifierDetailV2 {
             onboarding_denom: onboarding_denom.into(),
             fee_destinations,
             entity_detail,
+            retry_classification_detail,
+            subsequent_classification_detail,
         }
     }
 
@@ -69,7 +81,15 @@ mod tests {
 
     #[test]
     fn test_no_fee_destinations_fee_total() {
-        let verifier = VerifierDetailV2::new("address", Uint128::new(100), NHASH, vec![], None);
+        let verifier = VerifierDetailV2::new(
+            "address",
+            Uint128::new(100),
+            NHASH,
+            vec![],
+            None,
+            None,
+            None,
+        );
         assert_eq!(
             0,
             verifier.get_fee_total(),
@@ -84,6 +104,8 @@ mod tests {
             Uint128::new(100),
             NHASH,
             vec![FeeDestinationV2::new("fee-address", 55)],
+            None,
+            None,
             None,
         );
         assert_eq!(
@@ -106,6 +128,8 @@ mod tests {
                 FeeDestinationV2::new("fee-address-5", 50),
                 FeeDestinationV2::new("fee-address-6", 60),
             ],
+            None,
+            None,
             None,
         );
         assert_eq!(

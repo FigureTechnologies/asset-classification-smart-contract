@@ -12,10 +12,15 @@ use provwasm_std::{
 use serde_json_wasm::to_string;
 
 use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
+use crate::core::types::retry_classification_detail::RetryClassificationDetail;
+use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::core::{
     error::ContractError,
     types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3},
+};
+use crate::testutil::test_constants::{
+    DEFAULT_RETRY_COST, DEFAULT_SECONDARY_ASSET_TYPE, DEFAULT_SUBSEQUENT_CLASSIFICATION_COST,
 };
 use crate::util::constants::NHASH;
 use crate::{
@@ -71,6 +76,18 @@ pub fn get_default_entity_detail() -> EntityDetail {
     )
 }
 
+pub fn get_default_retry_classification_detail() -> RetryClassificationDetail {
+    RetryClassificationDetail::new(DEFAULT_RETRY_COST, &[])
+}
+
+pub fn get_default_subsequent_classification_detail() -> SubsequentClassificationDetail {
+    SubsequentClassificationDetail::new(
+        DEFAULT_SUBSEQUENT_CLASSIFICATION_COST,
+        &[],
+        &[DEFAULT_SECONDARY_ASSET_TYPE],
+    )
+}
+
 pub fn get_default_verifier_detail() -> VerifierDetailV2 {
     VerifierDetailV2 {
         address: DEFAULT_VERIFIER_ADDRESS.into(),
@@ -78,6 +95,8 @@ pub fn get_default_verifier_detail() -> VerifierDetailV2 {
         onboarding_denom: DEFAULT_ONBOARDING_DENOM.into(),
         fee_destinations: vec![],
         entity_detail: get_default_entity_detail().to_some(),
+        retry_classification_detail: get_default_retry_classification_detail().to_some(),
+        subsequent_classification_detail: get_default_subsequent_classification_detail().to_some(),
     }
 }
 

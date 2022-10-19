@@ -4,6 +4,7 @@ use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
 use crate::util::functions::bank_send;
 
+use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
 use cosmwasm_std::{coin, Addr, Coin, CosmosMsg};
 use provwasm_std::ProvenanceMsg;
 use result_extensions::ResultExtensions;
@@ -31,19 +32,26 @@ impl FeePaymentDetail {
     ///
     /// * `scope_address` The bech32 address of the scope owned by the requestor, to which the fees
     /// will be charged.
-    /// * `verifier` The verifier detail chosen by the  requestor.  Defines the verifier fee, as
-    /// well as any additional fees encapsulated in fee destinations.
-    /// IMPORTANT: All costs defined in the verifier's detail are multiplied by 2 to ensure that the
-    /// 50% cut that Provenance takes for MsgFees does not impact the expected amount transferred
-    /// to each target account.
-    pub fn new<S: Into<String>>(
-        scope_address: S,
+    /// * `onboarding_denom` The denomination to use for all coin amounts when charged as fees.
+    /// * `verifier_address` The bech32 address of the verifier that will receive the primary fee.
+    /// * `verifier_fee_name` The display name value to use when charging a fee to the onboarding
+    /// requestor.
+    /// * `onboarding_cost` The cost for onboarding as calculated from a given verifier.  This value
+    /// will determine the amount that goes directly to the verifier, as well as any fee values that
+    /// are sent to other sources.
+    pub fn new<S1: Into<String>, S2: Into<String>>(
+        scope_address: S1,
         verifier: &VerifierDetailV2,
+        is_retry: bool,
+        asset_type: S2,
+        existing_scope_attributes: Vec<AssetScopeAttribute>,
     ) -> AssetResult<Self> {
         let mut payments = vec![];
         let mut fee_total: u128 = 0;
+        let onboarding_cost =
+            verifier.calc_onboarding_cost_source(is_retry, asset_type, existing_scope_attributes);
         // Append a message for each destination
-        for destination in verifier.fee_destinations.iter() {
+        for destination in onboarding_cost.fee_destinations.iter() {
             payments.push(FeePayment {
                 amount: coin(destination.fee_amount.u128(), &verifier.onboarding_denom),
                 name: generate_fee_destination_fee_name(destination),
@@ -56,20 +64,20 @@ impl FeePaymentDetail {
         // Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
-        if fee_total > verifier.onboarding_cost.u128() / 2 {
+        if fee_total > onboarding_cost.cost.u128() / 2 {
             return ContractError::generic(
                 format!("misconfigured fee destinations! fee total ({}{}) was greater than half the specified onboarding cost ({}{} / 2 = {}{})",
                         fee_total,
                         &verifier.onboarding_denom,
-                        verifier.onboarding_cost.u128(),
-                        verifier.onboarding_denom,
-                        verifier.onboarding_cost.u128() / 2,
-                        verifier.onboarding_denom,
+                        onboarding_cost.cost.u128(),
+                        &verifier.onboarding_denom,
+                        onboarding_cost.cost.u128() / 2,
+                        &verifier.onboarding_denom,
                 )
             ).to_err();
         }
         // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-        let verifier_cost = (verifier.onboarding_cost.u128() / 2) - fee_total;
+        let verifier_cost = (onboarding_cost.cost.u128() / 2) - fee_total;
         // Only append payment info for the verifier if it actually has a cost
         if verifier_cost > 0 {
             payments.push(FeePayment {
@@ -100,6 +108,14 @@ impl FeePaymentDetail {
             .collect::<Vec<_>>()
             .to_ok()
     }
+
+    /// Determines the aggregate amount paid via all payments.
+    pub fn sum_costs(&self) -> u128 {
+        self.payments
+            .iter()
+            .map(|payment| payment.amount.amount.u128())
+            .sum::<u128>()
+    }
 }
 
 /// Defines an individual fee to be charged to an account during the asset verification
@@ -129,7 +145,7 @@ fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> String {
     )
 }
 
-fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
+pub fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
     verifier
         .entity_detail
         .to_owned()
@@ -147,7 +163,7 @@ mod tests {
         generate_fee_destination_fee_name, generate_verifier_fee_name, FeePaymentDetail,
     };
     use crate::core::types::verifier_detail::VerifierDetailV2;
-    use crate::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
+    use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
@@ -231,7 +247,14 @@ mod tests {
             None,
             None,
         );
-        let error = FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &verifier).unwrap_err();
+        let error = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &verifier,
+            false,
+            DEFAULT_ASSET_TYPE,
+            vec![],
+        )
+        .unwrap_err();
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
@@ -392,10 +415,16 @@ mod tests {
     }
 
     fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {
-        FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, verifier)
-            .expect("fee payment detail should generate without error")
-            .to_bank_send_msgs()
-            .expect("fee messages should generate without error")
+        FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &verifier,
+            false,
+            DEFAULT_ASSET_TYPE,
+            vec![],
+        )
+        .expect("fee payment detail should generate without error")
+        .to_bank_send_msgs()
+        .expect("fee messages should generate without error")
     }
 
     /// Loops through all messages contained in the input slice until it finds a message with the given address,

@@ -123,7 +123,22 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             )?);
         }
 
-        let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
+        // Fetch any existing scope attributes for use in calculating the onboarding cost, which
+        // may change if an existing scope attribute on this asset has used a different asset type
+        // from the same verifier address.
+        let existing_scope_attributes = self
+            .use_deps(|deps| {
+                may_query_scope_attribute_by_scope_address(&deps.as_ref(), &attribute.scope_address)
+            })?
+            .unwrap_or_default();
+
+        let payment_detail = FeePaymentDetail::new(
+            &attribute.scope_address,
+            verifier_detail,
+            is_retry,
+            &attribute.asset_type,
+            existing_scope_attributes,
+        )?;
         self.append_messages(&[assess_custom_fee(
             Coin {
                 denom: verifier_detail.onboarding_denom.clone(),

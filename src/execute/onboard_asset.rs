@@ -262,13 +262,13 @@ mod tests {
 
     use crate::contract::execute;
     use crate::core::msg::ExecuteMsg::OnboardAsset;
-    use crate::core::state::load_fee_payment_detail;
+    use crate::core::state::{load_asset_definition_by_type_v3, load_fee_payment_detail};
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
     use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
-    use crate::testutil::test_utilities::single_attribute_for_key;
+    use crate::testutil::test_utilities::{assert_single_item, single_attribute_for_key};
     use crate::util::constants::NHASH;
     use crate::util::functions::generate_os_gateway_grant_id;
     use crate::util::traits::OptionExtensions;
@@ -908,9 +908,37 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("a fee payment detail should still be present after updating");
-        assert_eq!(
+        assert_ne!(
             payment_detail_before_retry, payment_detail_after_retry,
-            "the payment details should be identical due to choosing the same, unchanged verifier",
+            "the payment details should be different after retrying",
+        );
+        let default_definition =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+                .expect("the default asset type should have an asset definition");
+        let default_verifier = assert_single_item(
+            &default_definition.verifiers,
+            "expected a single verifier to be set on the default asset definition",
+        );
+        let expected_payment_detail_after_retry = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &default_verifier,
+            true,
+            DEFAULT_ASSET_TYPE,
+            vec![attribute],
+        )
+        .expect("Payment detail should be generated without issue");
+        assert_eq!(
+            expected_payment_detail_after_retry, payment_detail_after_retry,
+            "the payment detail after retry should be generated using the correct retry values",
+        );
+        assert_eq!(
+            default_verifier
+                .retry_cost
+                .expect("the default verifier should have a retry cost")
+                .cost
+                .u128() / 2,
+            payment_detail_after_retry.sum_costs(),
+            "the payments in the generated detail should sum to the defined retry cost divided by two to account for provenance fee handling",
         );
     }
 
@@ -1022,7 +1050,8 @@ mod tests {
             "the payment details should not match due to changing verifiers",
         );
         assert_eq!(
-            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier).expect("the other verifier should be successfully converted to a fee payment detail"),
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, true, DEFAULT_ASSET_TYPE, vec![])
+                .expect("the other verifier should be successfully converted to a fee payment detail"),
             payment_detail_after,
             "the fee payment detail after the retry should equate to the new verifier's fee definitions",
         );

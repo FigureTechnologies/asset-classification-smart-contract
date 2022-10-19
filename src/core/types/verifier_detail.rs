@@ -71,6 +71,41 @@ impl VerifierDetailV2 {
             .map(|d| d.fee_amount.u128())
             .sum::<u128>()
     }
+
+    /// TODO: Tests for all the new get costs fields
+    pub fn get_onboarding_cost(&self) -> OnboardingCost {
+        OnboardingCost::new(self.onboarding_cost.u128(), &self.fee_destinations)
+    }
+
+    pub fn get_retry_cost(&self) -> OnboardingCost {
+        if let Some(ref retry_cost) = self.retry_cost {
+            retry_cost.to_owned()
+        } else {
+            self.get_onboarding_cost()
+        }
+    }
+
+    pub fn get_subsequent_classification_cost<S: Into<String>>(
+        &self,
+        asset_type: S,
+    ) -> OnboardingCost {
+        let asset_type = asset_type.into();
+        if let Some(ref subsequent_detail) = self.subsequent_classification_detail {
+            if let Some(ref spec) = subsequent_detail
+                .asset_type_specifications
+                .iter()
+                .find(|spec| spec.asset_type == asset_type)
+            {
+                spec.cost.to_owned()
+            } else if let Some(ref default_cost) = subsequent_detail.default_cost {
+                default_cost.to_owned()
+            } else {
+                self.get_onboarding_cost()
+            }
+        } else {
+            self.get_onboarding_cost()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -93,7 +128,7 @@ mod tests {
         );
         assert_eq!(
             0,
-            verifier.get_fee_total(),
+            verifier.get_onboarding_cost().get_fee_total(),
             "expected the fee total to be zero when no fee definitions are listed",
         );
     }
@@ -110,7 +145,7 @@ mod tests {
             None,
         );
         assert_eq!(
-            55, verifier.get_fee_total(),
+            55, verifier.get_onboarding_cost().get_fee_total(),
             "expected the fee total to directly reflect the amount listed in the single fee destination",
         );
     }
@@ -134,7 +169,7 @@ mod tests {
             None,
         );
         assert_eq!(
-            210, verifier.get_fee_total(),
+            210, verifier.get_onboarding_cost().get_fee_total(),
             "expected the fee total to be the sum of all fee destinations' fee amounts (10 + 20 + 30 + 40 + 50 + 60 = 210)",
         );
     }

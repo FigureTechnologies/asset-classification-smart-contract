@@ -20,4 +20,11 @@ impl OnboardingCost {
             fee_destinations: fee_destinations.iter().cloned().collect(),
         }
     }
+
+    pub fn get_fee_total(&self) -> u128 {
+        self.fee_destinations
+            .iter()
+            .map(|d| d.fee_amount.u128())
+            .sum::<u128>()
+    }
 }

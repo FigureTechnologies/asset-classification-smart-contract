@@ -306,7 +306,15 @@ mod tests {
             mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
-                VerifierDetailV2::new("unknown-address-guy", Uint128::zero(), NHASH, vec![], None, None, None),
+                VerifierDetailV2::new(
+                    "unknown-address-guy",
+                    Uint128::zero(),
+                    NHASH,
+                    vec![],
+                    None,
+                    None,
+                    None,
+                ),
             ),
         )
         .unwrap_err();

@@ -137,7 +137,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             verifier_detail,
             is_retry,
             &attribute.asset_type,
-            existing_scope_attributes,
+            &existing_scope_attributes,
         )?;
         self.append_messages(&[assess_custom_fee(
             Coin {

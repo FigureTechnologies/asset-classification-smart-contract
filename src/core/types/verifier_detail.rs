@@ -1,4 +1,3 @@
-use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
 use crate::core::types::fee_destination::FeeDestinationV2;
 use crate::core::types::onboarding_cost::OnboardingCost;
 use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
@@ -104,36 +103,6 @@ impl VerifierDetailV2 {
                 self.get_onboarding_cost()
             }
         } else {
-            self.get_onboarding_cost()
-        }
-    }
-
-    pub fn calc_onboarding_cost_source<S: Into<String>>(
-        &self,
-        is_retry: bool,
-        asset_type: S,
-        existing_scope_attributes: Vec<AssetScopeAttribute>,
-    ) -> OnboardingCost {
-        let asset_type = asset_type.into();
-        if is_retry {
-            // Always favor retry cost.  Regardless of the scenario, retries should override the specified
-            // root costs and/or subsequent classification costs
-            self.get_retry_cost()
-        } else if existing_scope_attributes
-            .iter()
-            // Scope attributes are only applicable as subsequent classification criteria when they
-            // are using the same verifier as before, and when they are not the same asset type.
-            // Validation should not allow multiple same asset type verifications to occur, but this
-            // criteria wholly ensures it
-            .any(|attr| {
-                attr.verifier_address.as_str() == self.address && attr.asset_type != asset_type
-            })
-        {
-            // If any previously-established scope attributes were created for this verifier, then
-            // subsequent classification costs apply if set
-            self.get_subsequent_classification_cost(asset_type)
-        } else {
-            // Default out to using the root costs in all other scenarios
             self.get_onboarding_cost()
         }
     }

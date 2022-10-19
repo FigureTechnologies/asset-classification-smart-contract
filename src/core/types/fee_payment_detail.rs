@@ -5,6 +5,7 @@ use crate::util::aliases::AssetResult;
 use crate::util::functions::bank_send;
 
 use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
+use crate::core::types::onboarding_cost::OnboardingCost;
 use cosmwasm_std::{coin, Addr, Coin, CosmosMsg};
 use provwasm_std::ProvenanceMsg;
 use result_extensions::ResultExtensions;
@@ -32,24 +33,26 @@ impl FeePaymentDetail {
     ///
     /// * `scope_address` The bech32 address of the scope owned by the requestor, to which the fees
     /// will be charged.
-    /// * `onboarding_denom` The denomination to use for all coin amounts when charged as fees.
-    /// * `verifier_address` The bech32 address of the verifier that will receive the primary fee.
-    /// * `verifier_fee_name` The display name value to use when charging a fee to the onboarding
-    /// requestor.
-    /// * `onboarding_cost` The cost for onboarding as calculated from a given verifier.  This value
-    /// will determine the amount that goes directly to the verifier, as well as any fee values that
-    /// are sent to other sources.
+    /// * `verifier` The verifier detail chosen by the  requestor.  Defines the verifier fee, as
+    /// well as any additional fees encapsulated in fee destinations based on various fields.
+    /// * `is_retry` Whether or not this fee is being generated for a retry after verification was
+    /// rejected for a classification.
+    /// * `asset_type` The type of asset for which classification is being run.  Helps determine
+    /// subsequent classification fees, if applicable.
+    /// * `existing_scope_attributes` Any current scope attributes that have already been placed
+    /// onto the asset being classified.  Helps determine subsequent classification fees, if
+    /// applicable.
     pub fn new<S1: Into<String>, S2: Into<String>>(
         scope_address: S1,
         verifier: &VerifierDetailV2,
         is_retry: bool,
         asset_type: S2,
-        existing_scope_attributes: Vec<AssetScopeAttribute>,
+        existing_scope_attributes: &[AssetScopeAttribute],
     ) -> AssetResult<Self> {
         let mut payments = vec![];
         let mut fee_total: u128 = 0;
         let onboarding_cost =
-            verifier.calc_onboarding_cost_source(is_retry, asset_type, existing_scope_attributes);
+            calc_onboarding_cost_source(verifier, is_retry, asset_type, existing_scope_attributes);
         // Append a message for each destination
         for destination in onboarding_cost.fee_destinations.iter() {
             payments.push(FeePayment {
@@ -145,7 +148,7 @@ fn generate_fee_destination_fee_name(destination: &FeeDestinationV2) -> String {
     )
 }
 
-pub fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
+fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
     verifier
         .entity_detail
         .to_owned()
@@ -154,16 +157,56 @@ pub fn generate_verifier_fee_name(verifier: &VerifierDetailV2) -> String {
         .unwrap_or_else(|| "Verifier Fee".to_string())
 }
 
+fn calc_onboarding_cost_source<S: Into<String>>(
+    verifier: &VerifierDetailV2,
+    is_retry: bool,
+    asset_type: S,
+    existing_scope_attributes: &[AssetScopeAttribute],
+) -> OnboardingCost {
+    let asset_type = asset_type.into();
+    if is_retry {
+        // Always favor retry cost.  Regardless of the scenario, retries should override the specified
+        // root costs and/or subsequent classification costs
+        verifier.get_retry_cost()
+    } else if existing_scope_attributes
+        .iter()
+        // Scope attributes are only applicable as subsequent classification criteria when they
+        // are using the same verifier as before, and when they are not the same asset type.
+        // Validation should not allow multiple same asset type verifications to occur, but this
+        // criteria wholly ensures it
+        .any(|attr| {
+            attr.verifier_address.as_str() == verifier.address && attr.asset_type != asset_type
+        })
+    {
+        // If any previously-established scope attributes were created for this verifier, then
+        // subsequent classification costs apply if set
+        verifier.get_subsequent_classification_cost(asset_type)
+    } else {
+        // Default out to using the root costs in all other scenarios
+        verifier.get_onboarding_cost()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::error::ContractError;
+    use crate::core::types::asset_identifier::AssetIdentifier;
+    use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
+    use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
     use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::{
         generate_fee_destination_fee_name, generate_verifier_fee_name, FeePaymentDetail,
     };
+    use crate::core::types::onboarding_cost::OnboardingCost;
+    use crate::core::types::subsequent_classification_detail::{
+        SubsequentClassificationDetail, SubsequentClassificationSpecification,
+    };
     use crate::core::types::verifier_detail::VerifierDetailV2;
-    use crate::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
+    use crate::testutil::test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS,
+        DEFAULT_VERIFIER_ADDRESS,
+    };
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
@@ -252,7 +295,7 @@ mod tests {
             &verifier,
             false,
             DEFAULT_ASSET_TYPE,
-            vec![],
+            &[],
         )
         .unwrap_err();
         match error {
@@ -414,13 +457,298 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_retry_fees_are_used_when_applicable() {
+        let verifier = VerifierDetailV2::new(
+            "verifier",
+            Uint128::new(150),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 10)],
+            None,
+            OnboardingCost::new(200, &[FeeDestinationV2::new("second", 20)]).to_some(),
+            None,
+        );
+        let messages = test_get_messages_provided(&verifier, true, &[]);
+        assert_eq!(2, messages.len(), "expected two messages to be sent");
+        test_messages_contains_fee_for_address(
+            &messages,
+            "verifier",
+            80,
+            NHASH,
+            "expected half of the funds to be sent to the verifier, minus the 20 for fee",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "second",
+            20,
+            NHASH,
+            "expected the entirety of the specified amount requested for the fee destination to be sent",
+        );
+    }
+
+    #[test]
+    fn test_retry_fees_are_prioritized_over_subsequent_fees_when_possible() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(200),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 100)],
+            None,
+            OnboardingCost::new(600, &[FeeDestinationV2::new("second", 200)]).to_some(),
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(500, &[FeeDestinationV2::new("third", 100)]).to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    "other_type",
+                    OnboardingCost::new(150, &[]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let messages = test_get_messages_provided(&verifier, true, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            100,
+            NHASH,
+            "the verifier should receive the correct amount of nhash: 600 / 2 - 200fee = 100",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "second",
+            200,
+            NHASH,
+            "the fee destination should get all of its requested amounts and indicate that the retry costs were used",
+        );
+    }
+
+    #[test]
+    fn test_normal_costs_are_used_when_retry_fees_are_not_set_during_a_retry() {
+        let verifier = VerifierDetailV2::new(
+            "verifier",
+            Uint128::new(150),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 10)],
+            None,
+            None,
+            None,
+        );
+        let messages = test_get_messages_provided(&verifier, true, &[]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            "verifier",
+            65,
+            NHASH,
+            "the correct amount of nhash should be sent to the verifier: 150 /2 - 10fee = 65",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "first",
+            10,
+            NHASH,
+            "the fee destination should receive its requested amount",
+        );
+    }
+
+    #[test]
+    fn test_subsequent_classification_fees_use_defaults_when_necessary() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(200),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 100)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(500, &[FeeDestinationV2::new("second", 100)]).to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    "other_type",
+                    OnboardingCost::new(150, &[]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let messages = test_get_messages_provided(&verifier, false, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            150,
+            NHASH,
+            "expected 150 nhash to go to the verifier: 500 / 2 - 100fee = 150",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "second",
+            100,
+            NHASH,
+            "expected 100 nhash to go to the fee destination to meet its total value",
+        );
+    }
+
+    #[test]
+    fn test_subsequent_classification_fees_use_targeted_asset_types_when_available() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(200),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 100)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(500, &[FeeDestinationV2::new("second", 100)]).to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    DEFAULT_ASSET_TYPE,
+                    OnboardingCost::new(150, &[FeeDestinationV2::new("third", 5)]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let messages = test_get_messages_provided(&verifier, false, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            70,
+            NHASH,
+            "the verifier should receive the correct amount of nhash: 150 / 2 - 5fee = 70",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "third",
+            5,
+            NHASH,
+            "the fee destination should receive its full requested amount",
+        );
+    }
+
+    #[test]
+    fn test_subsequent_classification_fees_uses_normal_fee_when_no_default_and_wrong_asset_type() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(200),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 50)],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                None,
+                &[SubsequentClassificationSpecification::new(
+                    "other_other_asset_type",
+                    OnboardingCost::new(150, &[FeeDestinationV2::new("second", 5)]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let messages = test_get_messages_provided(&verifier, false, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            50,
+            NHASH,
+            "the verifier should receive the correct amount of nhash: 200 / 2 - 50fee = 50",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "first",
+            50,
+            NHASH,
+            "the fee destination should receive its full requested amount",
+        );
+    }
+
+    #[test]
+    fn test_retries_override_subsequent_classification_fees() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(900),
+            NHASH,
+            vec![FeeDestinationV2::new("first", 50)],
+            None,
+            OnboardingCost::new(1000, &[FeeDestinationV2::new("second", 10)]).to_some(),
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(5000, &[FeeDestinationV2::new("third", 1000)]).to_some(),
+                &[SubsequentClassificationSpecification::new(
+                    "other_other_asset_type",
+                    OnboardingCost::new(150, &[FeeDestinationV2::new("fourth", 5)]),
+                )],
+            )
+            .to_some(),
+        );
+        let existing_scope_attribute = AssetScopeAttribute::new(
+            &AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            "some_other_asset_type",
+            DEFAULT_SENDER_ADDRESS,
+            DEFAULT_VERIFIER_ADDRESS,
+            AssetOnboardingStatus::Approved.to_some(),
+            vec![],
+        )
+        .expect("scope attribute should be generated without issue");
+        let messages = test_get_messages_provided(&verifier, true, &[existing_scope_attribute]);
+        test_messages_contains_fee_for_address(
+            &messages,
+            DEFAULT_VERIFIER_ADDRESS,
+            490,
+            NHASH,
+            "the verifier should receive the correct amount of nhash: 1000 / 2 - 10fee = 490",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "second",
+            10,
+            NHASH,
+            "the fee destination should receive its full requested amount",
+        );
+    }
+
     fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {
+        test_get_messages_provided(verifier, false, &[])
+    }
+
+    fn test_get_messages_provided(
+        verifier: &VerifierDetailV2,
+        is_retry: bool,
+        existing_scope_attributes: &[AssetScopeAttribute],
+    ) -> Vec<CosmosMsg<ProvenanceMsg>> {
         FeePaymentDetail::new(
             DEFAULT_SCOPE_ADDRESS,
             &verifier,
-            false,
+            is_retry,
             DEFAULT_ASSET_TYPE,
-            vec![],
+            existing_scope_attributes,
         )
         .expect("fee payment detail should generate without error")
         .to_bank_send_msgs()
@@ -448,17 +776,20 @@ mod tests {
                         assert_eq!(
                             1,
                             amount.len(),
-                            "exactly one coin should be set on fee bank send message"
+                            "{}: exactly one coin should be set on fee bank send message",
+                            err_msg,
                         );
                         assert_eq!(
                             expected_amount,
                             amount.first().unwrap().amount.u128(),
-                            "the fee amount should always equal the specified number",
+                            "{}: the fee amount should always equal the specified number",
+                            err_msg,
                         );
                         assert_eq!(
                             target_denom,
                             amount.first().unwrap().denom,
-                            "the correct denom should be specified in the fee",
+                            "{}: the correct denom should be specified in the fee",
+                            err_msg,
                         );
                         // Return true - this is the correct address and has passed assertions
                         true

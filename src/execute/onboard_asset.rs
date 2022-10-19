@@ -924,7 +924,7 @@ mod tests {
             &default_verifier,
             true,
             DEFAULT_ASSET_TYPE,
-            vec![attribute],
+            &[attribute],
         )
         .expect("Payment detail should be generated without issue");
         assert_eq!(
@@ -1050,7 +1050,7 @@ mod tests {
             "the payment details should not match due to changing verifiers",
         );
         assert_eq!(
-            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, true, DEFAULT_ASSET_TYPE, vec![])
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, true, DEFAULT_ASSET_TYPE, &[])
                 .expect("the other verifier should be successfully converted to a fee payment detail"),
             payment_detail_after,
             "the fee payment detail after the retry should equate to the new verifier's fee definitions",

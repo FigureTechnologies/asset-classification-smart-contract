@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>asset_meta_service.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>asset_meta_service.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -1455,9 +1449,44 @@
 <span id="1449">1449</span>
 <span id="1450">1450</span>
 <span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Env</span>};
+<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>, <span class="ident">Env</span>, <span class="ident">Uint128</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">assess_custom_fee</span>, <span class="ident">update_attribute</span>, <span class="ident">AttributeValueType</span>, <span class="ident">ProvenanceMsg</span>};
 <span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
 
@@ -1564,6 +1593,15 @@
             }.<span class="ident">to_err</span>();
         }
 
+        <span class="comment">// Fetch any existing scope attributes for use in calculating the onboarding cost, which</span>
+        <span class="comment">// may change if an existing scope attribute on this asset has used a different asset type</span>
+        <span class="comment">// from the same verifier address.</span>
+        <span class="kw">let</span> <span class="ident">existing_scope_attributes</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">deps</span><span class="op">|</span> {
+                <span class="ident">may_query_scope_attribute_by_scope_address</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>)
+            })<span class="question-mark">?</span>
+            .<span class="ident">unwrap_or_default</span>();
+
         <span class="comment">// generate attribute -&gt; scope bind messages</span>
         <span class="comment">// On a retry, update the existing attribute with the given values</span>
         <span class="kw">if</span> <span class="ident">is_retry</span> {
@@ -1580,18 +1618,44 @@
             )<span class="question-mark">?</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">FeePaymentDetail::new</span>(<span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>, <span class="ident">verifier_detail</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">append_messages</span>(<span class="kw-2">&amp;</span>[<span class="ident">assess_custom_fee</span>(
-            <span class="ident">Coin</span> {
-                <span class="ident">denom</span>: <span class="ident">verifier_detail</span>.<span class="ident">onboarding_denom</span>.<span class="ident">clone</span>(),
-                <span class="ident">amount</span>: <span class="ident">verifier_detail</span>.<span class="ident">onboarding_cost</span>,
-            },
-            <span class="prelude-val">Some</span>(<span class="string">&quot;Asset Classification Onboarding Fee&quot;</span>),
-            <span class="comment">// The contract address must always be used as the &quot;from&quot; value to ensure that</span>
-            <span class="comment">// permission issues do not occur when submitting the message.</span>
-            <span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">to_owned</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">to_owned</span>()),
-        )<span class="question-mark">?</span>]);
+        <span class="comment">// Retry fees should only be used when an asset is classified as a specific asset type with</span>
+        <span class="comment">// a specific verifier and rejected.  After rejection, the retry fee amount should be used</span>
+        <span class="comment">// in place of normal onboarding costs ONLY if the asset is onboarded as the same type of</span>
+        <span class="comment">// asset with the same verifier.  Without this check, an asset could fail onboarding with</span>
+        <span class="comment">// one verifier, and then take advantage of a retry fee reduction by using a wholly</span>
+        <span class="comment">// different verifier.</span>
+        <span class="kw">let</span> <span class="ident">calculate_retry_fees</span> <span class="op">=</span> <span class="ident">is_retry</span>
+            <span class="op">&amp;&amp;</span> <span class="ident">existing_scope_attributes</span>
+                .<span class="ident">iter</span>()
+                .<span class="ident">find</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">asset_type</span> <span class="op">==</span> <span class="ident">attribute</span>.<span class="ident">asset_type</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">verifier_address</span>.<span class="ident">as_str</span>() <span class="op">==</span> <span class="ident">attribute</span>.<span class="ident">verifier_address</span>.<span class="ident">as_str</span>())
+                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>);
+
+        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">FeePaymentDetail::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">scope_address</span>,
+            <span class="ident">verifier_detail</span>,
+            <span class="ident">calculate_retry_fees</span>,
+            <span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">asset_type</span>,
+            <span class="kw-2">&amp;</span><span class="ident">existing_scope_attributes</span>,
+        )<span class="question-mark">?</span>;
+        <span class="comment">// No need to assess a fee from the onboarding user if there is no requested fee</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">payment_detail</span>.<span class="ident">payments</span>.<span class="ident">is_empty</span>() {
+            <span class="self">self</span>.<span class="ident">append_messages</span>(<span class="kw-2">&amp;</span>[<span class="ident">assess_custom_fee</span>(
+                <span class="ident">Coin</span> {
+                    <span class="ident">denom</span>: <span class="ident">verifier_detail</span>.<span class="ident">onboarding_denom</span>.<span class="ident">clone</span>(),
+                    <span class="comment">// The payment detail now contains the originally-specified fee to be charged,</span>
+                    <span class="comment">// but halved.  Charge a fee to the onboarding requestor using double the value</span>
+                    <span class="comment">// derived in the payment detail to ensure the correct funds are sent to the</span>
+                    <span class="comment">// contract</span>
+                    <span class="ident">amount</span>: <span class="ident">Uint128::new</span>(<span class="ident">payment_detail</span>.<span class="ident">sum_costs</span>() <span class="op">*</span> <span class="number">2</span>),
+                },
+                <span class="prelude-val">Some</span>(<span class="string">&quot;Asset Classification Onboarding Fee&quot;</span>),
+                <span class="comment">// The contract address must always be used as the &quot;from&quot; value to ensure that</span>
+                <span class="comment">// permission issues do not occur when submitting the message.</span>
+                <span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">to_owned</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">to_owned</span>()),
+            )<span class="question-mark">?</span>]);
+        }
         <span class="self">self</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">deps</span><span class="op">|</span> {
             <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="kw-2">&amp;</span><span class="ident">attribute</span>.<span class="ident">asset_type</span>)
         })<span class="question-mark">?</span>;
@@ -1685,7 +1749,7 @@
         <span class="ident">success</span>: <span class="ident">bool</span>,
         <span class="ident">verification_message</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S3</span><span class="op">&gt;</span>,
         <span class="ident">access_routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetScopeAttribute</span><span class="op">&gt;</span> {
         <span class="comment">// set verification result on asset (add messages to message service)</span>
         <span class="kw">let</span> <span class="ident">scope_address_str</span> <span class="op">=</span> <span class="ident">scope_address</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_asset_by_asset_type</span>(<span class="ident">scope_address_str</span>, <span class="ident">asset_type</span>)<span class="question-mark">?</span>;
@@ -1773,7 +1837,7 @@
             )
         })<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(())
+        <span class="ident">attribute</span>.<span class="ident">to_ok</span>()
     }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DepsManager</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AssetMetaService</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2907,5 +2971,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

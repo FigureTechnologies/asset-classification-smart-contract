@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/verify_asset.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify_asset.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/verify_asset.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify_asset.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -661,6 +655,48 @@
 <span id="655">655</span>
 <span id="656">656</span>
 <span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
@@ -795,7 +831,7 @@
         .<span class="ident">to_err</span>();
     }
 
-    <span class="ident">repository</span>.<span class="ident">verify_asset</span>(
+    <span class="kw">let</span> <span class="ident">updated_attribute</span> <span class="op">=</span> <span class="ident">repository</span>.<span class="ident">verify_asset</span>(
         <span class="kw-2">&amp;</span><span class="ident">asset_identifiers</span>.<span class="ident">scope_address</span>,
         <span class="ident">msg</span>.<span class="ident">asset_type</span>,
         <span class="ident">msg</span>.<span class="ident">success</span>,
@@ -811,7 +847,8 @@
                 <span class="kw-2">&amp;</span><span class="ident">scope_attribute</span>.<span class="ident">asset_type</span>,
                 <span class="kw-2">&amp;</span><span class="ident">asset_identifiers</span>.<span class="ident">scope_address</span>,
             )
-            .<span class="ident">set_verifier</span>(<span class="ident">info</span>.<span class="ident">sender</span>.<span class="ident">as_str</span>()),
+            .<span class="ident">set_verifier</span>(<span class="ident">info</span>.<span class="ident">sender</span>.<span class="ident">as_str</span>())
+            .<span class="ident">set_new_asset_onboarding_status</span>(<span class="kw-2">&amp;</span><span class="ident">updated_attribute</span>.<span class="ident">onboarding_status</span>),
         )
         .<span class="ident">add_attributes</span>(
             <span class="ident">OsGatewayAttributeGenerator::access_revoke</span>(
@@ -829,20 +866,26 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::Response</span>;
+    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Response</span>, <span class="ident">Uint128</span>};
     <span class="kw">use</span> <span class="ident">os_gateway_contract_attributes</span>::{<span class="ident">OS_GATEWAY_EVENT_TYPES</span>, <span class="ident">OS_GATEWAY_KEYS</span>};
     <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
     <span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceMsg</span>;
     <span class="kw">use</span> <span class="ident">serde_json_wasm::to_string</span>;
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::may_load_fee_payment_detail</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::onboard_asset::OnboardAssetV1</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::msg_utilities::test_no_money_moved_in_response</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
         <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>, <span class="ident">DEFAULT_SECONDARY_ASSET_TYPE</span>,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::single_attribute_for_key</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
+        <span class="ident">get_default_asset_definition_input</span>, <span class="ident">get_default_verifier_detail</span>, <span class="ident">single_attribute_for_key</span>,
+    };
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{
-        <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">VERIFIER_ADDRESS_KEY</span>,
+        <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>,
+        <span class="ident">NEW_ASSET_ONBOARDING_STATUS_KEY</span>, <span class="ident">VERIFIER_ADDRESS_KEY</span>,
     };
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions</span>::{<span class="ident">generate_asset_attribute_name</span>, <span class="ident">generate_os_gateway_grant_id</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::{
@@ -1241,7 +1284,7 @@
         <span class="ident">setup_test_suite</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">InstArgs::default</span>());
         <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">assert_verify_response_attributes_are_correct</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>);
+        <span class="ident">assert_verify_response_attributes_are_correct</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">AssetOnboardingStatus::Approved</span>);
         <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
             .<span class="ident">get_asset_by_asset_type</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;after validating the asset, the scope attribute should be present&quot;</span>);
@@ -1259,7 +1302,7 @@
         <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span>
             <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default_with_success</span>(<span class="bool-val">false</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">assert_verify_response_attributes_are_correct</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>);
+        <span class="ident">assert_verify_response_attributes_are_correct</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">AssetOnboardingStatus::Denied</span>);
         <span class="kw">let</span> <span class="ident">attribute</span> <span class="op">=</span> <span class="ident">AssetMetaService::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>())
             .<span class="ident">get_asset_by_asset_type</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;after validating the asset, the scope attribute should be present&quot;</span>);
@@ -1270,9 +1313,39 @@
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">assert_verify_response_attributes_are_correct</span>(<span class="ident">response</span>: <span class="kw-2">&amp;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span>) {
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_verify_asset_does_not_send_funds_when_onboarding_was_free</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
+        <span class="comment">// Setup as normal, but make onboarding free</span>
+        <span class="ident">setup_test_suite</span>(
+            <span class="kw-2">&amp;mut</span> <span class="ident">deps</span>,
+            <span class="ident">InstArgs</span> {
+                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3</span> {
+                    <span class="ident">verifiers</span>: <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2</span> {
+                        <span class="ident">onboarding_cost</span>: <span class="ident">Uint128::zero</span>(),
+                        ..<span class="ident">get_default_verifier_detail</span>()
+                    }],
+                    ..<span class="ident">get_default_asset_definition_input</span>()
+                }],
+                ..<span class="ident">InstArgs::default</span>()
+            },
+        );
+        <span class="ident">test_onboard_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestOnboardAsset::default</span>())
+            .<span class="ident">expect</span>(<span class="string">&quot;onboarding when free should succeed&quot;</span>);
+        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_verify_asset</span>(<span class="kw-2">&amp;mut</span> <span class="ident">deps</span>, <span class="ident">TestVerifyAsset::default</span>())
+            .<span class="ident">expect</span>(<span class="string">&quot;verification when onboarding is free should succeed&quot;</span>);
+        <span class="ident">test_no_money_moved_in_response</span>(
+            <span class="kw-2">&amp;</span><span class="ident">response</span>,
+            <span class="string">&quot;verification after a free onboard should not produce any messages that move funds&quot;</span>,
+        );
+    }
+
+    <span class="kw">fn</span> <span class="ident">assert_verify_response_attributes_are_correct</span>(
+        <span class="ident">response</span>: <span class="kw-2">&amp;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span>,
+        <span class="ident">expected_onboarding_status</span>: <span class="ident">AssetOnboardingStatus</span>,
+    ) {
         <span class="macro">assert_eq!</span>(
-            <span class="number">8</span>,
+            <span class="number">9</span>,
             <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
             <span class="string">&quot;the correct number of response attributes should be emitted&quot;</span>,
         );
@@ -1297,6 +1370,11 @@
             <span class="string">&quot;the correct verifier address attribute should be emitted&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
+            <span class="ident">expected_onboarding_status</span>.<span class="ident">to_string</span>(),
+            <span class="ident">single_attribute_for_key</span>(<span class="ident">response</span>, <span class="ident">NEW_ASSET_ONBOARDING_STATUS_KEY</span>),
+            <span class="string">&quot;expected the correct onboarding status to be emitted&quot;</span>,
+        );
+        <span class="macro">assert_eq!</span>(
             <span class="ident">OS_GATEWAY_EVENT_TYPES</span>.<span class="ident">access_revoke</span>,
             <span class="ident">single_attribute_for_key</span>(<span class="ident">response</span>, <span class="ident">OS_GATEWAY_KEYS</span>.<span class="ident">event_type</span>),
             <span class="string">&quot;the correct object store gateway event type attribute should be emitted&quot;</span>,
@@ -1319,5 +1397,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/fee_payment_detail.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>fee_payment_detail.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/fee_payment_detail.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>fee_payment_detail.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -436,12 +430,432 @@
 <span id="430">430</span>
 <span id="431">431</span>
 <span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::bank_send</span>;
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_scope_attribute::AssetScopeAttribute</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
 <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Addr</span>, <span class="ident">Coin</span>, <span class="ident">CosmosMsg</span>};
 <span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceMsg</span>;
 <span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
@@ -470,18 +884,27 @@
     <span class="doccomment">/// * `scope_address` The bech32 address of the scope owned by the requestor, to which the fees</span>
     <span class="doccomment">/// will be charged.</span>
     <span class="doccomment">/// * `verifier` The verifier detail chosen by the  requestor.  Defines the verifier fee, as</span>
-    <span class="doccomment">/// well as any additional fees encapsulated in fee destinations.</span>
-    <span class="doccomment">/// IMPORTANT: All costs defined in the verifier&#39;s detail are multiplied by 2 to ensure that the</span>
-    <span class="doccomment">/// 50% cut that Provenance takes for MsgFees does not impact the expected amount transferred</span>
-    <span class="doccomment">/// to each target account.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">scope_address</span>: <span class="ident">S</span>,
+    <span class="doccomment">/// well as any additional fees encapsulated in fee destinations based on various fields.</span>
+    <span class="doccomment">/// * `is_retry` Whether or not this fee is being generated for a retry after verification was</span>
+    <span class="doccomment">/// rejected for a classification.</span>
+    <span class="doccomment">/// * `asset_type` The type of asset for which classification is being run.  Helps determine</span>
+    <span class="doccomment">/// subsequent classification fees, if applicable.</span>
+    <span class="doccomment">/// * `existing_scope_attributes` Any current scope attributes that have already been placed</span>
+    <span class="doccomment">/// onto the asset being classified.  Helps determine if the subsequent run with this verifier</span>
+    <span class="doccomment">/// is applicable for using subsequent fee amounts.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">scope_address</span>: <span class="ident">S1</span>,
         <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>,
+        <span class="ident">is_retry</span>: <span class="ident">bool</span>,
+        <span class="ident">asset_type</span>: <span class="ident">S2</span>,
+        <span class="ident">existing_scope_attributes</span>: <span class="kw-2">&amp;</span>[<span class="ident">AssetScopeAttribute</span>],
     ) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payments</span> <span class="op">=</span> <span class="macro">vec!</span>[];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fee_total</span>: <span class="ident">u128</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="ident">onboarding_cost</span> <span class="op">=</span>
+            <span class="ident">calc_onboarding_cost_source</span>(<span class="ident">verifier</span>, <span class="ident">is_retry</span>, <span class="ident">asset_type</span>, <span class="ident">existing_scope_attributes</span>);
         <span class="comment">// Append a message for each destination</span>
-        <span class="kw">for</span> <span class="ident">destination</span> <span class="kw">in</span> <span class="ident">verifier</span>.<span class="ident">fee_destinations</span>.<span class="ident">iter</span>() {
+        <span class="kw">for</span> <span class="ident">destination</span> <span class="kw">in</span> <span class="ident">onboarding_cost</span>.<span class="ident">fee_destinations</span>.<span class="ident">iter</span>() {
             <span class="ident">payments</span>.<span class="ident">push</span>(<span class="ident">FeePayment</span> {
                 <span class="ident">amount</span>: <span class="ident">coin</span>(<span class="ident">destination</span>.<span class="ident">fee_amount</span>.<span class="ident">u128</span>(), <span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>),
                 <span class="ident">name</span>: <span class="ident">generate_fee_destination_fee_name</span>(<span class="ident">destination</span>),
@@ -494,20 +917,20 @@
         <span class="comment">// Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should</span>
         <span class="comment">// always reflect the exact total that is taken from the requestor address when onboarding a new</span>
         <span class="comment">// scope.</span>
-        <span class="kw">if</span> <span class="ident">fee_total</span> <span class="op">&gt;</span> <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span> {
+        <span class="kw">if</span> <span class="ident">fee_total</span> <span class="op">&gt;</span> <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span> {
             <span class="kw">return</span> <span class="ident">ContractError::generic</span>(
                 <span class="macro">format!</span>(<span class="string">&quot;misconfigured fee destinations! fee total ({}{}) was greater than half the specified onboarding cost ({}{} / 2 = {}{})&quot;</span>,
                         <span class="ident">fee_total</span>,
                         <span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>,
-                        <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>(),
-                        <span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>,
-                        <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>,
-                        <span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>,
+                        <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>(),
+                        <span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>,
+                        <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>,
                 )
             ).<span class="ident">to_err</span>();
         }
         <span class="comment">// The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost</span>
-        <span class="kw">let</span> <span class="ident">verifier_cost</span> <span class="op">=</span> (<span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>) <span class="op">-</span> <span class="ident">fee_total</span>;
+        <span class="kw">let</span> <span class="ident">verifier_cost</span> <span class="op">=</span> (<span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>) <span class="op">-</span> <span class="ident">fee_total</span>;
         <span class="comment">// Only append payment info for the verifier if it actually has a cost</span>
         <span class="kw">if</span> <span class="ident">verifier_cost</span> <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="ident">payments</span>.<span class="ident">push</span>(<span class="ident">FeePayment</span> {
@@ -537,6 +960,14 @@
             )
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
             .<span class="ident">to_ok</span>()
+    }
+
+    <span class="doccomment">/// Determines the aggregate amount paid via all payments.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sum_costs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u128</span> {
+        <span class="self">self</span>.<span class="ident">payments</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">payment</span><span class="op">|</span> <span class="ident">payment</span>.<span class="ident">amount</span>.<span class="ident">amount</span>.<span class="ident">u128</span>())
+            .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u128</span><span class="op">&gt;</span>()
     }
 }
 
@@ -576,16 +1007,68 @@
         .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;Verifier Fee&quot;</span>.<span class="ident">to_string</span>())
 }
 
+<span class="kw">fn</span> <span class="ident">calc_onboarding_cost_source</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+    <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>,
+    <span class="ident">is_retry</span>: <span class="ident">bool</span>,
+    <span class="ident">asset_type</span>: <span class="ident">S</span>,
+    <span class="ident">existing_scope_attributes</span>: <span class="kw-2">&amp;</span>[<span class="ident">AssetScopeAttribute</span>],
+) -&gt; <span class="ident">OnboardingCost</span> {
+    <span class="comment">// Always favor retry cost.  Regardless of the scenario, retries should override the specified</span>
+    <span class="comment">// root costs and/or subsequent classification costs</span>
+    <span class="kw">if</span> <span class="ident">is_retry</span> {
+        <span class="kw">return</span> <span class="ident">verifier</span>.<span class="ident">get_retry_cost</span>();
+    }
+    <span class="kw">let</span> <span class="ident">asset_type</span> <span class="op">=</span> <span class="ident">asset_type</span>.<span class="ident">into</span>();
+    <span class="comment">// Fetch all scope attributes on the asset that used this verifier and were not for this target</span>
+    <span class="comment">// asset type.  If this is not empty, that means that this request is a subsequent classification</span>
+    <span class="comment">// for the same verifier and can use subsequent costs.</span>
+    <span class="kw">let</span> <span class="ident">other_classifications</span> <span class="op">=</span> <span class="ident">existing_scope_attributes</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> {
+            <span class="ident">attr</span>.<span class="ident">verifier_address</span>.<span class="ident">as_str</span>() <span class="op">==</span> <span class="ident">verifier</span>.<span class="ident">address</span> <span class="op">&amp;&amp;</span> <span class="ident">attr</span>.<span class="ident">asset_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">asset_type</span>
+        })
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">AssetScopeAttribute</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="comment">// If at least one other classification that used this verifier is present in the existing</span>
+    <span class="comment">// scope attributes, then this qualifies as a subsequent classification.</span>
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">other_classifications</span>.<span class="ident">is_empty</span>() {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">subsequent_detail</span>) <span class="op">=</span> <span class="ident">verifier</span>.<span class="ident">subsequent_classification_detail</span> {
+            <span class="comment">// Use the subsequent classification cost specified in the applicable asset types unless</span>
+            <span class="comment">// no asset types that have already been classified by this verifier are present in a</span>
+            <span class="comment">// provided applicable_asset_types vector.</span>
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">types</span>) <span class="op">=</span> <span class="ident">subsequent_detail</span>.<span class="ident">applicable_asset_types</span> {
+                <span class="kw">if</span> <span class="ident">other_classifications</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">any</span>(<span class="op">|</span><span class="ident">other</span><span class="op">|</span> <span class="ident">types</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">asset_type</span>))
+                {
+                    <span class="kw">return</span> <span class="ident">verifier</span>.<span class="ident">get_subsequent_classification_cost</span>();
+                }
+            } <span class="kw">else</span> {
+                <span class="kw">return</span> <span class="ident">verifier</span>.<span class="ident">get_subsequent_classification_cost</span>();
+            }
+        }
+    }
+    <span class="comment">// Default out to using the root costs in all other scenarios</span>
+    <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>()
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_scope_attribute::AssetScopeAttribute</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::entity_detail::EntityDetail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail</span>::{
         <span class="ident">generate_fee_destination_fee_name</span>, <span class="ident">generate_verifier_fee_name</span>, <span class="ident">FeePaymentDetail</span>,
     };
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants::DEFAULT_SCOPE_ADDRESS</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
+        <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+        <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+    };
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_default_entity_detail</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::NHASH</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
@@ -633,6 +1116,8 @@
                 <span class="string">&quot;&quot;</span>,
                 <span class="string">&quot;&quot;</span>,
             )),
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;Jeff&#39;s Frozen Pizza Emporium Verifier Fee&quot;</span>.<span class="ident">to_string</span>(),
@@ -664,8 +1149,17 @@
             <span class="ident">NHASH</span>,
             <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">101</span>)],
             <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">FeePaymentDetail::new</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="kw-2">&amp;</span><span class="ident">verifier</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">FeePaymentDetail::new</span>(
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="kw-2">&amp;</span><span class="ident">verifier</span>,
+            <span class="bool-val">false</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+            <span class="kw-2">&amp;</span>[],
+        )
+        .<span class="ident">unwrap_err</span>();
         <span class="kw">match</span> <span class="ident">error</span> {
             <span class="ident">ContractError::GenericError</span> { <span class="ident">msg</span> } =&gt; {
                 <span class="macro">assert_eq!</span>(
@@ -683,7 +1177,15 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_only_send_to_verifier</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(<span class="string">&quot;verifier&quot;</span>, <span class="ident">Uint128::new</span>(<span class="number">200</span>), <span class="ident">NHASH</span>, <span class="macro">vec!</span>[], <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">200</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+        );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
@@ -706,6 +1208,8 @@
             <span class="ident">Uint128::new</span>(<span class="number">200</span>),
             <span class="ident">NHASH</span>,
             <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">100</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
@@ -730,6 +1234,8 @@
             <span class="ident">Uint128::new</span>(<span class="number">200</span>),
             <span class="ident">NHASH</span>,
             <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">50</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
@@ -763,6 +1269,8 @@
                 <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fourth&quot;</span>, <span class="number">5</span>),
                 <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fifth&quot;</span>, <span class="number">15</span>),
             ],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
@@ -811,11 +1319,330 @@
         );
     }
 
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_retry_fees_are_used_when_applicable</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">150</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">10</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="ident">OnboardingCost::new</span>(<span class="number">200</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">20</span>)]).<span class="ident">to_some</span>(),
+            <span class="prelude-val">None</span>,
+        );
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>[]);
+        <span class="macro">assert_eq!</span>(<span class="number">2</span>, <span class="ident">messages</span>.<span class="ident">len</span>(), <span class="string">&quot;expected two messages to be sent&quot;</span>);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="number">80</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;expected half of the funds to be sent to the verifier, minus the 20 for fee&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;second&quot;</span>,
+            <span class="number">20</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;expected the entirety of the specified amount requested for the fee destination to be sent&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_retry_fees_are_prioritized_over_subsequent_fees_when_possible</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">200</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">100</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="ident">OnboardingCost::new</span>(<span class="number">600</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">200</span>)]).<span class="ident">to_some</span>(),
+            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
+                <span class="ident">OnboardingCost::new</span>(<span class="number">500</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;third&quot;</span>, <span class="number">100</span>)]).<span class="ident">to_some</span>(),
+                <span class="kw-2">&amp;</span>[],
+            )
+            .<span class="ident">to_some</span>(),
+        );
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="string">&quot;some_other_asset_type&quot;</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">100</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 600 / 2 - 200fee = 100&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;second&quot;</span>,
+            <span class="number">200</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should get all of its requested amounts and indicate that the retry costs were used&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_normal_costs_are_used_when_retry_fees_are_not_set_during_a_retry</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">150</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">10</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+        );
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>[]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="number">65</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the correct amount of nhash should be sent to the verifier: 150 /2 - 10fee = 65&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;first&quot;</span>,
+            <span class="number">10</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should receive its requested amount&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_subsequent_classification_fees_specified_costs_when_necessary</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">200</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">100</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
+                <span class="ident">OnboardingCost::new</span>(<span class="number">500</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">100</span>)]).<span class="ident">to_some</span>(),
+                <span class="kw-2">&amp;</span>[],
+            )
+            .<span class="ident">to_some</span>(),
+        );
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="string">&quot;some_other_asset_type&quot;</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">150</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;expected 150 nhash to go to the verifier: 500 / 2 - 100fee = 150&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;second&quot;</span>,
+            <span class="number">100</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;expected 100 nhash to go to the fee destination to meet its total value&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_subsequent_classification_fees_uses_defaults_when_no_cost_is_available</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">200</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">50</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+        );
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="string">&quot;some_other_asset_type&quot;</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">50</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 200 / 2 - 50fee = 50&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;first&quot;</span>,
+            <span class="number">50</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should receive its full requested amount&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_retries_override_subsequent_classification_fees</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">900</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">50</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="ident">OnboardingCost::new</span>(<span class="number">1000</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">10</span>)]).<span class="ident">to_some</span>(),
+            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
+                <span class="ident">OnboardingCost::new</span>(<span class="number">5000</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;third&quot;</span>, <span class="number">1000</span>)]).<span class="ident">to_some</span>(),
+                <span class="kw-2">&amp;</span>[],
+            )
+            .<span class="ident">to_some</span>(),
+        );
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="string">&quot;some_other_asset_type&quot;</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">490</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 1000 / 2 - 10fee = 490&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;second&quot;</span>,
+            <span class="number">10</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should receive its full requested amount&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_subsequent_classification_is_not_detected_when_previous_classification_does_not_match_the_verifier</span>(
+    ) {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">900</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">50</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="ident">OnboardingCost::new</span>(<span class="number">1000</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">10</span>)]).<span class="ident">to_some</span>(),
+            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
+                <span class="ident">OnboardingCost::new</span>(<span class="number">5000</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;third&quot;</span>, <span class="number">1000</span>)]).<span class="ident">to_some</span>(),
+                <span class="kw-2">&amp;</span>[],
+            )
+            .<span class="ident">to_some</span>(),
+        );
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="string">&quot;some_other_asset_type&quot;</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="comment">// Random other bech32 to indicate a totally different verifier</span>
+            <span class="string">&quot;tp1jcegrfy3fzfr8ejwnlqqnr5snlrt46v9mg4882&quot;</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="comment">// Run as non-retry for a different verifier, which IS a subsequent classification, but not</span>
+        <span class="comment">// a subsequent classification that is controlled by the same verifier</span>
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">400</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;first&quot;</span>,
+            <span class="number">50</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should receive its full requested amount&quot;</span>,
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_default_onboarding_fees_when_no_classifications_match_applicable_subsequent_types</span>() {
+        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">Uint128::new</span>(<span class="number">900</span>),
+            <span class="ident">NHASH</span>,
+            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;first&quot;</span>, <span class="number">50</span>)],
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">SubsequentClassificationDetail::new</span>(
+                <span class="ident">OnboardingCost::new</span>(<span class="number">5000</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;second&quot;</span>, <span class="number">1000</span>)]).<span class="ident">to_some</span>(),
+                <span class="kw-2">&amp;</span>[<span class="string">&quot;some-other-type&quot;</span>],
+            )
+            .<span class="ident">to_some</span>(),
+        );
+        <span class="comment">// Asset has already been classified as the default type, which the subsequent detail does</span>
+        <span class="comment">// not find applicable.  This should cause the resulting value to use the default costs</span>
+        <span class="kw">let</span> <span class="ident">existing_scope_attribute</span> <span class="op">=</span> <span class="ident">AssetScopeAttribute::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+            <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="ident">AssetOnboardingStatus::Approved</span>.<span class="ident">to_some</span>(),
+            <span class="macro">vec!</span>[],
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;scope attribute should be generated without issue&quot;</span>);
+        <span class="kw">let</span> <span class="ident">messages</span> <span class="op">=</span> <span class="ident">test_get_messages_provided</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>[<span class="ident">existing_scope_attribute</span>]);
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+            <span class="number">400</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400&quot;</span>,
+        );
+        <span class="ident">test_messages_contains_fee_for_address</span>(
+            <span class="kw-2">&amp;</span><span class="ident">messages</span>,
+            <span class="string">&quot;first&quot;</span>,
+            <span class="number">50</span>,
+            <span class="ident">NHASH</span>,
+            <span class="string">&quot;the fee destination should receive its full requested amount&quot;</span>,
+        );
+    }
+
     <span class="kw">fn</span> <span class="ident">test_get_messages</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">FeePaymentDetail::new</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">verifier</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;fee payment detail should generate without error&quot;</span>)
-            .<span class="ident">to_bank_send_msgs</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;fee messages should generate without error&quot;</span>)
+        <span class="ident">test_get_messages_provided</span>(<span class="ident">verifier</span>, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>[])
+    }
+
+    <span class="kw">fn</span> <span class="ident">test_get_messages_provided</span>(
+        <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>,
+        <span class="ident">is_retry</span>: <span class="ident">bool</span>,
+        <span class="ident">existing_scope_attributes</span>: <span class="kw-2">&amp;</span>[<span class="ident">AssetScopeAttribute</span>],
+    ) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">FeePaymentDetail::new</span>(
+            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+            <span class="kw-2">&amp;</span><span class="ident">verifier</span>,
+            <span class="ident">is_retry</span>,
+            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+            <span class="ident">existing_scope_attributes</span>,
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;fee payment detail should generate without error&quot;</span>)
+        .<span class="ident">to_bank_send_msgs</span>()
+        .<span class="ident">expect</span>(<span class="string">&quot;fee messages should generate without error&quot;</span>)
     }
 
     <span class="doccomment">/// Loops through all messages contained in the input slice until it finds a message with the given address,</span>
@@ -839,17 +1666,20 @@
                         <span class="macro">assert_eq!</span>(
                             <span class="number">1</span>,
                             <span class="ident">amount</span>.<span class="ident">len</span>(),
-                            <span class="string">&quot;exactly one coin should be set on fee bank send message&quot;</span>
+                            <span class="string">&quot;{}: exactly one coin should be set on fee bank send message&quot;</span>,
+                            <span class="ident">err_msg</span>,
                         );
                         <span class="macro">assert_eq!</span>(
                             <span class="ident">expected_amount</span>,
                             <span class="ident">amount</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">amount</span>.<span class="ident">u128</span>(),
-                            <span class="string">&quot;the fee amount should always equal the specified number&quot;</span>,
+                            <span class="string">&quot;{}: the fee amount should always equal the specified number&quot;</span>,
+                            <span class="ident">err_msg</span>,
                         );
                         <span class="macro">assert_eq!</span>(
                             <span class="ident">target_denom</span>,
                             <span class="ident">amount</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">denom</span>,
-                            <span class="string">&quot;the correct denom should be specified in the fee&quot;</span>,
+                            <span class="string">&quot;{}: the correct denom should be specified in the fee&quot;</span>,
+                            <span class="ident">err_msg</span>,
                         );
                         <span class="comment">// Return true - this is the correct address and has passed assertions</span>
                         <span class="bool-val">true</span>
@@ -869,5 +1699,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

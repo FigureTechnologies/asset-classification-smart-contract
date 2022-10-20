@@ -166,18 +166,23 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Response;
+    use cosmwasm_std::{Response, Uint128};
     use os_gateway_contract_attributes::{OS_GATEWAY_EVENT_TYPES, OS_GATEWAY_KEYS};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::ProvenanceMsg;
     use serde_json_wasm::to_string;
 
     use crate::core::state::may_load_fee_payment_detail;
+    use crate::core::types::asset_definition::AssetDefinitionInputV3;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::onboard_asset::OnboardAssetV1;
+    use crate::testutil::msg_utilities::test_no_money_moved_in_response;
     use crate::testutil::test_constants::{
         DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SECONDARY_ASSET_TYPE,
     };
-    use crate::testutil::test_utilities::single_attribute_for_key;
+    use crate::testutil::test_utilities::{
+        get_default_asset_definition_input, get_default_verifier_detail, single_attribute_for_key,
+    };
     use crate::util::constants::{
         ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VERIFIER_ADDRESS_KEY,
     };
@@ -604,6 +609,33 @@ mod tests {
             AssetOnboardingStatus::Denied,
             attribute.onboarding_status,
             "the asset should be in denied status after onboarding with a status of success = false",
+        );
+    }
+
+    #[test]
+    fn test_verify_asset_does_not_send_funds_when_onboarding_was_free() {
+        let mut deps = mock_dependencies(&[]);
+        // Setup as normal, but make onboarding free
+        setup_test_suite(
+            &mut deps,
+            InstArgs {
+                asset_definitions: vec![AssetDefinitionInputV3 {
+                    verifiers: vec![VerifierDetailV2 {
+                        onboarding_cost: Uint128::zero(),
+                        ..get_default_verifier_detail()
+                    }],
+                    ..get_default_asset_definition_input()
+                }],
+                ..InstArgs::default()
+            },
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding when free should succeed");
+        let response = test_verify_asset(&mut deps, TestVerifyAsset::default())
+            .expect("verification when onboarding is free should succeed");
+        test_no_money_moved_in_response(
+            &response,
+            "verification after a free onboard should not produce any messages that move funds",
         );
     }
 

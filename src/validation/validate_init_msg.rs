@@ -257,6 +257,7 @@ pub mod tests {
     use crate::core::types::onboarding_cost::OnboardingCost;
     use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::DEFAULT_VERIFIER_ADDRESS;
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
     use crate::util::traits::OptionExtensions;
@@ -559,6 +560,25 @@ pub mod tests {
     }
 
     #[test]
+    fn test_valid_verifier_with_free_onboarding() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::zero(),
+            NHASH,
+            vec![],
+            None,
+            None,
+            None,
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a valid verifier should pass validation and return no error messages, but got messages: ${:?}",
+            response,
+        );
+    }
+
+    #[test]
     fn test_valid_verifier_with_single_fee_destination() {
         let verifier = VerifierDetailV2::new(
             "tp1z28j4v88vz3jyzz286a8627lfsclemk294essy",
@@ -691,6 +711,25 @@ pub mod tests {
     }
 
     #[test]
+    fn test_valid_verifier_with_zero_cost_retries() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(100),
+            NHASH,
+            vec![],
+            get_default_entity_detail().to_some(),
+            OnboardingCost::new(0, &[]).to_some(),
+            None,
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a verifier with free retries should be considered valid, but got messages: {:?}",
+            response,
+        );
+    }
+
+    #[test]
     fn test_invalid_verifier_retry_cost_values() {
         test_invalid_verifier(
             &VerifierDetailV2::new(
@@ -721,6 +760,29 @@ pub mod tests {
                 None,
             ),
             "verifier retry costs: fee_destination:address: must be a valid address",
+        );
+    }
+
+    #[test]
+    fn test_valid_verifier_with_zero_cost_subsequent_classifications() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(100),
+            NHASH,
+            vec![],
+            get_default_entity_detail().to_some(),
+            None,
+            SubsequentClassificationDetail::new::<String>(
+                OnboardingCost::new(0, &[]).to_some(),
+                &[],
+            )
+            .to_some(),
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a valid verifier should pass validation with a zero cost subsequent classification detail, but got messages: {:?}",
+            response,
         );
     }
 

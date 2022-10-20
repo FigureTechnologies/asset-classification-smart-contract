@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env};
+use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env, Uint128};
 use provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
 use result_extensions::ResultExtensions;
 
@@ -152,17 +152,24 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             &attribute.asset_type,
             &existing_scope_attributes,
         )?;
-        self.append_messages(&[assess_custom_fee(
-            Coin {
-                denom: verifier_detail.onboarding_denom.clone(),
-                amount: verifier_detail.onboarding_cost,
-            },
-            Some("Asset Classification Onboarding Fee"),
-            // The contract address must always be used as the "from" value to ensure that
-            // permission issues do not occur when submitting the message.
-            env.contract.address.to_owned(),
-            Some(env.contract.address.to_owned()),
-        )?]);
+        // No need to assess a fee from the onboarding user if there is no requested fee
+        if !payment_detail.payments.is_empty() {
+            self.append_messages(&[assess_custom_fee(
+                Coin {
+                    denom: verifier_detail.onboarding_denom.clone(),
+                    // The payment detail now contains the originally-specified fee to be charged,
+                    // but halved.  Charge a fee to the onboarding requestor using double the value
+                    // derived in the payment detail to ensure the correct funds are sent to the
+                    // contract
+                    amount: Uint128::new(payment_detail.sum_costs() * 2),
+                },
+                Some("Asset Classification Onboarding Fee"),
+                // The contract address must always be used as the "from" value to ensure that
+                // permission issues do not occur when submitting the message.
+                env.contract.address.to_owned(),
+                Some(env.contract.address.to_owned()),
+            )?]);
+        }
         self.use_deps(|deps| {
             insert_fee_payment_detail(deps.storage, &payment_detail, &attribute.asset_type)
         })?;

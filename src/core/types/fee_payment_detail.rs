@@ -41,7 +41,7 @@ impl FeePaymentDetail {
     /// subsequent classification fees, if applicable.
     /// * `existing_scope_attributes` Any current scope attributes that have already been placed
     /// onto the asset being classified.  Helps determine if the subsequent run with this verifier
-    /// is allowed.
+    /// is applicable for using subsequent fee amounts.
     pub fn new<S1: Into<String>, S2: Into<String>>(
         scope_address: S1,
         verifier: &VerifierDetailV2,

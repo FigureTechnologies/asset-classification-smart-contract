@@ -263,7 +263,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         success: bool,
         verification_message: Option<S3>,
         access_routes: Vec<AccessRoute>,
-    ) -> AssetResult<()> {
+    ) -> AssetResult<AssetScopeAttribute> {
         // set verification result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset_by_asset_type(scope_address_str, asset_type)?;
@@ -351,7 +351,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             )
         })?;
 
-        Ok(())
+        attribute.to_ok()
     }
 }
 impl<'a> DepsManager<'a> for AssetMetaService<'a> {

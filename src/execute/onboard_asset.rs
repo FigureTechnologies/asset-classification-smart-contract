@@ -229,7 +229,8 @@ where
                 &asset_identifiers.scope_address,
             )
             .set_verifier(&msg.verifier_address)
-            .set_scope_owner(info.sender),
+            .set_scope_owner(info.sender)
+            .set_new_asset_onboarding_status(&new_asset_attribute.onboarding_status),
         )
         .add_messages(repository.get_messages());
     let response = if msg.add_os_gateway_permission {
@@ -281,7 +282,7 @@ mod tests {
         assert_single_item, get_default_asset_definition_input, get_default_verifier_detail,
         single_attribute_for_key,
     };
-    use crate::util::constants::NHASH;
+    use crate::util::constants::{NEW_ASSET_ONBOARDING_STATUS_KEY, NHASH};
     use crate::util::functions::generate_os_gateway_grant_id;
     use crate::util::traits::OptionExtensions;
     use crate::{
@@ -1465,7 +1466,7 @@ mod tests {
         expect_os_gateway_values: bool,
     ) {
         assert_eq!(
-            5 + if expect_os_gateway_values { 4 } else { 0 },
+            6 + if expect_os_gateway_values { 4 } else { 0 },
             response.attributes.len(),
             "the correct number of response attributes should be emitted",
         );
@@ -1493,6 +1494,11 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             single_attribute_for_key(response, SCOPE_OWNER_KEY),
             "the correct scope owner address attribute should be emitted",
+        );
+        assert_eq!(
+            AssetOnboardingStatus::Pending.to_string(),
+            single_attribute_for_key(response, NEW_ASSET_ONBOARDING_STATUS_KEY),
+            "the new onboarding status after a successful onboard should always be pending",
         );
         if !expect_os_gateway_values {
             return;

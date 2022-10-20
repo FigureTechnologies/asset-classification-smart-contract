@@ -28,6 +28,13 @@
                 "$ref": "#/definitions/AccessRoute"
               }
             },
+            "add_os_gateway_permission": {
+              "description": "An optional parameter that will cause the emitted events to include values that signal to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway) watching the events that the selected verifier has permission to inspect the identified scope's records via fetch routes.  This will only cause a gateway to grant permissions to a scope to which the gateway itself already has read permissions.  This essentially means that a key held by a gateway instance must have been used to store the scope's records in [Provenance Object Store](https://github.com/provenance-io/object-store).\n\nThis behavior defaults to TRUE.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
             "asset_type": {
               "description": "A name that must directly match one of the contract's internal [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) names.  Any request with a specified type not matching an asset definition will be rejected outright.",
               "type": "string"
@@ -440,6 +447,31 @@
         }
       }
     },
+    "OnboardingCost": {
+      "description": "Defines costs used to onboard an asset to the contract for classification.",
+      "type": "object",
+      "required": [
+        "cost",
+        "fee_destinations"
+      ],
+      "properties": {
+        "cost": {
+          "description": "The amount of coin to be paid when an asset is sent to the [onboard_asset execute function](crate::execute::onboard_asset::onboard_asset).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
+        },
+        "fee_destinations": {
+          "description": "Any specific fee destinations that should be sent to sources other than the selected [verifier](super::verifier_detail::VerifierDetailV2).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FeeDestinationV2"
+          }
+        }
+      }
+    },
     "SerializedEnum": {
       "description": "There is a bug in cosmwasm 1.0.0's interaction with serde-json-wasm that causes floating point operations to be added into the compiled wasm, so the previous solution of using things like AssetIdentifier directly and specifying them with a tag and content param in their serde annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain identical, but not generate floating point errors.  It makes the schema less useful, but it's a hack to fix a bug, so...\n\nIt's also worth noting that this solution can only create enum switches that have Strings as their values.  Anything different will not work for this solution and will require further adaptation and hackery.",
       "type": "object",
@@ -455,6 +487,33 @@
         "value": {
           "description": "Specifies the string value to be used for the type.",
           "type": "string"
+        }
+      }
+    },
+    "SubsequentClassificationDetail": {
+      "description": "The root subsequent classifications node for a [VerifierDetailV2](super::verifier_detail::VerifierDetailV2). Contains the default subsequent costs for onboarding an asset with this verifier after already classifying it as a different type with the same verifier.",
+      "type": "object",
+      "properties": {
+        "applicable_asset_types": {
+          "description": "Specifies the asset types that an asset can be to have the subsequent classification cost apply to them.  If an asset has been classified as any of the types in this list, the cost will be used.  If the list is supplied as a None variant, any subsequent classifications will use the cost.  This value will be rejected if it is supplied as an empty vector.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "cost": {
+          "description": "The onboarding cost to use when classifying an asset using the associated verifier after having already classified it as a different type with the same verifier.  If not set, the default verifier costs are used.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/OnboardingCost"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -505,6 +564,28 @@
         "onboarding_denom": {
           "description": "The coin denomination used for this onboarding process.",
           "type": "string"
+        },
+        "retry_cost": {
+          "description": "Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost) and [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed verification.  If not present, the original values used for the first verification will be used.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/OnboardingCost"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subsequent_classification_detail": {
+          "description": "An optional set of fields that define behaviors when classification is being run for an asset that is already classified as a different type.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SubsequentClassificationDetail"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }

@@ -149,6 +149,35 @@ underlying record values.  This should never be set to true in a mainnet environ
             "description": "Ensures that your cats are adorable and have all of their legs",
             "home_url": "https://www.catsareadorable.gov/itstrue",
             "source_url": "https://www.github/mycatorganization/cat-verifier"
+          },
+          "retry_cost": {
+            "onboarding_cost": "20",
+            "fee_destinations": [
+              {
+                "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
+                "fee_amount": "1",
+                "entity_detail": {
+                  "name": "Cat Auxiliary Fund Source",
+                  "description": "Extra fees for extra cute cats"
+                }
+              }
+            ]
+          },
+          "subsequent_classification_detail": {
+            "cost": {
+              "onboarding_cost": "70",
+              "fee_destinations": [
+                {
+                  "address": "tp1u7r46zkgcmvel59tqa9352k5rycl985ywqnjp7",
+                  "fee_amount": "10",
+                  "entity_detail": {
+                    "name": "Cat Auxiliary Fund Source",
+                    "description": "Extra fees for extra cute cats"
+                  }
+                }
+              ]
+            },
+            "applicable_asset_types": ["pet", "lovable"]
           }
         }
       ],
@@ -462,6 +491,35 @@ asset definition.
             "description": "Verifies car assets better than any other car verifier you can think of",
             "home_url": "https://www.mycompany.wesellcars/info",
             "source_url": "https://www.github.com/CarCompanyCodePlace/car-verifier-application"
+          },
+          "retry_cost": {
+            "onboarding_cost": "1000000",
+            "fee_destinations": [
+              {
+                "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
+                "fee_amount": "5000",
+                "entity_detail": {
+                  "name": "Car Detailer",
+                  "descriptions": "Details the cars and charges a fee to do it"
+                }
+              }
+            ]
+          },
+          "subsequent_classification_detail": {
+            "cost": {
+              "onboarding_cost": "3000000",
+              "fee_destinations": [
+                {
+                  "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
+                  "fee_amount": "1000",
+                  "entity_detail": {
+                    "name": "Car Detailer",
+                    "descriptions": "Details the cars and charges a fee to do it"
+                  }
+                }
+              ]
+            },
+            "applicable_asset_types": ["vehicle", "owned"]
           }
         }
       ],
@@ -514,6 +572,35 @@ existing values.  If no asset definition exists for the given type, the request 
             "description": "Verifies car assets better than any other car verifier you can even FATHOM",
             "home_url": "https://www.mycompany.wesellcars/info",
             "source_url": "https://www.github.com/CarCompanyCodePlace/car-verifier-application"
+          },
+          "retry_cost": {
+            "onboarding_cost": "1000000",
+            "fee_destinations": [
+              {
+                "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
+                "fee_amount": "5000",
+                "entity_detail": {
+                  "name": "Car Theft Prevention Services",
+                  "description": "Installs loud alarms in the cars to make sure if people steal them, everyone knows"
+                }
+              }
+            ]
+          },
+          "subsequent_classification_detail": {
+            "cost": {
+              "onboarding_cost": "3000000",
+              "fee_destinations": [
+                {
+                  "address": "tp1s735l5tmh7sngyvvn6rf4l7e9e9qq8uz93z9ky",
+                  "fee_amount": "1000",
+                  "entity_detail": {
+                    "name": "Car Theft Prevention Services",
+                    "description": "Installs loud alarms in the cars to make sure if people steal them, everyone knows"
+                  }
+                }
+              ]
+            },
+            "applicable_asset_types": ["vehicle", "owned"]
           }
         }
       ],
@@ -632,7 +719,8 @@ parameter, or the request will be rejected.
         "description": "Verifies that trains can successfully fit on the tracks",
         "home_url": "https://www.trainsrus.edu.gov.com.org.eduagain",
         "source_url": "https://github.com/samuelmarina/is-even"
-      }
+      },
+
     }
   }
 }

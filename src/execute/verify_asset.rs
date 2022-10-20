@@ -132,7 +132,7 @@ where
         .to_err();
     }
 
-    repository.verify_asset(
+    let updated_attribute = repository.verify_asset(
         &asset_identifiers.scope_address,
         msg.asset_type,
         msg.success,
@@ -148,7 +148,8 @@ where
                 &scope_attribute.asset_type,
                 &asset_identifiers.scope_address,
             )
-            .set_verifier(info.sender.as_str()),
+            .set_verifier(info.sender.as_str())
+            .set_new_asset_onboarding_status(&updated_attribute.onboarding_status),
         )
         .add_attributes(
             OsGatewayAttributeGenerator::access_revoke(
@@ -166,20 +167,26 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Response;
+    use cosmwasm_std::{Response, Uint128};
     use os_gateway_contract_attributes::{OS_GATEWAY_EVENT_TYPES, OS_GATEWAY_KEYS};
     use provwasm_mocks::mock_dependencies;
     use provwasm_std::ProvenanceMsg;
     use serde_json_wasm::to_string;
 
     use crate::core::state::may_load_fee_payment_detail;
+    use crate::core::types::asset_definition::AssetDefinitionInputV3;
+    use crate::core::types::verifier_detail::VerifierDetailV2;
     use crate::execute::onboard_asset::OnboardAssetV1;
+    use crate::testutil::msg_utilities::test_no_money_moved_in_response;
     use crate::testutil::test_constants::{
         DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME, DEFAULT_SECONDARY_ASSET_TYPE,
     };
-    use crate::testutil::test_utilities::single_attribute_for_key;
+    use crate::testutil::test_utilities::{
+        get_default_asset_definition_input, get_default_verifier_detail, single_attribute_for_key,
+    };
     use crate::util::constants::{
-        ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, VERIFIER_ADDRESS_KEY,
+        ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY,
+        NEW_ASSET_ONBOARDING_STATUS_KEY, VERIFIER_ADDRESS_KEY,
     };
     use crate::util::functions::{generate_asset_attribute_name, generate_os_gateway_grant_id};
     use crate::{
@@ -578,7 +585,7 @@ mod tests {
         setup_test_suite(&mut deps, InstArgs::default());
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let response = test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
-        assert_verify_response_attributes_are_correct(&response);
+        assert_verify_response_attributes_are_correct(&response, AssetOnboardingStatus::Approved);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -596,7 +603,7 @@ mod tests {
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let response =
             test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
-        assert_verify_response_attributes_are_correct(&response);
+        assert_verify_response_attributes_are_correct(&response, AssetOnboardingStatus::Denied);
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("after validating the asset, the scope attribute should be present");
@@ -607,9 +614,39 @@ mod tests {
         );
     }
 
-    fn assert_verify_response_attributes_are_correct(response: &Response<ProvenanceMsg>) {
+    #[test]
+    fn test_verify_asset_does_not_send_funds_when_onboarding_was_free() {
+        let mut deps = mock_dependencies(&[]);
+        // Setup as normal, but make onboarding free
+        setup_test_suite(
+            &mut deps,
+            InstArgs {
+                asset_definitions: vec![AssetDefinitionInputV3 {
+                    verifiers: vec![VerifierDetailV2 {
+                        onboarding_cost: Uint128::zero(),
+                        ..get_default_verifier_detail()
+                    }],
+                    ..get_default_asset_definition_input()
+                }],
+                ..InstArgs::default()
+            },
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding when free should succeed");
+        let response = test_verify_asset(&mut deps, TestVerifyAsset::default())
+            .expect("verification when onboarding is free should succeed");
+        test_no_money_moved_in_response(
+            &response,
+            "verification after a free onboard should not produce any messages that move funds",
+        );
+    }
+
+    fn assert_verify_response_attributes_are_correct(
+        response: &Response<ProvenanceMsg>,
+        expected_onboarding_status: AssetOnboardingStatus,
+    ) {
         assert_eq!(
-            8,
+            9,
             response.attributes.len(),
             "the correct number of response attributes should be emitted",
         );
@@ -632,6 +669,11 @@ mod tests {
             DEFAULT_VERIFIER_ADDRESS,
             single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
             "the correct verifier address attribute should be emitted",
+        );
+        assert_eq!(
+            expected_onboarding_status.to_string(),
+            single_attribute_for_key(response, NEW_ASSET_ONBOARDING_STATUS_KEY),
+            "expected the correct onboarding status to be emitted",
         );
         assert_eq!(
             OS_GATEWAY_EVENT_TYPES.access_revoke,

@@ -83,6 +83,8 @@ mod tests {
                         "nhash",
                         vec![],
                         None,
+                        None,
+                        None,
                     )],
                     true.to_some(),
                     true.to_some(),

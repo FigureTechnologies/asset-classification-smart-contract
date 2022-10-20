@@ -2,7 +2,8 @@ use super::constants::{
     ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY, SCOPE_OWNER_KEY,
     VERIFIER_ADDRESS_KEY,
 };
-use crate::util::constants::ADDITIONAL_METADATA_KEY;
+use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
+use crate::util::constants::{ADDITIONAL_METADATA_KEY, NEW_ASSET_ONBOARDING_STATUS_KEY};
 use std::collections::HashMap;
 
 /// An enum that contains all different event types that can occur throughout the [contract's](crate::contract)
@@ -137,6 +138,18 @@ impl EventAttributes {
     pub fn set_verifier<T: Into<String>>(mut self, verifier_address: T) -> Self {
         self.attributes
             .push((VERIFIER_ADDRESS_KEY.into(), verifier_address.into()));
+        self
+    }
+
+    /// Appends an onboarding status value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    /// * `status` The onboarding status of the current [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+    /// associated with the given event.
+    pub fn set_new_asset_onboarding_status(mut self, status: &AssetOnboardingStatus) -> Self {
+        self.attributes
+            .push((NEW_ASSET_ONBOARDING_STATUS_KEY.into(), status.to_string()));
         self
     }
 

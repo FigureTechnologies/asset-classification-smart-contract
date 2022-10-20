@@ -237,6 +237,8 @@ mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new("fee-guy", 25)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             )],
         );
         let error = update_asset_definition(
@@ -282,6 +284,8 @@ mod tests {
                     FeeDestinationV2::new("tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52", 300000),
                 ],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             )],
             None,
             None,

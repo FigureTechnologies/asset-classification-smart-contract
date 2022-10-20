@@ -229,7 +229,8 @@ where
                 &asset_identifiers.scope_address,
             )
             .set_verifier(&msg.verifier_address)
-            .set_scope_owner(info.sender),
+            .set_scope_owner(info.sender)
+            .set_new_asset_onboarding_status(&new_asset_attribute.onboarding_status),
         )
         .add_messages(repository.get_messages());
     let response = if msg.add_os_gateway_permission {
@@ -262,14 +263,26 @@ mod tests {
 
     use crate::contract::execute;
     use crate::core::msg::ExecuteMsg::OnboardAsset;
-    use crate::core::state::load_fee_payment_detail;
+    use crate::core::state::{load_asset_definition_by_type_v3, load_fee_payment_detail};
+    use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::fee_payment_detail::FeePaymentDetail;
+    use crate::core::types::onboarding_cost::OnboardingCost;
+    use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::execute::add_asset_definition::{add_asset_definition, AddAssetDefinitionV1};
     use crate::execute::add_asset_verifier::{add_asset_verifier, AddAssetVerifierV1};
-    use crate::testutil::test_constants::DEFAULT_ONBOARDING_COST;
-    use crate::testutil::test_utilities::single_attribute_for_key;
-    use crate::util::constants::NHASH;
+    use crate::testutil::msg_utilities::{
+        test_aggregate_msg_fees_are_charged, test_no_money_moved_in_response,
+    };
+    use crate::testutil::test_constants::{
+        DEFAULT_ONBOARDING_COST, DEFAULT_RETRY_COST, DEFAULT_SECONDARY_ASSET_TYPE,
+    };
+    use crate::testutil::test_utilities::{
+        assert_single_item, get_default_asset_definition_input, get_default_verifier_detail,
+        single_attribute_for_key,
+    };
+    use crate::util::constants::{NEW_ASSET_ONBOARDING_STATUS_KEY, NHASH};
     use crate::util::functions::generate_os_gateway_grant_id;
     use crate::util::traits::OptionExtensions;
     use crate::{
@@ -841,6 +854,30 @@ mod tests {
     }
 
     #[test]
+    fn test_onboarding_asset_with_free_onboarding_cost() {
+        let mut deps = mock_dependencies(&[]);
+        // Set up the contract as normal, but make onboarding free
+        setup_test_suite(
+            &mut deps,
+            InstArgs {
+                asset_definitions: vec![AssetDefinitionInputV3 {
+                    verifiers: vec![VerifierDetailV2 {
+                        onboarding_cost: Uint128::zero(),
+                        ..get_default_verifier_detail()
+                    }],
+                    ..get_default_asset_definition_input()
+                }],
+                ..InstArgs::default()
+            },
+        );
+        let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_no_money_moved_in_response(
+            &response,
+            "no funds should be sent when onboarding with a free onboarding cost",
+        );
+    }
+
+    #[test]
     fn test_onboard_asset_retry_success() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
@@ -894,6 +931,11 @@ mod tests {
             ),
             "the second emitted message should be the message fee"
         );
+        test_aggregate_msg_fees_are_charged(
+            &response,
+            DEFAULT_RETRY_COST,
+            "the retry amount should be used because the the same verifier was used",
+        );
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should still contain an attribute after onboarding for a second time");
@@ -908,9 +950,38 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("a fee payment detail should still be present after updating");
-        assert_eq!(
+        assert_ne!(
             payment_detail_before_retry, payment_detail_after_retry,
-            "the payment details should be identical due to choosing the same, unchanged verifier",
+            "the payment details should be different after retrying",
+        );
+        let default_definition =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+                .expect("the default asset type should have an asset definition");
+        let default_verifier = assert_single_item(
+            &default_definition.verifiers,
+            "expected a single verifier to be set on the default asset definition",
+        );
+        let expected_payment_detail_after_retry = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &default_verifier,
+            // Proves that this retry used the retry fees in the default verifier
+            true,
+            DEFAULT_ASSET_TYPE,
+            &[attribute],
+        )
+        .expect("Payment detail should be generated without issue");
+        assert_eq!(
+            expected_payment_detail_after_retry, payment_detail_after_retry,
+            "the payment detail after retry should be generated using the correct retry values",
+        );
+        assert_eq!(
+            default_verifier
+                .retry_cost
+                .expect("the default verifier should have a retry cost")
+                .cost
+                .u128() / 2,
+            payment_detail_after_retry.sum_costs(),
+            "the payments in the generated detail should sum to the defined retry cost divided by two to account for provenance fee handling",
         );
     }
 
@@ -926,6 +997,10 @@ mod tests {
                 FeeDestinationV2::new("feeperson1", 100),
                 FeeDestinationV2::new("feeperson2", 50),
             ],
+            None,
+            // This other verifier has a super hefty retry cost, but this value should not be used
+            // because the first failed verification was with a different verifier
+            OnboardingCost::new(40000, &[FeeDestinationV2::new("bad_fee", 2000)]).to_some(),
             None,
         );
         add_asset_verifier(
@@ -997,6 +1072,11 @@ mod tests {
             ),
             "the second emitted message should be the message fee"
         );
+        test_aggregate_msg_fees_are_charged(
+            &response,
+            300,
+            "the retry amount should not be used because a different verifier was used",
+        );
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should still contain an attribute after onboarding for a second time");
@@ -1020,9 +1100,256 @@ mod tests {
             "the payment details should not match due to changing verifiers",
         );
         assert_eq!(
-            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier).expect("the other verifier should be successfully converted to a fee payment detail"),
+            // Proves that this subsequent retry using a different verifier will not load the
+            // retry fees, because retries should only execute when using the same verifier
+            FeePaymentDetail::new(DEFAULT_SCOPE_ADDRESS, &other_verifier, false, DEFAULT_ASSET_TYPE, &[])
+                .expect("the other verifier should be successfully converted to a fee payment detail"),
             payment_detail_after,
             "the fee payment detail after the retry should equate to the new verifier's fee definitions",
+        );
+    }
+
+    #[test]
+    fn test_onboarding_asset_retry_success_with_free_retries() {
+        let mut deps = mock_dependencies(&[]);
+        // Set up the contract as normal, but make retries free
+        setup_test_suite(
+            &mut deps,
+            InstArgs {
+                asset_definitions: vec![AssetDefinitionInputV3 {
+                    verifiers: vec![VerifierDetailV2 {
+                        retry_cost: OnboardingCost::new(0, &[]).to_some(),
+                        ..get_default_verifier_detail()
+                    }],
+                    ..get_default_asset_definition_input()
+                }],
+                ..InstArgs::default()
+            },
+        );
+        test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        let attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect("the default scope address should have an attribute attached to it");
+        assert_eq!(
+            attribute.onboarding_status,
+            AssetOnboardingStatus::Denied,
+            "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
+        test_no_money_moved_in_response(
+            &response,
+            "no funds should be sent when onboarding as a retry with no retry cost",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let secondary_verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(300),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("feeperson1", 100),
+                FeeDestinationV2::new("feeperson2", 50),
+            ],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(600, &[]).to_some(),
+                &[DEFAULT_ASSET_TYPE],
+            )
+            .to_some(),
+        );
+        let secondary_asset_definition = AssetDefinitionV3::new(
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            Some("secondary asset"),
+            vec![secondary_verifier.clone()],
+        );
+        add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetDefinitionV1 {
+                asset_definition: secondary_asset_definition.clone(),
+                bind_name: Some(false),
+            },
+        )
+        .expect("adding the secondary asset definition should succeed");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding as the default asset type should succeed");
+        let existing_scope_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect("the existing asset type should have an asset scope attribute");
+        let subsequent_response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .expect("onboarding the subsequent asset type should succeed");
+        test_aggregate_msg_fees_are_charged(
+            &subsequent_response,
+            600,
+            "the subsequent onboarding cost should be used as the msg fee",
+        );
+        let secondary_payment_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+        )
+        .expect("a fee payment detail should be available for the subsequent asset");
+        assert_eq!(
+            1,
+            secondary_payment_detail.payments.len(),
+            "only one payment should be emitted for the secondary payment detail, proving that subsequent detail was used",
+        );
+        let expected_fee_payment_detail = FeePaymentDetail::new(
+            DEFAULT_SCOPE_ADDRESS,
+            &secondary_verifier,
+            false,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            &[existing_scope_attribute],
+        )
+        .expect("fee payment detail generation using the correct values should succeed");
+        assert_eq!(
+            expected_fee_payment_detail,
+            secondary_payment_detail,
+            "the subsequent classification detail should have been used to generate the correct fee",
+        );
+    }
+
+    #[test]
+    fn test_onboard_asset_as_subsequent_non_applicable_type_uses_default_fees() {
+        let mut deps = mock_dependencies(&[]);
+        setup_test_suite(&mut deps, InstArgs::default());
+        let secondary_verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(300),
+            NHASH,
+            vec![],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(
+                    600,
+                    &[FeeDestinationV2::new("should-not-be-encountered", 10)],
+                )
+                .to_some(),
+                &["some-other-asset-type"],
+            )
+            .to_some(),
+        );
+        let secondary_asset_definition = AssetDefinitionV3::new(
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            Some("secondary asset"),
+            vec![secondary_verifier.clone()],
+        );
+        add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetDefinitionV1 {
+                asset_definition: secondary_asset_definition.clone(),
+                bind_name: Some(false),
+            },
+        )
+        .expect("adding the secondary asset definition should succeed");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding as the default asset type should succeed");
+        test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .expect("onboarding as a non-applicable subsequent type should succeed");
+        let subsequent_onboard_fee_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+        )
+        .expect("a fee detail should be available after onboarding a subsequent asset type");
+        assert_eq!(
+            1,
+            subsequent_onboard_fee_detail.payments.len(),
+            "only one fee payment should be generated when defaulting to the original verifier costs",
+        );
+        let payment_detail = subsequent_onboard_fee_detail.payments.first().unwrap();
+        assert_eq!(
+            150,
+            payment_detail.amount.amount.u128(),
+            "the payment amount should be 300, which is half of the default onboarding cost",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            payment_detail.recipient.as_str(),
+            "the payment should be sent to the verifier",
+        );
+    }
+
+    #[test]
+    fn test_onboarding_asset_as_subsequent_type_with_free_subsequent_cost() {
+        let mut deps = mock_dependencies(&[]);
+        // Set up the contract as normal, but make subsequent onboards free
+        setup_test_suite(&mut deps, InstArgs::default());
+        let secondary_verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(300),
+            NHASH,
+            vec![
+                FeeDestinationV2::new("feeperson1", 100),
+                FeeDestinationV2::new("feeperson2", 50),
+            ],
+            None,
+            None,
+            SubsequentClassificationDetail::new(
+                OnboardingCost::new(0, &[]).to_some(),
+                &[DEFAULT_ASSET_TYPE],
+            )
+            .to_some(),
+        );
+        let secondary_asset_definition = AssetDefinitionV3::new(
+            DEFAULT_SECONDARY_ASSET_TYPE,
+            Some("secondary asset"),
+            vec![secondary_verifier.clone()],
+        );
+        add_asset_definition(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            AddAssetDefinitionV1 {
+                asset_definition: secondary_asset_definition.clone(),
+                bind_name: Some(false),
+            },
+        )
+        .expect("adding the secondary asset definition should succeed");
+        test_onboard_asset(&mut deps, TestOnboardAsset::default())
+            .expect("onboarding as the default asset type should succeed");
+        let response = test_onboard_asset(
+            &mut deps,
+            TestOnboardAsset {
+                onboard_asset: OnboardAssetV1 {
+                    asset_type: DEFAULT_SECONDARY_ASSET_TYPE.to_string(),
+                    ..TestOnboardAsset::default_onboard_asset()
+                },
+                ..TestOnboardAsset::default()
+            },
+        )
+        .expect("onboarding the subsequent asset type should succeed");
+        test_no_money_moved_in_response(
+            &response,
+            "no funds should be sent when onboarding a subsequent type with free subsequent onboards",
         );
     }
 
@@ -1155,7 +1482,7 @@ mod tests {
         expect_os_gateway_values: bool,
     ) {
         assert_eq!(
-            5 + if expect_os_gateway_values { 4 } else { 0 },
+            6 + if expect_os_gateway_values { 4 } else { 0 },
             response.attributes.len(),
             "the correct number of response attributes should be emitted",
         );
@@ -1183,6 +1510,11 @@ mod tests {
             DEFAULT_SENDER_ADDRESS,
             single_attribute_for_key(response, SCOPE_OWNER_KEY),
             "the correct scope owner address attribute should be emitted",
+        );
+        assert_eq!(
+            AssetOnboardingStatus::Pending.to_string(),
+            single_attribute_for_key(response, NEW_ASSET_ONBOARDING_STATUS_KEY),
+            "the new onboarding status after a successful onboard should always be pending",
         );
         if !expect_os_gateway_values {
             return;

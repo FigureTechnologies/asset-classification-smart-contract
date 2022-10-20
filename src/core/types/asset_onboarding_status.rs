@@ -19,14 +19,16 @@ pub enum AssetOnboardingStatus {
 }
 impl Display for AssetOnboardingStatus {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Pending => "pending",
-                Self::Denied => "denied",
-                Self::Approved => "approved",
-            }
-        )
+        write!(f, "{}", self.to_string())
+    }
+}
+impl AssetOnboardingStatus {
+    pub fn to_string(&self) -> String {
+        match self {
+            Self::Pending => "pending",
+            Self::Denied => "denied",
+            Self::Approved => "approved",
+        }
+        .to_string()
     }
 }

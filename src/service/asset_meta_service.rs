@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env};
+use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env, Uint128};
 use provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
 use result_extensions::ResultExtensions;
 
@@ -107,6 +107,15 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             }.to_err();
         }
 
+        // Fetch any existing scope attributes for use in calculating the onboarding cost, which
+        // may change if an existing scope attribute on this asset has used a different asset type
+        // from the same verifier address.
+        let existing_scope_attributes = self
+            .use_deps(|deps| {
+                may_query_scope_attribute_by_scope_address(&deps.as_ref(), &attribute.scope_address)
+            })?
+            .unwrap_or_default();
+
         // generate attribute -> scope bind messages
         // On a retry, update the existing attribute with the given values
         if is_retry {
@@ -123,18 +132,44 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             )?);
         }
 
-        let payment_detail = FeePaymentDetail::new(&attribute.scope_address, verifier_detail)?;
-        self.append_messages(&[assess_custom_fee(
-            Coin {
-                denom: verifier_detail.onboarding_denom.clone(),
-                amount: verifier_detail.onboarding_cost,
-            },
-            Some("Asset Classification Onboarding Fee"),
-            // The contract address must always be used as the "from" value to ensure that
-            // permission issues do not occur when submitting the message.
-            env.contract.address.to_owned(),
-            Some(env.contract.address.to_owned()),
-        )?]);
+        // Retry fees should only be used when an asset is classified as a specific asset type with
+        // a specific verifier and rejected.  After rejection, the retry fee amount should be used
+        // in place of normal onboarding costs ONLY if the asset is onboarded as the same type of
+        // asset with the same verifier.  Without this check, an asset could fail onboarding with
+        // one verifier, and then take advantage of a retry fee reduction by using a wholly
+        // different verifier.
+        let calculate_retry_fees = is_retry
+            && existing_scope_attributes
+                .iter()
+                .find(|attr| attr.asset_type == attribute.asset_type)
+                .map(|attr| attr.verifier_address.as_str() == attribute.verifier_address.as_str())
+                .unwrap_or(false);
+
+        let payment_detail = FeePaymentDetail::new(
+            &attribute.scope_address,
+            verifier_detail,
+            calculate_retry_fees,
+            &attribute.asset_type,
+            &existing_scope_attributes,
+        )?;
+        // No need to assess a fee from the onboarding user if there is no requested fee
+        if !payment_detail.payments.is_empty() {
+            self.append_messages(&[assess_custom_fee(
+                Coin {
+                    denom: verifier_detail.onboarding_denom.clone(),
+                    // The payment detail now contains the originally-specified fee to be charged,
+                    // but halved.  Charge a fee to the onboarding requestor using double the value
+                    // derived in the payment detail to ensure the correct funds are sent to the
+                    // contract
+                    amount: Uint128::new(payment_detail.sum_costs() * 2),
+                },
+                Some("Asset Classification Onboarding Fee"),
+                // The contract address must always be used as the "from" value to ensure that
+                // permission issues do not occur when submitting the message.
+                env.contract.address.to_owned(),
+                Some(env.contract.address.to_owned()),
+            )?]);
+        }
         self.use_deps(|deps| {
             insert_fee_payment_detail(deps.storage, &payment_detail, &attribute.asset_type)
         })?;
@@ -228,7 +263,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         success: bool,
         verification_message: Option<S3>,
         access_routes: Vec<AccessRoute>,
-    ) -> AssetResult<()> {
+    ) -> AssetResult<AssetScopeAttribute> {
         // set verification result on asset (add messages to message service)
         let scope_address_str = scope_address.into();
         let mut attribute = self.get_asset_by_asset_type(scope_address_str, asset_type)?;
@@ -316,7 +351,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             )
         })?;
 
-        Ok(())
+        attribute.to_ok()
     }
 }
 impl<'a> DepsManager<'a> for AssetMetaService<'a> {

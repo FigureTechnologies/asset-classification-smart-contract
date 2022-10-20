@@ -121,5 +121,5 @@ pub trait AssetMetaRepository {
         success: bool,
         verification_message: Option<S3>,
         access_routes: Vec<AccessRoute>,
-    ) -> AssetResult<()>;
+    ) -> AssetResult<AssetScopeAttribute>;
 }

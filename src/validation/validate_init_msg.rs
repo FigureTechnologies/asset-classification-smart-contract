@@ -8,6 +8,7 @@ use crate::util::constants::VALID_VERIFIER_DENOMS;
 use crate::util::functions::distinct_count_by_property;
 use crate::util::scope_address_utils::bech32_string_to_addr;
 
+use crate::core::types::onboarding_cost::OnboardingCost;
 use cosmwasm_std::Uint128;
 use result_extensions::ResultExtensions;
 
@@ -149,38 +150,101 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
             VALID_VERIFIER_DENOMS.join(", "),
         ));
     }
+    invalid_fields.append(&mut validate_onboarding_cost_internal(
+        &verifier.get_default_cost(),
+        "verifier onboarding costs",
+    ));
+    // Ensure that retry costs follow the same standards as the root onboarding cost, if provided.
+    // Retry costs are optional and should not cause validation issues when not provided.
+    if let Some(ref retry_cost) = verifier.retry_cost {
+        invalid_fields.append(&mut validate_onboarding_cost_internal(
+            retry_cost,
+            "verifier retry costs",
+        ));
+    }
+    // Check subsequent detail values, only if provided.  Omission of subsequent classification detail
+    // will ensure that the root onboarding costs are used, so a missing value is completely fine.
+    if let Some(ref subsequent_detail) = verifier.subsequent_classification_detail {
+        // Ensure that the default cost of the subsequent detail follows the same standards as the
+        // root onboarding cost.
+        if let Some(ref cost) = subsequent_detail.cost {
+            invalid_fields.append(&mut validate_onboarding_cost_internal(
+                cost,
+                "verifier subsequent classification cost",
+            ));
+        }
+        // Ensure that if allowed asset types are specified, they are not empty and do not contain
+        // duplicates.  It is perfectly valid for this field to be a None variant, but if supplied
+        // it must be held to standards required downstream by fee payment detail generation.
+        if let Some(ref applicable_asset_types) = subsequent_detail.applicable_asset_types {
+            if applicable_asset_types.is_empty() {
+                invalid_fields.push(
+                    "verifier subsequent classification: applicable_asset_types must not be empty if provided"
+                        .to_string(),
+                );
+            }
+            if distinct_count_by_property(applicable_asset_types, |t| t)
+                != applicable_asset_types.len()
+            {
+                invalid_fields.push("verifier subsequent classification: each value in allowed_asset_types must be unique".to_string());
+            }
+        }
+    }
+    invalid_fields
+}
+
+fn validate_onboarding_cost_internal<S: Into<String>>(
+    onboarding_cost: &OnboardingCost,
+    source: S,
+) -> Vec<String> {
+    let source = source.into();
+    let mut invalid_fields: Vec<String> = vec![];
     // onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly
-    if verifier.onboarding_cost.u128() % 2 != 0 {
-        invalid_fields.push("verifier:onboarding_cost must be an even number".to_string());
+    if onboarding_cost.cost.u128() % 2 != 0 {
+        invalid_fields.push(format!(
+            "{}: onboarding_cost:cost must be an even number",
+            source
+        ));
     }
-    if !verifier.fee_destinations.is_empty()
-        && verifier.get_fee_total() > verifier.onboarding_cost.u128() / 2
+    if !onboarding_cost.fee_destinations.is_empty()
+        && onboarding_cost.get_fee_total() > onboarding_cost.cost.u128() / 2
     {
-        invalid_fields.push(
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost".to_string(),
-        );
+        invalid_fields.push(format!("{}: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost", source));
     }
-    if distinct_count_by_property(&verifier.fee_destinations, |dest| &dest.address)
-        != verifier.fee_destinations.len()
+    if distinct_count_by_property(&onboarding_cost.fee_destinations, |dest| &dest.address)
+        != onboarding_cost.fee_destinations.len()
     {
-        invalid_fields.push("verifier:fee_destinations: all fee destinations within a verifier must have unique addresses".to_string());
+        invalid_fields.push(format!(
+            "{}: onboarding_cost:fee_destinations: all fee destinations must have unique addresses",
+            source
+        ));
     }
-    let mut fee_destination_messages = verifier
+    let mut fee_destination_messages = onboarding_cost
         .fee_destinations
         .iter()
-        .flat_map(validate_destination_internal)
+        .flat_map(|dest| validate_destination_internal(dest, &source))
         .collect::<Vec<String>>();
     invalid_fields.append(&mut fee_destination_messages);
     invalid_fields
 }
 
-fn validate_destination_internal(destination: &FeeDestinationV2) -> Vec<String> {
+fn validate_destination_internal<S: Into<String>>(
+    destination: &FeeDestinationV2,
+    source: S,
+) -> Vec<String> {
+    let source = source.into();
     let mut invalid_fields: Vec<String> = vec![];
     if bech32_string_to_addr(&destination.address).is_err() {
-        invalid_fields.push("fee_destination:address: must be a valid address".to_string());
+        invalid_fields.push(format!(
+            "{}: fee_destination:address: must be a valid address",
+            source
+        ));
     }
     if destination.fee_amount == Uint128::zero() {
-        invalid_fields.push("fee_destination:fee_amount: must not be zero".to_string());
+        invalid_fields.push(format!(
+            "{}: fee_destination:fee_amount: must not be zero",
+            source
+        ));
     }
     invalid_fields
 }
@@ -192,7 +256,10 @@ pub mod tests {
     use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::entity_detail::EntityDetail;
     use crate::core::types::fee_destination::FeeDestinationV2;
+    use crate::core::types::onboarding_cost::OnboardingCost;
+    use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
     use crate::core::types::verifier_detail::VerifierDetailV2;
+    use crate::testutil::test_constants::DEFAULT_VERIFIER_ADDRESS;
     use crate::testutil::test_utilities::get_default_entity_detail;
     use crate::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
     use crate::util::traits::OptionExtensions;
@@ -230,6 +297,8 @@ pub mod tests {
                         100,
                     )],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
                 None,
                 None,
@@ -256,6 +325,8 @@ pub mod tests {
                             100,
                         )],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -272,6 +343,8 @@ pub mod tests {
                             FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 125),
                         ],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -292,6 +365,8 @@ pub mod tests {
                                 "https://github.com/kelseyhightower/nocode",
                             )
                             .to_some(),
+                            None,
+                            None,
                         ),
                         VerifierDetailV2::new(
                             "tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq",
@@ -308,6 +383,8 @@ pub mod tests {
                                 ),
                             ],
                             get_default_entity_detail().to_some(),
+                            None,
+                            None,
                         ),
                     ],
                     None,
@@ -333,6 +410,8 @@ pub mod tests {
                         NHASH,
                         vec![FeeDestinationV2::new("fee", 100)],
                         get_default_entity_detail().to_some(),
+                        None,
+                        None,
                     )],
                     None,
                     None,
@@ -403,6 +482,8 @@ pub mod tests {
                     100,
                 )],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             )],
         );
         let response = validate_asset_definition_internal(&definition);
@@ -425,6 +506,8 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
             ),
             "asset_definition:asset_type: must not be blank",
@@ -451,6 +534,8 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new("fee", 100)],
                     get_default_entity_detail().to_some(),
+                    None,
+                    None,
                 )],
             ),
             "verifier:address: must be a valid address",
@@ -465,11 +550,32 @@ pub mod tests {
             NHASH,
             vec![],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
             response.is_empty(),
             "a valid verifier should pass validation and return no error messages, but got messages: {:?}",
+            response,
+        );
+    }
+
+    #[test]
+    fn test_valid_verifier_with_free_onboarding() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::zero(),
+            NHASH,
+            vec![],
+            None,
+            None,
+            None,
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a valid verifier should pass validation and return no error messages, but got messages: ${:?}",
             response,
         );
     }
@@ -485,6 +591,8 @@ pub mod tests {
                 50,
             )],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -508,6 +616,8 @@ pub mod tests {
                 FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", 1),
             ],
             get_default_entity_detail().to_some(),
+            None,
+            None,
         );
         let response = validate_verifier_internal(&verifier);
         assert!(
@@ -526,6 +636,8 @@ pub mod tests {
                 NHASH,
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             "verifier:address: must be a valid address",
         );
@@ -545,6 +657,8 @@ pub mod tests {
                 "",
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             &expected_error_text,
         );
@@ -556,6 +670,8 @@ pub mod tests {
                 "someotherdenom",
                 vec![],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
             &expected_error_text,
         )
@@ -570,8 +686,10 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new("fee", 1011)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
-            "verifier:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
+            "verifier onboarding costs: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
         );
     }
 
@@ -587,8 +705,166 @@ pub mod tests {
                     FeeDestinationV2::new("fee-guy", 25),
                 ],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
-            "verifier:fee_destinations: all fee destinations within a verifier must have unique addresses",
+            "verifier onboarding costs: onboarding_cost:fee_destinations: all fee destinations must have unique addresses",
+        );
+    }
+
+    #[test]
+    fn test_valid_verifier_with_zero_cost_retries() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(100),
+            NHASH,
+            vec![],
+            get_default_entity_detail().to_some(),
+            OnboardingCost::new(0, &[]).to_some(),
+            None,
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a verifier with free retries should be considered valid, but got messages: {:?}",
+            response,
+        );
+    }
+
+    #[test]
+    fn test_invalid_verifier_retry_cost_values() {
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                OnboardingCost::new(3, &[]).to_some(),
+                None,
+            ),
+            "verifier retry costs: onboarding_cost:cost must be an even number",
+        );
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                OnboardingCost::new(4, &[FeeDestinationV2::new("", 2)]).to_some(),
+                None,
+            ),
+            "verifier retry costs: fee_destination:address: must be a valid address",
+        );
+    }
+
+    #[test]
+    fn test_valid_verifier_with_zero_cost_subsequent_classifications() {
+        let verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(100),
+            NHASH,
+            vec![],
+            get_default_entity_detail().to_some(),
+            None,
+            SubsequentClassificationDetail::new::<String>(
+                OnboardingCost::new(0, &[]).to_some(),
+                &[],
+            )
+            .to_some(),
+        );
+        let response = validate_verifier_internal(&verifier);
+        assert!(
+            response.is_empty(),
+            "a valid verifier should pass validation with a zero cost subsequent classification detail, but got messages: {:?}",
+            response,
+        );
+    }
+
+    #[test]
+    fn test_invalid_verifier_subsequent_classification_detail_cost() {
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                None,
+                SubsequentClassificationDetail::new::<String>(
+                    OnboardingCost::new(3, &[]).to_some(),
+                    &[],
+                )
+                .to_some(),
+            ),
+            "verifier subsequent classification cost: onboarding_cost:cost must be an even number",
+        );
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                None,
+                SubsequentClassificationDetail::new::<String>(
+                    OnboardingCost::new(4, &[FeeDestinationV2::new("", 2)]).to_some(),
+                    &[],
+                )
+                .to_some(),
+            ),
+            "verifier subsequent classification cost: fee_destination:address: must be a valid address",
+        );
+    }
+
+    #[test]
+    fn test_invalid_verifier_subsequent_classification_detail_applicable_asset_types() {
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                None,
+                SubsequentClassificationDetail {
+                    cost: None,
+                    applicable_asset_types: vec![].to_some(),
+                }
+                .to_some(),
+            ),
+            "verifier subsequent classification: applicable_asset_types must not be empty if provided",
+        );
+        test_invalid_verifier(
+            &VerifierDetailV2::new(
+                "address",
+                Uint128::new(100),
+                NHASH,
+                vec![
+                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 25),
+                ],
+                get_default_entity_detail().to_some(),
+                None,
+                SubsequentClassificationDetail::new(None, &["dragon", "dragon"]).to_some(),
+            ),
+            "verifier subsequent classification: each value in allowed_asset_types must be unique",
         );
     }
 
@@ -601,8 +877,10 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new("", 100)],
                 get_default_entity_detail().to_some(),
+                None,
+                None,
             ),
-            "fee_destination:address: must be a valid address",
+            "verifier onboarding costs: fee_destination:address: must be a valid address",
         );
     }
 
@@ -610,7 +888,7 @@ pub mod tests {
     fn test_valid_destination() {
         let destination = FeeDestinationV2::new("tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5", 100);
         assert!(
-            validate_destination_internal(&destination).is_empty(),
+            validate_destination_internal(&destination, "test").is_empty(),
             "a valid fee destination should pass validation and return no error messages",
         );
     }
@@ -619,7 +897,7 @@ pub mod tests {
     fn test_invalid_destination_address() {
         test_invalid_destination(
             &FeeDestinationV2::new("", 1),
-            "fee_destination:address: must be a valid address",
+            "test: fee_destination:address: must be a valid address",
         );
     }
 
@@ -627,7 +905,7 @@ pub mod tests {
     fn test_invalid_destination_fee_amount_too_low() {
         test_invalid_destination(
             &FeeDestinationV2::new("good-address", 0),
-            "fee_destination:fee_amount: must not be zero",
+            "test: fee_destination:fee_amount: must not be zero",
         );
     }
 
@@ -694,7 +972,7 @@ pub mod tests {
     }
 
     fn test_invalid_destination(destination: &FeeDestinationV2, expected_message: &str) {
-        let results = validate_destination_internal(&destination);
+        let results = validate_destination_internal(&destination, "test");
         assert!(
             results.contains(&expected_message.to_string()),
             "expected error message `{}` was not contained in the response. Contained messages: {:?}",

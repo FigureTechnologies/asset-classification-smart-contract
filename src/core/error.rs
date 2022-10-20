@@ -250,7 +250,7 @@ pub enum ContractError {
     /// process, but the asset type cannot be found in the contract's internal storage.
     #[error("Unsupported asset type [{asset_type}]")]
     UnsupportedAssetType {
-        /// The type of asset that could not be located for onboarrding.
+        /// The type of asset that could not be located for onboarding.
         asset_type: String,
     },
 

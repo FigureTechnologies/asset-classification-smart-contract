@@ -22,8 +22,12 @@ pub const DEFAULT_ASSET_TYPE_DISPLAY_NAME: Option<&str> = Some("Your Favorite As
 pub const DEFAULT_SECONDARY_ASSET_TYPE: &str = "test_asset_2";
 /// This address should be implicitly be associated with DEFAULT_SCOPE_ADDRESS
 pub const DEFAULT_SCOPE_SPEC_ADDRESS: &str = "scopespec1q323khk2jgw5hfada5ukdv3y739ssw53td";
-/// This amount directly relates to the amount expected for the default AssetDefinition for onboarding an asset
+/// This amount directly relates to the amount expected for the default VerifierDetail for onboarding an asset
 pub const DEFAULT_ONBOARDING_COST: u128 = 1000;
+/// This amount directly relates to the amount expected for the default VerifierDetail for retrying a failed asset
+pub const DEFAULT_RETRY_COST: u128 = 500;
+/// This amount directly relates to the amount expected for the default VerifierDetail for making a subsequent classification
+pub const DEFAULT_SUBSEQUENT_CLASSIFICATION_COST: u128 = 750;
 /// This is the default denom expected by the default verifier for onboarding
 pub const DEFAULT_ONBOARDING_DENOM: &str = NHASH;
 /// This is the default value that test_instantiate uses to create the contract's base name

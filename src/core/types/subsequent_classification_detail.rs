@@ -13,7 +13,7 @@ pub struct SubsequentClassificationDetail {
     /// having already classified it as a different type with the same verifier.  If not set, the
     /// default verifier costs are used.
     pub cost: Option<OnboardingCost>,
-    /// Specifies the asset types that an asset can be to have the subsequent classification cost 
+    /// Specifies the asset types that an asset can be to have the subsequent classification cost
     /// apply to them.  If an asset has been classified as any of the types in this list, the cost
     /// will be used.  If the list is supplied as a None variant, any subsequent classifications will
     /// use the cost.  This value will be rejected if it is supplied as an empty vector.
@@ -27,9 +27,9 @@ impl SubsequentClassificationDetail {
     /// * `cost` The onboarding cost to use when classifying an asset using the associated verifier
     /// after having already classified it as a different type with the same verifier.  If not set,
     /// the default verifier costs are used.
-    /// * `allowed_asset_types` Specifies the asset types that an asset can be to have the 
+    /// * `allowed_asset_types` Specifies the asset types that an asset can be to have the
     /// subsequent classification cost apply to them.  If an asset has been classified as any of the
-    /// types in this list, the cost will be used.  If the list is supplied as a None variant, any 
+    /// types in this list, the cost will be used.  If the list is supplied as a None variant, any
     /// subsequent classifications will use the cost.  This value will be rejected if it is supplied
     /// as an empty vector.
     pub fn new<S: Into<String> + Clone>(

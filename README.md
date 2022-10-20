@@ -177,7 +177,7 @@ underlying record values.  This should never be set to true in a mainnet environ
                 }
               ]
             },
-            "allowed_asset_types": ["pet", "lovable"]
+            "applicable_asset_types": ["pet", "lovable"]
           }
         }
       ],
@@ -519,7 +519,7 @@ asset definition.
                 }
               ]
             },
-            "allowed_asset_types": ["vehicle", "owned"]
+            "applicable_asset_types": ["vehicle", "owned"]
           }
         }
       ],
@@ -600,7 +600,7 @@ existing values.  If no asset definition exists for the given type, the request 
                 }
               ]
             },
-            "allowed_asset_types": ["vehicle", "owned"]
+            "applicable_asset_types": ["vehicle", "owned"]
           }
         }
       ],

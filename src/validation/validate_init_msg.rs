@@ -176,14 +176,16 @@ fn validate_verifier_internal(verifier: &VerifierDetailV2) -> Vec<String> {
         // Ensure that if allowed asset types are specified, they are not empty and do not contain
         // duplicates.  It is perfectly valid for this field to be a None variant, but if supplied
         // it must be held to standards required downstream by fee payment detail generation.
-        if let Some(ref allowed_asset_types) = subsequent_detail.allowed_asset_types {
-            if allowed_asset_types.is_empty() {
+        if let Some(ref applicable_asset_types) = subsequent_detail.applicable_asset_types {
+            if applicable_asset_types.is_empty() {
                 invalid_fields.push(
-                    "verifier subsequent classification: allowed_asset_types must not be empty if provided"
+                    "verifier subsequent classification: applicable_asset_types must not be empty if provided"
                         .to_string(),
                 );
             }
-            if distinct_count_by_property(allowed_asset_types, |t| t) != allowed_asset_types.len() {
+            if distinct_count_by_property(applicable_asset_types, |t| t)
+                != applicable_asset_types.len()
+            {
                 invalid_fields.push("verifier subsequent classification: each value in allowed_asset_types must be unique".to_string());
             }
         }
@@ -829,7 +831,7 @@ pub mod tests {
     }
 
     #[test]
-    fn test_invalid_verifier_subsequent_classification_detail_allowed_asset_types() {
+    fn test_invalid_verifier_subsequent_classification_detail_applicable_asset_types() {
         test_invalid_verifier(
             &VerifierDetailV2::new(
                 "address",
@@ -843,11 +845,11 @@ pub mod tests {
                 None,
                 SubsequentClassificationDetail {
                     cost: None,
-                    allowed_asset_types: vec![].to_some(),
+                    applicable_asset_types: vec![].to_some(),
                 }
                 .to_some(),
             ),
-            "verifier subsequent classification: allowed_asset_types must not be empty if provided",
+            "verifier subsequent classification: applicable_asset_types must not be empty if provided",
         );
         test_invalid_verifier(
             &VerifierDetailV2::new(

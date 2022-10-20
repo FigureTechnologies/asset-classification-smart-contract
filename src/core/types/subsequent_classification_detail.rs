@@ -13,10 +13,11 @@ pub struct SubsequentClassificationDetail {
     /// having already classified it as a different type with the same verifier.  If not set, the
     /// default verifier costs are used.
     pub cost: Option<OnboardingCost>,
-    /// Specifies the asset types that an asset can already be classified as when using this verifier.
-    /// If not set, any asset type may be used.  This value will be rejected if it is supplied as
-    /// an empty vector.
-    pub allowed_asset_types: Option<Vec<String>>,
+    /// Specifies the asset types that an asset can be to have the subsequent classification cost 
+    /// apply to them.  If an asset has been classified as any of the types in this list, the cost
+    /// will be used.  If the list is supplied as a None variant, any subsequent classifications will
+    /// use the cost.  This value will be rejected if it is supplied as an empty vector.
+    pub applicable_asset_types: Option<Vec<String>>,
 }
 impl SubsequentClassificationDetail {
     /// Constructs a new instance of this struct.
@@ -26,15 +27,17 @@ impl SubsequentClassificationDetail {
     /// * `cost` The onboarding cost to use when classifying an asset using the associated verifier
     /// after having already classified it as a different type with the same verifier.  If not set,
     /// the default verifier costs are used.
-    /// * `allowed_asset_types` Specifies the asset types that an asset can already be classified as
-    /// when using this verifier.  If not set, any asset type may be used.  This value will be
-    /// rejected if it is supplied as an empty vector.
+    /// * `allowed_asset_types` Specifies the asset types that an asset can be to have the 
+    /// subsequent classification cost apply to them.  If an asset has been classified as any of the
+    /// types in this list, the cost will be used.  If the list is supplied as a None variant, any 
+    /// subsequent classifications will use the cost.  This value will be rejected if it is supplied
+    /// as an empty vector.
     pub fn new<S: Into<String> + Clone>(
         cost: Option<OnboardingCost>,
-        allowed_asset_types: &[S],
+        applicable_asset_types: &[S],
     ) -> Self {
-        let allowed_asset_types = if !allowed_asset_types.is_empty() {
-            allowed_asset_types
+        let applicable_asset_types = if !applicable_asset_types.is_empty() {
+            applicable_asset_types
                 .iter()
                 .cloned()
                 .map(|s| s.into())
@@ -45,7 +48,7 @@ impl SubsequentClassificationDetail {
         };
         Self {
             cost,
-            allowed_asset_types,
+            applicable_asset_types,
         }
     }
 }

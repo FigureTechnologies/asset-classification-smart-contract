@@ -1226,21 +1226,22 @@ mod tests {
     }
 
     #[test]
-    fn test_onboard_asset_as_subsequent_illegal_type_produces_an_error() {
+    fn test_onboard_asset_as_subsequent_non_applicable_type_uses_default_fees() {
         let mut deps = mock_dependencies(&[]);
         setup_test_suite(&mut deps, InstArgs::default());
         let secondary_verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(300),
             NHASH,
-            vec![
-                FeeDestinationV2::new("feeperson1", 100),
-                FeeDestinationV2::new("feeperson2", 50),
-            ],
+            vec![],
             None,
             None,
             SubsequentClassificationDetail::new(
-                OnboardingCost::new(600, &[]).to_some(),
+                OnboardingCost::new(
+                    600,
+                    &[FeeDestinationV2::new("should-not-be-encountered", 10)],
+                )
+                .to_some(),
                 &["some-other-asset-type"],
             )
             .to_some(),
@@ -1262,7 +1263,7 @@ mod tests {
         .expect("adding the secondary asset definition should succeed");
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("onboarding as the default asset type should succeed");
-        let err = test_onboard_asset(
+        test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
                 onboard_asset: OnboardAssetV1 {
@@ -1272,13 +1273,28 @@ mod tests {
                 ..TestOnboardAsset::default()
             },
         )
-        .expect_err(
-            "an error should be emitted when onboarding as an illegal subsequent asset type",
+        .expect("onboarding as a non-applicable subsequent type should succeed");
+        let subsequent_onboard_fee_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_SECONDARY_ASSET_TYPE,
+        )
+        .expect("a fee detail should be available after onboarding a subsequent asset type");
+        assert_eq!(
+            1,
+            subsequent_onboard_fee_detail.payments.len(),
+            "only one fee payment should be generated when defaulting to the original verifier costs",
         );
-        assert!(
-            matches!(err, ContractError::UnsupportedSubsequentAssetType { .. }),
-            "unexpected error emitted when onboarding with an illegal subsequent asset type: {:?}",
-            err,
+        let payment_detail = subsequent_onboard_fee_detail.payments.first().unwrap();
+        assert_eq!(
+            150,
+            payment_detail.amount.amount.u128(),
+            "the payment amount should be 300, which is half of the default onboarding cost",
+        );
+        assert_eq!(
+            DEFAULT_VERIFIER_ADDRESS,
+            payment_detail.recipient.as_str(),
+            "the payment should be sent to the verifier",
         );
     }
 

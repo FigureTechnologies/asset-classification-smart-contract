@@ -164,8 +164,8 @@
       "description": "The root subsequent classifications node for a [VerifierDetailV2](super::verifier_detail::VerifierDetailV2). Contains the default subsequent costs for onboarding an asset with this verifier after already classifying it as a different type with the same verifier.",
       "type": "object",
       "properties": {
-        "allowed_asset_types": {
-          "description": "Specifies the asset types that an asset can already be classified as when using this verifier. If not set, any asset type may be used.  This value will be rejected if it is supplied as an empty vector.",
+        "applicable_asset_types": {
+          "description": "Specifies the asset types that an asset can be to have the subsequent classification cost apply to them.  If an asset has been classified as any of the types in this list, the cost will be used.  If the list is supplied as a None variant, any subsequent classifications will use the cost.  This value will be rejected if it is supplied as an empty vector.",
           "type": [
             "array",
             "null"

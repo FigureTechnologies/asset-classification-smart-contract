@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -32,39 +32,39 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Contains all structs used to drive core functionality throughout the contract.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Contains all structs used to drive core functionality throughout the contract.
 
-<span class="doccomment">/// Defines a collection of [AccessRoute](self::access_route::AccessRoute) for a specific address.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">access_definition</span>;
-<span class="doccomment">/// Defines a method of obtaining underlying asset data for a scope.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">access_route</span>;
-<span class="doccomment">/// Defines a specific asset type associated with the contract.  Allows its specified type to be onboarded and verified.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_definition</span>;
-<span class="doccomment">/// An enum containing interchangeable values that can be used to define an asset (uuid or address).</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_identifier</span>;
-<span class="doccomment">/// An enum that denotes the various states that an [AssetScopeAttribute](self::asset_scope_attribute::AssetScopeAttribute) can have.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_onboarding_status</span>;
-<span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly</span>
-<span class="doccomment">/// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_scope_attribute</span>;
-<span class="doccomment">/// A simple wrapper for the result of a verification for a scope.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">asset_verification_result</span>;
-<span class="doccomment">/// Various fields describing an entity, which could be an organization, account, etc.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">entity_detail</span>;
-<span class="doccomment">/// Defines an external account designated as a recipient of funds during the verification process.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fee_destination</span>;
-<span class="doccomment">/// Defines a stored set of values for charging fees to the onboarding account during the asset</span>
-<span class="doccomment">/// classification process.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">fee_payment_detail</span>;
-<span class="doccomment">/// A node that defines how much onboarding should cost and any specific fees that should be paid.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">onboarding_cost</span>;
-<span class="doccomment">/// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:</span>
-<span class="doccomment">/// [AssetIdentifier](self::asset_identifier::AssetIdentifier)</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">serialized_enum</span>;
-<span class="doccomment">/// Defines fees and values that can be used when classification is being done on an asset for a</span>
-<span class="doccomment">/// new type beyond the first.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">subsequent_classification_detail</span>;
-<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](self::asset_definition::AssetDefinitionV3).</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">verifier_detail</span>;
+/// Defines a collection of [AccessRoute](self::access_route::AccessRoute) for a specific address.
+</span><span class="kw">pub mod </span>access_definition;
+<span class="doccomment">/// Defines a method of obtaining underlying asset data for a scope.
+</span><span class="kw">pub mod </span>access_route;
+<span class="doccomment">/// Defines a specific asset type associated with the contract.  Allows its specified type to be onboarded and verified.
+</span><span class="kw">pub mod </span>asset_definition;
+<span class="doccomment">/// An enum containing interchangeable values that can be used to define an asset (uuid or address).
+</span><span class="kw">pub mod </span>asset_identifier;
+<span class="doccomment">/// An enum that denotes the various states that an [AssetScopeAttribute](self::asset_scope_attribute::AssetScopeAttribute) can have.
+</span><span class="kw">pub mod </span>asset_onboarding_status;
+<span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly
+/// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.
+</span><span class="kw">pub mod </span>asset_scope_attribute;
+<span class="doccomment">/// A simple wrapper for the result of a verification for a scope.
+</span><span class="kw">pub mod </span>asset_verification_result;
+<span class="doccomment">/// Various fields describing an entity, which could be an organization, account, etc.
+</span><span class="kw">pub mod </span>entity_detail;
+<span class="doccomment">/// Defines an external account designated as a recipient of funds during the verification process.
+</span><span class="kw">pub mod </span>fee_destination;
+<span class="doccomment">/// Defines a stored set of values for charging fees to the onboarding account during the asset
+/// classification process.
+</span><span class="kw">pub mod </span>fee_payment_detail;
+<span class="doccomment">/// A node that defines how much onboarding should cost and any specific fees that should be paid.
+</span><span class="kw">pub mod </span>onboarding_cost;
+<span class="doccomment">/// A simple struct that allows a type and value to be translated to some of the optional enums in the contract:
+/// [AssetIdentifier](self::asset_identifier::AssetIdentifier)
+</span><span class="kw">pub mod </span>serialized_enum;
+<span class="doccomment">/// Defines fees and values that can be used when classification is being done on an asset for a
+/// new type beyond the first.
+</span><span class="kw">pub mod </span>subsequent_classification_detail;
+<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](self::asset_definition::AssetDefinitionV3).
+</span><span class="kw">pub mod </span>verifier_detail;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/deps_container.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>deps_container.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/deps_container.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>deps_container.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -99,106 +99,106 @@
 <span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::cell::RefCell;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::DepsMutC</span>;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::DepsMutC;
 
-<span class="doccomment">/// Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects</span>
-<span class="doccomment">/// relatively easily and then freed when required.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DepsContainer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// A ref cell used to control access to the held deps mut without causing it to be moved through</span>
-    <span class="doccomment">/// various actions.</span>
-    <span class="ident">deps_cell</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">DepsMutC</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Holds a ref cell to a DepsMutC, which allows it to be passed to sub-objects
+/// relatively easily and then freed when required.
+</span><span class="kw">pub struct </span>DepsContainer&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// A ref cell used to control access to the held deps mut without causing it to be moved through
+    /// various actions.
+    </span>deps_cell: RefCell&lt;DepsMutC&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DepsContainer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Constructs a new instance of the DepsContainer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-    <span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use provwasm_mocks::mock_dependencies;</span>
-    <span class="doccomment">/// use asset_classification_smart_contract::util::deps_container::DepsContainer;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut mock_deps = mock_dependencies(&amp;[]);</span>
-    <span class="doccomment">/// let container = DepsContainer::new(mock_deps.as_mut());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">deps_cell</span>: <span class="ident">RefCell::new</span>(<span class="ident">deps</span>),
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DepsContainer&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Constructs a new instance of the DepsContainer.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+    /// resources like contract internal storage and a querier to retrieve blockchain objects.
+    ///
+    /// # Example
+    /// ```
+    /// use provwasm_mocks::mock_dependencies;
+    /// use asset_classification_smart_contract::util::deps_container::DepsContainer;
+    ///
+    /// let mut mock_deps = mock_dependencies(&amp;[]);
+    /// let container = DepsContainer::new(mock_deps.as_mut());
+    /// ```
+    </span><span class="kw">pub fn </span>new(deps: DepsMutC&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            deps_cell: RefCell::new(deps),
         }
     }
 
-    <span class="doccomment">/// Allows the encapsulated DepsMutC value to be used while the service owns it.</span>
-    <span class="doccomment">/// Note: In order to release the owned DepsMutC, simply call `self.dispose()`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `deps_fn` A closure that utilizes the internally-held [DepsMutC](super::aliases::DepsMutC) reference</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_deps</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">deps_fn</span>: <span class="ident">F</span>) -&gt; <span class="ident">T</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">DepsMutC</span>) -&gt; <span class="ident">T</span>,
+    <span class="doccomment">/// Allows the encapsulated DepsMutC value to be used while the service owns it.
+    /// Note: In order to release the owned DepsMutC, simply call `self.dispose()`.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps_fn` A closure that utilizes the internally-held [DepsMutC](super::aliases::DepsMutC) reference
+    </span><span class="kw">pub fn </span>use_deps&lt;T, F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>deps_fn: F) -&gt; T
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw-2">&amp;mut </span>DepsMutC) -&gt; T,
     {
-        <span class="ident">deps_fn</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">deps_cell</span>.<span class="ident">borrow_mut</span>())
+        deps_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>.deps_cell.borrow_mut())
     }
 
-    <span class="doccomment">/// Relinquishes the held DepsMutC to the caller with a move.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>) -&gt; <span class="ident">DepsMutC</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">deps_cell</span>.<span class="ident">into_inner</span>()
+    <span class="doccomment">/// Relinquishes the held DepsMutC to the caller with a move.
+    </span><span class="kw">pub fn </span>get(<span class="self">self</span>) -&gt; DepsMutC&lt;<span class="lifetime">&#39;a</span>&gt; {
+        <span class="self">self</span>.deps_cell.into_inner()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">config_v2</span>},
-        <span class="ident">testutil::test_utilities</span>::{<span class="ident">test_instantiate_success</span>, <span class="ident">InstArgs</span>},
-        <span class="ident">util::aliases::DepsMutC</span>,
+    <span class="kw">use crate</span>::{
+        core::state::{config_read_v2, config_v2},
+        testutil::test_utilities::{test_instantiate_success, InstArgs},
+        util::aliases::DepsMutC,
     };
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::DepsContainer</span>;
+    <span class="kw">use </span><span class="kw">super</span>::DepsContainer;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_container_usage</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">DepsContainer::new</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>());
-        <span class="kw">let</span> <span class="ident">state_from_container</span> <span class="op">=</span> <span class="ident">container</span>.<span class="ident">use_deps</span>(<span class="op">|</span><span class="ident">deps_mut</span><span class="op">|</span> {
-            <span class="ident">config_read_v2</span>(<span class="ident">deps_mut</span>.<span class="ident">storage</span>)
-                .<span class="ident">load</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;expected config to load successfully&quot;</span>)
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_container_usage() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>container = DepsContainer::new(deps.as_mut());
+        <span class="kw">let </span>state_from_container = container.use_deps(|deps_mut| {
+            config_read_v2(deps_mut.storage)
+                .load()
+                .expect(<span class="string">&quot;expected config to load successfully&quot;</span>)
         });
-        <span class="kw">let</span> <span class="ident">state_from_mut</span> <span class="op">=</span> <span class="ident">config_read_v2</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>)
-            .<span class="ident">load</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;self-owned deps should load state successfully&quot;</span>);
+        <span class="kw">let </span>state_from_mut = config_read_v2(deps.as_mut().storage)
+            .load()
+            .expect(<span class="string">&quot;self-owned deps should load state successfully&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">state_from_container</span>, <span class="ident">state_from_mut</span>,
-            <span class="string">&quot;states should be identical, regardless of source&quot;</span>
-        );
+            state_from_container, state_from_mut,
+            <span class="string">&quot;states should be identical, regardless of source&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_deps</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mock_deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">mock_deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">deps_mut</span> <span class="op">=</span> <span class="ident">test_deps_container_from_different_lifetime</span>(<span class="ident">mock_deps</span>.<span class="ident">as_mut</span>());
-        <span class="ident">config_v2</span>(<span class="ident">deps_mut</span>.<span class="ident">storage</span>)
-            .<span class="ident">load</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;state should load from the moved deps&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_deps() {
+        <span class="kw">let </span><span class="kw-2">mut </span>mock_deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>deps_mut = test_deps_container_from_different_lifetime(mock_deps.as_mut());
+        config_v2(deps_mut.storage)
+            .load()
+            .expect(<span class="string">&quot;state should load from the moved deps&quot;</span>);
     }
 
-    <span class="comment">// This won&#39;t even compile if lifetimes aren&#39;t working with external references - if that happens,</span>
-    <span class="comment">// whatever change was made that breaks this will prevent this container from being used to ferry</span>
-    <span class="comment">// the deps into other structs</span>
-    <span class="kw">fn</span> <span class="ident">test_deps_container_from_different_lifetime</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>) -&gt; <span class="ident">DepsMutC</span> {
-        <span class="kw">let</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">DepsContainer::new</span>(<span class="ident">deps</span>);
-        <span class="ident">container</span>.<span class="ident">get</span>()
+    <span class="comment">// This won&#39;t even compile if lifetimes aren&#39;t working with external references - if that happens,
+    // whatever change was made that breaks this will prevent this container from being used to ferry
+    // the deps into other structs
+    </span><span class="kw">fn </span>test_deps_container_from_different_lifetime(deps: DepsMutC) -&gt; DepsMutC {
+        <span class="kw">let </span>container = DepsContainer::new(deps);
+        container.get()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

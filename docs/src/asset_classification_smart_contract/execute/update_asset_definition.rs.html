@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_asset_definition.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>update_asset_definition.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_asset_definition.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>update_asset_definition.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -300,307 +300,307 @@
 <span id="300">300</span>
 <span id="301">301</span>
 <span id="302">302</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::replace_asset_definition_v3</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers</span>::{<span class="ident">check_admin_only</span>, <span class="ident">check_funds_are_empty</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::msg::ExecuteMsg;
+<span class="kw">use </span><span class="kw">crate</span>::core::state::replace_asset_definition_v3;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+<span class="kw">use </span><span class="kw">crate</span>::util::contract_helpers::{check_admin_only, check_funds_are_empty};
+<span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::{EventAttributes, EventType};
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span>cosmwasm_std::{MessageInfo, Response};
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)</span>
-<span class="doccomment">/// for ease of use in the underlying [update_asset_definition](self::update_asset_definition) function.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// property that matches an existing asset definition in contract storage.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UpdateAssetDefinitionV1</span> {
-    <span class="kw">pub</span> <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV3</span>,
+<span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+/// for ease of use in the underlying [update_asset_definition](self::update_asset_definition) function.
+///
+/// # Parameters
+///
+/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+/// property that matches an existing asset definition in contract storage.
+</span><span class="attribute">#[derive(Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>UpdateAssetDefinitionV1 {
+    <span class="kw">pub </span>asset_definition: AssetDefinitionV3,
 }
-<span class="kw">impl</span> <span class="ident">UpdateAssetDefinitionV1</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-    <span class="doccomment">/// property that matches an existing asset definition in contract storage.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionV3</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">UpdateAssetDefinitionV1</span> { <span class="ident">asset_definition</span> }
+<span class="kw">impl </span>UpdateAssetDefinitionV1 {
+    <span class="doccomment">/// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_definition` The asset definition instance to update.  Must have an [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+    /// property that matches an existing asset definition in contract storage.
+    </span><span class="kw">pub fn </span>new(asset_definition: AssetDefinitionV3) -&gt; <span class="self">Self </span>{
+        UpdateAssetDefinitionV1 { asset_definition }
     }
 
-    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided</span>
-    <span class="doccomment">/// value is not of the [UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)</span>
-    <span class="doccomment">/// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)</span>
-    <span class="doccomment">/// error will be returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_execute_msg</span>(<span class="ident">msg</span>: <span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">UpdateAssetDefinitionV1</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">msg</span> {
-            <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> { <span class="ident">asset_definition</span> } =&gt; <span class="self">Self</span> {
-                <span class="ident">asset_definition</span>: <span class="ident">asset_definition</span>.<span class="ident">into_asset_definition</span>(),
+    <span class="doccomment">/// Attempts to create an instance of this struct from a provided execute msg.  If the provided
+    /// value is not of the [UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+    /// variant, then an [InvalidMessageType](crate::core::error::ContractError::InvalidMessageType)
+    /// error will be returned.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.
+    </span><span class="kw">pub fn </span>from_execute_msg(msg: ExecuteMsg) -&gt; AssetResult&lt;UpdateAssetDefinitionV1&gt; {
+        <span class="kw">match </span>msg {
+            ExecuteMsg::UpdateAssetDefinition { asset_definition } =&gt; <span class="self">Self </span>{
+                asset_definition: asset_definition.into_asset_definition(),
             }
-            .<span class="ident">to_ok</span>(),
-            <span class="kw">_</span> =&gt; <span class="ident">ContractError::InvalidMessageType</span> {
-                <span class="ident">expected_message_type</span>: <span class="string">&quot;ExecuteMsg::UpdateAssetDefinition&quot;</span>.<span class="ident">to_string</span>(),
+            .to_ok(),
+            <span class="kw">_ </span>=&gt; ContractError::InvalidMessageType {
+                expected_message_type: <span class="string">&quot;ExecuteMsg::UpdateAssetDefinition&quot;</span>.to_string(),
             }
-            .<span class="ident">to_err</span>(),
+            .to_err(),
         }
     }
 }
 
-<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)</span>
-<span class="doccomment">/// message is provided.  Attempts to replace an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// property.  If no matching type is present, the request will be rejected.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
-<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
-<span class="doccomment">/// * `msg` An instance of the update asset definition v1 struct, provided by conversion from an</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_asset_definition</span>(
-    <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
-    <span class="ident">info</span>: <span class="ident">MessageInfo</span>,
-    <span class="ident">msg</span>: <span class="ident">UpdateAssetDefinitionV1</span>,
-) -&gt; <span class="ident">EntryPointResponse</span> {
-    <span class="ident">check_admin_only</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
-    <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
-    <span class="comment">// Overwrite the existing asset definition with the new one</span>
-    <span class="ident">replace_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
-    <span class="ident">Response::new</span>()
-        .<span class="ident">add_attributes</span>(
-            <span class="ident">EventAttributes::new</span>(<span class="ident">EventType::UpdateAssetDefinition</span>)
-                .<span class="ident">set_asset_type</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definition</span>.<span class="ident">asset_type</span>),
+<span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
+/// message is provided.  Attempts to replace an existing [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// value based on a matching [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type)
+/// property.  If no matching type is present, the request will be rejected.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` An instance of the update asset definition v1 struct, provided by conversion from an
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).
+</span><span class="kw">pub fn </span>update_asset_definition(
+    deps: DepsMutC,
+    info: MessageInfo,
+    msg: UpdateAssetDefinitionV1,
+) -&gt; EntryPointResponse {
+    check_admin_only(<span class="kw-2">&amp;</span>deps.as_ref(), <span class="kw-2">&amp;</span>info)<span class="question-mark">?</span>;
+    check_funds_are_empty(<span class="kw-2">&amp;</span>info)<span class="question-mark">?</span>;
+    <span class="comment">// Overwrite the existing asset definition with the new one
+    </span>replace_asset_definition_v3(deps.storage, <span class="kw-2">&amp;</span>msg.asset_definition)<span class="question-mark">?</span>;
+    Response::new()
+        .add_attributes(
+            EventAttributes::new(EventType::UpdateAssetDefinition)
+                .set_asset_type(<span class="kw-2">&amp;</span>msg.asset_definition.asset_type),
         )
-        .<span class="ident">to_ok</span>()
+        .to_ok()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::contract::execute</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::load_asset_definition_by_type_v3</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::execute::update_asset_definition</span>::{
-        <span class="ident">update_asset_definition</span>, <span class="ident">UpdateAssetDefinitionV1</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::contract::execute;
+    <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+    <span class="kw">use </span><span class="kw">crate</span>::core::msg::ExecuteMsg;
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::load_asset_definition_by_type_v3;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+    <span class="kw">use </span><span class="kw">crate</span>::execute::update_asset_definition::{
+        update_asset_definition, UpdateAssetDefinitionV1,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
-        <span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_ASSET_TYPE_DISPLAY_NAME</span>,
-        <span class="ident">DEFAULT_SENDER_ADDRESS</span>,
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_ASSET_TYPE_DISPLAY_NAME,
+        DEFAULT_SENDER_ADDRESS,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
-        <span class="ident">empty_mock_info</span>, <span class="ident">get_default_entity_detail</span>, <span class="ident">single_attribute_for_key</span>,
-        <span class="ident">test_instantiate_success</span>, <span class="ident">InstArgs</span>,
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::{
+        empty_mock_info, get_default_entity_detail, single_attribute_for_key,
+        test_instantiate_success, InstArgs,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::DepsC</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">NHASH</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes::EventType</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg::validate_asset_definition_input</span>;
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">mock_info</span>};
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Uint128</span>};
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::util::aliases::DepsC;
+    <span class="kw">use </span><span class="kw">crate</span>::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
+    <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventType;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+    <span class="kw">use </span><span class="kw">crate</span>::validation::validate_init_msg::validate_asset_definition_input;
+    <span class="kw">use </span>cosmwasm_std::testing::{mock_env, mock_info};
+    <span class="kw">use </span>cosmwasm_std::{coin, Uint128};
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_update_asset_definition_via_execute</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">get_update_asset_definition</span>();
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">execute</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_env</span>(),
-            <span class="ident">empty_mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>),
-            <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> {
-                <span class="ident">asset_definition</span>: <span class="ident">asset_definition</span>.<span class="ident">clone</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_update_asset_definition_via_execute() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>asset_definition = get_update_asset_definition();
+        <span class="kw">let </span>response = execute(
+            deps.as_mut(),
+            mock_env(),
+            empty_mock_info(DEFAULT_ADMIN_ADDRESS),
+            ExecuteMsg::UpdateAssetDefinition {
+                asset_definition: asset_definition.clone(),
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the update asset checks to work correctly&quot;</span>);
+        .expect(<span class="string">&quot;expected the update asset checks to work correctly&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">is_empty</span>(),
+            response.messages.is_empty(),
             <span class="string">&quot;updating an asset definition should not require messages&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
-            <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
+            response.attributes.len(),
             <span class="string">&quot;updating an asset definition should produce the correct number of attributes&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">EventType::UpdateAssetDefinition</span>.<span class="ident">event_name</span>().<span class="ident">as_str</span>(),
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_EVENT_TYPE_KEY</span>),
+            EventType::UpdateAssetDefinition.event_name().as_str(),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
             <span class="string">&quot;the correct event type should be emitted&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_TYPE_KEY</span>),
+            DEFAULT_ASSET_TYPE,
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_TYPE_KEY),
             <span class="string">&quot;the asset type attribute should be added correctly&quot;</span>,
         );
-        <span class="ident">test_asset_definition_was_updated_for_input</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>, <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>());
+        test_asset_definition_was_updated_for_input(<span class="kw-2">&amp;</span>asset_definition, <span class="kw-2">&amp;</span>deps.as_ref());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_update_asset_definition_via_internal</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">get_valid_update_asset_definition</span>();
-        <span class="ident">update_asset_definition</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">msg</span>.<span class="ident">clone</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_update_asset_definition_via_internal() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>msg = get_valid_update_asset_definition();
+        update_asset_definition(
+            deps.as_mut(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            msg.clone(),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the update asset definition function to return properly&quot;</span>);
-        <span class="ident">test_asset_definition_was_updated</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definition</span>, <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>());
+        .expect(<span class="string">&quot;expected the update asset definition function to return properly&quot;</span>);
+        test_asset_definition_was_updated(<span class="kw-2">&amp;</span>msg.asset_definition, <span class="kw-2">&amp;</span>deps.as_ref());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_update_asset_definition_for_invalid_msg</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> {
-            <span class="ident">asset_definition</span>: <span class="ident">AssetDefinitionInputV3::new</span>(
-                <span class="ident">DEFAULT_ASSET_TYPE</span>,
-                <span class="ident">DEFAULT_ASSET_TYPE_DISPLAY_NAME</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_update_asset_definition_for_invalid_msg() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>msg = ExecuteMsg::UpdateAssetDefinition {
+            asset_definition: AssetDefinitionInputV3::new(
+                DEFAULT_ASSET_TYPE,
+                DEFAULT_ASSET_TYPE_DISPLAY_NAME,
                 <span class="macro">vec!</span>[],
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
         };
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">execute</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_env</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">msg</span>,
+        <span class="kw">let </span>error = execute(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            msg,
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidMessageFields</span> { .. }),
+            <span class="macro">matches!</span>(error, ContractError::InvalidMessageFields { .. }),
             <span class="string">&quot;expected an invalid asset definition to cause an InvalidMessageFields error, but got {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_update_asset_definition_for_invalid_sender</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">update_asset_definition</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="comment">// Send from the &quot;sender address&quot; which is the address of the account that does onboarding in tests</span>
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_SENDER_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">get_valid_update_asset_definition</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_update_asset_definition_for_invalid_sender() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>error = update_asset_definition(
+            deps.as_mut(),
+            <span class="comment">// Send from the &quot;sender address&quot; which is the address of the account that does onboarding in tests
+            </span>mock_info(DEFAULT_SENDER_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            get_valid_update_asset_definition(),
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::Unauthorized</span> { .. }),
+            <span class="macro">matches!</span>(error, ContractError::Unauthorized { .. }),
             <span class="string">&quot;expected the unauthorized response to be returned when a different address than the admin is the sender, but got error: {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_update_asset_definition_for_provided_funds</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">update_asset_definition</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[<span class="ident">coin</span>(<span class="number">420</span>, <span class="string">&quot;usdf&quot;</span>)]),
-            <span class="ident">get_valid_update_asset_definition</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_update_asset_definition_for_provided_funds() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>error = update_asset_definition(
+            deps.as_mut(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">420</span>, <span class="string">&quot;usdf&quot;</span>)]),
+            get_valid_update_asset_definition(),
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidFunds</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(error, ContractError::InvalidFunds(<span class="kw">_</span>)),
             <span class="string">&quot;expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_update_asset_definition_for_missing_loan_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">missing_asset_definition</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_update_asset_definition_for_missing_loan_type() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>missing_asset_definition = AssetDefinitionV3::new(
             <span class="string">&quot;nonexistent-type&quot;</span>,
-            <span class="string">&quot;WHOAMI&quot;</span>.<span class="ident">to_some</span>(),
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;WHOAMI&quot;</span>.to_some(),
+            <span class="macro">vec!</span>[VerifierDetailV2::new(
                 <span class="string">&quot;verifier&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>)],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
+                <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>)],
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
         );
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">update_asset_definition</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">UpdateAssetDefinitionV1::new</span>(<span class="ident">missing_asset_definition</span>),
+        <span class="kw">let </span>error = update_asset_definition(
+            deps.as_mut(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            UpdateAssetDefinitionV1::new(missing_asset_definition),
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
+            <span class="macro">matches!</span>(error, ContractError::RecordNotFound { .. }),
             <span class="string">&quot;expected the not found response to be returned when an update is attempted for a definition that does not exist, but got: {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated_for_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV3</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
-        <span class="ident">test_asset_definition_was_updated</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>(), <span class="ident">deps</span>)
+    <span class="kw">fn </span>test_asset_definition_was_updated_for_input(input: <span class="kw-2">&amp;</span>AssetDefinitionInputV3, deps: <span class="kw-2">&amp;</span>DepsC) {
+        test_asset_definition_was_updated(<span class="kw-2">&amp;</span>input.as_asset_definition(), deps)
     }
 
-    <span class="kw">fn</span> <span class="ident">test_asset_definition_was_updated</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) {
-        <span class="kw">let</span> <span class="ident">state_def</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the updated asset definition to be stored in the state&quot;</span>);
+    <span class="kw">fn </span>test_asset_definition_was_updated(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3, deps: <span class="kw-2">&amp;</span>DepsC) {
+        <span class="kw">let </span>state_def =
+            load_asset_definition_by_type_v3(deps.storage, <span class="kw-2">&amp;</span>asset_definition.asset_type)
+                .expect(<span class="string">&quot;expected the updated asset definition to be stored in the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">asset_definition</span>, <span class="kw-2">&amp;</span><span class="ident">state_def</span>,
+            asset_definition, <span class="kw-2">&amp;</span>state_def,
             <span class="string">&quot;the value in state should directly equate to the added value&quot;</span>,
         );
     }
 
-    <span class="comment">// This builds off of the existing default asset definition in test_utilities and adds/tweaks</span>
-    <span class="comment">// details.  This uses randomly-generated bech32 provenance testnet addresses to be different than</span>
-    <span class="comment">// the default values</span>
-    <span class="kw">fn</span> <span class="ident">get_update_asset_definition</span>() -&gt; <span class="ident">AssetDefinitionInputV3</span> {
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV3::new</span>(
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE_DISPLAY_NAME</span>,
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+    <span class="comment">// This builds off of the existing default asset definition in test_utilities and adds/tweaks
+    // details.  This uses randomly-generated bech32 provenance testnet addresses to be different than
+    // the default values
+    </span><span class="kw">fn </span>get_update_asset_definition() -&gt; AssetDefinitionInputV3 {
+        <span class="kw">let </span>def = AssetDefinitionInputV3::new(
+            DEFAULT_ASSET_TYPE,
+            DEFAULT_ASSET_TYPE_DISPLAY_NAME,
+            <span class="macro">vec!</span>[VerifierDetailV2::new(
                 <span class="string">&quot;tp1y67rma23nplzy8rpvfqsztvktvp85hnmnjvzxs&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">1500000</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">1500000</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7&quot;</span>, <span class="number">450000</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52&quot;</span>, <span class="number">300000</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;tp1knh6n2kafm78mfv0c6d6y3x3en3pcdph23r2e7&quot;</span>, <span class="number">450000</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;tp1uqx5fcrx0nkcak52tt794p03d5tju62qfnwc52&quot;</span>, <span class="number">300000</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="ident">validate_asset_definition_input</span>(<span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be valid&quot;</span>);
-        <span class="ident">def</span>
+        validate_asset_definition_input(<span class="kw-2">&amp;</span>def).expect(<span class="string">&quot;expected the asset definition to be valid&quot;</span>);
+        def
     }
 
-    <span class="kw">fn</span> <span class="ident">get_valid_update_asset_definition</span>() -&gt; <span class="ident">UpdateAssetDefinitionV1</span> {
-        <span class="ident">UpdateAssetDefinitionV1</span> {
-            <span class="ident">asset_definition</span>: <span class="ident">get_update_asset_definition</span>().<span class="ident">into_asset_definition</span>(),
+    <span class="kw">fn </span>get_valid_update_asset_definition() -&gt; UpdateAssetDefinitionV1 {
+        UpdateAssetDefinitionV1 {
+            asset_definition: get_update_asset_definition().into_asset_definition(),
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

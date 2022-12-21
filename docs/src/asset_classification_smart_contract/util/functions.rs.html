@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -388,395 +388,395 @@
 <span id="388">388</span>
 <span id="389">389</span>
 <span id="390">390</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::access_route::AccessRoute</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::access_route::AccessRoute;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::AssetResult;
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">BankMsg</span>, <span class="ident">CosmosMsg</span>};
-<span class="kw">use</span> <span class="ident">provwasm_std::ProvenanceMsg</span>;
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
-<span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
-<span class="kw">use</span> <span class="ident">std::hash::Hash</span>;
+<span class="kw">use </span>cosmwasm_std::{coin, BankMsg, CosmosMsg};
+<span class="kw">use </span>provwasm_std::ProvenanceMsg;
+<span class="kw">use </span>result_extensions::ResultExtensions;
+<span class="kw">use </span>std::collections::HashSet;
+<span class="kw">use </span>std::hash::Hash;
 
-<span class="doccomment">/// Determines how many elements within the provided reference slice are unique by the given</span>
-<span class="doccomment">/// property.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `slice` A reference slice from which to derive values to count.</span>
-<span class="doccomment">/// * `selector` A closure that defines the criteria used to determine when a value in the slice</span>
-<span class="doccomment">/// should be added to the count.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use asset_classification_smart_contract::util::functions::distinct_count_by_property;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let values = vec![&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;a&quot;];</span>
-<span class="doccomment">/// let distinct_count = distinct_count_by_property(&amp;values, |s| s);</span>
-<span class="doccomment">/// assert_eq!(3, distinct_count);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">distinct_count_by_property</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">selector</span>: <span class="ident">F</span>) -&gt; <span class="ident">usize</span>
-<span class="kw">where</span>
-    <span class="ident">U</span>: <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>,
-    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">U</span>,
+<span class="doccomment">/// Determines how many elements within the provided reference slice are unique by the given
+/// property.
+///
+/// # Parameters
+///
+/// * `slice` A reference slice from which to derive values to count.
+/// * `selector` A closure that defines the criteria used to determine when a value in the slice
+/// should be added to the count.
+///
+/// # Examples
+/// ```
+/// use asset_classification_smart_contract::util::functions::distinct_count_by_property;
+///
+/// let values = vec![&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;a&quot;];
+/// let distinct_count = distinct_count_by_property(&amp;values, |s| s);
+/// assert_eq!(3, distinct_count);
+/// ```
+</span><span class="kw">pub fn </span>distinct_count_by_property&lt;F, T, U&gt;(slice: <span class="kw-2">&amp;</span>[T], selector: F) -&gt; usize
+<span class="kw">where
+    </span>U: Sized + Eq + Hash,
+    F: FnMut(<span class="kw-2">&amp;</span>T) -&gt; <span class="kw-2">&amp;</span>U,
 {
-    <span class="ident">slice</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">selector</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">len</span>()
+    slice.iter().map(selector).collect::&lt;HashSet&lt;<span class="kw">_</span>&gt;&gt;().len()
 }
 
-<span class="doccomment">/// Converts an asset type and a contract base name into an asset attribute that will be reserved</span>
-<span class="doccomment">/// to the contract for writing scope attributes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the</span>
-<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an</span>
-<span class="doccomment">/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).</span>
-<span class="doccomment">/// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should</span>
-<span class="doccomment">/// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the</span>
-<span class="doccomment">/// contract&#39;s [StateV2](crate::core::state::StateV2) internally-stored value.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use asset_classification_smart_contract::util::functions::generate_asset_attribute_name;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let asset_type = &quot;mortgage&quot;;</span>
-<span class="doccomment">/// let base_contract_name = &quot;asset&quot;;</span>
-<span class="doccomment">/// let attribute_name = generate_asset_attribute_name(asset_type, base_contract_name);</span>
-<span class="doccomment">/// assert_eq!(&quot;mortgage.asset&quot;, attribute_name.as_str());</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_asset_attribute_name</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">U</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">asset_type</span>: <span class="ident">T</span>,
-    <span class="ident">base_contract_name</span>: <span class="ident">U</span>,
-) -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">base_contract_name</span>.<span class="ident">into</span>())
+<span class="doccomment">/// Converts an asset type and a contract base name into an asset attribute that will be reserved
+/// to the contract for writing scope attributes.
+///
+/// # Parameters
+///
+/// * `asset_type` The value to use at the beginning of the name qualifier.  Should refer to the
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an
+/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
+/// * `base_contract_name` The value to use at the end of the name qualifier, after the dot.  Should
+/// refer to the [base_contract_name](crate::core::state::StateV2::base_contract_name) of the
+/// contract&#39;s [StateV2](crate::core::state::StateV2) internally-stored value.
+///
+/// # Examples
+/// ```
+/// use asset_classification_smart_contract::util::functions::generate_asset_attribute_name;
+///
+/// let asset_type = &quot;mortgage&quot;;
+/// let base_contract_name = &quot;asset&quot;;
+/// let attribute_name = generate_asset_attribute_name(asset_type, base_contract_name);
+/// assert_eq!(&quot;mortgage.asset&quot;, attribute_name.as_str());
+/// ```
+</span><span class="kw">pub fn </span>generate_asset_attribute_name&lt;T: Into&lt;String&gt;, U: Into&lt;String&gt;&gt;(
+    asset_type: T,
+    base_contract_name: U,
+) -&gt; String {
+    <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, asset_type.into(), base_contract_name.into())
 }
 
-<span class="doccomment">/// Converts an asset type and scope address into a grant id for use with [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway).</span>
-<span class="doccomment">/// This combination will create a value unique to each verification&#39;s process, ensuring that each</span>
-<span class="doccomment">/// selected verifier will always have access to its required scope values until any number of</span>
-<span class="doccomment">/// pending verifications complete.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The value to use at the beginning of the grant id.  Should refer to the</span>
-<span class="doccomment">/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an</span>
-<span class="doccomment">/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).</span>
-<span class="doccomment">/// * `scope_address` The bech32 address with a prefix of &quot;scope&quot; that uniquely defines the scope</span>
-<span class="doccomment">/// that is currently in the process of classification.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_os_gateway_grant_id</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">U</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">asset_type</span>: <span class="ident">T</span>,
-    <span class="ident">scope_address</span>: <span class="ident">U</span>,
-) -&gt; <span class="ident">String</span> {
-    <span class="macro">format!</span>(<span class="string">&quot;{}-{}&quot;</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>(), <span class="ident">scope_address</span>.<span class="ident">into</span>())
+<span class="doccomment">/// Converts an asset type and scope address into a grant id for use with [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway).
+/// This combination will create a value unique to each verification&#39;s process, ensuring that each
+/// selected verifier will always have access to its required scope values until any number of
+/// pending verifications complete.
+///
+/// # Parameters
+///
+/// * `asset_type` The value to use at the beginning of the grant id.  Should refer to the
+/// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type) property of an
+/// [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
+/// * `scope_address` The bech32 address with a prefix of &quot;scope&quot; that uniquely defines the scope
+/// that is currently in the process of classification.
+</span><span class="kw">pub fn </span>generate_os_gateway_grant_id&lt;T: Into&lt;String&gt;, U: Into&lt;String&gt;&gt;(
+    asset_type: T,
+    scope_address: U,
+) -&gt; String {
+    <span class="macro">format!</span>(<span class="string">&quot;{}-{}&quot;</span>, asset_type.into(), scope_address.into())
 }
 
-<span class="doccomment">/// Takes an existing vector, moves it into this function, swaps out a single existing item for</span>
-<span class="doccomment">/// a specified replacement item.  If less or more than one existing item matches the given</span>
-<span class="doccomment">/// predicate closure, an error is returned.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `v` The vector to move and replace an item within.</span>
-<span class="doccomment">/// * `new` The instance of the new item to use in place of an existing item.</span>
-<span class="doccomment">/// * `predicate` A closure that defines how to locate the single item to remove from the vector</span>
-<span class="doccomment">/// and replace with the new item.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_single_matching_vec_element</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(
-    <span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">new</span>: <span class="ident">T</span>,
-    <span class="ident">predicate</span>: <span class="ident">F</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">bool</span>,
+<span class="doccomment">/// Takes an existing vector, moves it into this function, swaps out a single existing item for
+/// a specified replacement item.  If less or more than one existing item matches the given
+/// predicate closure, an error is returned.
+///
+/// # Parameters
+///
+/// * `v` The vector to move and replace an item within.
+/// * `new` The instance of the new item to use in place of an existing item.
+/// * `predicate` A closure that defines how to locate the single item to remove from the vector
+/// and replace with the new item.
+</span><span class="kw">pub fn </span>replace_single_matching_vec_element&lt;T, F&gt;(
+    v: Vec&lt;T&gt;,
+    new: T,
+    predicate: F,
+) -&gt; AssetResult&lt;Vec&lt;T&gt;&gt;
+<span class="kw">where
+    </span>F: Fn(<span class="kw-2">&amp;</span>T) -&gt; bool,
 {
-    <span class="kw">let</span> <span class="ident">initial_size</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">len</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resulting_values</span> <span class="op">=</span> <span class="ident">v</span>
-        .<span class="ident">into_iter</span>()
-        <span class="comment">// Retain all values that do NOT match the predicate</span>
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">elem</span><span class="op">|</span> <span class="op">!</span><span class="ident">predicate</span>(<span class="ident">elem</span>))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">let</span> <span class="ident">total_values_replaced</span> <span class="op">=</span> <span class="ident">initial_size</span> <span class="op">-</span> <span class="ident">resulting_values</span>.<span class="ident">len</span>();
-    <span class="kw">if</span> <span class="ident">total_values_replaced</span> <span class="op">==</span> <span class="number">1</span> {
-        <span class="ident">resulting_values</span>.<span class="ident">push</span>(<span class="ident">new</span>);
-        <span class="prelude-val">Ok</span>(<span class="ident">resulting_values</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">ContractError::generic</span>(<span class="macro">format!</span>(
+    <span class="kw">let </span>initial_size = v.len();
+    <span class="kw">let </span><span class="kw-2">mut </span>resulting_values = v
+        .into_iter()
+        <span class="comment">// Retain all values that do NOT match the predicate
+        </span>.filter(|elem| !predicate(elem))
+        .collect::&lt;Vec&lt;T&gt;&gt;();
+    <span class="kw">let </span>total_values_replaced = initial_size - resulting_values.len();
+    <span class="kw">if </span>total_values_replaced == <span class="number">1 </span>{
+        resulting_values.push(new);
+        <span class="prelude-val">Ok</span>(resulting_values)
+    } <span class="kw">else </span>{
+        ContractError::generic(<span class="macro">format!</span>(
             <span class="string">&quot;expected a single value to be replaced, but found {}&quot;</span>,
-            <span class="ident">total_values_replaced</span>
+            total_values_replaced
         ))
-        .<span class="ident">to_err</span>()
+        .to_err()
     }
 }
 
-<span class="doccomment">/// Creates a message that sends funds of the specified denomination from the contract to the recipient address.</span>
-<span class="doccomment">/// Important: The response type is of ProvenanceMsg, which allows this bank send message to match the type</span>
-<span class="doccomment">/// used for contract execution routes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `recipient` The bech32 address of the receiver of the sent funds.</span>
-<span class="doccomment">/// * `amount` An amount of coin to send (from the contract&#39;s internal funding amount).</span>
-<span class="doccomment">/// * `denom` The denomination of coin to send.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bank_send</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">D</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">recipient</span>: <span class="ident">R</span>,
-    <span class="ident">amount</span>: <span class="ident">u128</span>,
-    <span class="ident">denom</span>: <span class="ident">D</span>,
-) -&gt; <span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span> {
-    <span class="ident">CosmosMsg::Bank</span>(<span class="ident">BankMsg::Send</span> {
-        <span class="ident">to_address</span>: <span class="ident">recipient</span>.<span class="ident">into</span>(),
-        <span class="ident">amount</span>: <span class="macro">vec!</span>[<span class="ident">coin</span>(<span class="ident">amount</span>, <span class="ident">denom</span>)],
+<span class="doccomment">/// Creates a message that sends funds of the specified denomination from the contract to the recipient address.
+/// Important: The response type is of ProvenanceMsg, which allows this bank send message to match the type
+/// used for contract execution routes.
+///
+/// # Parameters
+///
+/// * `recipient` The bech32 address of the receiver of the sent funds.
+/// * `amount` An amount of coin to send (from the contract&#39;s internal funding amount).
+/// * `denom` The denomination of coin to send.
+</span><span class="kw">pub fn </span>bank_send&lt;R: Into&lt;String&gt;, D: Into&lt;String&gt;&gt;(
+    recipient: R,
+    amount: u128,
+    denom: D,
+) -&gt; CosmosMsg&lt;ProvenanceMsg&gt; {
+    CosmosMsg::Bank(BankMsg::Send {
+        to_address: recipient.into(),
+        amount: <span class="macro">vec!</span>[coin(amount, denom)],
     })
 }
 
-<span class="doccomment">/// Trims down a vector of AccessRoute to ensure that the contained values are valid and unique.</span>
-<span class="doccomment">/// Does the following:</span>
-<span class="doccomment">/// Ensures that access routes have a non-empty route property.</span>
-<span class="doccomment">/// Ensures that access routes either have an unset name, or a non-blank, set name.</span>
-<span class="doccomment">/// Ensures that all access routes, after being trimmed of trailing whitespace, are unique. Drops duplicates.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `routes` The vector of routes to filter. Moves into this function and is replaced by a new</span>
-<span class="doccomment">/// vector containing only valid routes.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span> {
-    <span class="ident">routes</span>
-        .<span class="ident">into_iter</span>()
-        <span class="comment">// Ensure all whitespace values are removed from both routes and names to ensure duplicate detection works as intended</span>
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">trim_values</span>())
-        <span class="comment">// Drop all proposed entries that contain empty routes or poorly-defined names. These definitions are not useful to downstream consumers</span>
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> {
-            <span class="op">!</span><span class="ident">r</span>.<span class="ident">route</span>.<span class="ident">is_empty</span>()
-                <span class="op">&amp;&amp;</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">name</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="op">!</span><span class="ident">name</span>.<span class="ident">is_empty</span>(),
-                    <span class="prelude-val">None</span> =&gt; <span class="bool-val">true</span>,
+<span class="doccomment">/// Trims down a vector of AccessRoute to ensure that the contained values are valid and unique.
+/// Does the following:
+/// Ensures that access routes have a non-empty route property.
+/// Ensures that access routes either have an unset name, or a non-blank, set name.
+/// Ensures that all access routes, after being trimmed of trailing whitespace, are unique. Drops duplicates.
+///
+/// # Parameters
+///
+/// * `routes` The vector of routes to filter. Moves into this function and is replaced by a new
+/// vector containing only valid routes.
+</span><span class="kw">pub fn </span>filter_valid_access_routes(routes: Vec&lt;AccessRoute&gt;) -&gt; Vec&lt;AccessRoute&gt; {
+    routes
+        .into_iter()
+        <span class="comment">// Ensure all whitespace values are removed from both routes and names to ensure duplicate detection works as intended
+        </span>.map(|r| r.trim_values())
+        <span class="comment">// Drop all proposed entries that contain empty routes or poorly-defined names. These definitions are not useful to downstream consumers
+        </span>.filter(|r| {
+            !r.route.is_empty()
+                &amp;&amp; <span class="kw">match </span><span class="kw-2">&amp;</span>r.name {
+                    <span class="prelude-val">Some</span>(name) =&gt; !name.is_empty(),
+                    <span class="prelude-val">None </span>=&gt; <span class="bool-val">true</span>,
                 }
         })
-        <span class="comment">// Temp swap to a HashSet to filter duplicates automagically</span>
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AccessRoute</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+        <span class="comment">// Temp swap to a HashSet to filter duplicates automagically
+        </span>.collect::&lt;HashSet&lt;<span class="kw">_</span>&gt;&gt;()
+        .into_iter()
+        .collect::&lt;Vec&lt;AccessRoute&gt;&gt;()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">types::access_route::AccessRoute</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::assert_single_item</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions</span>::{
-        <span class="ident">filter_valid_access_routes</span>, <span class="ident">generate_os_gateway_grant_id</span>,
-        <span class="ident">replace_single_matching_vec_element</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::{error::ContractError, types::access_route::AccessRoute};
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::assert_single_item;
+    <span class="kw">use </span><span class="kw">crate</span>::util::functions::{
+        filter_valid_access_routes, generate_os_gateway_grant_id,
+        replace_single_matching_vec_element,
     };
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">BankMsg</span>, <span class="ident">CosmosMsg</span>};
+    <span class="kw">use </span>cosmwasm_std::{BankMsg, CosmosMsg};
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::bank_send</span>;
+    <span class="kw">use </span><span class="kw">super</span>::bank_send;
 
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">TestVal</span>(<span class="ident">u32</span>);
+    <span class="attribute">#[derive(Debug, PartialEq)]
+    </span><span class="kw">struct </span>TestVal(u32);
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_replace_matching_vec_elements_success</span>() {
-        <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">TestVal</span>(<span class="number">1</span>), <span class="ident">TestVal</span>(<span class="number">2</span>), <span class="ident">TestVal</span>(<span class="number">3</span>), <span class="ident">TestVal</span>(<span class="number">4</span>), <span class="ident">TestVal</span>(<span class="number">5</span>)];
-        <span class="kw">let</span> <span class="ident">result_vec</span> <span class="op">=</span> <span class="ident">replace_single_matching_vec_element</span>(<span class="ident">source</span>, <span class="ident">TestVal</span>(<span class="number">6</span>), <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="number">0</span> <span class="op">==</span> <span class="number">5</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the replacement should work correctly&quot;</span>);
-        <span class="kw">let</span> <span class="ident">expected_result</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">TestVal</span>(<span class="number">1</span>), <span class="ident">TestVal</span>(<span class="number">2</span>), <span class="ident">TestVal</span>(<span class="number">3</span>), <span class="ident">TestVal</span>(<span class="number">4</span>), <span class="ident">TestVal</span>(<span class="number">6</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_replace_matching_vec_elements_success() {
+        <span class="kw">let </span>source = <span class="macro">vec!</span>[TestVal(<span class="number">1</span>), TestVal(<span class="number">2</span>), TestVal(<span class="number">3</span>), TestVal(<span class="number">4</span>), TestVal(<span class="number">5</span>)];
+        <span class="kw">let </span>result_vec = replace_single_matching_vec_element(source, TestVal(<span class="number">6</span>), |v| v.<span class="number">0 </span>== <span class="number">5</span>)
+            .expect(<span class="string">&quot;the replacement should work correctly&quot;</span>);
+        <span class="kw">let </span>expected_result = <span class="macro">vec!</span>[TestVal(<span class="number">1</span>), TestVal(<span class="number">2</span>), TestVal(<span class="number">3</span>), TestVal(<span class="number">4</span>), TestVal(<span class="number">6</span>)];
         <span class="macro">assert_eq!</span>(
-            <span class="ident">expected_result</span>, <span class="ident">result_vec</span>,
+            expected_result, result_vec,
             <span class="string">&quot;expected a single result to be replaced correctly&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_replace_matching_vec_elements_failure_for_no_matches</span>() {
-        <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">TestVal</span>(<span class="number">10</span>), <span class="ident">TestVal</span>(<span class="number">20</span>)];
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span>
-            <span class="ident">replace_single_matching_vec_element</span>(<span class="ident">source</span>, <span class="ident">TestVal</span>(<span class="number">99</span>), <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="number">0</span> <span class="op">==</span> <span class="number">100</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::GenericError</span> { <span class="ident">msg</span> } =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_replace_matching_vec_elements_failure_for_no_matches() {
+        <span class="kw">let </span>source = <span class="macro">vec!</span>[TestVal(<span class="number">10</span>), TestVal(<span class="number">20</span>)];
+        <span class="kw">let </span>error =
+            replace_single_matching_vec_element(source, TestVal(<span class="number">99</span>), |v| v.<span class="number">0 </span>== <span class="number">100</span>).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::GenericError { msg } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;expected a single value to be replaced, but found 0&quot;</span>, <span class="ident">msg</span>,
+                    <span class="string">&quot;expected a single value to be replaced, but found 0&quot;</span>, msg,
                     <span class="string">&quot;the StdError message was not the expected result for no values replaced&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, error),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_replace_matching_vec_elements_failure_for_multiple_matches</span>() {
-        <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">TestVal</span>(<span class="number">1</span>), <span class="ident">TestVal</span>(<span class="number">2</span>)];
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span>
-            <span class="ident">replace_single_matching_vec_element</span>(<span class="ident">source</span>, <span class="ident">TestVal</span>(<span class="number">10</span>), <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="number">0</span> <span class="op">&gt;</span> <span class="number">0</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::GenericError</span> { <span class="ident">msg</span> } =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_replace_matching_vec_elements_failure_for_multiple_matches() {
+        <span class="kw">let </span>source = <span class="macro">vec!</span>[TestVal(<span class="number">1</span>), TestVal(<span class="number">2</span>)];
+        <span class="kw">let </span>error =
+            replace_single_matching_vec_element(source, TestVal(<span class="number">10</span>), |v| v.<span class="number">0 </span>&gt; <span class="number">0</span>).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::GenericError { msg } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;expected a single value to be replaced, but found 2&quot;</span>, <span class="ident">msg</span>,
+                    <span class="string">&quot;expected a single value to be replaced, but found 2&quot;</span>, msg,
                     <span class="string">&quot;the StdError message was not the expected result for many values replaced&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, error),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_bank_send</span>() {
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">bank_send</span>(<span class="string">&quot;address&quot;</span>, <span class="number">150</span>, <span class="string">&quot;fakecoin&quot;</span>);
-        <span class="kw">match</span> <span class="ident">msg</span> {
-            <span class="ident">CosmosMsg::Bank</span>(<span class="ident">bank_msg</span>) =&gt; <span class="kw">match</span> <span class="ident">bank_msg</span> {
-                <span class="ident">BankMsg::Send</span> { <span class="ident">to_address</span>, <span class="ident">amount</span> } =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_bank_send() {
+        <span class="kw">let </span>msg = bank_send(<span class="string">&quot;address&quot;</span>, <span class="number">150</span>, <span class="string">&quot;fakecoin&quot;</span>);
+        <span class="kw">match </span>msg {
+            CosmosMsg::Bank(bank_msg) =&gt; <span class="kw">match </span>bank_msg {
+                BankMsg::Send { to_address, amount } =&gt; {
                     <span class="macro">assert_eq!</span>(
                         <span class="string">&quot;address&quot;</span>,
-                        <span class="ident">to_address</span>.<span class="ident">as_str</span>(),
+                        to_address.as_str(),
                         <span class="string">&quot;expected the address to be output correctly&quot;</span>,
                     );
                     <span class="macro">assert_eq!</span>(
                         <span class="number">1</span>,
-                        <span class="ident">amount</span>.<span class="ident">len</span>(),
+                        amount.len(),
                         <span class="string">&quot;expected only one coin to be added to the message&quot;</span>,
                     );
-                    <span class="kw">let</span> <span class="ident">coin</span> <span class="op">=</span> <span class="ident">amount</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>();
+                    <span class="kw">let </span>coin = amount.first().unwrap();
                     <span class="macro">assert_eq!</span>(
                         <span class="number">150</span>,
-                        <span class="ident">coin</span>.<span class="ident">amount</span>.<span class="ident">u128</span>(),
+                        coin.amount.u128(),
                         <span class="string">&quot;expected the coin to contain the proper amount&quot;</span>,
                     );
                     <span class="macro">assert_eq!</span>(
                         <span class="string">&quot;fakecoin&quot;</span>,
-                        <span class="ident">coin</span>.<span class="ident">denom</span>.<span class="ident">as_str</span>(),
+                        coin.denom.as_str(),
                         <span class="string">&quot;expected the coin to contain the proper denom&quot;</span>,
                     );
                 }
-                <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
                     <span class="string">&quot;unexpected bank msg generated by helper function: {:?}&quot;</span>,
-                    <span class="ident">bank_msg</span>
+                    bank_msg
                 ),
             },
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected message generated by helper function: {:?}&quot;</span>, <span class="ident">msg</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected message generated by helper function: {:?}&quot;</span>, msg),
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_access_routes_drops_none_name_blank_route</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;   &quot;</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_access_routes_drops_none_name_blank_route() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;   &quot;</span>)];
         <span class="macro">assert!</span>(
-            <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>).<span class="ident">is_empty</span>(),
+            filter_valid_access_routes(routes).is_empty(),
             <span class="string">&quot;input with a single, invalid route should produce no output&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_route_but_blank_name_is_dropped</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;&quot;</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_route_but_blank_name_is_dropped() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;&quot;</span>)];
         <span class="macro">assert!</span>(
-            <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>).<span class="ident">is_empty</span>(),
+            filter_valid_access_routes(routes).is_empty(),
             <span class="string">&quot;input with an empty name should be dropped&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_route_and_set_name_is_dropped</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;   &quot;</span>, <span class="string">&quot;goodname&quot;</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_route_and_set_name_is_dropped() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[AccessRoute::route_and_name(<span class="string">&quot;   &quot;</span>, <span class="string">&quot;goodname&quot;</span>)];
         <span class="macro">assert!</span>(
-            <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>).<span class="ident">is_empty</span>(),
+            filter_valid_access_routes(routes).is_empty(),
             <span class="string">&quot;input with an invalid route but good name should be dropped&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_route_with_no_name_is_kept</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;goodroute&quot;</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_route_with_no_name_is_kept() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;goodroute&quot;</span>)];
         <span class="macro">assert_eq!</span>(
-            <span class="ident">routes</span>,
-            <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>.<span class="ident">clone</span>()),
+            routes,
+            filter_valid_access_routes(routes.clone()),
             <span class="string">&quot;route output should be identical because no values were dropped&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_route_with_set_name_is_kept</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;goodroute&quot;</span>, <span class="string">&quot;goodname&quot;</span>)];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_route_with_set_name_is_kept() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[AccessRoute::route_and_name(<span class="string">&quot;goodroute&quot;</span>, <span class="string">&quot;goodname&quot;</span>)];
         <span class="macro">assert_eq!</span>(
-            <span class="ident">routes</span>,
-            <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>.<span class="ident">clone</span>()),
+            routes,
+            filter_valid_access_routes(routes.clone()),
             <span class="string">&quot;route output should be identical because no values were dropped&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_direct_duplicates_are_dropped</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_direct_duplicates_are_dropped() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[
+            AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
+            AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
         ];
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">filtered_route</span> <span class="op">=</span> <span class="ident">assert_single_item</span>(
-            <span class="kw-2">&amp;</span><span class="ident">result</span>,
+        <span class="kw">let </span>result = filter_valid_access_routes(routes.clone());
+        <span class="kw">let </span>filtered_route = assert_single_item(
+            <span class="kw-2">&amp;</span>result,
             <span class="string">&quot;only one route should be in the output because duplicates were filtered&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">routes</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>(),
-            <span class="ident">filtered_route</span>,
-            <span class="string">&quot;the first of two duplicates should equate to the resulting value&quot;</span>
-        );
+            routes.first().unwrap().to_owned(),
+            filtered_route,
+            <span class="string">&quot;the first of two duplicates should equate to the resulting value&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_trimmed_duplicates_are_dropped</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;  route&quot;</span>, <span class="string">&quot;  name&quot;</span>),
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route  &quot;</span>, <span class="string">&quot;name  &quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_trimmed_duplicates_are_dropped() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[
+            AccessRoute::route_and_name(<span class="string">&quot;  route&quot;</span>, <span class="string">&quot;  name&quot;</span>),
+            AccessRoute::route_and_name(<span class="string">&quot;route  &quot;</span>, <span class="string">&quot;name  &quot;</span>),
         ];
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>);
-        <span class="kw">let</span> <span class="ident">filtered_route</span> <span class="op">=</span> <span class="ident">assert_single_item</span>(
-            <span class="kw-2">&amp;</span><span class="ident">result</span>,
+        <span class="kw">let </span>result = filter_valid_access_routes(routes);
+        <span class="kw">let </span>filtered_route = assert_single_item(
+            <span class="kw-2">&amp;</span>result,
             <span class="string">&quot;only one route should be in the output because the routes were duplicates after filtration&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;route&quot;</span>, <span class="ident">filtered_route</span>.<span class="ident">route</span>,
+            <span class="string">&quot;route&quot;</span>, filtered_route.route,
             <span class="string">&quot;the resulting route value should be trimmed down from the original&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;name&quot;</span>,
-            <span class="ident">filtered_route</span>
-                .<span class="ident">name</span>
-                .<span class="ident">expect</span>(<span class="string">&quot;the resulting route should have a name value&quot;</span>),
+            filtered_route
+                .name
+                .expect(<span class="string">&quot;the resulting route should have a name value&quot;</span>),
             <span class="string">&quot;the resulting name value should be trimmed down from the original&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_duplicate_routes_but_different_names_are_kept</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name1&quot;</span>),
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name2&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_duplicate_routes_but_different_names_are_kept() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[
+            AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name1&quot;</span>),
+            AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name2&quot;</span>),
         ];
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>);
+        <span class="kw">let </span>result = filter_valid_access_routes(routes);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
-            <span class="ident">result</span>.<span class="ident">len</span>(),
+            result.len(),
             <span class="string">&quot;both routes should be kept because they have different names&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_duplicate_routes_with_set_and_unset_names_are_kept</span>() {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="ident">AccessRoute::route_and_name</span>(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
-            <span class="ident">AccessRoute::route_only</span>(<span class="string">&quot;route&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_duplicate_routes_with_set_and_unset_names_are_kept() {
+        <span class="kw">let </span>routes = <span class="macro">vec!</span>[
+            AccessRoute::route_and_name(<span class="string">&quot;route&quot;</span>, <span class="string">&quot;name&quot;</span>),
+            AccessRoute::route_only(<span class="string">&quot;route&quot;</span>),
         ];
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">filter_valid_access_routes</span>(<span class="ident">routes</span>);
+        <span class="kw">let </span>result = filter_valid_access_routes(routes);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
-            <span class="ident">result</span>.<span class="ident">len</span>(),
+            result.len(),
             <span class="string">&quot;both routes should be kept because one has a name and the other does not&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_generate_os_gateway_grant_id</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_generate_os_gateway_grant_id() {
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;heloc-scopescopescope&quot;</span>,
-            <span class="ident">generate_os_gateway_grant_id</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;scopescopescope&quot;</span>),
+            generate_os_gateway_grant_id(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;scopescopescope&quot;</span>),
             <span class="string">&quot;the output value should equate to the asset type concatenated to the scope address with a hyphen&quot;</span>,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_definition.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>asset_definition.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_definition.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>asset_definition.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -176,183 +176,183 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
-<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>result_extensions::ResultExtensions;
+<span class="kw">use </span>schemars::JsonSchema;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::StateV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">core::state::config_read_v2</span>,
-    <span class="ident">util</span>::{
-        <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>},
-        <span class="ident">functions::generate_asset_attribute_name</span>,
+<span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::state::StateV2;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+<span class="kw">use crate</span>::{
+    core::state::config_read_v2,
+    util::{
+        aliases::{AssetResult, DepsC},
+        functions::generate_asset_attribute_name,
     },
 };
 
-<span class="doccomment">/// Defines a specific asset type associated with the contract.  Allows its specified type to be</span>
-<span class="doccomment">/// onboarded and verified.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionV3</span> {
-    <span class="doccomment">/// The unique name of the asset associated with the definition.</span>
-    <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)</span>
-    <span class="kw">pub</span> <span class="ident">display_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Individual verifier definitions.  There can be many verifiers for a single asset type.</span>
-    <span class="kw">pub</span> <span class="ident">verifiers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,</span>
-    <span class="doccomment">/// requests to onboard assets of this type will be rejected.</span>
-    <span class="kw">pub</span> <span class="ident">enabled</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Defines a specific asset type associated with the contract.  Allows its specified type to be
+/// onboarded and verified.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+</span><span class="kw">pub struct </span>AssetDefinitionV3 {
+    <span class="doccomment">/// The unique name of the asset associated with the definition.
+    </span><span class="kw">pub </span>asset_type: String,
+    <span class="doccomment">/// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)
+    </span><span class="kw">pub </span>display_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// Individual verifier definitions.  There can be many verifiers for a single asset type.
+    </span><span class="kw">pub </span>verifiers: Vec&lt;VerifierDetailV2&gt;,
+    <span class="doccomment">/// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
+    </span><span class="kw">pub </span>enabled: bool,
 }
-<span class="kw">impl</span> <span class="ident">AssetDefinitionV3</span> {
-    <span class="doccomment">/// Constructs a new instance of AssetDefinitionV3, setting enabled to `true` by default.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` The unique name of the asset associated with the definition.</span>
-    <span class="doccomment">/// * `verifiers` Individual verifier definitions.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">asset_type</span>: <span class="ident">S1</span>,
-        <span class="ident">display_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>,
-        <span class="ident">verifiers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident">AssetDefinitionV3</span> {
-            <span class="ident">asset_type</span>: <span class="ident">asset_type</span>.<span class="ident">into</span>(),
-            <span class="ident">display_name</span>: <span class="ident">display_name</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">into</span>()),
-            <span class="ident">verifiers</span>,
-            <span class="ident">enabled</span>: <span class="bool-val">true</span>,
+<span class="kw">impl </span>AssetDefinitionV3 {
+    <span class="doccomment">/// Constructs a new instance of AssetDefinitionV3, setting enabled to `true` by default.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The unique name of the asset associated with the definition.
+    /// * `verifiers` Individual verifier definitions.
+    </span><span class="kw">pub fn </span>new&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+        asset_type: S1,
+        display_name: <span class="prelude-ty">Option</span>&lt;S2&gt;,
+        verifiers: Vec&lt;VerifierDetailV2&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        AssetDefinitionV3 {
+            asset_type: asset_type.into(),
+            display_name: display_name.map(|n| n.into()),
+            verifiers,
+            enabled: <span class="bool-val">true</span>,
         }
     }
 
-    <span class="doccomment">/// Converts the asset_type value to lowercase and serializes it as bytes,</span>
-    <span class="doccomment">/// then uplifts the value to a vector to allow it to be returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">storage_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">asset_type</span>.<span class="ident">to_lowercase</span>()
+    <span class="doccomment">/// Converts the asset_type value to lowercase and serializes it as bytes,
+    /// then uplifts the value to a vector to allow it to be returned.
+    </span><span class="kw">pub fn </span>storage_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.asset_type.to_lowercase()
     }
 
-    <span class="doccomment">/// Helper functionality to retrieve the base contract name from state and use it to create the</span>
-    <span class="doccomment">/// Provenance Blockchain Attribute Module name for this asset type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `deps` A read-only instance of the cosmwasm-provided DepsC value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attribute_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">config_read_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>).<span class="ident">load</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">attribute_name_state</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>).<span class="ident">to_ok</span>()
+    <span class="doccomment">/// Helper functionality to retrieve the base contract name from state and use it to create the
+    /// Provenance Blockchain Attribute Module name for this asset type.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
+    </span><span class="kw">pub fn </span>attribute_name(<span class="kw-2">&amp;</span><span class="self">self</span>, deps: <span class="kw-2">&amp;</span>DepsC) -&gt; AssetResult&lt;String&gt; {
+        <span class="kw">let </span>state = config_read_v2(deps.storage).load()<span class="question-mark">?</span>;
+        <span class="self">self</span>.attribute_name_state(<span class="kw-2">&amp;</span>state).to_ok()
     }
 
-    <span class="doccomment">/// Helper functionality to use the base contract name from already fetched state and use it to create the</span>
-    <span class="doccomment">/// Provenance Blockchain Attribute Module name for this asset type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `deps` A read-only instance of the cosmwasm-provided DepsC value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attribute_name_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">StateV2</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">generate_asset_attribute_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">asset_type</span>, <span class="kw-2">&amp;</span><span class="ident">state</span>.<span class="ident">base_contract_name</span>)
+    <span class="doccomment">/// Helper functionality to use the base contract name from already fetched state and use it to create the
+    /// Provenance Blockchain Attribute Module name for this asset type.
+    ///
+    /// # Parameters
+    ///
+    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
+    </span><span class="kw">pub fn </span>attribute_name_state(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>StateV2) -&gt; String {
+        generate_asset_attribute_name(<span class="kw-2">&amp;</span><span class="self">self</span>.asset_type, <span class="kw-2">&amp;</span>state.base_contract_name)
     }
 
-    <span class="doccomment">/// Helper functionality to retrieve a verifier detail from the self-contained vector of</span>
-    <span class="doccomment">/// verifiers by matching on the given address.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `verifier_address` The bech32 address of the verifier to locate within the verifiers</span>
-    <span class="doccomment">/// vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_verifier_detail</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+    <span class="doccomment">/// Helper functionality to retrieve a verifier detail from the self-contained vector of
+    /// verifiers by matching on the given address.
+    ///
+    /// # Parameters
+    ///
+    /// * `verifier_address` The bech32 address of the verifier to locate within the verifiers
+    /// vector.
+    </span><span class="kw">pub fn </span>get_verifier_detail&lt;S: Into&lt;String&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">verifier_address</span>: <span class="ident">S</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span>, <span class="ident">ContractError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">verifier_address</span> <span class="op">=</span> <span class="ident">verifier_address</span>.<span class="ident">into</span>();
-        <span class="kw">match</span> <span class="self">self</span>
-            .<span class="ident">verifiers</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">find</span>(<span class="op">|</span><span class="ident">verifier</span><span class="op">|</span> <span class="ident">verifier</span>.<span class="ident">address</span> <span class="op">==</span> <span class="ident">verifier_address</span>)
+        verifier_address: S,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;VerifierDetailV2, ContractError&gt; {
+        <span class="kw">let </span>verifier_address = verifier_address.into();
+        <span class="kw">match </span><span class="self">self
+            </span>.verifiers
+            .iter()
+            .find(|verifier| verifier.address == verifier_address)
         {
-            <span class="prelude-val">Some</span>(<span class="ident">verifier</span>) =&gt; <span class="ident">verifier</span>.<span class="ident">to_owned</span>().<span class="ident">to_ok</span>(),
-            <span class="prelude-val">None</span> =&gt; <span class="ident">ContractError::UnsupportedVerifier</span> {
-                <span class="ident">asset_type</span>: <span class="self">self</span>.<span class="ident">asset_type</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">verifier_address</span>,
+            <span class="prelude-val">Some</span>(verifier) =&gt; verifier.to_owned().to_ok(),
+            <span class="prelude-val">None </span>=&gt; ContractError::UnsupportedVerifier {
+                asset_type: <span class="self">self</span>.asset_type.to_owned(),
+                verifier_address,
             }
-            .<span class="ident">to_err</span>(),
+            .to_err(),
         }
     }
 }
 
-<span class="doccomment">/// Allows the user to optionally specify the enabled flag on an asset definition, versus forcing</span>
-<span class="doccomment">/// it to be added manually on every request, when it will likely always be specified as `true`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AssetDefinitionInputV3</span> {
-    <span class="doccomment">/// The name of the asset associated with the definition.  This value must be unique across all</span>
-    <span class="doccomment">/// instances persisted in contract storage, or requests to add will be rejected.</span>
-    <span class="kw">pub</span> <span class="ident">asset_type</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)</span>
-    <span class="kw">pub</span> <span class="ident">display_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Individual verifier definitions.  There can be many verifiers for a single asset type.  Each</span>
-    <span class="doccomment">/// value must have a unique `address` property or requests to add will be rejected.</span>
-    <span class="kw">pub</span> <span class="ident">verifiers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,</span>
-    <span class="doccomment">/// requests to onboard assets of this type will be rejected.</span>
-    <span class="kw">pub</span> <span class="ident">enabled</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Whether or not to bind a Provenance Blockchain Name Module name to this contract when this</span>
-    <span class="doccomment">/// struct is used to add a new asset type to the contract.  If this value is omitted OR set to</span>
-    <span class="doccomment">/// true in a request that adds an asset definition, the name derived by combining the</span>
-    <span class="doccomment">/// [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type`</span>
-    <span class="doccomment">/// will be bound to the contract.  For example, if the base name is &quot;pb&quot; and the asset type is</span>
-    <span class="doccomment">/// &quot;myasset,&quot; the resulting bound name would be &quot;myasset.pb&quot;.</span>
-    <span class="kw">pub</span> <span class="ident">bind_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Allows the user to optionally specify the enabled flag on an asset definition, versus forcing
+/// it to be added manually on every request, when it will likely always be specified as `true`.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+</span><span class="kw">pub struct </span>AssetDefinitionInputV3 {
+    <span class="doccomment">/// The name of the asset associated with the definition.  This value must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
+    </span><span class="kw">pub </span>asset_type: String,
+    <span class="doccomment">/// A pretty human-readable name for this asset type (vs a typically snake_case asset_type name)
+    </span><span class="kw">pub </span>display_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
+    /// value must have a unique `address` property or requests to add will be rejected.
+    </span><span class="kw">pub </span>verifiers: Vec&lt;VerifierDetailV2&gt;,
+    <span class="doccomment">/// Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
+    </span><span class="kw">pub </span>enabled: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="doccomment">/// Whether or not to bind a Provenance Blockchain Name Module name to this contract when this
+    /// struct is used to add a new asset type to the contract.  If this value is omitted OR set to
+    /// true in a request that adds an asset definition, the name derived by combining the
+    /// [base_contract_name](crate::core::state::StateV2::base_contract_name) and the `asset_type`
+    /// will be bound to the contract.  For example, if the base name is &quot;pb&quot; and the asset type is
+    /// &quot;myasset,&quot; the resulting bound name would be &quot;myasset.pb&quot;.
+    </span><span class="kw">pub </span>bind_name: <span class="prelude-ty">Option</span>&lt;bool&gt;,
 }
-<span class="kw">impl</span> <span class="ident">AssetDefinitionInputV3</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` The name of the asset associated with the definition.  This value must be unique across all</span>
-    <span class="doccomment">/// instances persisted in contract storage, or requests to add will be rejected.</span>
-    <span class="doccomment">/// * `verifiers` Individual verifier definitions.  There can be many verifiers for a single asset type.  Each</span>
-    <span class="doccomment">/// value must have a unique `address` property or requests to add will be rejected.</span>
-    <span class="doccomment">/// * `enabled` Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,</span>
-    <span class="doccomment">/// requests to onboard assets of this type will be rejected.</span>
-    <span class="doccomment">/// * `bind_name` Whether or not to bind a Provenance Blockchain Name Module name to this contract when this</span>
-    <span class="doccomment">/// struct is used to add a new asset type to the contract.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">asset_type</span>: <span class="ident">S1</span>,
-        <span class="ident">display_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>,
-        <span class="ident">verifiers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VerifierDetailV2</span><span class="op">&gt;</span>,
-        <span class="ident">enabled</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-        <span class="ident">bind_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">asset_type</span>: <span class="ident">asset_type</span>.<span class="ident">into</span>(),
-            <span class="ident">display_name</span>: <span class="ident">display_name</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">into</span>()),
-            <span class="ident">verifiers</span>,
-            <span class="ident">enabled</span>,
-            <span class="ident">bind_name</span>,
+<span class="kw">impl </span>AssetDefinitionInputV3 {
+    <span class="doccomment">/// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` The name of the asset associated with the definition.  This value must be unique across all
+    /// instances persisted in contract storage, or requests to add will be rejected.
+    /// * `verifiers` Individual verifier definitions.  There can be many verifiers for a single asset type.  Each
+    /// value must have a unique `address` property or requests to add will be rejected.
+    /// * `enabled` Indicates whether or not the asset definition is enabled for use in the contract.  If disabled,
+    /// requests to onboard assets of this type will be rejected.
+    /// * `bind_name` Whether or not to bind a Provenance Blockchain Name Module name to this contract when this
+    /// struct is used to add a new asset type to the contract.
+    </span><span class="kw">pub fn </span>new&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+        asset_type: S1,
+        display_name: <span class="prelude-ty">Option</span>&lt;S2&gt;,
+        verifiers: Vec&lt;VerifierDetailV2&gt;,
+        enabled: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+        bind_name: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            asset_type: asset_type.into(),
+            display_name: display_name.map(|n| n.into()),
+            verifiers,
+            enabled,
+            bind_name,
         }
     }
 
-    <span class="doccomment">/// Moves this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_asset_definition</span>(<span class="self">self</span>) -&gt; <span class="ident">AssetDefinitionV3</span> {
-        <span class="ident">AssetDefinitionV3</span> {
-            <span class="ident">asset_type</span>: <span class="self">self</span>.<span class="ident">asset_type</span>,
-            <span class="ident">display_name</span>: <span class="self">self</span>.<span class="ident">display_name</span>,
-            <span class="ident">verifiers</span>: <span class="self">self</span>.<span class="ident">verifiers</span>,
-            <span class="ident">enabled</span>: <span class="self">self</span>.<span class="ident">enabled</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>),
+    <span class="doccomment">/// Moves this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3)
+    </span><span class="kw">pub fn </span>into_asset_definition(<span class="self">self</span>) -&gt; AssetDefinitionV3 {
+        AssetDefinitionV3 {
+            asset_type: <span class="self">self</span>.asset_type,
+            display_name: <span class="self">self</span>.display_name,
+            verifiers: <span class="self">self</span>.verifiers,
+            enabled: <span class="self">self</span>.enabled.unwrap_or(<span class="bool-val">true</span>),
         }
     }
 
-    <span class="doccomment">/// Clones the values contained within this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3).</span>
-    <span class="doccomment">/// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV3::into_asset_definition).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_asset_definition</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetDefinitionV3</span> {
-        <span class="ident">AssetDefinitionV3</span> {
-            <span class="ident">asset_type</span>: <span class="self">self</span>.<span class="ident">asset_type</span>.<span class="ident">clone</span>(),
-            <span class="ident">display_name</span>: <span class="self">self</span>.<span class="ident">display_name</span>.<span class="ident">clone</span>(),
-            <span class="ident">verifiers</span>: <span class="self">self</span>.<span class="ident">verifiers</span>.<span class="ident">clone</span>(),
-            <span class="ident">enabled</span>: <span class="self">self</span>.<span class="ident">enabled</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>),
+    <span class="doccomment">/// Clones the values contained within this struct into an instance of [AssetDefinitionV3](self::AssetDefinitionV3).
+    /// This process is more expensive than moving the struct with [into_asset_definition](self::AssetDefinitionInputV3::into_asset_definition).
+    </span><span class="kw">pub fn </span>as_asset_definition(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AssetDefinitionV3 {
+        AssetDefinitionV3 {
+            asset_type: <span class="self">self</span>.asset_type.clone(),
+            display_name: <span class="self">self</span>.display_name.clone(),
+            verifiers: <span class="self">self</span>.verifiers.clone(),
+            enabled: <span class="self">self</span>.enabled.unwrap_or(<span class="bool-val">true</span>),
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

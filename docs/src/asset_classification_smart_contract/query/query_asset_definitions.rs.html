@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_definitions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>query_asset_definitions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_definitions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>query_asset_definitions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -119,126 +119,126 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Binary</span>};
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>cosmwasm_std::{to_binary, Binary};
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::list_asset_definitions_v3</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
+<span class="kw">use </span><span class="kw">crate</span>::core::state::list_asset_definitions_v3;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsC};
 
-<span class="doccomment">/// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// from the contract&#39;s internal storage.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_asset_definitions</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">asset_definitions</span> <span class="op">=</span> <span class="ident">list_asset_definitions_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>);
-    <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definitions</span>)<span class="question-mark">?</span>.<span class="ident">to_ok</span>()
+<span class="doccomment">/// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)
+/// from the contract&#39;s internal storage.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+</span><span class="kw">pub fn </span>query_asset_definitions(deps: <span class="kw-2">&amp;</span>DepsC) -&gt; AssetResult&lt;Binary&gt; {
+    <span class="kw">let </span>asset_definitions = list_asset_definitions_v3(deps.storage);
+    to_binary(<span class="kw-2">&amp;</span>asset_definitions)<span class="question-mark">?</span>.to_ok()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">from_binary</span>, <span class="ident">Uint128</span>};
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>cosmwasm_std::{from_binary, Uint128};
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil</span>::{
-        <span class="ident">test_constants::DEFAULT_VERIFIER_ADDRESS</span>,
-        <span class="ident">test_utilities</span>::{<span class="ident">get_default_asset_definition</span>, <span class="ident">test_instantiate_success</span>, <span class="ident">InstArgs</span>},
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::{
+        test_constants::DEFAULT_VERIFIER_ADDRESS,
+        test_utilities::{get_default_asset_definition, test_instantiate_success, InstArgs},
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::query_asset_definitions</span>;
+    <span class="kw">use </span><span class="kw">super</span>::query_asset_definitions;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_empty_result</span>() {
-        <span class="kw">let</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">response_bin</span> <span class="op">=</span> <span class="ident">query_asset_definitions</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
-        <span class="kw">let</span> <span class="ident">query_response</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">response_bin</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_empty_result() {
+        <span class="kw">let </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>response_bin = query_asset_definitions(<span class="kw-2">&amp;</span>deps.as_ref())
+            .expect(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
+        <span class="kw">let </span>query_response = from_binary::&lt;Vec&lt;AssetDefinitionV3&gt;&gt;(<span class="kw-2">&amp;</span>response_bin)
+            .expect(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">query_response</span>.<span class="ident">is_empty</span>(),
-            <span class="string">&quot;expected no asset definitions to exist due to the contract not being instantiated&quot;</span>
-        );
+            query_response.is_empty(),
+            <span class="string">&quot;expected no asset definitions to exist due to the contract not being instantiated&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_default_instantiation_result</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="kw">let</span> <span class="ident">response_bin</span> <span class="op">=</span> <span class="ident">query_asset_definitions</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
-        <span class="kw">let</span> <span class="ident">query_response</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">response_bin</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_default_instantiation_result() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span>response_bin = query_asset_definitions(<span class="kw-2">&amp;</span>deps.as_ref())
+            .expect(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
+        <span class="kw">let </span>query_response = from_binary::&lt;Vec&lt;AssetDefinitionV3&gt;&gt;(<span class="kw-2">&amp;</span>response_bin)
+            .expect(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
-            <span class="ident">query_response</span>.<span class="ident">len</span>(),
+            query_response.len(),
             <span class="string">&quot;expected only one asset definition to be in the response&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">default_definition</span> <span class="op">=</span> <span class="ident">get_default_asset_definition</span>();
+        <span class="kw">let </span>default_definition = get_default_asset_definition();
         <span class="macro">assert_eq!</span>(
-            <span class="kw-2">&amp;</span><span class="ident">default_definition</span>,
-            <span class="ident">query_response</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
+            <span class="kw-2">&amp;</span>default_definition,
+            query_response.first().unwrap(),
             <span class="string">&quot;expected the response to include the default asset definition used in default instantiation&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_many_definitions_result</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def_ids</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">20</span>);
-        <span class="comment">// Populate a vec with 0-19 just for different asset definitions</span>
-        <span class="ident">def_ids</span>.<span class="ident">extend</span>(<span class="number">0</span>..<span class="number">20</span>);
-        <span class="kw">let</span> <span class="ident">asset_definition_inputs</span> <span class="op">=</span> <span class="ident">def_ids</span>
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> {
-                <span class="ident">AssetDefinitionInputV3::new</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;asset_type_{}&quot;</span>, <span class="ident">id</span>),
-                    <span class="macro">format!</span>(<span class="string">&quot;Display Name for {}&quot;</span>, <span class="ident">id</span>).<span class="ident">to_some</span>(),
-                    <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
-                        <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">150</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_many_definitions_result() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>def_ids = Vec::with_capacity(<span class="number">20</span>);
+        <span class="comment">// Populate a vec with 0-19 just for different asset definitions
+        </span>def_ids.extend(<span class="number">0</span>..<span class="number">20</span>);
+        <span class="kw">let </span>asset_definition_inputs = def_ids
+            .into_iter()
+            .map(|id| {
+                AssetDefinitionInputV3::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;asset_type_{}&quot;</span>, id),
+                    <span class="macro">format!</span>(<span class="string">&quot;Display Name for {}&quot;</span>, id).to_some(),
+                    <span class="macro">vec!</span>[VerifierDetailV2::new(
+                        DEFAULT_VERIFIER_ADDRESS,
+                        Uint128::new(<span class="number">150</span>),
                         <span class="string">&quot;nhash&quot;</span>,
                         <span class="macro">vec!</span>[],
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     )],
-                    <span class="bool-val">true</span>.<span class="ident">to_some</span>(),
-                    <span class="bool-val">true</span>.<span class="ident">to_some</span>(),
+                    <span class="bool-val">true</span>.to_some(),
+                    <span class="bool-val">true</span>.to_some(),
                 )
             })
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionInputV3</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-        <span class="ident">test_instantiate_success</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">InstArgs</span> {
-                <span class="ident">asset_definitions</span>: <span class="ident">asset_definition_inputs</span>.<span class="ident">clone</span>(),
-                ..<span class="ident">Default::default</span>()
+            .collect::&lt;Vec&lt;AssetDefinitionInputV3&gt;&gt;();
+        test_instantiate_success(
+            deps.as_mut(),
+            InstArgs {
+                asset_definitions: asset_definition_inputs.clone(),
+                ..Default::default()
             },
         );
-        <span class="kw">let</span> <span class="ident">response_bin</span> <span class="op">=</span> <span class="ident">query_asset_definitions</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
-        <span class="kw">let</span> <span class="ident">query_response</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">response_bin</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
+        <span class="kw">let </span>response_bin = query_asset_definitions(<span class="kw-2">&amp;</span>deps.as_ref())
+            .expect(<span class="string">&quot;expected the query to execute appropriately&quot;</span>);
+        <span class="kw">let </span>query_response = from_binary::&lt;Vec&lt;AssetDefinitionV3&gt;&gt;(<span class="kw-2">&amp;</span>response_bin)
+            .expect(<span class="string">&quot;expected the query to deserialize from binary correctly&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">20</span>,
-            <span class="ident">query_response</span>.<span class="ident">len</span>(),
+            query_response.len(),
             <span class="string">&quot;expected all 20 asset definitions to be included in the response&quot;</span>,
         );
-        <span class="ident">asset_definition_inputs</span>
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> <span class="ident">input</span>.<span class="ident">into_asset_definition</span>())
-            .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">asset_definition</span><span class="op">|</span> {
+        asset_definition_inputs
+            .into_iter()
+            .map(|input| input.into_asset_definition())
+            .for_each(|asset_definition| {
                 <span class="macro">assert!</span>(
-                    <span class="ident">query_response</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">def</span><span class="op">|</span> <span class="ident">def</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>),
+                    query_response.iter().any(|def| def == <span class="kw-2">&amp;</span>asset_definition),
                     <span class="string">&quot;expected the asset definition of type [{}] to be found in the query response&quot;</span>,
-                    <span class="ident">asset_definition</span>.<span class="ident">asset_type</span>,
+                    asset_definition.asset_type,
                 );
             });
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/contract_helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>contract_helpers.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/contract_helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>contract_helpers.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -63,70 +63,70 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_read_v2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::state::config_read_v2;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsC};
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std::MessageInfo</span>;
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span>cosmwasm_std::MessageInfo;
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// Ensures that only the admin of the contract can call into a route.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
-<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use cosmwasm_std::MessageInfo;</span>
-<span class="doccomment">/// use asset_classification_smart_contract::util::contract_helpers::check_admin_only;</span>
-<span class="doccomment">/// use cosmwasm_std::Addr;</span>
-<span class="doccomment">/// use cosmwasm_std::testing::mock_info;</span>
-<span class="doccomment">/// use provwasm_mocks::mock_dependencies;</span>
-<span class="doccomment">/// use asset_classification_smart_contract::core::state::{config_v2, StateV2};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let mut deps = mock_dependencies(&amp;[]);</span>
-<span class="doccomment">/// config_v2(deps.as_mut().storage).save(&amp;StateV2 { base_contract_name: &quot;contract-name&quot;.to_string(), admin: Addr::unchecked(&quot;admin-name&quot;), is_test: false })</span>
-<span class="doccomment">///     .expect(&quot;expected state to save successfully&quot;);</span>
-<span class="doccomment">/// let info = mock_info(&quot;admin-name&quot;, &amp;[]);</span>
-<span class="doccomment">/// check_admin_only(&amp;deps.as_ref(), &amp;info).expect(&quot;admin-name was used as the admin and should return a success&quot;);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_admin_only</span>(<span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="ident">MessageInfo</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">config_read_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>).<span class="ident">load</span>()<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">info</span>.<span class="ident">sender</span> <span class="op">!</span><span class="op">=</span> <span class="ident">state</span>.<span class="ident">admin</span> {
-        <span class="ident">ContractError::Unauthorized</span> {
-            <span class="ident">explanation</span>: <span class="string">&quot;admin required&quot;</span>.<span class="ident">to_string</span>(),
+<span class="doccomment">/// Ensures that only the admin of the contract can call into a route.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+///
+/// # Examples
+/// ```
+/// use cosmwasm_std::MessageInfo;
+/// use asset_classification_smart_contract::util::contract_helpers::check_admin_only;
+/// use cosmwasm_std::Addr;
+/// use cosmwasm_std::testing::mock_info;
+/// use provwasm_mocks::mock_dependencies;
+/// use asset_classification_smart_contract::core::state::{config_v2, StateV2};
+///
+/// let mut deps = mock_dependencies(&amp;[]);
+/// config_v2(deps.as_mut().storage).save(&amp;StateV2 { base_contract_name: &quot;contract-name&quot;.to_string(), admin: Addr::unchecked(&quot;admin-name&quot;), is_test: false })
+///     .expect(&quot;expected state to save successfully&quot;);
+/// let info = mock_info(&quot;admin-name&quot;, &amp;[]);
+/// check_admin_only(&amp;deps.as_ref(), &amp;info).expect(&quot;admin-name was used as the admin and should return a success&quot;);
+/// ```
+</span><span class="kw">pub fn </span>check_admin_only(deps: <span class="kw-2">&amp;</span>DepsC, info: <span class="kw-2">&amp;</span>MessageInfo) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>state = config_read_v2(deps.storage).load()<span class="question-mark">?</span>;
+    <span class="kw">if </span>info.sender != state.admin {
+        ContractError::Unauthorized {
+            explanation: <span class="string">&quot;admin required&quot;</span>.to_string(),
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+        .to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// Ensures that the info provided to the route does not include any funds.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
-<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use asset_classification_smart_contract::util::contract_helpers::check_funds_are_empty;</span>
-<span class="doccomment">/// use cosmwasm_std::testing::mock_info;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let info = mock_info(&quot;admin-nmae&quot;, &amp;[]);</span>
-<span class="doccomment">/// check_funds_are_empty(&amp;info).expect(&quot;no coin provided in info - should be success&quot;);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_funds_are_empty</span>(<span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="ident">MessageInfo</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">info</span>.<span class="ident">funds</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">ContractError::InvalidFunds</span>(<span class="string">&quot;route requires no funds be present&quot;</span>.<span class="ident">to_string</span>()).<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+<span class="doccomment">/// Ensures that the info provided to the route does not include any funds.
+///
+/// # Parameters
+///
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+///
+/// # Examples
+/// ```
+/// use asset_classification_smart_contract::util::contract_helpers::check_funds_are_empty;
+/// use cosmwasm_std::testing::mock_info;
+///
+/// let info = mock_info(&quot;admin-nmae&quot;, &amp;[]);
+/// check_funds_are_empty(&amp;info).expect(&quot;no coin provided in info - should be success&quot;);
+/// ```
+</span><span class="kw">pub fn </span>check_funds_are_empty(info: <span class="kw-2">&amp;</span>MessageInfo) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">if </span>!info.funds.is_empty() {
+        ContractError::InvalidFunds(<span class="string">&quot;route requires no funds be present&quot;</span>.to_string()).to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

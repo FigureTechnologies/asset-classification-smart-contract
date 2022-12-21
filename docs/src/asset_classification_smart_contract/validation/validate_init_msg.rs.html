@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/validation/validate_init_msg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>validate_init_msg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/validation/validate_init_msg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>validate_init_msg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -981,305 +981,305 @@
 <span id="981">981</span>
 <span id="982">982</span>
 <span id="983">983</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::VALID_VERIFIER_DENOMS</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::distinct_count_by_property</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::msg::InitMsg;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
+<span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::AssetResult;
+<span class="kw">use </span><span class="kw">crate</span>::util::constants::VALID_VERIFIER_DENOMS;
+<span class="kw">use </span><span class="kw">crate</span>::util::functions::distinct_count_by_property;
+<span class="kw">use </span><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
-<span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost;
+<span class="kw">use </span>cosmwasm_std::Uint128;
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its</span>
-<span class="doccomment">/// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `msg` The init msg sent during the [instantiation](crate::contract::instantiate) process.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_init_msg</span>(<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">InitMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">base_contract_name</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;base_contract_name: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+<span class="doccomment">/// Validates the integrity of an intercepted [InitMsg](crate::core::msg::InitMsg) and its
+/// associated [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3) values.
+///
+/// # Parameters
+///
+/// * `msg` The init msg sent during the [instantiation](crate::contract::instantiate) process.
+</span><span class="kw">pub fn </span>validate_init_msg(msg: <span class="kw-2">&amp;</span>InitMsg) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if </span>msg.base_contract_name.is_empty() {
+        invalid_fields.push(<span class="string">&quot;base_contract_name: must not be blank&quot;</span>.to_string());
     }
-    <span class="kw">if</span> <span class="ident">distinct_count_by_property</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">asset_definitions</span>, <span class="op">|</span><span class="ident">def</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-        <span class="op">!</span><span class="op">=</span> <span class="ident">msg</span>.<span class="ident">asset_definitions</span>.<span class="ident">len</span>()
+    <span class="kw">if </span>distinct_count_by_property(<span class="kw-2">&amp;</span>msg.asset_definitions, |def| <span class="kw-2">&amp;</span>def.asset_type)
+        != msg.asset_definitions.len()
     {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(
-            <span class="string">&quot;asset_definitions: each definition must specify a unique asset type&quot;</span>.<span class="ident">to_string</span>(),
+        invalid_fields.push(
+            <span class="string">&quot;asset_definitions: each definition must specify a unique asset type&quot;</span>.to_string(),
         );
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asset_messages</span> <span class="op">=</span> <span class="ident">msg</span>
-        .<span class="ident">asset_definitions</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">flat_map</span>(<span class="ident">validate_asset_definition_input_internal</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">asset_messages</span>);
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">invalid_fields</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">ContractError::InvalidMessageFields</span> {
-            <span class="ident">message_type</span>: <span class="string">&quot;Instantiate&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">invalid_fields</span>,
+    <span class="kw">let </span><span class="kw-2">mut </span>asset_messages = msg
+        .asset_definitions
+        .iter()
+        .flat_map(validate_asset_definition_input_internal)
+        .collect::&lt;Vec&lt;String&gt;&gt;();
+    invalid_fields.append(<span class="kw-2">&amp;mut </span>asset_messages);
+    <span class="kw">if </span>!invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: <span class="string">&quot;Instantiate&quot;</span>.to_string(),
+            invalid_fields,
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+        .to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// Validates that an asset definition input value is properly formed, ensuring that all fields</span>
-<span class="doccomment">/// are properly set and fees are established correctly.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `input` The asset definition input value to validate for issues.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV3</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>())
+<span class="doccomment">/// Validates that an asset definition input value is properly formed, ensuring that all fields
+/// are properly set and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `input` The asset definition input value to validate for issues.
+</span><span class="kw">pub fn </span>validate_asset_definition_input(input: <span class="kw-2">&amp;</span>AssetDefinitionInputV3) -&gt; AssetResult&lt;()&gt; {
+    validate_asset_definition(<span class="kw-2">&amp;</span>input.as_asset_definition())
 }
 
-<span class="doccomment">/// Validates that an asset definition value is properly formed, ensuring that all fields are</span>
-<span class="doccomment">/// properly set and fees are established correctly.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_definition` The asset definition value to validate for issues.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_asset_definition</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">invalid_fields</span> <span class="op">=</span> <span class="ident">validate_asset_definition_internal</span>(<span class="ident">asset_definition</span>);
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">invalid_fields</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">ContractError::InvalidMessageFields</span> {
-            <span class="ident">message_type</span>: <span class="string">&quot;AssetDefinition&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">invalid_fields</span>,
+<span class="doccomment">/// Validates that an asset definition value is properly formed, ensuring that all fields are
+/// properly set and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `asset_definition` The asset definition value to validate for issues.
+</span><span class="kw">pub fn </span>validate_asset_definition(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>invalid_fields = validate_asset_definition_internal(asset_definition);
+    <span class="kw">if </span>!invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: <span class="string">&quot;AssetDefinition&quot;</span>.to_string(),
+            invalid_fields,
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+        .to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set</span>
-<span class="doccomment">/// and fees are established correctly.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `verifier` The verifier detail value to validate for issues.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_verifier</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">validate_verifier_with_provided_errors</span>(<span class="ident">verifier</span>, <span class="prelude-val">None</span>)
+<span class="doccomment">/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set
+/// and fees are established correctly.
+///
+/// # Parameters
+///
+/// * `verifier` The verifier detail value to validate for issues.
+</span><span class="kw">pub fn </span>validate_verifier(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2) -&gt; AssetResult&lt;()&gt; {
+    validate_verifier_with_provided_errors(verifier, <span class="prelude-val">None</span>)
 }
 
-<span class="doccomment">/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set</span>
-<span class="doccomment">/// and fees are established correctly, with an additional funnel for exiting errors encountered</span>
-<span class="doccomment">/// beforehand.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `verifier` The verifier detail value to validate for issues.</span>
-<span class="doccomment">/// * `provided_errors` Any existing errors encountered before validation of the verifier detail.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_verifier_with_provided_errors</span>(
-    <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>,
-    <span class="ident">provided_errors</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="ident">verifier</span>);
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">errors</span>) <span class="op">=</span> <span class="ident">provided_errors</span> {
-        <span class="kw">for</span> <span class="ident">error</span> <span class="kw">in</span> <span class="ident">errors</span> {
-            <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="ident">error</span>);
+<span class="doccomment">/// Validates that a verifier detail is properly formed, ensuring that all fields are properly set
+/// and fees are established correctly, with an additional funnel for exiting errors encountered
+/// beforehand.
+///
+/// # Parameters
+///
+/// * `verifier` The verifier detail value to validate for issues.
+/// * `provided_errors` Any existing errors encountered before validation of the verifier detail.
+</span><span class="kw">pub fn </span>validate_verifier_with_provided_errors(
+    verifier: <span class="kw-2">&amp;</span>VerifierDetailV2,
+    provided_errors: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields = validate_verifier_internal(verifier);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(errors) = provided_errors {
+        <span class="kw">for </span>error <span class="kw">in </span>errors {
+            invalid_fields.push(error);
         }
     }
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">invalid_fields</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">ContractError::InvalidMessageFields</span> {
-            <span class="ident">message_type</span>: <span class="string">&quot;VerifierDetail&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">invalid_fields</span>,
+    <span class="kw">if </span>!invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: <span class="string">&quot;VerifierDetail&quot;</span>.to_string(),
+            invalid_fields,
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+        .to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">fn</span> <span class="ident">validate_asset_definition_input_internal</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionInputV3</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">as_asset_definition</span>())
+<span class="kw">fn </span>validate_asset_definition_input_internal(input: <span class="kw-2">&amp;</span>AssetDefinitionInputV3) -&gt; Vec&lt;String&gt; {
+    validate_asset_definition_internal(<span class="kw-2">&amp;</span>input.as_asset_definition())
 }
 
-<span class="kw">fn</span> <span class="ident">validate_asset_definition_internal</span>(<span class="ident">asset_definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_definition:asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+<span class="kw">fn </span>validate_asset_definition_internal(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3) -&gt; Vec&lt;String&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if </span>asset_definition.asset_type.is_empty() {
+        invalid_fields.push(<span class="string">&quot;asset_definition:asset_type: must not be blank&quot;</span>.to_string());
     }
-    <span class="kw">if</span> <span class="ident">asset_definition</span>.<span class="ident">verifiers</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(
-            <span class="string">&quot;asset_definition:verifiers: at least one verifier must be supplied per asset type&quot;</span>
-                .<span class="ident">to_string</span>(),
+    <span class="kw">if </span>asset_definition.verifiers.is_empty() {
+        invalid_fields.push(
+            <span class="string">&quot;asset_definition:verifiers: at least one verifier must be supplied per asset type&quot;
+                </span>.to_string(),
         );
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">verifier_messages</span> <span class="op">=</span> <span class="ident">asset_definition</span>
-        .<span class="ident">verifiers</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">flat_map</span>(<span class="ident">validate_verifier_internal</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">verifier_messages</span>);
-    <span class="ident">invalid_fields</span>
+    <span class="kw">let </span><span class="kw-2">mut </span>verifier_messages = asset_definition
+        .verifiers
+        .iter()
+        .flat_map(validate_verifier_internal)
+        .collect::&lt;Vec&lt;String&gt;&gt;();
+    invalid_fields.append(<span class="kw-2">&amp;mut </span>verifier_messages);
+    invalid_fields
 }
 
-<span class="kw">fn</span> <span class="ident">validate_verifier_internal</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">address</span>).<span class="ident">is_err</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier:address: must be a valid address&quot;</span>.<span class="ident">to_string</span>());
+<span class="kw">fn </span>validate_verifier_internal(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2) -&gt; Vec&lt;String&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if </span>bech32_string_to_addr(<span class="kw-2">&amp;</span>verifier.address).is_err() {
+        invalid_fields.push(<span class="string">&quot;verifier:address: must be a valid address&quot;</span>.to_string());
     }
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">onboarding_denom</span>.<span class="ident">as_str</span>()) {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+    <span class="kw">if </span>!VALID_VERIFIER_DENOMS.contains(<span class="kw-2">&amp;</span>verifier.onboarding_denom.as_str()) {
+        invalid_fields.push(<span class="macro">format!</span>(
             <span class="string">&quot;verifier:onboarding_denom: must be one of [{}]&quot;</span>,
-            <span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>),
+            VALID_VERIFIER_DENOMS.join(<span class="string">&quot;, &quot;</span>),
         ));
     }
-    <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">validate_onboarding_cost_internal</span>(
-        <span class="kw-2">&amp;</span><span class="ident">verifier</span>.<span class="ident">get_default_cost</span>(),
+    invalid_fields.append(<span class="kw-2">&amp;mut </span>validate_onboarding_cost_internal(
+        <span class="kw-2">&amp;</span>verifier.get_default_cost(),
         <span class="string">&quot;verifier onboarding costs&quot;</span>,
     ));
-    <span class="comment">// Ensure that retry costs follow the same standards as the root onboarding cost, if provided.</span>
-    <span class="comment">// Retry costs are optional and should not cause validation issues when not provided.</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">retry_cost</span>) <span class="op">=</span> <span class="ident">verifier</span>.<span class="ident">retry_cost</span> {
-        <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">validate_onboarding_cost_internal</span>(
-            <span class="ident">retry_cost</span>,
+    <span class="comment">// Ensure that retry costs follow the same standards as the root onboarding cost, if provided.
+    // Retry costs are optional and should not cause validation issues when not provided.
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>retry_cost) = verifier.retry_cost {
+        invalid_fields.append(<span class="kw-2">&amp;mut </span>validate_onboarding_cost_internal(
+            retry_cost,
             <span class="string">&quot;verifier retry costs&quot;</span>,
         ));
     }
-    <span class="comment">// Check subsequent detail values, only if provided.  Omission of subsequent classification detail</span>
-    <span class="comment">// will ensure that the root onboarding costs are used, so a missing value is completely fine.</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">subsequent_detail</span>) <span class="op">=</span> <span class="ident">verifier</span>.<span class="ident">subsequent_classification_detail</span> {
-        <span class="comment">// Ensure that the default cost of the subsequent detail follows the same standards as the</span>
-        <span class="comment">// root onboarding cost.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">cost</span>) <span class="op">=</span> <span class="ident">subsequent_detail</span>.<span class="ident">cost</span> {
-            <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">validate_onboarding_cost_internal</span>(
-                <span class="ident">cost</span>,
+    <span class="comment">// Check subsequent detail values, only if provided.  Omission of subsequent classification detail
+    // will ensure that the root onboarding costs are used, so a missing value is completely fine.
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>subsequent_detail) = verifier.subsequent_classification_detail {
+        <span class="comment">// Ensure that the default cost of the subsequent detail follows the same standards as the
+        // root onboarding cost.
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>cost) = subsequent_detail.cost {
+            invalid_fields.append(<span class="kw-2">&amp;mut </span>validate_onboarding_cost_internal(
+                cost,
                 <span class="string">&quot;verifier subsequent classification cost&quot;</span>,
             ));
         }
-        <span class="comment">// Ensure that if allowed asset types are specified, they are not empty and do not contain</span>
-        <span class="comment">// duplicates.  It is perfectly valid for this field to be a None variant, but if supplied</span>
-        <span class="comment">// it must be held to standards required downstream by fee payment detail generation.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">applicable_asset_types</span>) <span class="op">=</span> <span class="ident">subsequent_detail</span>.<span class="ident">applicable_asset_types</span> {
-            <span class="kw">if</span> <span class="ident">applicable_asset_types</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">invalid_fields</span>.<span class="ident">push</span>(
-                    <span class="string">&quot;verifier subsequent classification: applicable_asset_types must not be empty if provided&quot;</span>
-                        .<span class="ident">to_string</span>(),
+        <span class="comment">// Ensure that if allowed asset types are specified, they are not empty and do not contain
+        // duplicates.  It is perfectly valid for this field to be a None variant, but if supplied
+        // it must be held to standards required downstream by fee payment detail generation.
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>applicable_asset_types) = subsequent_detail.applicable_asset_types {
+            <span class="kw">if </span>applicable_asset_types.is_empty() {
+                invalid_fields.push(
+                    <span class="string">&quot;verifier subsequent classification: applicable_asset_types must not be empty if provided&quot;
+                        </span>.to_string(),
                 );
             }
-            <span class="kw">if</span> <span class="ident">distinct_count_by_property</span>(<span class="ident">applicable_asset_types</span>, <span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>)
-                <span class="op">!</span><span class="op">=</span> <span class="ident">applicable_asset_types</span>.<span class="ident">len</span>()
+            <span class="kw">if </span>distinct_count_by_property(applicable_asset_types, |t| t)
+                != applicable_asset_types.len()
             {
-                <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier subsequent classification: each value in allowed_asset_types must be unique&quot;</span>.<span class="ident">to_string</span>());
+                invalid_fields.push(<span class="string">&quot;verifier subsequent classification: each value in allowed_asset_types must be unique&quot;</span>.to_string());
             }
         }
     }
-    <span class="ident">invalid_fields</span>
+    invalid_fields
 }
 
-<span class="kw">fn</span> <span class="ident">validate_onboarding_cost_internal</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">onboarding_cost</span>: <span class="kw-2">&amp;</span><span class="ident">OnboardingCost</span>,
-    <span class="ident">source</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">into</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="comment">// onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly</span>
-    <span class="kw">if</span> <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+<span class="kw">fn </span>validate_onboarding_cost_internal&lt;S: Into&lt;String&gt;&gt;(
+    onboarding_cost: <span class="kw-2">&amp;</span>OnboardingCost,
+    source: S,
+) -&gt; Vec&lt;String&gt; {
+    <span class="kw">let </span>source = source.into();
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="comment">// onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly
+    </span><span class="kw">if </span>onboarding_cost.cost.u128() % <span class="number">2 </span>!= <span class="number">0 </span>{
+        invalid_fields.push(<span class="macro">format!</span>(
             <span class="string">&quot;{}: onboarding_cost:cost must be an even number&quot;</span>,
-            <span class="ident">source</span>
+            source
         ));
     }
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">onboarding_cost</span>.<span class="ident">fee_destinations</span>.<span class="ident">is_empty</span>()
-        <span class="op">&amp;&amp;</span> <span class="ident">onboarding_cost</span>.<span class="ident">get_fee_total</span>() <span class="op">&gt;</span> <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>.<span class="ident">u128</span>() <span class="op">/</span> <span class="number">2</span>
-    {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost&quot;</span>, <span class="ident">source</span>));
+    <span class="kw">if </span>!onboarding_cost.fee_destinations.is_empty()
+        &amp;&amp; onboarding_cost.get_fee_total() &gt; onboarding_cost.cost.u128() / <span class="number">2
+    </span>{
+        invalid_fields.push(<span class="macro">format!</span>(<span class="string">&quot;{}: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost&quot;</span>, source));
     }
-    <span class="kw">if</span> <span class="ident">distinct_count_by_property</span>(<span class="kw-2">&amp;</span><span class="ident">onboarding_cost</span>.<span class="ident">fee_destinations</span>, <span class="op">|</span><span class="ident">dest</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">dest</span>.<span class="ident">address</span>)
-        <span class="op">!</span><span class="op">=</span> <span class="ident">onboarding_cost</span>.<span class="ident">fee_destinations</span>.<span class="ident">len</span>()
+    <span class="kw">if </span>distinct_count_by_property(<span class="kw-2">&amp;</span>onboarding_cost.fee_destinations, |dest| <span class="kw-2">&amp;</span>dest.address)
+        != onboarding_cost.fee_destinations.len()
     {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+        invalid_fields.push(<span class="macro">format!</span>(
             <span class="string">&quot;{}: onboarding_cost:fee_destinations: all fee destinations must have unique addresses&quot;</span>,
-            <span class="ident">source</span>
+            source
         ));
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fee_destination_messages</span> <span class="op">=</span> <span class="ident">onboarding_cost</span>
-        .<span class="ident">fee_destinations</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">dest</span><span class="op">|</span> <span class="ident">validate_destination_internal</span>(<span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">source</span>))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="ident">invalid_fields</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">fee_destination_messages</span>);
-    <span class="ident">invalid_fields</span>
+    <span class="kw">let </span><span class="kw-2">mut </span>fee_destination_messages = onboarding_cost
+        .fee_destinations
+        .iter()
+        .flat_map(|dest| validate_destination_internal(dest, <span class="kw-2">&amp;</span>source))
+        .collect::&lt;Vec&lt;String&gt;&gt;();
+    invalid_fields.append(<span class="kw-2">&amp;mut </span>fee_destination_messages);
+    invalid_fields
 }
 
-<span class="kw">fn</span> <span class="ident">validate_destination_internal</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">destination</span>: <span class="kw-2">&amp;</span><span class="ident">FeeDestinationV2</span>,
-    <span class="ident">source</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">into</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">destination</span>.<span class="ident">address</span>).<span class="ident">is_err</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+<span class="kw">fn </span>validate_destination_internal&lt;S: Into&lt;String&gt;&gt;(
+    destination: <span class="kw-2">&amp;</span>FeeDestinationV2,
+    source: S,
+) -&gt; Vec&lt;String&gt; {
+    <span class="kw">let </span>source = source.into();
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if </span>bech32_string_to_addr(<span class="kw-2">&amp;</span>destination.address).is_err() {
+        invalid_fields.push(<span class="macro">format!</span>(
             <span class="string">&quot;{}: fee_destination:address: must be a valid address&quot;</span>,
-            <span class="ident">source</span>
+            source
         ));
     }
-    <span class="kw">if</span> <span class="ident">destination</span>.<span class="ident">fee_amount</span> <span class="op">==</span> <span class="ident">Uint128::zero</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="macro">format!</span>(
+    <span class="kw">if </span>destination.fee_amount == Uint128::zero() {
+        invalid_fields.push(<span class="macro">format!</span>(
             <span class="string">&quot;{}: fee_destination:fee_amount: must not be zero&quot;</span>,
-            <span class="ident">source</span>
+            source
         ));
     }
-    <span class="ident">invalid_fields</span>
+    invalid_fields
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition</span>::{<span class="ident">AssetDefinitionInputV3</span>, <span class="ident">AssetDefinitionV3</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::entity_detail::EntityDetail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants::DEFAULT_VERIFIER_ADDRESS</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_default_entity_detail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">NHASH</span>, <span class="ident">VALID_VERIFIER_DENOMS</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg</span>::{
-        <span class="ident">validate_asset_definition_internal</span>, <span class="ident">validate_destination_internal</span>, <span class="ident">validate_init_msg</span>,
-        <span class="ident">validate_verifier_internal</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">pub mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+    <span class="kw">use </span><span class="kw">crate</span>::core::msg::InitMsg;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::entity_detail::EntityDetail;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::DEFAULT_VERIFIER_ADDRESS;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::get_default_entity_detail;
+    <span class="kw">use </span><span class="kw">crate</span>::util::constants::{NHASH, VALID_VERIFIER_DENOMS};
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+    <span class="kw">use </span><span class="kw">crate</span>::validation::validate_init_msg::{
+        validate_asset_definition_internal, validate_destination_internal, validate_init_msg,
+        validate_verifier_internal,
     };
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
+    <span class="kw">use </span>cosmwasm_std::Uint128;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_msg_no_definitions</span>() {
-        <span class="ident">test_valid_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-            <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[],
-            <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_msg_no_definitions() {
+        test_valid_init_msg(<span class="kw-2">&amp;</span>InitMsg {
+            base_contract_name: <span class="string">&quot;asset&quot;</span>.to_string(),
+            bind_base_name: <span class="bool-val">true</span>,
+            asset_definitions: <span class="macro">vec!</span>[],
+            is_test: <span class="bool-val">false</span>.to_some(),
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_msg_single_definition</span>() {
-        <span class="ident">test_valid_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-            <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-            <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_msg_single_definition() {
+        test_valid_init_msg(<span class="kw-2">&amp;</span>InitMsg {
+            base_contract_name: <span class="string">&quot;asset&quot;</span>.to_string(),
+            bind_base_name: <span class="bool-val">true</span>,
+            is_test: <span class="bool-val">false</span>.to_some(),
+            asset_definitions: <span class="macro">vec!</span>[AssetDefinitionInputV3::new(
                 <span class="string">&quot;heloc&quot;</span>,
-                <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
-                <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
+                <span class="macro">vec!</span>[VerifierDetailV2::new(
                     <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">200</span>),
-                    <span class="ident">NHASH</span>,
-                    <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
+                    Uint128::new(<span class="number">200</span>),
+                    NHASH,
+                    <span class="macro">vec!</span>[FeeDestinationV2::new(
                         <span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>,
                         <span class="number">100</span>,
                     )],
-                    <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                    get_default_entity_detail().to_some(),
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 )],
@@ -1289,83 +1289,83 @@
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_msg_multiple_definitions</span>() {
-        <span class="ident">test_valid_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-            <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-            <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[
-                <span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_msg_multiple_definitions() {
+        test_valid_init_msg(<span class="kw-2">&amp;</span>InitMsg {
+            base_contract_name: <span class="string">&quot;asset&quot;</span>.to_string(),
+            bind_base_name: <span class="bool-val">true</span>,
+            is_test: <span class="bool-val">false</span>.to_some(),
+            asset_definitions: <span class="macro">vec!</span>[
+                AssetDefinitionInputV3::new(
                     <span class="string">&quot;heloc&quot;</span>,
-                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
-                    <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
+                    <span class="macro">vec!</span>[VerifierDetailV2::new(
                         <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">200</span>),
-                        <span class="ident">NHASH</span>,
-                        <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
+                        Uint128::new(<span class="number">200</span>),
+                        NHASH,
+                        <span class="macro">vec!</span>[FeeDestinationV2::new(
                             <span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>,
                             <span class="number">100</span>,
                         )],
-                        <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                        get_default_entity_detail().to_some(),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     )],
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 ),
-                <span class="ident">AssetDefinitionInputV3::new</span>(
+                AssetDefinitionInputV3::new(
                     <span class="string">&quot;mortgage&quot;</span>,
-                    <span class="string">&quot;MORTGAGE&quot;</span>.<span class="ident">to_some</span>(),
-                    <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                    <span class="string">&quot;MORTGAGE&quot;</span>.to_some(),
+                    <span class="macro">vec!</span>[VerifierDetailV2::new(
                         <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">500</span>),
-                        <span class="ident">NHASH</span>,
+                        Uint128::new(<span class="number">500</span>),
+                        NHASH,
                         <span class="macro">vec!</span>[
-                            <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p&quot;</span>, <span class="number">125</span>),
-                            <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7&quot;</span>, <span class="number">125</span>),
+                            FeeDestinationV2::new(<span class="string">&quot;tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p&quot;</span>, <span class="number">125</span>),
+                            FeeDestinationV2::new(<span class="string">&quot;tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7&quot;</span>, <span class="number">125</span>),
                         ],
-                        <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                        get_default_entity_detail().to_some(),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     )],
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 ),
-                <span class="ident">AssetDefinitionInputV3::new</span>(
+                AssetDefinitionInputV3::new(
                     <span class="string">&quot;pl&quot;</span>,
-                    <span class="string">&quot;Personal Loan&quot;</span>.<span class="ident">to_some</span>(),
+                    <span class="string">&quot;Personal Loan&quot;</span>.to_some(),
                     <span class="macro">vec!</span>[
-                        <span class="ident">VerifierDetailV2::new</span>(
+                        VerifierDetailV2::new(
                             <span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>,
-                            <span class="ident">Uint128::new</span>(<span class="number">0</span>),
-                            <span class="ident">NHASH</span>,
+                            Uint128::new(<span class="number">0</span>),
+                            NHASH,
                             <span class="macro">vec!</span>[],
-                            <span class="ident">EntityDetail::new</span>(
+                            EntityDetail::new(
                                 <span class="string">&quot;Freebies&quot;</span>,
                                 <span class="string">&quot;We validate fo free!&quot;</span>,
                                 <span class="string">&quot;http://www.yahoo.com/&quot;</span>,
                                 <span class="string">&quot;https://github.com/kelseyhightower/nocode&quot;</span>,
                             )
-                            .<span class="ident">to_some</span>(),
+                            .to_some(),
                             <span class="prelude-val">None</span>,
                             <span class="prelude-val">None</span>,
                         ),
-                        <span class="ident">VerifierDetailV2::new</span>(
+                        VerifierDetailV2::new(
                             <span class="string">&quot;tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq&quot;</span>,
-                            <span class="ident">Uint128::new</span>(<span class="number">2000000</span>),
-                            <span class="ident">NHASH</span>,
+                            Uint128::new(<span class="number">2000000</span>),
+                            NHASH,
                             <span class="macro">vec!</span>[
-                                <span class="ident">FeeDestinationV2::new</span>(
+                                FeeDestinationV2::new(
                                     <span class="string">&quot;tp1jdcwtaendn9y75jv9dqnmlm7dy8pv4kgu9fs9g&quot;</span>,
                                     <span class="number">250000</span>,
                                 ),
-                                <span class="ident">FeeDestinationV2::new</span>(
+                                FeeDestinationV2::new(
                                     <span class="string">&quot;tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm&quot;</span>,
                                     <span class="number">750000</span>,
                                 ),
                             ],
-                            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                            get_default_entity_detail().to_some(),
                             <span class="prelude-val">None</span>,
                             <span class="prelude-val">None</span>,
                         ),
@@ -1377,22 +1377,22 @@
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_msg_base_contract_name</span>() {
-        <span class="ident">test_invalid_init_msg</span>(
-            <span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="ident">String::new</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-                <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_init_msg_base_contract_name() {
+        test_invalid_init_msg(
+            <span class="kw-2">&amp;</span>InitMsg {
+                base_contract_name: String::new(),
+                bind_base_name: <span class="bool-val">true</span>,
+                is_test: <span class="bool-val">false</span>.to_some(),
+                asset_definitions: <span class="macro">vec!</span>[AssetDefinitionInputV3::new(
                     <span class="string">&quot;heloc&quot;</span>,
-                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
-                    <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                    <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
+                    <span class="macro">vec!</span>[VerifierDetailV2::new(
                         <span class="string">&quot;address&quot;</span>,
-                        <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                        <span class="ident">NHASH</span>,
-                        <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
-                        <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                        Uint128::new(<span class="number">100</span>),
+                        NHASH,
+                        <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
+                        get_default_entity_detail().to_some(),
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     )],
@@ -1404,24 +1404,24 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_msg_duplicate_asset_types</span>() {
-        <span class="ident">test_invalid_init_msg</span>(
-            <span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="ident">String::new</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-                <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[
-                    <span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_init_msg_duplicate_asset_types() {
+        test_invalid_init_msg(
+            <span class="kw-2">&amp;</span>InitMsg {
+                base_contract_name: String::new(),
+                bind_base_name: <span class="bool-val">true</span>,
+                is_test: <span class="bool-val">false</span>.to_some(),
+                asset_definitions: <span class="macro">vec!</span>[
+                    AssetDefinitionInputV3::new(
                         <span class="string">&quot;heloc&quot;</span>,
-                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
+                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
                         <span class="macro">vec!</span>[],
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
                     ),
-                    <span class="ident">AssetDefinitionInputV3::new</span>(
+                    AssetDefinitionInputV3::new(
                         <span class="string">&quot;heloc&quot;</span>,
-                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
+                        <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
                         <span class="macro">vec!</span>[],
                         <span class="prelude-val">None</span>,
                         <span class="prelude-val">None</span>,
@@ -1432,16 +1432,16 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_msg_picks_up_invalid_asset_definition_scenarios</span>() {
-        <span class="ident">test_invalid_init_msg</span>(
-            <span class="kw-2">&amp;</span><span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="string">&quot;asset&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-                <span class="ident">is_test</span>: <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_init_msg_picks_up_invalid_asset_definition_scenarios() {
+        test_invalid_init_msg(
+            <span class="kw-2">&amp;</span>InitMsg {
+                base_contract_name: <span class="string">&quot;asset&quot;</span>.to_string(),
+                bind_base_name: <span class="bool-val">true</span>,
+                is_test: <span class="bool-val">false</span>.to_some(),
+                asset_definitions: <span class="macro">vec!</span>[AssetDefinitionInputV3::new(
                     <span class="string">&quot;&quot;</span>,
-                    <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+                    <span class="prelude-val">None</span>::&lt;String&gt;,
                     <span class="macro">vec!</span>[],
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
@@ -1451,44 +1451,44 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_asset_definition</span>() {
-        <span class="kw">let</span> <span class="ident">definition</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_asset_definition() {
+        <span class="kw">let </span>definition = AssetDefinitionV3::new(
             <span class="string">&quot;heloc&quot;</span>,
-            <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(),
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(),
+            <span class="macro">vec!</span>[VerifierDetailV2::new(
                 <span class="string">&quot;tp1x24ueqfehs5ye7akkvhf2d67fmfs2zd55tsy2g&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">200</span>),
-                <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
+                Uint128::new(<span class="number">200</span>),
+                NHASH,
+                <span class="macro">vec!</span>[FeeDestinationV2::new(
                     <span class="string">&quot;tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew&quot;</span>,
                     <span class="number">100</span>,
                 )],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">definition</span>);
+        <span class="kw">let </span>response = validate_asset_definition_internal(<span class="kw-2">&amp;</span>definition);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid asset definition should pass validation and return no error messages, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_asset_type</span>() {
-        <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_asset_definition_asset_type() {
+        test_invalid_asset_definition(
+            <span class="kw-2">&amp;</span>AssetDefinitionV3::new(
                 <span class="string">&quot;&quot;</span>,
-                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-                <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                <span class="prelude-val">None</span>::&lt;String&gt;,
+                <span class="macro">vec!</span>[VerifierDetailV2::new(
                     <span class="string">&quot;address&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                    <span class="ident">NHASH</span>,
-                    <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
-                    <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                    Uint128::new(<span class="number">100</span>),
+                    NHASH,
+                    <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
+                    get_default_entity_detail().to_some(),
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 )],
@@ -1497,26 +1497,26 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_empty_verifiers</span>() {
-        <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;MORTGAGE&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_asset_definition_empty_verifiers() {
+        test_invalid_asset_definition(
+            <span class="kw-2">&amp;</span>AssetDefinitionV3::new(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;MORTGAGE&quot;</span>.to_some(), <span class="macro">vec!</span>[]),
             <span class="string">&quot;asset_definition:verifiers: at least one verifier must be supplied per asset type&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition_picks_up_invalid_verifier_scenarios</span>() {
-        <span class="ident">test_invalid_asset_definition</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_asset_definition_picks_up_invalid_verifier_scenarios() {
+        test_invalid_asset_definition(
+            <span class="kw-2">&amp;</span>AssetDefinitionV3::new(
                 <span class="string">&quot;&quot;</span>,
-                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-                <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+                <span class="prelude-val">None</span>::&lt;String&gt;,
+                <span class="macro">vec!</span>[VerifierDetailV2::new(
                     <span class="string">&quot;&quot;</span>,
-                    <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                    <span class="ident">NHASH</span>,
-                    <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
-                    <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                    Uint128::new(<span class="number">100</span>),
+                    NHASH,
+                    <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">100</span>)],
+                    get_default_entity_detail().to_some(),
                     <span class="prelude-val">None</span>,
                     <span class="prelude-val">None</span>,
                 )],
@@ -1525,100 +1525,100 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_no_fee_destinations</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_no_fee_destinations() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
             <span class="macro">vec!</span>[],
-            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            get_default_entity_detail().to_some(),
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid verifier should pass validation and return no error messages, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_free_onboarding</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
-            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
-            <span class="ident">Uint128::zero</span>(),
-            <span class="ident">NHASH</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_free_onboarding() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::zero(),
+            NHASH,
             <span class="macro">vec!</span>[],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid verifier should pass validation and return no error messages, but got messages: ${:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_single_fee_destination</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_single_fee_destination() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;tp1z28j4v88vz3jyzz286a8627lfsclemk294essy&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">1000</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
+            Uint128::new(<span class="number">1000</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(
                 <span class="string">&quot;tp143p2m575fqre9rmaf9tpqwp9ux0mrzv83tdfh6&quot;</span>,
                 <span class="number">50</span>,
             )],
-            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            get_default_entity_detail().to_some(),
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid verifier should pass validation and return no error messages, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_multiple_fee_destinations</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_multiple_fee_destinations() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">4000</span>),
-            <span class="ident">NHASH</span>,
+            Uint128::new(<span class="number">4000</span>),
+            NHASH,
             <span class="macro">vec!</span>[
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>, <span class="number">100</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>, <span class="number">1650</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p&quot;</span>, <span class="number">50</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7&quot;</span>, <span class="number">199</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq&quot;</span>, <span class="number">1</span>),
+                FeeDestinationV2::new(<span class="string">&quot;tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89&quot;</span>, <span class="number">100</span>),
+                FeeDestinationV2::new(<span class="string">&quot;tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95&quot;</span>, <span class="number">1650</span>),
+                FeeDestinationV2::new(<span class="string">&quot;tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p&quot;</span>, <span class="number">50</span>),
+                FeeDestinationV2::new(<span class="string">&quot;tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7&quot;</span>, <span class="number">199</span>),
+                FeeDestinationV2::new(<span class="string">&quot;tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq&quot;</span>, <span class="number">1</span>),
             ],
-            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            get_default_entity_detail().to_some(),
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid verifier should pass validation and return no error messages, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_address</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_address() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">150</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">150</span>),
+                NHASH,
                 <span class="macro">vec!</span>[],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
@@ -1626,49 +1626,49 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_onboarding_denom</span>() {
-        <span class="kw">let</span> <span class="ident">expected_error_text</span> <span class="op">=</span> <span class="macro">format!</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_onboarding_denom() {
+        <span class="kw">let </span>expected_error_text = <span class="macro">format!</span>(
             <span class="string">&quot;verifier:onboarding_denom: must be one of [{}]&quot;</span>,
-            <span class="ident">VALID_VERIFIER_DENOMS</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>)
+            VALID_VERIFIER_DENOMS.join(<span class="string">&quot;, &quot;</span>)
         );
-        <span class="comment">// Verify that a blank value produces an error</span>
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+        <span class="comment">// Verify that a blank value produces an error
+        </span>test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                Uint128::new(<span class="number">100</span>),
                 <span class="string">&quot;&quot;</span>,
                 <span class="macro">vec!</span>[],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
-            <span class="kw-2">&amp;</span><span class="ident">expected_error_text</span>,
+            <span class="kw-2">&amp;</span>expected_error_text,
         );
-        <span class="comment">// Verify that a value not in VALID_VERIFIER_DENOMS produces an error</span>
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+        <span class="comment">// Verify that a value not in VALID_VERIFIER_DENOMS produces an error
+        </span>test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
+                Uint128::new(<span class="number">100</span>),
                 <span class="string">&quot;someotherdenom&quot;</span>,
                 <span class="macro">vec!</span>[],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
-            <span class="kw-2">&amp;</span><span class="ident">expected_error_text</span>,
+            <span class="kw-2">&amp;</span>expected_error_text,
         )
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_fee_amount_too_high</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_fee_amount_too_high() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">2020</span>),
-                <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1011</span>)],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                Uint128::new(<span class="number">2020</span>),
+                NHASH,
+                <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1011</span>)],
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
@@ -1676,18 +1676,18 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_destinations_contains_duplicate_address</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_destinations_contains_duplicate_address() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
@@ -1695,171 +1695,171 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_zero_cost_retries</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
-            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_zero_cost_retries() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
             <span class="macro">vec!</span>[],
-            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
-            <span class="ident">OnboardingCost::new</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+            get_default_entity_detail().to_some(),
+            OnboardingCost::new(<span class="number">0</span>, <span class="kw-2">&amp;</span>[]).to_some(),
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a verifier with free retries should be considered valid, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_retry_cost_values</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_retry_cost_values() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
-                <span class="ident">OnboardingCost::new</span>(<span class="number">3</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
+                OnboardingCost::new(<span class="number">3</span>, <span class="kw-2">&amp;</span>[]).to_some(),
                 <span class="prelude-val">None</span>,
             ),
             <span class="string">&quot;verifier retry costs: onboarding_cost:cost must be an even number&quot;</span>,
         );
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
-                <span class="ident">OnboardingCost::new</span>(<span class="number">4</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;&quot;</span>, <span class="number">2</span>)]).<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
+                OnboardingCost::new(<span class="number">4</span>, <span class="kw-2">&amp;</span>[FeeDestinationV2::new(<span class="string">&quot;&quot;</span>, <span class="number">2</span>)]).to_some(),
                 <span class="prelude-val">None</span>,
             ),
             <span class="string">&quot;verifier retry costs: fee_destination:address: must be a valid address&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_verifier_with_zero_cost_subsequent_classifications</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
-            <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_verifier_with_zero_cost_subsequent_classifications() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
+            DEFAULT_VERIFIER_ADDRESS,
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
             <span class="macro">vec!</span>[],
-            <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+            get_default_entity_detail().to_some(),
             <span class="prelude-val">None</span>,
-            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
-                <span class="ident">OnboardingCost::new</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+            SubsequentClassificationDetail::new::&lt;String&gt;(
+                OnboardingCost::new(<span class="number">0</span>, <span class="kw-2">&amp;</span>[]).to_some(),
                 <span class="kw-2">&amp;</span>[],
             )
-            .<span class="ident">to_some</span>(),
+            .to_some(),
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+        <span class="kw">let </span>response = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">is_empty</span>(),
+            response.is_empty(),
             <span class="string">&quot;a valid verifier should pass validation with a zero cost subsequent classification detail, but got messages: {:?}&quot;</span>,
-            <span class="ident">response</span>,
+            response,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_subsequent_classification_detail_cost</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_subsequent_classification_detail_cost() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
-                <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
-                    <span class="ident">OnboardingCost::new</span>(<span class="number">3</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+                SubsequentClassificationDetail::new::&lt;String&gt;(
+                    OnboardingCost::new(<span class="number">3</span>, <span class="kw-2">&amp;</span>[]).to_some(),
                     <span class="kw-2">&amp;</span>[],
                 )
-                .<span class="ident">to_some</span>(),
+                .to_some(),
             ),
             <span class="string">&quot;verifier subsequent classification cost: onboarding_cost:cost must be an even number&quot;</span>,
         );
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
-                <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
-                    <span class="ident">OnboardingCost::new</span>(<span class="number">4</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;&quot;</span>, <span class="number">2</span>)]).<span class="ident">to_some</span>(),
+                SubsequentClassificationDetail::new::&lt;String&gt;(
+                    OnboardingCost::new(<span class="number">4</span>, <span class="kw-2">&amp;</span>[FeeDestinationV2::new(<span class="string">&quot;&quot;</span>, <span class="number">2</span>)]).to_some(),
                     <span class="kw-2">&amp;</span>[],
                 )
-                .<span class="ident">to_some</span>(),
+                .to_some(),
             ),
             <span class="string">&quot;verifier subsequent classification cost: fee_destination:address: must be a valid address&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_subsequent_classification_detail_applicable_asset_types</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_subsequent_classification_detail_applicable_asset_types() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
-                <span class="ident">SubsequentClassificationDetail</span> {
-                    <span class="ident">cost</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">applicable_asset_types</span>: <span class="macro">vec!</span>[].<span class="ident">to_some</span>(),
+                SubsequentClassificationDetail {
+                    cost: <span class="prelude-val">None</span>,
+                    applicable_asset_types: <span class="macro">vec!</span>[].to_some(),
                 }
-                .<span class="ident">to_some</span>(),
+                .to_some(),
             ),
             <span class="string">&quot;verifier subsequent classification: applicable_asset_types must not be empty if provided&quot;</span>,
         );
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;fee-guy&quot;</span>, <span class="number">25</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
-                <span class="ident">SubsequentClassificationDetail::new</span>(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="string">&quot;dragon&quot;</span>, <span class="string">&quot;dragon&quot;</span>]).<span class="ident">to_some</span>(),
+                SubsequentClassificationDetail::new(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="string">&quot;dragon&quot;</span>, <span class="string">&quot;dragon&quot;</span>]).to_some(),
             ),
             <span class="string">&quot;verifier subsequent classification: each value in allowed_asset_types must be unique&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier_picks_up_invalid_fee_destination_scenarios</span>() {
-        <span class="ident">test_invalid_verifier</span>(
-            <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_verifier_picks_up_invalid_fee_destination_scenarios() {
+        test_invalid_verifier(
+            <span class="kw-2">&amp;</span>VerifierDetailV2::new(
                 <span class="string">&quot;address&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-                <span class="ident">NHASH</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;&quot;</span>, <span class="number">100</span>)],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                Uint128::new(<span class="number">100</span>),
+                NHASH,
+                <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;&quot;</span>, <span class="number">100</span>)],
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             ),
@@ -1867,102 +1867,102 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_destination</span>() {
-        <span class="kw">let</span> <span class="ident">destination</span> <span class="op">=</span> <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5&quot;</span>, <span class="number">100</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_destination() {
+        <span class="kw">let </span>destination = FeeDestinationV2::new(<span class="string">&quot;tp1362ax9s0gxr5yy636q2p9uuefeg8lhguvu6np5&quot;</span>, <span class="number">100</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">validate_destination_internal</span>(<span class="kw-2">&amp;</span><span class="ident">destination</span>, <span class="string">&quot;test&quot;</span>).<span class="ident">is_empty</span>(),
+            validate_destination_internal(<span class="kw-2">&amp;</span>destination, <span class="string">&quot;test&quot;</span>).is_empty(),
             <span class="string">&quot;a valid fee destination should pass validation and return no error messages&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_destination_address</span>() {
-        <span class="ident">test_invalid_destination</span>(
-            <span class="kw-2">&amp;</span><span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;&quot;</span>, <span class="number">1</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_destination_address() {
+        test_invalid_destination(
+            <span class="kw-2">&amp;</span>FeeDestinationV2::new(<span class="string">&quot;&quot;</span>, <span class="number">1</span>),
             <span class="string">&quot;test: fee_destination:address: must be a valid address&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_destination_fee_amount_too_low</span>() {
-        <span class="ident">test_invalid_destination</span>(
-            <span class="kw-2">&amp;</span><span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;good-address&quot;</span>, <span class="number">0</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_destination_fee_amount_too_low() {
+        test_invalid_destination(
+            <span class="kw-2">&amp;</span>FeeDestinationV2::new(<span class="string">&quot;good-address&quot;</span>, <span class="number">0</span>),
             <span class="string">&quot;test: fee_destination:fee_amount: must not be zero&quot;</span>,
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_valid_init_msg</span>(<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">InitMsg</span>) {
-        <span class="kw">match</span> <span class="ident">validate_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>) {
+    <span class="kw">fn </span>test_valid_init_msg(msg: <span class="kw-2">&amp;</span>InitMsg) {
+        <span class="kw">match </span>validate_init_msg(<span class="kw-2">&amp;</span>msg) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span> {
-                <span class="ident">ContractError::InvalidMessageFields</span> { <span class="ident">invalid_fields</span>, .. } =&gt; <span class="macro">panic!</span>(
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
+                ContractError::InvalidMessageFields { invalid_fields, .. } =&gt; <span class="macro">panic!</span>(
                     <span class="string">&quot;expected message to be valid, but failed with field messages: {:?}&quot;</span>,
-                    <span class="ident">invalid_fields</span>
+                    invalid_fields
                 ),
 
-                <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected contract error on failure: {:?}&quot;</span>, <span class="ident">e</span>),
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected contract error on failure: {:?}&quot;</span>, e),
             },
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_msg</span>(<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">InitMsg</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">match</span> <span class="ident">validate_init_msg</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>) {
+    <span class="kw">fn </span>test_invalid_init_msg(msg: <span class="kw-2">&amp;</span>InitMsg, expected_message: <span class="kw-2">&amp;</span>str) {
+        <span class="kw">match </span>validate_init_msg(<span class="kw-2">&amp;</span>msg) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;expected init msg to be invalid, but passed validation&quot;</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span> {
-                <span class="ident">ContractError::InvalidMessageFields</span> {
-                    <span class="ident">message_type</span>,
-                    <span class="ident">invalid_fields</span>,
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
+                ContractError::InvalidMessageFields {
+                    message_type,
+                    invalid_fields,
                 } =&gt; {
                     <span class="macro">assert_eq!</span>(
                         <span class="string">&quot;Instantiate&quot;</span>,
-                        <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
-                        <span class="string">&quot;expected the invalid message type to be returned correctly&quot;</span>
-                    );
+                        message_type.as_str(),
+                        <span class="string">&quot;expected the invalid message type to be returned correctly&quot;
+                    </span>);
                     <span class="macro">assert!</span>(
-                        <span class="ident">invalid_fields</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">expected_message</span>.<span class="ident">to_string</span>()),
+                        invalid_fields.contains(<span class="kw-2">&amp;</span>expected_message.to_string()),
                         <span class="string">&quot;expected error message `{}` was not contained in the response. Contained messages: {:?}&quot;</span>,
-                        <span class="ident">expected_message</span>,
-                        <span class="ident">invalid_fields</span>,
+                        expected_message,
+                        invalid_fields,
                     );
                 }
-                <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
                     <span class="string">&quot;unexpected error type on init msg validation failure: {:?}&quot;</span>,
-                    <span class="ident">e</span>
+                    e
                 ),
             },
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">test_invalid_asset_definition</span>(<span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">results</span> <span class="op">=</span> <span class="ident">validate_asset_definition_internal</span>(<span class="kw-2">&amp;</span><span class="ident">definition</span>);
+    <span class="kw">fn </span>test_invalid_asset_definition(definition: <span class="kw-2">&amp;</span>AssetDefinitionV3, expected_message: <span class="kw-2">&amp;</span>str) {
+        <span class="kw">let </span>results = validate_asset_definition_internal(<span class="kw-2">&amp;</span>definition);
         <span class="macro">assert!</span>(
-            <span class="ident">results</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">expected_message</span>.<span class="ident">to_string</span>()),
+            results.contains(<span class="kw-2">&amp;</span>expected_message.to_string()),
             <span class="string">&quot;expected error message `{}` was not contained in the response. Contained messages: {:?}&quot;</span>,
-            <span class="ident">expected_message</span>,
-            <span class="ident">results</span>,
+            expected_message,
+            results,
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_invalid_verifier</span>(<span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">results</span> <span class="op">=</span> <span class="ident">validate_verifier_internal</span>(<span class="kw-2">&amp;</span><span class="ident">verifier</span>);
+    <span class="kw">fn </span>test_invalid_verifier(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2, expected_message: <span class="kw-2">&amp;</span>str) {
+        <span class="kw">let </span>results = validate_verifier_internal(<span class="kw-2">&amp;</span>verifier);
         <span class="macro">assert!</span>(
-            <span class="ident">results</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">expected_message</span>.<span class="ident">to_string</span>()),
+            results.contains(<span class="kw-2">&amp;</span>expected_message.to_string()),
             <span class="string">&quot;expected error message `{}` was not contained in the response. Contained messages: {:?}&quot;</span>,
-            <span class="ident">expected_message</span>,
-            <span class="ident">results</span>,
+            expected_message,
+            results,
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_invalid_destination</span>(<span class="ident">destination</span>: <span class="kw-2">&amp;</span><span class="ident">FeeDestinationV2</span>, <span class="ident">expected_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">results</span> <span class="op">=</span> <span class="ident">validate_destination_internal</span>(<span class="kw-2">&amp;</span><span class="ident">destination</span>, <span class="string">&quot;test&quot;</span>);
+    <span class="kw">fn </span>test_invalid_destination(destination: <span class="kw-2">&amp;</span>FeeDestinationV2, expected_message: <span class="kw-2">&amp;</span>str) {
+        <span class="kw">let </span>results = validate_destination_internal(<span class="kw-2">&amp;</span>destination, <span class="string">&quot;test&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">results</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">expected_message</span>.<span class="ident">to_string</span>()),
+            results.contains(<span class="kw-2">&amp;</span>expected_message.to_string()),
             <span class="string">&quot;expected error message `{}` was not contained in the response. Contained messages: {:?}&quot;</span>,
-            <span class="ident">expected_message</span>,
-            <span class="ident">results</span>,
+            expected_message,
+            results,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

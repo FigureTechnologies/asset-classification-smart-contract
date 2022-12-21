@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -277,284 +277,284 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std::StdError</span>;
-<span class="kw">use</span> <span class="ident">thiserror::Error</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>cosmwasm_std::StdError;
+<span class="kw">use </span>thiserror::Error;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::asset_onboarding_status::AssetOnboardingStatus</span>;
+<span class="kw">use </span><span class="kw">super</span>::types::asset_onboarding_status::AssetOnboardingStatus;
 
-<span class="doccomment">/// A massive enum including all the different error scenarios that can be encountered throughout</span>
-<span class="doccomment">/// each process in the contract.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ContractError</span> {
-    <span class="comment">///////////////////////</span>
-    <span class="comment">//                   //</span>
-    <span class="comment">// INTERCEPTED TYPES //</span>
-    <span class="comment">//                   //</span>
-    <span class="comment">///////////////////////</span>
-    <span class="doccomment">/// An interceptor for a [Bech32 Error](bech32::Error).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{0}&quot;</span>)]</span>
-    <span class="ident">Bech32Error</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">bech32::Error</span>),
+<span class="doccomment">/// A massive enum including all the different error scenarios that can be encountered throughout
+/// each process in the contract.
+</span><span class="attribute">#[derive(Error, Debug)]
+</span><span class="kw">pub enum </span>ContractError {
+    <span class="comment">///////////////////////
+    //                   //
+    // INTERCEPTED TYPES //
+    //                   //
+    ///////////////////////
+    </span><span class="doccomment">/// An interceptor for a [Bech32 Error](bech32::Error).
+    </span><span class="attribute">#[error(<span class="string">&quot;{0}&quot;</span>)]
+    </span>Bech32Error(<span class="attribute">#[from] </span>bech32::Error),
 
-    <span class="doccomment">/// An interceptor for a [SemVer Error](semver::Error).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Semver parsing error: {0}&quot;</span>)]</span>
-    <span class="ident">SemVer</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">semver::Error</span>),
+    <span class="doccomment">/// An interceptor for a [SemVer Error](semver::Error).
+    </span><span class="attribute">#[error(<span class="string">&quot;Semver parsing error: {0}&quot;</span>)]
+    </span>SemVer(<span class="attribute">#[from] </span>semver::Error),
 
-    <span class="doccomment">/// An interceptor for a [Cosmwasm Error](cosmwasm_std::StdError).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{0}&quot;</span>)]</span>
-    <span class="ident">Std</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">StdError</span>),
+    <span class="doccomment">/// An interceptor for a [Cosmwasm Error](cosmwasm_std::StdError).
+    </span><span class="attribute">#[error(<span class="string">&quot;{0}&quot;</span>)]
+    </span>Std(<span class="attribute">#[from] </span>StdError),
 
-    <span class="doccomment">/// An interceptor for a [Uuid Error](uuid::Error).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{0}&quot;</span>)]</span>
-    <span class="ident">UuidError</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">uuid::Error</span>),
+    <span class="doccomment">/// An interceptor for a [Uuid Error](uuid::Error).
+    </span><span class="attribute">#[error(<span class="string">&quot;{0}&quot;</span>)]
+    </span>UuidError(<span class="attribute">#[from] </span>uuid::Error),
 
-    <span class="comment">//////////////////</span>
-    <span class="comment">//              //</span>
-    <span class="comment">// CUSTOM TYPES //</span>
-    <span class="comment">//              //</span>
-    <span class="comment">//////////////////</span>
-    <span class="doccomment">/// This error is encountered when an asset is attempted in the onboarding process, but it has</span>
-    <span class="doccomment">/// already been onboarded and classified.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset {scope_address} has already been fully onboarded as asset type [{asset_type}]&quot;</span>)]</span>
-    <span class="ident">AssetAlreadyOnboarded</span> {
-        <span class="doccomment">/// The bech32 scope address of the already-onboarded asset.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The asset type for which onboarding has already been completed</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
+    <span class="comment">//////////////////
+    //              //
+    // CUSTOM TYPES //
+    //              //
+    //////////////////
+    </span><span class="doccomment">/// This error is encountered when an asset is attempted in the onboarding process, but it has
+    /// already been onboarded and classified.
+    </span><span class="attribute">#[error(<span class="string">&quot;Asset {scope_address} has already been fully onboarded as asset type [{asset_type}]&quot;</span>)]
+    </span>AssetAlreadyOnboarded {
+        <span class="doccomment">/// The bech32 scope address of the already-onboarded asset.
+        </span>scope_address: String,
+        <span class="doccomment">/// The asset type for which onboarding has already been completed
+        </span>asset_type: String,
     },
 
-    <span class="doccomment">/// An error emitted when a verifier attempts to run the verification process on an asset that</span>
-    <span class="doccomment">/// does not require it.  This can only occur when a verifier attempts to run a duplicate</span>
-    <span class="doccomment">/// verification on a scope that has already had its verification process completed.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset [{scope_address}] was already verified for asset type [{asset_type}] and has status [{status}]&quot;</span>)]</span>
-    <span class="ident">AssetAlreadyVerified</span> {
-        <span class="doccomment">/// The bech32 address of the scope that has already been verified.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The asset type for which verification has already been completed for this asset.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The current onboarding status in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)</span>
-        <span class="doccomment">/// on the scope that has already been verified.</span>
-        <span class="ident">status</span>: <span class="ident">AssetOnboardingStatus</span>,
+    <span class="doccomment">/// An error emitted when a verifier attempts to run the verification process on an asset that
+    /// does not require it.  This can only occur when a verifier attempts to run a duplicate
+    /// verification on a scope that has already had its verification process completed.
+    </span><span class="attribute">#[error(<span class="string">&quot;Asset [{scope_address}] was already verified for asset type [{asset_type}] and has status [{status}]&quot;</span>)]
+    </span>AssetAlreadyVerified {
+        <span class="doccomment">/// The bech32 address of the scope that has already been verified.
+        </span>scope_address: String,
+        <span class="doccomment">/// The asset type for which verification has already been completed for this asset.
+        </span>asset_type: String,
+        <span class="doccomment">/// The current onboarding status in the [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
+        /// on the scope that has already been verified.
+        </span>status: AssetOnboardingStatus,
     },
 
-    <span class="doccomment">/// This error is encountered when the onboarding process cannot locate the scope specified by</span>
-    <span class="doccomment">/// the requestor.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset {scope_address} not found&quot;</span>)]</span>
-    <span class="ident">AssetNotFound</span> {
-        <span class="doccomment">/// The bech32 address of the scope that does not appear to yet exist on the Provenance Blockchain.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error is encountered when the onboarding process cannot locate the scope specified by
+    /// the requestor.
+    </span><span class="attribute">#[error(<span class="string">&quot;Asset {scope_address} not found&quot;</span>)]
+    </span>AssetNotFound {
+        <span class="doccomment">/// The bech32 address of the scope that does not appear to yet exist on the Provenance Blockchain.
+        </span>scope_address: String,
     },
 
-    <span class="doccomment">/// This error is encountered when the onboarding process is attempted for an asset that has</span>
-    <span class="doccomment">/// already been onboarded as is awaiting a decision from its target verifier.</span>
-    <span class="attribute">#[<span class="ident">error</span>(
-        <span class="string">&quot;Asset {scope_address} is currently awaiting verification as asset type {asset_type} from address {verifier_address}&quot;</span>
-    )]</span>
-    <span class="ident">AssetPendingVerification</span> {
-        <span class="doccomment">/// The bech32 scope address of the asset that has been onboarded.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The asset type for which verification is pending for this asset.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 address of the verifier that will perform verification on the asset.</span>
-        <span class="ident">verifier_address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error is encountered when the onboarding process is attempted for an asset that has
+    /// already been onboarded as is awaiting a decision from its target verifier.
+    </span><span class="attribute">#[error(
+        <span class="string">&quot;Asset {scope_address} is currently awaiting verification as asset type {asset_type} from address {verifier_address}&quot;
+    </span>)]
+    </span>AssetPendingVerification {
+        <span class="doccomment">/// The bech32 scope address of the asset that has been onboarded.
+        </span>scope_address: String,
+        <span class="doccomment">/// The asset type for which verification is pending for this asset.
+        </span>asset_type: String,
+        <span class="doccomment">/// The bech32 address of the verifier that will perform verification on the asset.
+        </span>verifier_address: String,
     },
 
-    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-    <span class="doccomment">/// linked to an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) that is</span>
-    <span class="doccomment">/// currently not [enabled](super::types::asset_definition::AssetDefinitionV3::enabled)]</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Asset type {asset_type} is currently disabled&quot;</span>)]</span>
-    <span class="ident">AssetTypeDisabled</span> {
-        <span class="doccomment">/// The type of asset that is currently disabled.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error indicates that an asset was attempted to be onboarded with an [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+    /// linked to an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) that is
+    /// currently not [enabled](super::types::asset_definition::AssetDefinitionV3::enabled)]
+    </span><span class="attribute">#[error(<span class="string">&quot;Asset type {asset_type} is currently disabled&quot;</span>)]
+    </span>AssetTypeDisabled {
+        <span class="doccomment">/// The type of asset that is currently disabled.
+        </span>asset_type: String,
     },
 
-    <span class="doccomment">/// Denotes that an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
-    <span class="doccomment">/// has the same [address](super::types::verifier_detail::VerifierDetailV2::address) property</span>
-    <span class="doccomment">/// as the provided [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to be</span>
-    <span class="doccomment">/// added to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;duplicate/existing verifier address provided as input&quot;</span>)]</span>
-    <span class="ident">DuplicateVerifierProvided</span>,
+    <span class="doccomment">/// Denotes that an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// has the same [address](super::types::verifier_detail::VerifierDetailV2::address) property
+    /// as the provided [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) to be
+    /// added to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3).
+    </span><span class="attribute">#[error(<span class="string">&quot;duplicate/existing verifier address provided as input&quot;</span>)]
+    </span>DuplicateVerifierProvided,
 
-    <span class="doccomment">/// An error that can be used in a circumstance where a named error is not necessary to be</span>
-    <span class="doccomment">/// created.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{msg}&quot;</span>)]</span>
-    <span class="ident">GenericError</span> {
-        <span class="doccomment">/// A free-form text description of the error that occurred.</span>
-        <span class="ident">msg</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that can be used in a circumstance where a named error is not necessary to be
+    /// created.
+    </span><span class="attribute">#[error(<span class="string">&quot;{msg}&quot;</span>)]
+    </span>GenericError {
+        <span class="doccomment">/// A free-form text description of the error that occurred.
+        </span>msg: String,
     },
 
-    <span class="doccomment">/// Indicates that a bech32 address was provided that does not meet proper specifications for the</span>
-    <span class="doccomment">/// given scenario.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Invalid address provided [{address}]: {explanation}&quot;</span>)]</span>
-    <span class="ident">InvalidAddress</span> {
-        <span class="doccomment">/// The invalid bech32 address.</span>
-        <span class="ident">address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// A message further explaining the issue.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Indicates that a bech32 address was provided that does not meet proper specifications for the
+    /// given scenario.
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid address provided [{address}]: {explanation}&quot;</span>)]
+    </span>InvalidAddress {
+        <span class="doccomment">/// The invalid bech32 address.
+        </span>address: String,
+        <span class="doccomment">/// A message further explaining the issue.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// An error that can occur during a migration that indicates that an incorrect stored contract</span>
-    <span class="doccomment">/// code was attempted to be provided for a migration.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]&quot;</span>)]</span>
-    <span class="ident">InvalidContractName</span> {
-        <span class="doccomment">/// The name of the existing contract.  Should correlate to the value specified in Cargo.toml&#39;s name property.</span>
-        <span class="ident">current_contract</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The name of the incorrect contract.</span>
-        <span class="ident">migration_contract</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that can occur during a migration that indicates that an incorrect stored contract
+    /// code was attempted to be provided for a migration.
+    </span><span class="attribute">#[error(<span class="string">&quot;Current contract name [{current_contract}] does not match provided migration name [{migration_contract}]&quot;</span>)]
+    </span>InvalidContractName {
+        <span class="doccomment">/// The name of the existing contract.  Should correlate to the value specified in Cargo.toml&#39;s name property.
+        </span>current_contract: String,
+        <span class="doccomment">/// The name of the incorrect contract.
+        </span>migration_contract: String,
     },
 
-    <span class="doccomment">/// An error that can occur during a migration that indicates that the stored contract code that</span>
-    <span class="doccomment">/// was used as the migration target has a version that is lower than the current contract version.</span>
-    <span class="doccomment">/// This error is to prevent downgrading the contract to a previous version, which could remove</span>
-    <span class="doccomment">/// features and cause problems.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Current contract version [{current_version}] is higher than provided migration version [{migration_version}]&quot;</span>)]</span>
-    <span class="ident">InvalidContractVersion</span> {
-        <span class="doccomment">/// The version of the contract currently active on the Provenance Blockchain.</span>
-        <span class="ident">current_version</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The version of the stored code used in the migration.</span>
-        <span class="ident">migration_version</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that can occur during a migration that indicates that the stored contract code that
+    /// was used as the migration target has a version that is lower than the current contract version.
+    /// This error is to prevent downgrading the contract to a previous version, which could remove
+    /// features and cause problems.
+    </span><span class="attribute">#[error(<span class="string">&quot;Current contract version [{current_version}] is higher than provided migration version [{migration_version}]&quot;</span>)]
+    </span>InvalidContractVersion {
+        <span class="doccomment">/// The version of the contract currently active on the Provenance Blockchain.
+        </span>current_version: String,
+        <span class="doccomment">/// The version of the stored code used in the migration.
+        </span>migration_version: String,
     },
 
-    <span class="doccomment">/// A generic error that specifies that some form of provided or utilized coin was invalid.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{0}&quot;</span>)]</span>
-    <span class="ident">InvalidFunds</span>(
-        <span class="doccomment">/// Denotes the reason that invalid funds were detected.</span>
-        <span class="ident">String</span>,
+    <span class="doccomment">/// A generic error that specifies that some form of provided or utilized coin was invalid.
+    </span><span class="attribute">#[error(<span class="string">&quot;{0}&quot;</span>)]
+    </span>InvalidFunds(
+        <span class="doccomment">/// Denotes the reason that invalid funds were detected.
+        </span>String,
     ),
 
-    <span class="doccomment">/// An error emitted by the [validation](crate::validation) that indicates that input values</span>
-    <span class="doccomment">/// were not properly specified (blank strings, invalid numbers, etc).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}&quot;</span>)]</span>
-    <span class="ident">InvalidMessageFields</span> {
-        <span class="doccomment">/// Indicates the type of message that was sent, causing the error.  Will be one of the</span>
-        <span class="doccomment">/// values in the [msg file](super::msg).</span>
-        <span class="ident">message_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// A collection of messages that indicate every issue present in the bad [msg](super::msg).</span>
-        <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// An error emitted by the [validation](crate::validation) that indicates that input values
+    /// were not properly specified (blank strings, invalid numbers, etc).
+    </span><span class="attribute">#[error(<span class="string">&quot;Message of type [{message_type}] was invalid. Invalid fields: {invalid_fields:?}&quot;</span>)]
+    </span>InvalidMessageFields {
+        <span class="doccomment">/// Indicates the type of message that was sent, causing the error.  Will be one of the
+        /// values in the [msg file](super::msg).
+        </span>message_type: String,
+        <span class="doccomment">/// A collection of messages that indicate every issue present in the bad [msg](super::msg).
+        </span>invalid_fields: Vec&lt;String&gt;,
     },
 
-    <span class="doccomment">/// An error emitted when an internal issue arises, indicating that an incorrect [msg](super::msg)</span>
-    <span class="doccomment">/// was sent to a function receiver.  The functions that use this error are all at first called</span>
-    <span class="doccomment">/// into in the [contract file](crate::contract).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Invalid message type provided. Expected message type {expected_message_type}&quot;</span>)]</span>
-    <span class="ident">InvalidMessageType</span> {
-        <span class="doccomment">/// Denotes the correct [msg](super::msg) that was expected to be provided.</span>
-        <span class="ident">expected_message_type</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error emitted when an internal issue arises, indicating that an incorrect [msg](super::msg)
+    /// was sent to a function receiver.  The functions that use this error are all at first called
+    /// into in the [contract file](crate::contract).
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid message type provided. Expected message type {expected_message_type}&quot;</span>)]
+    </span>InvalidMessageType {
+        <span class="doccomment">/// Denotes the correct [msg](super::msg) that was expected to be provided.
+        </span>expected_message_type: String,
     },
 
-    <span class="doccomment">/// An error that indicates that a scope inspected during the onboarding process is missing</span>
-    <span class="doccomment">/// internal values and is not valid for onboarding, like an internal Provenance Blockchain Metadata</span>
-    <span class="doccomment">/// Record.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Invalid scope: {explanation}&quot;</span>)]</span>
-    <span class="ident">InvalidScope</span> {
-        <span class="doccomment">/// A free-form text description of the reason that the scope is considered invalid.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that indicates that a scope inspected during the onboarding process is missing
+    /// internal values and is not valid for onboarding, like an internal Provenance Blockchain Metadata
+    /// Record.
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid scope: {explanation}&quot;</span>)]
+    </span>InvalidScope {
+        <span class="doccomment">/// A free-form text description of the reason that the scope is considered invalid.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// An error that occurs when a lookup is attempted for a contract resource but the resource</span>
-    <span class="doccomment">/// does not exist.  For instance, when an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)</span>
-    <span class="doccomment">/// does not contain a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) with a</span>
-    <span class="doccomment">/// specified bech32 [address](super::types::verifier_detail::VerifierDetailV2::address), this</span>
-    <span class="doccomment">/// error will occur.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Resource not found: {explanation}&quot;</span>)]</span>
-    <span class="ident">NotFound</span> {
-        <span class="doccomment">/// A message describing the reason that the resource could not be found.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that occurs when a lookup is attempted for a contract resource but the resource
+    /// does not exist.  For instance, when an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+    /// does not contain a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) with a
+    /// specified bech32 [address](super::types::verifier_detail::VerifierDetailV2::address), this
+    /// error will occur.
+    </span><span class="attribute">#[error(<span class="string">&quot;Resource not found: {explanation}&quot;</span>)]
+    </span>NotFound {
+        <span class="doccomment">/// A message describing the reason that the resource could not be found.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// An error that occurs when a unique key is violated during an attempt to add new data to the</span>
-    <span class="doccomment">/// contract&#39;s internal storage.  Reference: [state](super::state).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Existing record found: {explanation}&quot;</span>)]</span>
-    <span class="ident">RecordAlreadyExists</span> {
-        <span class="doccomment">/// A free-form text description of the reason that the record already exists.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that occurs when a unique key is violated during an attempt to add new data to the
+    /// contract&#39;s internal storage.  Reference: [state](super::state).
+    </span><span class="attribute">#[error(<span class="string">&quot;Existing record found: {explanation}&quot;</span>)]
+    </span>RecordAlreadyExists {
+        <span class="doccomment">/// A free-form text description of the reason that the record already exists.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// Occurs when a mandatory data lookup is performed on the contract&#39;s internal storage, but</span>
-    <span class="doccomment">/// the required value is not found.  Reference: [state](super::state).</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Record not found: {explanation}&quot;</span>)]</span>
-    <span class="ident">RecordNotFound</span> {
-        <span class="doccomment">/// A free-form text description of the record that could not be found.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Occurs when a mandatory data lookup is performed on the contract&#39;s internal storage, but
+    /// the required value is not found.  Reference: [state](super::state).
+    </span><span class="attribute">#[error(<span class="string">&quot;Record not found: {explanation}&quot;</span>)]
+    </span>RecordNotFound {
+        <span class="doccomment">/// A free-form text description of the record that could not be found.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// A generic error that occurs when an address attempts to perform an operation in the contract</span>
-    <span class="doccomment">/// that it does not have the permission to.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unauthorized: {explanation}&quot;</span>)]</span>
-    <span class="ident">Unauthorized</span> {
-        <span class="doccomment">/// A free-form text description of why the action was not authorized.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// A generic error that occurs when an address attempts to perform an operation in the contract
+    /// that it does not have the permission to.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unauthorized: {explanation}&quot;</span>)]
+    </span>Unauthorized {
+        <span class="doccomment">/// A free-form text description of why the action was not authorized.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// An error emitted when an account attempts to initiate the verification process for a scope</span>
-    <span class="doccomment">/// when its bech32 address is not listed as the verifier for the particular onboarding instance.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unauthorized verifier [{verifier_address}] for scope [{scope_address}] as asset type [{asset_type}], expected verifier [{expected_verifier_address}]&quot;</span>)]</span>
-    <span class="ident">UnauthorizedAssetVerifier</span> {
-        <span class="doccomment">/// The bech32 address of the scope that is awaiting verification.</span>
-        <span class="ident">scope_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The asset type that was used to resolve the verifier</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 address of the account that attempted to run verification.</span>
-        <span class="ident">verifier_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The bech32 address of the account that has been requested to run verification.</span>
-        <span class="ident">expected_verifier_address</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error emitted when an account attempts to initiate the verification process for a scope
+    /// when its bech32 address is not listed as the verifier for the particular onboarding instance.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unauthorized verifier [{verifier_address}] for scope [{scope_address}] as asset type [{asset_type}], expected verifier [{expected_verifier_address}]&quot;</span>)]
+    </span>UnauthorizedAssetVerifier {
+        <span class="doccomment">/// The bech32 address of the scope that is awaiting verification.
+        </span>scope_address: String,
+        <span class="doccomment">/// The asset type that was used to resolve the verifier
+        </span>asset_type: String,
+        <span class="doccomment">/// The bech32 address of the account that attempted to run verification.
+        </span>verifier_address: String,
+        <span class="doccomment">/// The bech32 address of the account that has been requested to run verification.
+        </span>expected_verifier_address: String,
     },
 
-    <span class="doccomment">/// This error occurs when a [SerializedEnum](super::types::serialized_enum::SerializedEnum) is</span>
-    <span class="doccomment">/// received from a caller that cannot be properly converted to its expected underlying type.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unexpected enum value received. Got type [{received_type}]. {explanation}&quot;</span>)]</span>
-    <span class="ident">UnexpectedSerializedEnum</span> {
-        <span class="doccomment">/// The [type](super::types::serialized_enum::SerializedEnum::type) value of the serialized enum</span>
-        <span class="doccomment">/// that could not be properly converted.</span>
-        <span class="ident">received_type</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// A free-form text description of what went wrong in converting the value to its</span>
-        <span class="doccomment">/// underlying type.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error occurs when a [SerializedEnum](super::types::serialized_enum::SerializedEnum) is
+    /// received from a caller that cannot be properly converted to its expected underlying type.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unexpected enum value received. Got type [{received_type}]. {explanation}&quot;</span>)]
+    </span>UnexpectedSerializedEnum {
+        <span class="doccomment">/// The [type](super::types::serialized_enum::SerializedEnum::type) value of the serialized enum
+        /// that could not be properly converted.
+        </span>received_type: String,
+        <span class="doccomment">/// A free-form text description of what went wrong in converting the value to its
+        /// underlying type.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// An error that can occur when the contract is in an unexpected state and refuses to perform</span>
-    <span class="doccomment">/// an operation.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unexpected state: {explanation}&quot;</span>)]</span>
-    <span class="ident">UnexpectedState</span> {
-        <span class="doccomment">/// A free-form text description of why the operation was rejected.</span>
-        <span class="ident">explanation</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// An error that can occur when the contract is in an unexpected state and refuses to perform
+    /// an operation.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unexpected state: {explanation}&quot;</span>)]
+    </span>UnexpectedState {
+        <span class="doccomment">/// A free-form text description of why the operation was rejected.
+        </span>explanation: String,
     },
 
-    <span class="doccomment">/// A placeholder error that can be used as a stopgap during the implementation of functionality</span>
-    <span class="doccomment">/// to allow the tests to compile and run before the feature is completed.  This error should</span>
-    <span class="doccomment">/// never be used in a release build.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Requested functionality is not yet implemented&quot;</span>)]</span>
-    <span class="ident">Unimplemented</span>,
+    <span class="doccomment">/// A placeholder error that can be used as a stopgap during the implementation of functionality
+    /// to allow the tests to compile and run before the feature is completed.  This error should
+    /// never be used in a release build.
+    </span><span class="attribute">#[error(<span class="string">&quot;Requested functionality is not yet implemented&quot;</span>)]
+    </span>Unimplemented,
 
-    <span class="doccomment">/// This error is encountered when an asset type is attempted to be used during the onboarding</span>
-    <span class="doccomment">/// process, but the asset type cannot be found in the contract&#39;s internal storage.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unsupported asset type [{asset_type}]&quot;</span>)]</span>
-    <span class="ident">UnsupportedAssetType</span> {
-        <span class="doccomment">/// The type of asset that could not be located for onboarding.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error is encountered when an asset type is attempted to be used during the onboarding
+    /// process, but the asset type cannot be found in the contract&#39;s internal storage.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unsupported asset type [{asset_type}]&quot;</span>)]
+    </span>UnsupportedAssetType {
+        <span class="doccomment">/// The type of asset that could not be located for onboarding.
+        </span>asset_type: String,
     },
 
-    <span class="doccomment">/// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)</span>
-    <span class="doccomment">/// does not exist in an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) during</span>
-    <span class="doccomment">/// the onboarding process.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unsupported verifier [{verifier_address}] for asset type [{asset_type}]&quot;</span>)]</span>
-    <span class="ident">UnsupportedVerifier</span> {
-        <span class="doccomment">/// The bech32 address of the target verifier.</span>
-        <span class="ident">verifier_address</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) selected</span>
-        <span class="doccomment">/// during onboarding.</span>
-        <span class="ident">asset_type</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// This error can occur when a target [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    /// does not exist in an [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) during
+    /// the onboarding process.
+    </span><span class="attribute">#[error(<span class="string">&quot;Unsupported verifier [{verifier_address}] for asset type [{asset_type}]&quot;</span>)]
+    </span>UnsupportedVerifier {
+        <span class="doccomment">/// The bech32 address of the target verifier.
+        </span>verifier_address: String,
+        <span class="doccomment">/// The [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) selected
+        /// during onboarding.
+        </span>asset_type: String,
     },
 }
-<span class="kw">impl</span> <span class="ident">ContractError</span> {
-    <span class="doccomment">/// Constructs an instance of the [GenericError](self::ContractError::GenericError) variant,</span>
-    <span class="doccomment">/// allowing a generic Into&lt;String&gt; implementation.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `msg` The string value to use as the msg field of the generic error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generic</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">msg</span>: <span class="ident">S</span>) -&gt; <span class="ident">ContractError</span> {
-        <span class="ident">ContractError::GenericError</span> { <span class="ident">msg</span>: <span class="ident">msg</span>.<span class="ident">into</span>() }
+<span class="kw">impl </span>ContractError {
+    <span class="doccomment">/// Constructs an instance of the [GenericError](self::ContractError::GenericError) variant,
+    /// allowing a generic Into&lt;String&gt; implementation.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` The string value to use as the msg field of the generic error.
+    </span><span class="kw">pub fn </span>generic&lt;S: Into&lt;String&gt;&gt;(msg: S) -&gt; ContractError {
+        ContractError::GenericError { msg: msg.into() }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_fee_payments.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>query_fee_payments.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_fee_payments.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>query_fee_payments.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -110,117 +110,117 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::may_load_fee_payment_detail</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsC</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::state::may_load_fee_payment_detail;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsC};
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">to_binary</span>, <span class="ident">Binary</span>};
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span>cosmwasm_std::{to_binary, Binary};
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// A query that fetches a target [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)</span>
-<span class="doccomment">/// from the contract&#39;s internal storage and serializes it to a [Binary](cosmwasm_std::Binary)</span>
-<span class="doccomment">/// struct.  When none is found, a None Option variant is serialized instead, effectively representing</span>
-<span class="doccomment">/// a null json payload.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `identifier` An enum containing identifier information that can be used to look up a stored</span>
-<span class="doccomment">/// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail) by a derived</span>
-<span class="doccomment">/// Provenance Blockchain Metadata Scope bech32 address.</span>
-<span class="doccomment">/// * `asset_type` The type of asset that the payment details represent</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">query_fee_payments</span>(
-    <span class="ident">deps</span>: <span class="kw-2">&amp;</span><span class="ident">DepsC</span>,
-    <span class="ident">identifier</span>: <span class="ident">AssetIdentifier</span>,
-    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">Binary</span><span class="op">&gt;</span> {
-    <span class="ident">to_binary</span>(<span class="kw-2">&amp;</span><span class="ident">may_load_fee_payment_detail</span>(
-        <span class="ident">deps</span>.<span class="ident">storage</span>,
-        <span class="ident">identifier</span>.<span class="ident">get_scope_address</span>()<span class="question-mark">?</span>,
-        <span class="ident">asset_type</span>,
-    ))<span class="question-mark">?</span>
-    .<span class="ident">to_ok</span>()
+<span class="doccomment">/// A query that fetches a target [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
+/// from the contract&#39;s internal storage and serializes it to a [Binary](cosmwasm_std::Binary)
+/// struct.  When none is found, a None Option variant is serialized instead, effectively representing
+/// a null json payload.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `identifier` An enum containing identifier information that can be used to look up a stored
+/// [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail) by a derived
+/// Provenance Blockchain Metadata Scope bech32 address.
+/// * `asset_type` The type of asset that the payment details represent
+</span><span class="kw">pub fn </span>query_fee_payments(
+    deps: <span class="kw-2">&amp;</span>DepsC,
+    identifier: AssetIdentifier,
+    asset_type: <span class="kw-2">&amp;</span>str,
+) -&gt; AssetResult&lt;Binary&gt; {
+    to_binary(<span class="kw-2">&amp;</span>may_load_fee_payment_detail(
+        deps.storage,
+        identifier.get_scope_address()<span class="question-mark">?</span>,
+        asset_type,
+    ))<span class="question-mark">?
+    </span>.to_ok()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::insert_fee_payment_detail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::query::query_fee_payments::query_fee_payments</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
-        <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_ASSET_UUID</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::insert_fee_payment_detail;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail;
+    <span class="kw">use </span><span class="kw">crate</span>::query::query_fee_payments::query_fee_payments;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::{
+        DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail</span>;
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::from_binary</span>;
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
-    <span class="kw">use</span> <span class="ident">uuid::Uuid</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail;
+    <span class="kw">use </span>cosmwasm_std::from_binary;
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
+    <span class="kw">use </span>uuid::Uuid;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_query</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected payment detail to be inserted successfully&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
-            <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
-            <span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">DEFAULT_ASSET_UUID</span>),
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_successful_query() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
+            .expect(<span class="string">&quot;expected payment detail to be inserted successfully&quot;</span>);
+        <span class="kw">let </span>result_binary = query_fee_payments(
+            <span class="kw-2">&amp;</span>deps.as_ref(),
+            AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected binary result from asset uuid to be successful&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected binary deserialization for asset uuid target to be successful&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the result to be a Some variant&quot;</span>);
+        .expect(<span class="string">&quot;expected binary result from asset uuid to be successful&quot;</span>);
+        <span class="kw">let </span>result_detail = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;FeePaymentDetail&gt;&gt;(<span class="kw-2">&amp;</span>result_binary)
+            .expect(<span class="string">&quot;expected binary deserialization for asset uuid target to be successful&quot;</span>)
+            .expect(<span class="string">&quot;expected the result to be a Some variant&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payment_detail</span>, <span class="ident">result_detail</span>,
+            payment_detail, result_detail,
             <span class="string">&quot;expected the result to equate to the stored value for asset uuid target&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
-            <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
-            <span class="ident">AssetIdentifier::scope_address</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>),
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        <span class="kw">let </span>result_binary = query_fee_payments(
+            <span class="kw-2">&amp;</span>deps.as_ref(),
+            AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected binary result from scope address to be successful&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected binary deserialization for scope address target to be successful&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the result to be a Some variant&quot;</span>);
+        .expect(<span class="string">&quot;expected binary result from scope address to be successful&quot;</span>);
+        <span class="kw">let </span>result_detail = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;FeePaymentDetail&gt;&gt;(<span class="kw-2">&amp;</span>result_binary)
+            .expect(<span class="string">&quot;expected binary deserialization for scope address target to be successful&quot;</span>)
+            .expect(<span class="string">&quot;expected the result to be a Some variant&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payment_detail</span>, <span class="ident">result_detail</span>,
+            payment_detail, result_detail,
             <span class="string">&quot;expected the result to equate to the stored value for asset uuid target&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_missing_resource_query</span>() {
-        <span class="kw">let</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
-            <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
-            <span class="ident">AssetIdentifier::asset_uuid</span>(<span class="ident">Uuid::new_v4</span>().<span class="ident">to_string</span>()),
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_missing_resource_query() {
+        <span class="kw">let </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>result_binary = query_fee_payments(
+            <span class="kw-2">&amp;</span>deps.as_ref(),
+            AssetIdentifier::asset_uuid(Uuid::new_v4().to_string()),
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>).<span class="ident">expect</span>(
+        .expect(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
+        <span class="kw">let </span>result_detail = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;FeePaymentDetail&gt;&gt;(<span class="kw-2">&amp;</span>result_binary).expect(
             <span class="string">&quot;the result should successfully deserialize to an Option for asset uuid variant&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="ident">result_detail</span>.<span class="ident">is_none</span>(),
+            result_detail.is_none(),
             <span class="string">&quot;the resulting Option should be a None variant for asset uuid variant because the detail did not exist&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">result_binary</span> <span class="op">=</span> <span class="ident">query_fee_payments</span>(
-            <span class="kw-2">&amp;</span><span class="ident">deps</span>.<span class="ident">as_ref</span>(),
-            <span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;scope1qqse8umjp7pprmd390dnsj7s4yrse73q0x&quot;</span>),
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        <span class="kw">let </span>result_binary = query_fee_payments(
+            <span class="kw-2">&amp;</span>deps.as_ref(),
+            AssetIdentifier::scope_address(<span class="string">&quot;scope1qqse8umjp7pprmd390dnsj7s4yrse73q0x&quot;</span>),
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result_detail</span> <span class="op">=</span> <span class="ident">from_binary</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">result_binary</span>).<span class="ident">expect</span>(
+        .expect(<span class="string">&quot;result should successfully produce a binary even when the value is missing&quot;</span>);
+        <span class="kw">let </span>result_detail = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;FeePaymentDetail&gt;&gt;(<span class="kw-2">&amp;</span>result_binary).expect(
             <span class="string">&quot;the result should successfully deserialize to an Option for scope address variant&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="ident">result_detail</span>.<span class="ident">is_none</span>(),
+            result_detail.is_none(),
             <span class="string">&quot;the resulting Option should be a None variant for scope address variant because the detail did not exist&quot;</span>,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

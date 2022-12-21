@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/serialized_enum.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>serialized_enum.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/serialized_enum.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>serialized_enum.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -104,111 +104,111 @@
 <span id="104">104</span>
 <span id="105">105</span>
 <span id="106">106</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
-<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::AssetResult;
+<span class="kw">use </span>schemars::JsonSchema;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="doccomment">/// There is a bug in cosmwasm 1.0.0&#39;s interaction with serde-json-wasm that causes floating point</span>
-<span class="doccomment">/// operations to be added into the compiled wasm, so the previous solution of using things like</span>
-<span class="doccomment">/// AssetIdentifier directly and specifying them with a tag and content param in their serde</span>
-<span class="doccomment">/// annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain</span>
-<span class="doccomment">/// identical, but not generate floating point errors.  It makes the schema less useful, but it&#39;s a</span>
-<span class="doccomment">/// hack to fix a bug, so...</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It&#39;s also worth noting that this solution can only create enum switches that have Strings as</span>
-<span class="doccomment">/// their values.  Anything different will not work for this solution and will require further</span>
-<span class="doccomment">/// adaptation and hackery.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SerializedEnum</span> {
-    <span class="doccomment">/// Specifies the type of enum to deserialize into. Maps into one of the values specified in</span>
-    <span class="doccomment">/// the impl for this struct.</span>
-    <span class="kw">pub</span> <span class="ident">r#type</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Specifies the string value to be used for the type.</span>
-    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">String</span>,
+<span class="doccomment">/// There is a bug in cosmwasm 1.0.0&#39;s interaction with serde-json-wasm that causes floating point
+/// operations to be added into the compiled wasm, so the previous solution of using things like
+/// AssetIdentifier directly and specifying them with a tag and content param in their serde
+/// annotation is impossible as of 1.0.0.  This solution will allow existing requests to remain
+/// identical, but not generate floating point errors.  It makes the schema less useful, but it&#39;s a
+/// hack to fix a bug, so...
+///
+/// It&#39;s also worth noting that this solution can only create enum switches that have Strings as
+/// their values.  Anything different will not work for this solution and will require further
+/// adaptation and hackery.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+</span><span class="kw">pub struct </span>SerializedEnum {
+    <span class="doccomment">/// Specifies the type of enum to deserialize into. Maps into one of the values specified in
+    /// the impl for this struct.
+    </span><span class="kw">pub </span>r#type: String,
+    <span class="doccomment">/// Specifies the string value to be used for the type.
+    </span><span class="kw">pub </span>value: String,
 }
-<span class="kw">impl</span> <span class="ident">SerializedEnum</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `enum_type` Specifies the type of enum to deserialize into. Maps into one of the values specified in</span>
-    <span class="doccomment">/// the impl for this struct.</span>
-    <span class="doccomment">/// * `value` Specifies the string value to be used for the type.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">enum_type</span>: <span class="ident">S1</span>, <span class="ident">value</span>: <span class="ident">S2</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">r#type</span>: <span class="ident">enum_type</span>.<span class="ident">into</span>(),
-            <span class="ident">value</span>: <span class="ident">value</span>.<span class="ident">into</span>(),
+<span class="kw">impl </span>SerializedEnum {
+    <span class="doccomment">/// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `enum_type` Specifies the type of enum to deserialize into. Maps into one of the values specified in
+    /// the impl for this struct.
+    /// * `value` Specifies the string value to be used for the type.
+    </span><span class="kw">pub fn </span>new&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(enum_type: S1, value: S2) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            r#type: enum_type.into(),
+            value: value.into(),
         }
     }
 
-    <span class="doccomment">/// Converts this value to an instance of an asset identifier if it has a compatible type.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_asset_identifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetIdentifier</span><span class="op">&gt;</span> {
-        <span class="ident">AssetIdentifier::from_serialized_enum</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Converts this value to an instance of an asset identifier if it has a compatible type.
+    </span><span class="kw">pub fn </span>to_asset_identifier(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AssetResult&lt;AssetIdentifier&gt; {
+        AssetIdentifier::from_serialized_enum(<span class="self">self</span>)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
-    <span class="kw">use</span> <span class="ident">uuid::Uuid</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum;
+    <span class="kw">use </span>uuid::Uuid;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_to_asset_identifier_uuid_success</span>() {
-        <span class="kw">let</span> <span class="ident">uuid</span> <span class="op">=</span> <span class="ident">Uuid::new_v4</span>().<span class="ident">to_string</span>();
-        <span class="kw">let</span> <span class="ident">identifier</span> <span class="op">=</span> <span class="ident">SerializedEnum::new</span>(<span class="string">&quot;asset_uuid&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">uuid</span>)
-            .<span class="ident">to_asset_identifier</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the conversion to succeed to asset identifier&quot;</span>);
-        <span class="kw">match</span> <span class="ident">identifier</span> {
-            <span class="ident">AssetIdentifier::AssetUuid</span>(<span class="ident">asset_uuid</span>) =&gt; {
-                <span class="macro">assert_eq!</span>(<span class="ident">uuid</span>, <span class="ident">asset_uuid</span>, <span class="string">&quot;expected the proper uuid to be derived&quot;</span>,);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_to_asset_identifier_uuid_success() {
+        <span class="kw">let </span>uuid = Uuid::new_v4().to_string();
+        <span class="kw">let </span>identifier = SerializedEnum::new(<span class="string">&quot;asset_uuid&quot;</span>, <span class="kw-2">&amp;</span>uuid)
+            .to_asset_identifier()
+            .expect(<span class="string">&quot;expected the conversion to succeed to asset identifier&quot;</span>);
+        <span class="kw">match </span>identifier {
+            AssetIdentifier::AssetUuid(asset_uuid) =&gt; {
+                <span class="macro">assert_eq!</span>(uuid, asset_uuid, <span class="string">&quot;expected the proper uuid to be derived&quot;</span>,);
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived: {:?}&quot;</span>, <span class="ident">identifier</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived: {:?}&quot;</span>, identifier),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_to_asset_identifier_address_success</span>() {
-        <span class="kw">let</span> <span class="ident">identifier</span> <span class="op">=</span> <span class="ident">SerializedEnum::new</span>(<span class="string">&quot;scope_address&quot;</span>, <span class="string">&quot;my-address&quot;</span>)
-            .<span class="ident">to_asset_identifier</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the conversion to succeed to asset identifier&quot;</span>);
-        <span class="kw">match</span> <span class="ident">identifier</span> {
-            <span class="ident">AssetIdentifier::ScopeAddress</span>(<span class="ident">scope_address</span>) =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_to_asset_identifier_address_success() {
+        <span class="kw">let </span>identifier = SerializedEnum::new(<span class="string">&quot;scope_address&quot;</span>, <span class="string">&quot;my-address&quot;</span>)
+            .to_asset_identifier()
+            .expect(<span class="string">&quot;expected the conversion to succeed to asset identifier&quot;</span>);
+        <span class="kw">match </span>identifier {
+            AssetIdentifier::ScopeAddress(scope_address) =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;my-address&quot;</span>, <span class="ident">scope_address</span>,
+                    <span class="string">&quot;my-address&quot;</span>, scope_address,
                     <span class="string">&quot;expected the proper address to be derived&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived: {:?}&quot;</span>, <span class="ident">identifier</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived: {:?}&quot;</span>, identifier),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_to_asset_identifier_failure</span>() {
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">SerializedEnum::new</span>(<span class="string">&quot;incorrect_variant&quot;</span>, <span class="string">&quot;some-value&quot;</span>)
-            .<span class="ident">to_asset_identifier</span>()
-            .<span class="ident">expect_err</span>(<span class="string">&quot;expected an incorrect variant to produce an error&quot;</span>);
-        <span class="kw">match</span> <span class="ident">err</span> {
-            <span class="ident">ContractError::UnexpectedSerializedEnum</span> {
-                <span class="ident">received_type</span>,
-                <span class="ident">explanation</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_to_asset_identifier_failure() {
+        <span class="kw">let </span>err = SerializedEnum::new(<span class="string">&quot;incorrect_variant&quot;</span>, <span class="string">&quot;some-value&quot;</span>)
+            .to_asset_identifier()
+            .expect_err(<span class="string">&quot;expected an incorrect variant to produce an error&quot;</span>);
+        <span class="kw">match </span>err {
+            ContractError::UnexpectedSerializedEnum {
+                received_type,
+                explanation,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;incorrect_variant&quot;</span>, <span class="ident">received_type</span>,
+                    <span class="string">&quot;incorrect_variant&quot;</span>, received_type,
                     <span class="string">&quot;expected the unexpected type to be provided in the error message&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="macro">format!</span>(<span class="string">&quot;Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]&quot;</span>),
-                    <span class="ident">explanation</span>,
+                    explanation,
                     <span class="string">&quot;expected the explanation to list the type of the enum and the expected values&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">err</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, err),
         };
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/validation/validate_execute_msg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>validate_execute_msg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/validation/validate_execute_msg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>validate_execute_msg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -615,622 +615,622 @@
 <span id="615">615</span>
 <span id="616">616</span>
 <span id="617">617</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::ExecuteMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases::AssetResult</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_init_msg</span>::{
-    <span class="ident">validate_asset_definition</span>, <span class="ident">validate_verifier_with_provided_errors</span>,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+<span class="kw">use </span><span class="kw">crate</span>::core::msg::ExecuteMsg;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::asset_identifier::AssetIdentifier;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::AssetResult;
+<span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+<span class="kw">use </span><span class="kw">crate</span>::validation::validate_init_msg::{
+    validate_asset_definition, validate_verifier_with_provided_errors,
 };
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// The main branch of validation for an execute msg.  Funnels the intercepted value based on variant</span>
-<span class="doccomment">/// to one of the various sub-functions in this module.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `msg` An execute msg to process.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_execute_msg</span>(<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">ExecuteMsg</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">msg</span> {
-        <span class="ident">ExecuteMsg::OnboardAsset</span> {
-            <span class="ident">identifier</span>,
-            <span class="ident">asset_type</span>,
-            <span class="ident">verifier_address</span>,
+<span class="doccomment">/// The main branch of validation for an execute msg.  Funnels the intercepted value based on variant
+/// to one of the various sub-functions in this module.
+///
+/// # Parameters
+///
+/// * `msg` An execute msg to process.
+</span><span class="kw">pub fn </span>validate_execute_msg(msg: <span class="kw-2">&amp;</span>ExecuteMsg) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">match </span>msg {
+        ExecuteMsg::OnboardAsset {
+            identifier,
+            asset_type,
+            verifier_address,
             ..
-        } =&gt; <span class="ident">validate_onboard_asset</span>(<span class="ident">identifier</span>, <span class="ident">asset_type</span>, <span class="ident">verifier_address</span>),
-        <span class="ident">ExecuteMsg::VerifyAsset</span> { <span class="ident">identifier</span>, .. } =&gt; <span class="ident">validate_verify_asset</span>(<span class="ident">identifier</span>),
-        <span class="ident">ExecuteMsg::AddAssetDefinition</span> { <span class="ident">asset_definition</span> } =&gt; {
-            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>())
+        } =&gt; validate_onboard_asset(identifier, asset_type, verifier_address),
+        ExecuteMsg::VerifyAsset { identifier, .. } =&gt; validate_verify_asset(identifier),
+        ExecuteMsg::AddAssetDefinition { asset_definition } =&gt; {
+            validate_asset_definition(<span class="kw-2">&amp;</span>asset_definition.as_asset_definition())
         }
-        <span class="ident">ExecuteMsg::UpdateAssetDefinition</span> { <span class="ident">asset_definition</span> } =&gt; {
-            <span class="ident">validate_asset_definition</span>(<span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">as_asset_definition</span>())
+        ExecuteMsg::UpdateAssetDefinition { asset_definition } =&gt; {
+            validate_asset_definition(<span class="kw-2">&amp;</span>asset_definition.as_asset_definition())
         }
-        <span class="ident">ExecuteMsg::ToggleAssetDefinition</span> { <span class="ident">asset_type</span>, .. } =&gt; {
-            <span class="ident">validate_toggle_asset_definition</span>(<span class="ident">asset_type</span>)
+        ExecuteMsg::ToggleAssetDefinition { asset_type, .. } =&gt; {
+            validate_toggle_asset_definition(asset_type)
         }
-        <span class="ident">ExecuteMsg::AddAssetVerifier</span> {
-            <span class="ident">asset_type</span>,
-            <span class="ident">verifier</span>,
-        } =&gt; <span class="ident">validate_asset_verifier_msg</span>(<span class="ident">asset_type</span>, <span class="ident">verifier</span>),
-        <span class="ident">ExecuteMsg::UpdateAssetVerifier</span> {
-            <span class="ident">asset_type</span>,
-            <span class="ident">verifier</span>,
-        } =&gt; <span class="ident">validate_asset_verifier_msg</span>(<span class="ident">asset_type</span>, <span class="ident">verifier</span>),
-        <span class="ident">ExecuteMsg::UpdateAccessRoutes</span> {
-            <span class="ident">identifier</span>,
-            <span class="ident">owner_address</span>,
+        ExecuteMsg::AddAssetVerifier {
+            asset_type,
+            verifier,
+        } =&gt; validate_asset_verifier_msg(asset_type, verifier),
+        ExecuteMsg::UpdateAssetVerifier {
+            asset_type,
+            verifier,
+        } =&gt; validate_asset_verifier_msg(asset_type, verifier),
+        ExecuteMsg::UpdateAccessRoutes {
+            identifier,
+            owner_address,
             ..
-        } =&gt; <span class="ident">validate_update_access_routes</span>(<span class="ident">identifier</span>, <span class="ident">owner_address</span>),
-        <span class="ident">ExecuteMsg::DeleteAssetDefinition</span> { <span class="ident">asset_type</span> } =&gt; {
-            <span class="ident">validate_delete_asset_definition</span>(<span class="ident">asset_type</span>)
+        } =&gt; validate_update_access_routes(identifier, owner_address),
+        ExecuteMsg::DeleteAssetDefinition { asset_type } =&gt; {
+            validate_delete_asset_definition(asset_type)
         }
     }
 }
 
-<span class="doccomment">/// Validates the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset) variant of the</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an</span>
-<span class="doccomment">/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when</span>
-<span class="doccomment">/// invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)</span>
-<span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="doccomment">/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// stored internally in the contract.</span>
-<span class="doccomment">/// * `verifier_address` The bech32 address of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)</span>
-<span class="doccomment">/// held within the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// for onboarding.</span>
-<span class="kw">fn</span> <span class="ident">validate_onboard_asset</span>(
-    <span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>,
-    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">verifier_address</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) <span class="op">=</span> <span class="ident">get_asset_identifier_invalid_message</span>(<span class="ident">identifier</span>) {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="ident">message</span>);
+<span class="doccomment">/// Validates the [OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+/// * `asset_type` The type of asset to onboard, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// stored internally in the contract.
+/// * `verifier_address` The bech32 address of a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2)
+/// held within the target [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// for onboarding.
+</span><span class="kw">fn </span>validate_onboard_asset(
+    identifier: <span class="kw-2">&amp;</span>SerializedEnum,
+    asset_type: <span class="kw-2">&amp;</span>str,
+    verifier_address: <span class="kw-2">&amp;</span>str,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
     }
-    <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+    <span class="kw">if </span>asset_type.is_empty() {
+        invalid_fields.push(<span class="string">&quot;asset_type: must not be blank&quot;</span>.to_string());
     }
-    <span class="kw">if</span> <span class="ident">verifier_address</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;verifier_address: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+    <span class="kw">if </span>verifier_address.is_empty() {
+        invalid_fields.push(<span class="string">&quot;verifier_address: must not be blank&quot;</span>.to_string());
     }
-    <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::OnboardAsset&quot;</span>, <span class="ident">invalid_fields</span>)
+    gen_validation_response(<span class="string">&quot;ExecuteMsg::OnboardAsset&quot;</span>, invalid_fields)
 }
 
-<span class="doccomment">/// Validates the [VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset) variant of the</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an</span>
-<span class="doccomment">/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when</span>
-<span class="doccomment">/// invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)</span>
-<span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="kw">fn</span> <span class="ident">validate_verify_asset</span>(<span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) <span class="op">=</span> <span class="ident">get_asset_identifier_invalid_message</span>(<span class="ident">identifier</span>) {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="ident">message</span>);
+<span class="doccomment">/// Validates the [VerifyAsset](crate::core::msg::ExecuteMsg::VerifyAsset) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+</span><span class="kw">fn </span>validate_verify_asset(identifier: <span class="kw-2">&amp;</span>SerializedEnum) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
     }
-    <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>, <span class="ident">invalid_fields</span>)
+    gen_validation_response(<span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>, invalid_fields)
 }
 
-<span class="doccomment">/// Validates the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition) variant of the</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an</span>
-<span class="doccomment">/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when</span>
-<span class="doccomment">/// invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// stored internally in the contract.</span>
-<span class="kw">fn</span> <span class="ident">validate_toggle_asset_definition</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+<span class="doccomment">/// Validates the [ToggleAssetDefinition](crate::core::msg::ExecuteMsg::ToggleAssetDefinition) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `asset_type` The type of asset to toggle, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// stored internally in the contract.
+</span><span class="kw">fn </span>validate_toggle_asset_definition(asset_type: <span class="kw-2">&amp;</span>str) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if </span>asset_type.is_empty() {
+        invalid_fields.push(<span class="string">&quot;asset_type: must not be blank&quot;</span>.to_string());
     }
-    <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::ToggleAssetDefinition&quot;</span>, <span class="ident">invalid_fields</span>)
+    gen_validation_response(<span class="string">&quot;ExecuteMsg::ToggleAssetDefinition&quot;</span>, invalid_fields)
 }
 
-<span class="doccomment">/// Validates the [AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier) or [UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)</span>
-<span class="doccomment">/// variants of the [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on</span>
-<span class="doccomment">/// success, or an  [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)</span>
-<span class="doccomment">/// error when invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// stored internally in the contract.</span>
-<span class="doccomment">/// * `verifier` The verifier detail to add or update.</span>
-<span class="kw">fn</span> <span class="ident">validate_asset_verifier_msg</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">verifier</span>: <span class="kw-2">&amp;</span><span class="ident">VerifierDetailV2</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">errors</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-        <span class="macro">vec!</span>[<span class="string">&quot;asset_type must not be empty&quot;</span>.<span class="ident">to_string</span>()].<span class="ident">to_some</span>()
-    } <span class="kw">else</span> {
-        <span class="prelude-val">None</span>
-    };
-    <span class="ident">validate_verifier_with_provided_errors</span>(<span class="ident">verifier</span>, <span class="ident">errors</span>)
+<span class="doccomment">/// Validates the [AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier) or [UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
+/// variants of the [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on
+/// success, or an  [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
+/// error when invalid fields are found.
+///
+/// # Parameters
+///
+/// * `asset_type` The type of asset to add or update, which should refer to an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// stored internally in the contract.
+/// * `verifier` The verifier detail to add or update.
+</span><span class="kw">fn </span>validate_asset_verifier_msg(asset_type: <span class="kw-2">&amp;</span>str, verifier: <span class="kw-2">&amp;</span>VerifierDetailV2) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>errors = <span class="kw">if </span>asset_type.is_empty() {
+        <span class="macro">vec!</span>[<span class="string">&quot;asset_type must not be empty&quot;</span>.to_string()].to_some()
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>};
+    validate_verifier_with_provided_errors(verifier, errors)
 }
 
-<span class="doccomment">/// Validates the [UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes) variant of the</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an</span>
-<span class="doccomment">/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when</span>
-<span class="doccomment">/// invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)</span>
-<span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="doccomment">/// * `owner_address` The bech32 address of the account that owns the access routes.</span>
-<span class="kw">fn</span> <span class="ident">validate_update_access_routes</span>(
-    <span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>,
-    <span class="ident">owner_address</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) <span class="op">=</span> <span class="ident">get_asset_identifier_invalid_message</span>(<span class="ident">identifier</span>) {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="ident">message</span>);
+<span class="doccomment">/// Validates the [UpdateAccessRoutes](crate::core::msg::ExecuteMsg::UpdateAccessRoutes) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+/// * `owner_address` The bech32 address of the account that owns the access routes.
+</span><span class="kw">fn </span>validate_update_access_routes(
+    identifier: <span class="kw-2">&amp;</span>SerializedEnum,
+    owner_address: <span class="kw-2">&amp;</span>str,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(message) = get_asset_identifier_invalid_message(identifier) {
+        invalid_fields.push(message);
     }
-    <span class="kw">if</span> <span class="ident">owner_address</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;owner_address: must not be blank&quot;</span>.<span class="ident">to_string</span>());
+    <span class="kw">if </span>owner_address.is_empty() {
+        invalid_fields.push(<span class="string">&quot;owner_address: must not be blank&quot;</span>.to_string());
     }
-    <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, <span class="ident">invalid_fields</span>)
+    gen_validation_response(<span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, invalid_fields)
 }
 
-<span class="doccomment">/// Validates the [DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition) variant of the</span>
-<span class="doccomment">/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an</span>
-<span class="doccomment">/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when</span>
-<span class="doccomment">/// invalid fields are found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `asset_type` The asset type to identify the [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-<span class="doccomment">/// to delete.</span>
-<span class="kw">fn</span> <span class="ident">validate_delete_asset_definition</span>(<span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+<span class="doccomment">/// Validates the [DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition) variant of the
+/// [ExecuteMsg](crate::core::msg::ExecuteMsg).  Returning an empty response on success, or an
+/// [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields) error when
+/// invalid fields are found.
+///
+/// # Parameters
+///
+/// * `asset_type` The asset type to identify the [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+/// to delete.
+</span><span class="kw">fn </span>validate_delete_asset_definition(asset_type: <span class="kw-2">&amp;</span>str) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>invalid_fields: Vec&lt;String&gt; = <span class="macro">vec!</span>[];
 
-    <span class="kw">if</span> <span class="ident">asset_type</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">invalid_fields</span>.<span class="ident">push</span>(<span class="string">&quot;asset_type: must not be blank&quot;</span>.<span class="ident">to_string</span>())
+    <span class="kw">if </span>asset_type.is_empty() {
+        invalid_fields.push(<span class="string">&quot;asset_type: must not be blank&quot;</span>.to_string())
     }
 
-    <span class="ident">gen_validation_response</span>(<span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">invalid_fields</span>)
+    gen_validation_response(<span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, invalid_fields)
 }
 
-<span class="doccomment">/// Validates a serialized enum to ensure that it can convert to a valid [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier),</span>
-<span class="doccomment">/// returning an optional string that is only populated if an error is present.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)</span>
-<span class="doccomment">/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).</span>
-<span class="kw">fn</span> <span class="ident">get_asset_identifier_invalid_message</span>(<span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">SerializedEnum</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">identifier</span>.<span class="ident">to_asset_identifier</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">identifier</span>) =&gt; <span class="kw">match</span> <span class="ident">identifier</span> {
-            <span class="ident">AssetIdentifier::AssetUuid</span>(<span class="ident">asset_uuid</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">asset_uuid</span>.<span class="ident">is_empty</span>() {
-                    <span class="string">&quot;identifier:asset_uuid: must not be blank&quot;</span>
-                        .<span class="ident">to_string</span>()
-                        .<span class="ident">to_some</span>()
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+<span class="doccomment">/// Validates a serialized enum to ensure that it can convert to a valid [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier),
+/// returning an optional string that is only populated if an error is present.
+///
+/// # Parameters
+///
+/// * `identifier` An [AssetIdentifier](crate::core::types::asset_identifier::AssetIdentifier)
+/// encapsulated within a [SerializedEnum](crate::core::types::serialized_enum::SerializedEnum).
+</span><span class="kw">fn </span>get_asset_identifier_invalid_message(identifier: <span class="kw-2">&amp;</span>SerializedEnum) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+    <span class="kw">match </span>identifier.to_asset_identifier() {
+        <span class="prelude-val">Ok</span>(identifier) =&gt; <span class="kw">match </span>identifier {
+            AssetIdentifier::AssetUuid(asset_uuid) =&gt; {
+                <span class="kw">if </span>asset_uuid.is_empty() {
+                    <span class="string">&quot;identifier:asset_uuid: must not be blank&quot;
+                        </span>.to_string()
+                        .to_some()
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
-            <span class="ident">AssetIdentifier::ScopeAddress</span>(<span class="ident">scope_address</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">scope_address</span>.<span class="ident">is_empty</span>() {
-                    <span class="string">&quot;identifier:scope_address: must not be blank&quot;</span>
-                        .<span class="ident">to_string</span>()
-                        .<span class="ident">to_some</span>()
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+            AssetIdentifier::ScopeAddress(scope_address) =&gt; {
+                <span class="kw">if </span>scope_address.is_empty() {
+                    <span class="string">&quot;identifier:scope_address: must not be blank&quot;
+                        </span>.to_string()
+                        .to_some()
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
         },
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="ident">ContractError::UnexpectedSerializedEnum</span> {
-                <span class="ident">received_type</span>,
-                <span class="ident">explanation</span>,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
+            ContractError::UnexpectedSerializedEnum {
+                received_type,
+                explanation,
             } =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;identifier: received type [{received_type}]: {explanation}&quot;</span>)
             }
-            <span class="kw">_</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;identifier: received unexpected error message: {e:?}&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;identifier: received unexpected error message: {e:?}&quot;</span>),
         }
-        .<span class="ident">to_some</span>(),
+        .to_some(),
     }
 }
 
-<span class="doccomment">/// Takes the invalid fields produced by the various validation functions, and, if they are not</span>
-<span class="doccomment">/// empty, returns an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)</span>
-<span class="doccomment">/// error.  If they are empty, returns an empty response.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `message_type` A free-form string that defines the [ExecuteMsg](crate::core::msg::ExecuteMsg)</span>
-<span class="doccomment">/// variant that is being validated.</span>
-<span class="doccomment">/// * `invalid_fields` A vector containing error messages produced by a validation function.  If</span>
-<span class="doccomment">/// empty, this indicates that validation found no issue with input.</span>
-<span class="kw">fn</span> <span class="ident">gen_validation_response</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">message_type</span>: <span class="ident">S</span>,
-    <span class="ident">invalid_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">invalid_fields</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">ContractError::InvalidMessageFields</span> {
-            <span class="ident">message_type</span>: <span class="ident">message_type</span>.<span class="ident">into</span>(),
-            <span class="ident">invalid_fields</span>,
+<span class="doccomment">/// Takes the invalid fields produced by the various validation functions, and, if they are not
+/// empty, returns an [InvalidMessageFields](crate::core::error::ContractError::InvalidMessageFields)
+/// error.  If they are empty, returns an empty response.
+///
+/// # Parameters
+///
+/// * `message_type` A free-form string that defines the [ExecuteMsg](crate::core::msg::ExecuteMsg)
+/// variant that is being validated.
+/// * `invalid_fields` A vector containing error messages produced by a validation function.  If
+/// empty, this indicates that validation found no issue with input.
+</span><span class="kw">fn </span>gen_validation_response&lt;S: Into&lt;String&gt;&gt;(
+    message_type: S,
+    invalid_fields: Vec&lt;String&gt;,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">if </span>!invalid_fields.is_empty() {
+        ContractError::InvalidMessageFields {
+            message_type: message_type.into(),
+            invalid_fields,
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
+        .to_err()
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validation::validate_execute_msg</span>::{
-        <span class="ident">validate_delete_asset_definition</span>, <span class="ident">validate_update_access_routes</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::serialized_enum::SerializedEnum;
+    <span class="kw">use </span><span class="kw">crate</span>::validation::validate_execute_msg::{
+        validate_delete_asset_definition, validate_update_access_routes,
     };
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">core</span>::{<span class="ident">error::ContractError</span>, <span class="ident">types::asset_identifier::AssetIdentifier</span>},
-        <span class="ident">util::aliases::AssetResult</span>,
+    <span class="kw">use crate</span>::{
+        core::{error::ContractError, types::asset_identifier::AssetIdentifier},
+        util::aliases::AssetResult,
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">validate_onboard_asset</span>, <span class="ident">validate_toggle_asset_definition</span>, <span class="ident">validate_verify_asset</span>};
+    <span class="kw">use super</span>::{validate_onboard_asset, validate_toggle_asset_definition, validate_verify_asset};
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_onboard_asset_success_for_asset_uuid</span>() {
-        <span class="ident">validate_onboard_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;asset_uuid&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_onboard_asset_success_for_asset_uuid() {
+        validate_onboard_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;asset_uuid&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;asset_type&quot;</span>,
             <span class="string">&quot;verifier_address&quot;</span>,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected validation to pass when all arguments are properly supplied&quot;</span>);
+        .expect(<span class="string">&quot;expected validation to pass when all arguments are properly supplied&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_onboard_asset_success_for_scope_address</span>() {
-        <span class="ident">validate_onboard_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;scope_address&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_onboard_asset_success_for_scope_address() {
+        validate_onboard_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::scope_address(<span class="string">&quot;scope_address&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;asset_type&quot;</span>,
             <span class="string">&quot;verifier_address&quot;</span>,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected validation to pass when all arguments are properly supplied&quot;</span>);
+        .expect(<span class="string">&quot;expected validation to pass when all arguments are properly supplied&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_onboard_asset_invalid_asset_type</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_onboard_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;asset_uuid&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_onboard_asset_invalid_asset_type() {
+        <span class="kw">let </span>result = validate_onboard_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;asset_uuid&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;&quot;</span>,
             <span class="string">&quot;verifier_address&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::OnboardAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
-                <span class="string">&quot;incorrect message type for error&quot;</span>
-            );
+                message_type.as_str(),
+                <span class="string">&quot;incorrect message type for error&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
-                <span class="string">&quot;expected only a single invalid field to be found&quot;</span>
-            );
+                invalid_fields.len(),
+                <span class="string">&quot;expected only a single invalid field to be found&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;asset_type: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_onboard_asset_invalid_verifier_address</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_onboard_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;asset_uuid&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_onboard_asset_invalid_verifier_address() {
+        <span class="kw">let </span>result = validate_onboard_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;asset_uuid&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;asset_type&quot;</span>,
             <span class="string">&quot;&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::OnboardAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
-                <span class="string">&quot;incorrect message type for error&quot;</span>
-            );
+                message_type.as_str(),
+                <span class="string">&quot;incorrect message type for error&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
-                <span class="string">&quot;expected only a single invalid field to be found&quot;</span>
-            );
+                invalid_fields.len(),
+                <span class="string">&quot;expected only a single invalid field to be found&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;verifier_address: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_onboard_asset_invalid_identifier</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_onboard_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">SerializedEnum::new</span>(<span class="string">&quot;incorrect_variant&quot;</span>, <span class="string">&quot;value&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_onboard_asset_invalid_identifier() {
+        <span class="kw">let </span>result = validate_onboard_asset(
+            <span class="kw-2">&amp;</span>SerializedEnum::new(<span class="string">&quot;incorrect_variant&quot;</span>, <span class="string">&quot;value&quot;</span>),
             <span class="string">&quot;asset_type&quot;</span>,
             <span class="string">&quot;verifier_address&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::OnboardAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
+                message_type.as_str(),
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier: received type [incorrect_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_verify_asset_success_for_asset_uuid</span>() {
-        <span class="ident">validate_verify_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;4b9601f4-a0ad-11ec-b214-2f7b0096dea6&quot;</span>)
-                .<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_verify_asset_success_for_asset_uuid() {
+        validate_verify_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;4b9601f4-a0ad-11ec-b214-2f7b0096dea6&quot;</span>)
+                .to_serialized_enum(),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
+        .expect(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_verify_asset_success_for_scope_address</span>() {
-        <span class="ident">validate_verify_asset</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;scope1qps4rfeu5zk3rm9r2gp36dl9r3tq6rpyqd&quot;</span>)
-                .<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_verify_asset_success_for_scope_address() {
+        validate_verify_asset(
+            <span class="kw-2">&amp;</span>AssetIdentifier::scope_address(<span class="string">&quot;scope1qps4rfeu5zk3rm9r2gp36dl9r3tq6rpyqd&quot;</span>)
+                .to_serialized_enum(),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
+        .expect(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_verify_asset_invalid_asset_uuid</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_verify_asset</span>(<span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>());
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_verify_asset_invalid_asset_uuid() {
+        <span class="kw">let </span>result = validate_verify_asset(<span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;&quot;</span>).to_serialized_enum());
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
+                message_type.as_str(),
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier:asset_uuid: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_verify_asset_invalid_scope_address</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
-            <span class="ident">validate_verify_asset</span>(<span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>());
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_verify_asset_invalid_scope_address() {
+        <span class="kw">let </span>result =
+            validate_verify_asset(<span class="kw-2">&amp;</span>AssetIdentifier::scope_address(<span class="string">&quot;&quot;</span>).to_serialized_enum());
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
+                message_type.as_str(),
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier:scope_address: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_verify_asset_invalid_identifier</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_verify_asset</span>(<span class="kw-2">&amp;</span><span class="ident">SerializedEnum::new</span>(<span class="string">&quot;incompatible_variant&quot;</span>, <span class="string">&quot;value&quot;</span>));
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_verify_asset_invalid_identifier() {
+        <span class="kw">let </span>result = validate_verify_asset(<span class="kw-2">&amp;</span>SerializedEnum::new(<span class="string">&quot;incompatible_variant&quot;</span>, <span class="string">&quot;value&quot;</span>));
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
+                message_type.as_str(),
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier: received type [incompatible_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_toggle_asset_definition_success</span>() {
-        <span class="ident">validate_toggle_asset_definition</span>(<span class="string">&quot;asset_type&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_toggle_asset_definition_success() {
+        validate_toggle_asset_definition(<span class="string">&quot;asset_type&quot;</span>)
+            .expect(<span class="string">&quot;expected the validation to pass when all fields are correctly supplied&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_toggle_asset_definition_invalid_asset_type</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_toggle_asset_definition</span>(<span class="string">&quot;&quot;</span>);
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_toggle_asset_definition_invalid_asset_type() {
+        <span class="kw">let </span>result = validate_toggle_asset_definition(<span class="string">&quot;&quot;</span>);
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::ToggleAssetDefinition&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
-                <span class="string">&quot;incorrect message type for error&quot;</span>
-            );
+                message_type.as_str(),
+                <span class="string">&quot;incorrect message type for error&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
-                <span class="string">&quot;expected only a single invalid field to be found&quot;</span>
-            );
+                invalid_fields.len(),
+                <span class="string">&quot;expected only a single invalid field to be found&quot;
+            </span>);
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;asset_type: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
-                <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>
-            );
+                invalid_fields.first().unwrap().as_str(),
+                <span class="string">&quot;expected the appropriate error message to be returned&quot;
+            </span>);
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_update_access_routes_invalid_identifier_asset_uuid</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_update_access_routes</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::asset_uuid</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_update_access_routes_invalid_identifier_asset_uuid() {
+        <span class="kw">let </span>result = validate_update_access_routes(
+            <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(<span class="string">&quot;&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;owner address&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, <span class="ident">message_type</span>,
+                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, message_type,
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier:asset_uuid: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
+                invalid_fields.first().unwrap(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_update_access_routes_invalid_identifier_scope_address</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_update_access_routes</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_update_access_routes_invalid_identifier_scope_address() {
+        <span class="kw">let </span>result = validate_update_access_routes(
+            <span class="kw-2">&amp;</span>AssetIdentifier::scope_address(<span class="string">&quot;&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;owner address&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, <span class="ident">message_type</span>,
+                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, message_type,
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier:scope_address: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
+                invalid_fields.first().unwrap(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_update_access_routes_invalid_owner_address</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_update_access_routes</span>(
-            <span class="kw-2">&amp;</span><span class="ident">AssetIdentifier::scope_address</span>(<span class="string">&quot;scope address&quot;</span>).<span class="ident">to_serialized_enum</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_update_access_routes_invalid_owner_address() {
+        <span class="kw">let </span>result = validate_update_access_routes(
+            <span class="kw-2">&amp;</span>AssetIdentifier::scope_address(<span class="string">&quot;scope address&quot;</span>).to_serialized_enum(),
             <span class="string">&quot;&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, <span class="ident">message_type</span>,
+                <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>, message_type,
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;owner_address: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
+                invalid_fields.first().unwrap(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_update_access_routes_invalid_identifier</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_update_access_routes</span>(
-            <span class="kw-2">&amp;</span><span class="ident">SerializedEnum::new</span>(<span class="string">&quot;weird_variant&quot;</span>, <span class="string">&quot;value&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_update_access_routes_invalid_identifier() {
+        <span class="kw">let </span>result = validate_update_access_routes(
+            <span class="kw-2">&amp;</span>SerializedEnum::new(<span class="string">&quot;weird_variant&quot;</span>, <span class="string">&quot;value&quot;</span>),
             <span class="string">&quot;owner_address&quot;</span>,
         );
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>,
-                <span class="ident">message_type</span>.<span class="ident">as_str</span>(),
+                message_type.as_str(),
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;identifier: received type [weird_variant]: Invalid AssetIdentifier. Expected one of [asset_uuid, scope_address]&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>(),
+                invalid_fields.first().unwrap().as_str(),
                 <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>,
             );
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_success</span>() {
-        <span class="ident">validate_delete_asset_definition</span>(<span class="string">&quot;heloc&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the validation for asset type to pass&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_delete_asset_definition_success() {
+        validate_delete_asset_definition(<span class="string">&quot;heloc&quot;</span>)
+            .expect(<span class="string">&quot;expected the validation for asset type to pass&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_delete_asset_definition_invalid_asset_type</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">validate_delete_asset_definition</span>(<span class="string">&quot;&quot;</span>);
-        <span class="ident">test_invalid_message_fields</span>(<span class="ident">result</span>, <span class="op">|</span><span class="ident">message_type</span>, <span class="ident">invalid_fields</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_delete_asset_definition_invalid_asset_type() {
+        <span class="kw">let </span>result = validate_delete_asset_definition(<span class="string">&quot;&quot;</span>);
+        test_invalid_message_fields(result, |message_type, invalid_fields| {
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, <span class="ident">message_type</span>,
+                <span class="string">&quot;ExecuteMsg::DeleteAssetDefinition&quot;</span>, message_type,
                 <span class="string">&quot;incorrect message type for error&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="number">1</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">len</span>(),
+                invalid_fields.len(),
                 <span class="string">&quot;expected only a single invalid field to be found&quot;</span>,
             );
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;asset_type: must not be blank&quot;</span>,
-                <span class="ident">invalid_fields</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>(),
-                <span class="string">&quot;expected the appropriate error message to be returned&quot;</span>
-            );
+                invalid_fields.first().unwrap(),
+                <span class="string">&quot;expected the appropriate error message to be returned&quot;
+            </span>);
         });
     }
 
-    <span class="comment">// Extracts the InvalidMessageFunds error data from a response from one of the functions</span>
-    <span class="comment">// in this file, allowing a unit test to target the relevant information without as much</span>
-    <span class="comment">// boilerplate nonsense.</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_message_fields</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">result</span>: <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>, <span class="ident">test_func</span>: <span class="ident">F</span>)
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; (),
+    <span class="comment">// Extracts the InvalidMessageFunds error data from a response from one of the functions
+    // in this file, allowing a unit test to target the relevant information without as much
+    // boilerplate nonsense.
+    </span><span class="kw">fn </span>test_invalid_message_fields&lt;F&gt;(result: AssetResult&lt;()&gt;, test_func: F)
+    <span class="kw">where
+        </span>F: Fn(String, Vec&lt;String&gt;) -&gt; (),
     {
-        <span class="kw">match</span> <span class="ident">result</span> {
+        <span class="kw">match </span>result {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;expected the result to be an error&quot;</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">match</span> <span class="ident">e</span> {
-                <span class="ident">ContractError::InvalidMessageFields</span> {
-                    <span class="ident">message_type</span>,
-                    <span class="ident">invalid_fields</span>,
-                } =&gt; <span class="ident">test_func</span>(<span class="ident">message_type</span>, <span class="ident">invalid_fields</span>),
-                <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, <span class="ident">e</span>),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
+                ContractError::InvalidMessageFields {
+                    message_type,
+                    invalid_fields,
+                } =&gt; test_func(message_type, invalid_fields),
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, e),
             },
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

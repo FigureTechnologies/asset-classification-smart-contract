@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/instantiate/init_contract.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>init_contract.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/instantiate/init_contract.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>init_contract.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -352,359 +352,359 @@
 <span id="352">352</span>
 <span id="353">353</span>
 <span id="354">354</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_v2</span>, <span class="ident">insert_asset_definition_v3</span>, <span class="ident">StateV2</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::version_info::migrate_version_info</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::aliases</span>::{<span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::functions::generate_asset_attribute_name</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::msg::InitMsg;
+<span class="kw">use </span><span class="kw">crate</span>::core::state::{config_v2, insert_asset_definition_v3, StateV2};
+<span class="kw">use </span><span class="kw">crate</span>::migrate::version_info::migrate_version_info;
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{DepsMutC, EntryPointResponse};
+<span class="kw">use </span><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty;
+<span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::{EventAttributes, EventType};
+<span class="kw">use </span><span class="kw">crate</span>::util::functions::generate_asset_attribute_name;
 
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">CosmosMsg</span>, <span class="ident">Env</span>, <span class="ident">MessageInfo</span>, <span class="ident">Response</span>};
-<span class="kw">use</span> <span class="ident">provwasm_std</span>::{<span class="ident">bind_name</span>, <span class="ident">NameBinding</span>, <span class="ident">ProvenanceMsg</span>};
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
+<span class="kw">use </span>cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
+<span class="kw">use </span>provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
+<span class="kw">use </span>result_extensions::ResultExtensions;
 
-<span class="doccomment">/// The main functionality executed when the smart contract is first instantiated.   This creates</span>
-<span class="doccomment">/// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided</span>
-<span class="doccomment">/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init</span>
-<span class="doccomment">/// msg.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful</span>
-<span class="doccomment">/// resources like contract internal storage and a querier to retrieve blockchain objects.</span>
-<span class="doccomment">/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s</span>
-<span class="doccomment">/// details, as well as blockchain information at the time of the transaction.</span>
-<span class="doccomment">/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender</span>
-<span class="doccomment">/// of the instantiation message, as well as the funds provided as an amount during the transaction.</span>
-<span class="doccomment">/// * `msg` A custom instantiation message defined by this contract for creating the initial</span>
-<span class="doccomment">/// configuration used by the contract.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init_contract</span>(
-    <span class="ident">deps</span>: <span class="ident">DepsMutC</span>,
-    <span class="ident">env</span>: <span class="ident">Env</span>,
-    <span class="ident">info</span>: <span class="ident">MessageInfo</span>,
-    <span class="ident">msg</span>: <span class="ident">InitMsg</span>,
-) -&gt; <span class="ident">EntryPointResponse</span> {
-    <span class="ident">check_funds_are_empty</span>(<span class="kw-2">&amp;</span><span class="ident">info</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">messages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CosmosMsg</span><span class="op">&lt;</span><span class="ident">ProvenanceMsg</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="comment">// If specified true, the contract needs to own its root name to be effective at preventing</span>
-    <span class="comment">// asset classification &quot;neighbors&quot; that were never intended to be created from being reserved</span>
-    <span class="comment">// by external callers</span>
-    <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">bind_base_name</span> {
-        <span class="ident">messages</span>.<span class="ident">push</span>(<span class="ident">bind_name</span>(
-            <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">base_contract_name</span>,
-            <span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">clone</span>(),
-            <span class="ident">NameBinding::Restricted</span>,
+<span class="doccomment">/// The main functionality executed when the smart contract is first instantiated.   This creates
+/// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided
+/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init
+/// msg.
+///
+/// # Parameters
+///
+/// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
+/// resources like contract internal storage and a querier to retrieve blockchain objects.
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s
+/// details, as well as blockchain information at the time of the transaction.
+/// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
+/// of the instantiation message, as well as the funds provided as an amount during the transaction.
+/// * `msg` A custom instantiation message defined by this contract for creating the initial
+/// configuration used by the contract.
+</span><span class="kw">pub fn </span>init_contract(
+    deps: DepsMutC,
+    env: Env,
+    info: MessageInfo,
+    msg: InitMsg,
+) -&gt; EntryPointResponse {
+    check_funds_are_empty(<span class="kw-2">&amp;</span>info)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>messages: Vec&lt;CosmosMsg&lt;ProvenanceMsg&gt;&gt; = <span class="macro">vec!</span>[];
+    <span class="comment">// If specified true, the contract needs to own its root name to be effective at preventing
+    // asset classification &quot;neighbors&quot; that were never intended to be created from being reserved
+    // by external callers
+    </span><span class="kw">if </span>msg.bind_base_name {
+        messages.push(bind_name(
+            <span class="kw-2">&amp;</span>msg.base_contract_name,
+            env.contract.address.clone(),
+            NameBinding::Restricted,
         )<span class="question-mark">?</span>);
     }
-    <span class="comment">// Note: This vector can remain empty on instantiation, and future executions by the admin can</span>
-    <span class="comment">// append new definitions. When no definitions are supplied, this contract will not be able to</span>
-    <span class="comment">// take execution input until they are</span>
-    <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="ident">msg</span>.<span class="ident">asset_definitions</span>.<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">asset_definition</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">as_asset_definition</span>();
-        <span class="comment">// Create a new state storage for the provided asset definition</span>
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>)<span class="question-mark">?</span>;
-        <span class="comment">// Default to true for name bind if no value is specified.</span>
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">bind_name</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>) {
-            <span class="ident">messages</span>.<span class="ident">push</span>(<span class="ident">bind_name</span>(
-                <span class="ident">generate_asset_attribute_name</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">asset_definition</span>.<span class="ident">asset_type</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">base_contract_name</span>,
+    <span class="comment">// Note: This vector can remain empty on instantiation, and future executions by the admin can
+    // append new definitions. When no definitions are supplied, this contract will not be able to
+    // take execution input until they are
+    </span><span class="kw">for </span>input <span class="kw">in </span>msg.asset_definitions.iter() {
+        <span class="kw">let </span>asset_definition = input.as_asset_definition();
+        <span class="comment">// Create a new state storage for the provided asset definition
+        </span>insert_asset_definition_v3(deps.storage, <span class="kw-2">&amp;</span>asset_definition)<span class="question-mark">?</span>;
+        <span class="comment">// Default to true for name bind if no value is specified.
+        </span><span class="kw">if </span>input.bind_name.unwrap_or(<span class="bool-val">true</span>) {
+            messages.push(bind_name(
+                generate_asset_attribute_name(
+                    <span class="kw-2">&amp;</span>asset_definition.asset_type,
+                    <span class="kw-2">&amp;</span>msg.base_contract_name,
                 ),
-                <span class="ident">env</span>.<span class="ident">contract</span>.<span class="ident">address</span>.<span class="ident">clone</span>(),
-                <span class="ident">NameBinding::Restricted</span>,
+                env.contract.address.clone(),
+                NameBinding::Restricted,
             )<span class="question-mark">?</span>);
         }
     }
-    <span class="comment">// Convert the init message into a state value that will drive the contract&#39;s future executions</span>
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">StateV2::new</span>(<span class="ident">msg</span>, <span class="ident">info</span>.<span class="ident">sender</span>);
-    <span class="comment">// Store the state by grabbing a mutable instance of the contract configuration</span>
-    <span class="ident">config_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>).<span class="ident">save</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)<span class="question-mark">?</span>;
-    <span class="comment">// Set the version info to the default contract values on instantiation</span>
-    <span class="ident">migrate_version_info</span>(<span class="ident">deps</span>.<span class="ident">storage</span>)<span class="question-mark">?</span>;
-    <span class="ident">Response::new</span>()
-        .<span class="ident">add_messages</span>(<span class="ident">messages</span>)
-        .<span class="ident">add_attributes</span>(<span class="ident">EventAttributes::new</span>(<span class="ident">EventType::InstantiateContract</span>))
-        .<span class="ident">to_ok</span>()
+    <span class="comment">// Convert the init message into a state value that will drive the contract&#39;s future executions
+    </span><span class="kw">let </span>state = StateV2::new(msg, info.sender);
+    <span class="comment">// Store the state by grabbing a mutable instance of the contract configuration
+    </span>config_v2(deps.storage).save(<span class="kw-2">&amp;</span>state)<span class="question-mark">?</span>;
+    <span class="comment">// Set the version info to the default contract values on instantiation
+    </span>migrate_version_info(deps.storage)<span class="question-mark">?</span>;
+    Response::new()
+        .add_messages(messages)
+        .add_attributes(EventAttributes::new(EventType::InstantiateContract))
+        .to_ok()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::contract::instantiate</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::InitMsg</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{<span class="ident">config_read_v2</span>, <span class="ident">load_asset_definition_by_type_v3</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::migrate::version_info</span>::{<span class="ident">get_version_info</span>, <span class="ident">CONTRACT_NAME</span>, <span class="ident">CONTRACT_VERSION</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::msg_utilities</span>::{<span class="ident">test_for_default_base_name</span>, <span class="ident">test_message_is_name_bind</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{
-        <span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>,
-        <span class="ident">DEFAULT_ONBOARDING_COST</span>, <span class="ident">DEFAULT_ONBOARDING_DENOM</span>, <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::contract::instantiate;
+    <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+    <span class="kw">use </span><span class="kw">crate</span>::core::msg::InitMsg;
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::{config_read_v2, load_asset_definition_by_type_v3};
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionInputV3;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+    <span class="kw">use </span><span class="kw">crate</span>::migrate::version_info::{get_version_info, CONTRACT_NAME, CONTRACT_VERSION};
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::msg_utilities::{test_for_default_base_name, test_message_is_name_bind};
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::{
+        DEFAULT_ADMIN_ADDRESS, DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME,
+        DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_VERIFIER_ADDRESS,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{
-        <span class="ident">get_default_asset_definition</span>, <span class="ident">get_default_asset_definition_inputs</span>,
-        <span class="ident">get_default_entity_detail</span>, <span class="ident">get_default_verifier_detail</span>, <span class="ident">single_attribute_for_key</span>,
-        <span class="ident">test_instantiate</span>, <span class="ident">InstArgs</span>,
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::{
+        get_default_asset_definition, get_default_asset_definition_inputs,
+        get_default_entity_detail, get_default_verifier_detail, single_attribute_for_key,
+        test_instantiate, InstArgs,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">NHASH</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes::EventType</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::testing</span>::{<span class="ident">mock_env</span>, <span class="ident">mock_info</span>};
-    <span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">coin</span>, <span class="ident">Uint128</span>};
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
+    <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventType;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+    <span class="kw">use </span>cosmwasm_std::testing::{mock_env, mock_info};
+    <span class="kw">use </span>cosmwasm_std::{coin, Uint128};
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_default_init</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_instantiate</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;the default instantiate should produce a response without error&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_default_init() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>response = test_instantiate(deps.as_mut(), InstArgs::default())
+            .expect(<span class="string">&quot;the default instantiate should produce a response without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
-            <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;a single attribute should be emitted&quot;</span>
-        );
+            response.attributes.len(),
+            <span class="string">&quot;a single attribute should be emitted&quot;
+        </span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">EventType::InstantiateContract</span>.<span class="ident">event_name</span>().<span class="ident">as_str</span>(),
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_EVENT_TYPE_KEY</span>),
+            EventType::InstantiateContract.event_name().as_str(),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
             <span class="string">&quot;the proper event type should be emitted&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;the correct number of messages should be emitted&quot;</span>
-        );
-        <span class="ident">test_for_default_base_name</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>);
-        <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>);
-        <span class="kw">let</span> <span class="ident">asset_state</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the asset state data should be added to storage&quot;</span>);
+            response.messages.len(),
+            <span class="string">&quot;the correct number of messages should be emitted&quot;
+        </span>);
+        test_for_default_base_name(<span class="kw-2">&amp;</span>response.messages);
+        test_message_is_name_bind(<span class="kw-2">&amp;</span>response.messages, DEFAULT_ASSET_TYPE);
+        <span class="kw">let </span>asset_state =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+                .expect(<span class="string">&quot;expected the asset state data should be added to storage&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">asset_state</span>.<span class="ident">asset_type</span>,
+            DEFAULT_ASSET_TYPE, asset_state.asset_type,
             <span class="string">&quot;the asset type should be stored correctly&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
-            <span class="ident">asset_state</span>.<span class="ident">verifiers</span>.<span class="ident">len</span>(),
+            asset_state.verifiers.len(),
             <span class="string">&quot;one verifier should be properly stored&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">asset_state</span>,
-            <span class="ident">get_default_asset_definition</span>(),
-            <span class="string">&quot;the returned value should directly match the default asset definition&quot;</span>
-        );
-        <span class="kw">let</span> <span class="ident">version_info</span> <span class="op">=</span> <span class="ident">get_version_info</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;version info should successfully load after instantiation&quot;</span>);
+            asset_state,
+            get_default_asset_definition(),
+            <span class="string">&quot;the returned value should directly match the default asset definition&quot;
+        </span>);
+        <span class="kw">let </span>version_info = get_version_info(deps.as_ref().storage)
+            .expect(<span class="string">&quot;version info should successfully load after instantiation&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">CONTRACT_NAME</span>, <span class="ident">version_info</span>.<span class="ident">contract</span>,
+            CONTRACT_NAME, version_info.contract,
             <span class="string">&quot;the contract name should be properly stored after a successful instantiation&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">CONTRACT_VERSION</span>, <span class="ident">version_info</span>.<span class="ident">version</span>,
+            CONTRACT_VERSION, version_info.version,
             <span class="string">&quot;the contract version should be properly stored after a successful instantiation&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_with_multiple_asset_definitions</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">first_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_with_multiple_asset_definitions() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>first_asset_def = AssetDefinitionInputV3::new(
             <span class="string">&quot;heloc&quot;</span>,
-            <span class="string">&quot;Home Equity Line of Street Cred&quot;</span>.<span class="ident">to_some</span>(),
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
-                <span class="ident">DEFAULT_VERIFIER_ADDRESS</span>,
-                <span class="ident">DEFAULT_ONBOARDING_COST</span>.<span class="ident">into</span>(),
-                <span class="ident">DEFAULT_ONBOARDING_DENOM</span>,
-                <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(
+            <span class="string">&quot;Home Equity Line of Street Cred&quot;</span>.to_some(),
+            <span class="macro">vec!</span>[VerifierDetailV2::new(
+                DEFAULT_VERIFIER_ADDRESS,
+                DEFAULT_ONBOARDING_COST.into(),
+                DEFAULT_ONBOARDING_DENOM,
+                <span class="macro">vec!</span>[FeeDestinationV2::new(
                     <span class="string">&quot;tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a&quot;</span>,
-                    <span class="ident">DEFAULT_ONBOARDING_COST</span> <span class="op">/</span> <span class="number">4</span>,
+                    DEFAULT_ONBOARDING_COST / <span class="number">4</span>,
                 )],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">second_asset_def</span> <span class="op">=</span> <span class="ident">AssetDefinitionInputV3::new</span>(
+        <span class="kw">let </span>second_asset_def = AssetDefinitionInputV3::new(
             <span class="string">&quot;mortgage&quot;</span>,
-            <span class="string">&quot;DEATH PLEDGE&quot;</span>.<span class="ident">to_some</span>(),
-            <span class="macro">vec!</span>[<span class="ident">VerifierDetailV2::new</span>(
+            <span class="string">&quot;DEATH PLEDGE&quot;</span>.to_some(),
+            <span class="macro">vec!</span>[VerifierDetailV2::new(
                 <span class="string">&quot;tp1n6zl5u3x4k2uq29a5rxvh8g339wnk8j7v2sxdq&quot;</span>,
-                <span class="ident">Uint128::new</span>(<span class="number">300</span>),
-                <span class="ident">NHASH</span>,
+                Uint128::new(<span class="number">300</span>),
+                NHASH,
                 <span class="macro">vec!</span>[
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a&quot;</span>, <span class="number">75</span>),
-                    <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn&quot;</span>, <span class="number">75</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;tp18c94z83e6ng2sc3ylvutzytlx8zqggm554xp5a&quot;</span>, <span class="number">75</span>),
+                    FeeDestinationV2::new(<span class="string">&quot;tp1haa4tyccy0278tt9lckvu42a2g6fzjlh4vuydn&quot;</span>, <span class="number">75</span>),
                 ],
-                <span class="ident">get_default_entity_detail</span>().<span class="ident">to_some</span>(),
+                get_default_entity_detail().to_some(),
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_instantiate</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">InstArgs</span> {
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">first_asset_def</span>.<span class="ident">clone</span>(), <span class="ident">second_asset_def</span>.<span class="ident">clone</span>()],
-                ..<span class="ident">Default::default</span>()
+        <span class="kw">let </span>response = test_instantiate(
+            deps.as_mut(),
+            InstArgs {
+                asset_definitions: <span class="macro">vec!</span>[first_asset_def.clone(), second_asset_def.clone()],
+                ..Default::default()
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;instantiation should succeed with multiple asset definitions&quot;</span>);
+        .expect(<span class="string">&quot;instantiation should succeed with multiple asset definitions&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
-            <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;only one attribute should be emitted&quot;</span>
-        );
+            response.attributes.len(),
+            <span class="string">&quot;only one attribute should be emitted&quot;
+        </span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">3</span>,
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
+            response.messages.len(),
             <span class="string">&quot;the correct number of messages should be emitted&quot;</span>,
         );
-        <span class="ident">test_for_default_base_name</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>);
-        <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="string">&quot;heloc&quot;</span>);
-        <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="string">&quot;mortgage&quot;</span>);
-        <span class="kw">let</span> <span class="ident">heloc_asset_state</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;heloc&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the heloc asset definition should be added to the state&quot;</span>);
+        test_for_default_base_name(<span class="kw-2">&amp;</span>response.messages);
+        test_message_is_name_bind(<span class="kw-2">&amp;</span>response.messages, <span class="string">&quot;heloc&quot;</span>);
+        test_message_is_name_bind(<span class="kw-2">&amp;</span>response.messages, <span class="string">&quot;mortgage&quot;</span>);
+        <span class="kw">let </span>heloc_asset_state = load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="string">&quot;heloc&quot;</span>)
+            .expect(<span class="string">&quot;the heloc asset definition should be added to the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">heloc_asset_state</span>,
-            <span class="ident">first_asset_def</span>.<span class="ident">into_asset_definition</span>(),
-            <span class="string">&quot;the heloc asset state should equate to the heloc input&quot;</span>
-        );
-        <span class="kw">let</span> <span class="ident">mortgage_asset_state</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;mortgage&quot;</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;the mortgage asset definition should be added to the state&quot;</span>);
+            heloc_asset_state,
+            first_asset_def.into_asset_definition(),
+            <span class="string">&quot;the heloc asset state should equate to the heloc input&quot;
+        </span>);
+        <span class="kw">let </span>mortgage_asset_state =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="string">&quot;mortgage&quot;</span>)
+                .expect(<span class="string">&quot;the mortgage asset definition should be added to the state&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">mortgage_asset_state</span>,
-            <span class="ident">second_asset_def</span>.<span class="ident">into_asset_definition</span>(),
-            <span class="string">&quot;the mortgage asset state should equate to the mortgage input&quot;</span>
-        );
+            mortgage_asset_state,
+            second_asset_def.into_asset_definition(),
+            <span class="string">&quot;the mortgage asset state should equate to the mortgage input&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_bind_base_name_false_skips_base_bind</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">test_instantiate</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">InstArgs</span> {
-                <span class="ident">bind_base_name</span>: <span class="bool-val">false</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_bind_base_name_false_skips_base_bind() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>response = test_instantiate(
+            deps.as_mut(),
+            InstArgs {
+                bind_base_name: <span class="bool-val">false</span>,
+                ..Default::default()
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;instantiation with defaults and bind_base_name = false should succeed&quot;</span>);
+        .expect(<span class="string">&quot;instantiation with defaults and bind_base_name = false should succeed&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">len</span>(),
-            <span class="string">&quot;the correct number of messages should be emitted&quot;</span>
-        );
-        <span class="comment">// The only message emitted should be a name bind for the default asset type to the base name</span>
-        <span class="ident">test_message_is_name_bind</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>.<span class="ident">messages</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>);
+            response.messages.len(),
+            <span class="string">&quot;the correct number of messages should be emitted&quot;
+        </span>);
+        <span class="comment">// The only message emitted should be a name bind for the default asset type to the base name
+        </span>test_message_is_name_bind(<span class="kw-2">&amp;</span>response.messages, DEFAULT_ASSET_TYPE);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_no_is_test_flag_supplied_defaults_to_false</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">instantiate</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_env</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-                <span class="ident">asset_definitions</span>: <span class="ident">get_default_asset_definition_inputs</span>(),
-                <span class="ident">is_test</span>: <span class="prelude-val">None</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_no_is_test_flag_supplied_defaults_to_false() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        instantiate(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: <span class="bool-val">true</span>,
+                asset_definitions: get_default_asset_definition_inputs(),
+                is_test: <span class="prelude-val">None</span>,
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;instantiation should complete successfully&quot;</span>);
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">config_read_v2</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>)
-            .<span class="ident">load</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;state v2 should be created by instantiation&quot;</span>);
+        .expect(<span class="string">&quot;instantiation should complete successfully&quot;</span>);
+        <span class="kw">let </span>state = config_read_v2(deps.as_ref().storage)
+            .load()
+            .expect(<span class="string">&quot;state v2 should be created by instantiation&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="op">!</span><span class="ident">state</span>.<span class="ident">is_test</span>,
+            !state.is_test,
             <span class="string">&quot;is_test should default to false when no value is provided by the caller&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_valid_init_with_false_name_bind_on_added_definition</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">instantiate</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">mock_env</span>(),
-            <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[]),
-            <span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">false</span>,
-                <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
-                    <span class="ident">DEFAULT_ASSET_TYPE</span>,
-                    <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-                    <span class="macro">vec!</span>[<span class="ident">get_default_verifier_detail</span>()],
-                    <span class="bool-val">true</span>.<span class="ident">to_some</span>(),
-                    <span class="comment">// bind_name == false</span>
-                    <span class="bool-val">false</span>.<span class="ident">to_some</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_valid_init_with_false_name_bind_on_added_definition() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>response = instantiate(
+            deps.as_mut(),
+            mock_env(),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: <span class="bool-val">false</span>,
+                asset_definitions: <span class="macro">vec!</span>[AssetDefinitionInputV3::new(
+                    DEFAULT_ASSET_TYPE,
+                    <span class="prelude-val">None</span>::&lt;String&gt;,
+                    <span class="macro">vec!</span>[get_default_verifier_detail()],
+                    <span class="bool-val">true</span>.to_some(),
+                    <span class="comment">// bind_name == false
+                    </span><span class="bool-val">false</span>.to_some(),
                 )],
-                <span class="ident">is_test</span>: <span class="prelude-val">None</span>,
+                is_test: <span class="prelude-val">None</span>,
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected instantiation to succeed with no name binding on the added definition&quot;</span>);
+        .expect(<span class="string">&quot;expected instantiation to succeed with no name binding on the added definition&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">is_empty</span>(),
-            <span class="string">&quot;no messages should be added when no bindings are added&quot;</span>
-        );
-        <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the asset definition should be added, regardless of name binding&quot;</span>);
+            response.messages.is_empty(),
+            <span class="string">&quot;no messages should be added when no bindings are added&quot;
+        </span>);
+        load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE)
+            .expect(<span class="string">&quot;the asset definition should be added, regardless of name binding&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_contract_including_funds</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">test_instantiate</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">InstArgs</span> {
-                <span class="ident">info</span>: <span class="ident">mock_info</span>(<span class="ident">DEFAULT_ADMIN_ADDRESS</span>, <span class="kw-2">&amp;</span>[<span class="ident">coin</span>(<span class="number">100</span>, <span class="string">&quot;nhash&quot;</span>)]),
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_init_contract_including_funds() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>error = test_instantiate(
+            deps.as_mut(),
+            InstArgs {
+                info: mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">100</span>, <span class="string">&quot;nhash&quot;</span>)]),
+                ..Default::default()
             },
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidFunds</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(error, ContractError::InvalidFunds(<span class="kw">_</span>)),
             <span class="string">&quot;the responding error should indicate invalid funds, but got: {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_invalid_init_fails_for_invalid_init_msg</span>() {
-        <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">InstArgs</span> {
-            <span class="ident">asset_definitions</span>: <span class="macro">vec!</span>[<span class="ident">AssetDefinitionInputV3::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_invalid_init_fails_for_invalid_init_msg() {
+        <span class="kw">let </span>args = InstArgs {
+            asset_definitions: <span class="macro">vec!</span>[AssetDefinitionInputV3::new(
                 <span class="string">&quot;&quot;</span>,
-                <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+                <span class="prelude-val">None</span>::&lt;String&gt;,
                 <span class="macro">vec!</span>[],
                 <span class="prelude-val">None</span>,
                 <span class="prelude-val">None</span>,
             )],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">instantiate</span>(
-            <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">as_mut</span>(),
-            <span class="ident">args</span>.<span class="ident">env</span>,
-            <span class="ident">args</span>.<span class="ident">info</span>,
-            <span class="ident">InitMsg</span> {
-                <span class="ident">base_contract_name</span>: <span class="ident">DEFAULT_CONTRACT_BASE_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">bind_base_name</span>: <span class="bool-val">true</span>,
-                <span class="ident">asset_definitions</span>: <span class="ident">args</span>.<span class="ident">asset_definitions</span>,
-                <span class="ident">is_test</span>: <span class="prelude-val">None</span>,
+        <span class="kw">let </span>error = instantiate(
+            mock_dependencies(<span class="kw-2">&amp;</span>[]).as_mut(),
+            args.env,
+            args.info,
+            InitMsg {
+                base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
+                bind_base_name: <span class="bool-val">true</span>,
+                asset_definitions: args.asset_definitions,
+                is_test: <span class="prelude-val">None</span>,
             },
         )
-        .<span class="ident">unwrap_err</span>();
+        .unwrap_err();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::InvalidMessageFields</span> { .. }),
+            <span class="macro">matches!</span>(error, ContractError::InvalidMessageFields { .. }),
             <span class="string">&quot;the responding error should indicate that the InitMsg was badly formatted, but got: {:?}&quot;</span>,
-            <span class="ident">error</span>,
+            error,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

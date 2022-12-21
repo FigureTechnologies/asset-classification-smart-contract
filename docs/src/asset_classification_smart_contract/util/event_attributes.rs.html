@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/event_attributes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>event_attributes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/event_attributes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>event_attributes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -342,349 +342,349 @@
 <span id="342">342</span>
 <span id="343">343</span>
 <span id="344">344</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::constants</span>::{
-    <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">NEW_VALUE_KEY</span>, <span class="ident">SCOPE_OWNER_KEY</span>,
-    <span class="ident">VERIFIER_ADDRESS_KEY</span>,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::constants::{
+    ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY, SCOPE_OWNER_KEY,
+    VERIFIER_ADDRESS_KEY,
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants</span>::{<span class="ident">ADDITIONAL_METADATA_KEY</span>, <span class="ident">NEW_ASSET_ONBOARDING_STATUS_KEY</span>};
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus;
+<span class="kw">use </span><span class="kw">crate</span>::util::constants::{ADDITIONAL_METADATA_KEY, NEW_ASSET_ONBOARDING_STATUS_KEY};
+<span class="kw">use </span>std::collections::HashMap;
 
-<span class="doccomment">/// An enum that contains all different event types that can occur throughout the [contract&#39;s](crate::contract)</span>
-<span class="doccomment">/// routes.</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EventType</span> {
-    <span class="doccomment">/// Occurs when the contract is [instantiated](crate::contract::instantiate) with [instantiate](crate::instantiate::init_contract).</span>
-    <span class="ident">InstantiateContract</span>,
-    <span class="doccomment">/// Occurs when the contract is [migrated](crate::contract::migrate) with [migrate](crate::contract::migrate).</span>
-    <span class="ident">MigrateContract</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [onboard an asset](crate::execute::onboard_asset).</span>
-    <span class="ident">OnboardAsset</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [verify an asset](crate::execute::verify_asset).</span>
-    <span class="ident">VerifyAsset</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset definition](crate::execute::add_asset_definition).</span>
-    <span class="ident">AddAssetDefinition</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset definition](crate::execute::update_asset_definition).</span>
-    <span class="ident">UpdateAssetDefinition</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [toggle an asset definition](crate::execute::toggle_asset_definition).</span>
-    <span class="ident">ToggleAssetDefinition</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset verifier detail](crate::execute::add_asset_verifier).</span>
-    <span class="ident">AddAssetVerifier</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset verifier detail](crate::execute::update_asset_verifier).</span>
-    <span class="ident">UpdateAssetVerifier</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update access routes](crate::execute::update_access_routes).</span>
-    <span class="ident">UpdateAccessRoutes</span>,
-    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [delete an asset definition](crate::execute::delete_asset_definition).</span>
-    <span class="ident">DeleteAssetDefinition</span>,
+<span class="doccomment">/// An enum that contains all different event types that can occur throughout the [contract&#39;s](crate::contract)
+/// routes.
+</span><span class="kw">pub enum </span>EventType {
+    <span class="doccomment">/// Occurs when the contract is [instantiated](crate::contract::instantiate) with [instantiate](crate::instantiate::init_contract).
+    </span>InstantiateContract,
+    <span class="doccomment">/// Occurs when the contract is [migrated](crate::contract::migrate) with [migrate](crate::contract::migrate).
+    </span>MigrateContract,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [onboard an asset](crate::execute::onboard_asset).
+    </span>OnboardAsset,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [verify an asset](crate::execute::verify_asset).
+    </span>VerifyAsset,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset definition](crate::execute::add_asset_definition).
+    </span>AddAssetDefinition,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset definition](crate::execute::update_asset_definition).
+    </span>UpdateAssetDefinition,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [toggle an asset definition](crate::execute::toggle_asset_definition).
+    </span>ToggleAssetDefinition,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [add an asset verifier detail](crate::execute::add_asset_verifier).
+    </span>AddAssetVerifier,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update an asset verifier detail](crate::execute::update_asset_verifier).
+    </span>UpdateAssetVerifier,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [update access routes](crate::execute::update_access_routes).
+    </span>UpdateAccessRoutes,
+    <span class="doccomment">/// Occurs when the contract is [executed](crate::contract::execute) to [delete an asset definition](crate::execute::delete_asset_definition).
+    </span>DeleteAssetDefinition,
 }
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::from_over_into</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EventType</span> {
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">EventType::InstantiateContract</span> =&gt; <span class="string">&quot;instantiate_contract&quot;</span>,
-            <span class="ident">EventType::MigrateContract</span> =&gt; <span class="string">&quot;migrate_contract&quot;</span>,
-            <span class="ident">EventType::OnboardAsset</span> =&gt; <span class="string">&quot;onboard_asset&quot;</span>,
-            <span class="ident">EventType::VerifyAsset</span> =&gt; <span class="string">&quot;verify_asset&quot;</span>,
-            <span class="ident">EventType::AddAssetDefinition</span> =&gt; <span class="string">&quot;add_asset_definition&quot;</span>,
-            <span class="ident">EventType::UpdateAssetDefinition</span> =&gt; <span class="string">&quot;update_asset_definition&quot;</span>,
-            <span class="ident">EventType::ToggleAssetDefinition</span> =&gt; <span class="string">&quot;toggle_asset_definition&quot;</span>,
-            <span class="ident">EventType::AddAssetVerifier</span> =&gt; <span class="string">&quot;add_asset_verifier&quot;</span>,
-            <span class="ident">EventType::UpdateAssetVerifier</span> =&gt; <span class="string">&quot;update_asset_verifier&quot;</span>,
-            <span class="ident">EventType::UpdateAccessRoutes</span> =&gt; <span class="string">&quot;update_access_routes&quot;</span>,
-            <span class="ident">EventType::DeleteAssetDefinition</span> =&gt; <span class="string">&quot;delete_asset_definition&quot;</span>,
+<span class="attribute">#[allow(clippy::from_over_into)]
+</span><span class="kw">impl </span>Into&lt;String&gt; <span class="kw">for </span>EventType {
+    <span class="kw">fn </span>into(<span class="self">self</span>) -&gt; String {
+        <span class="kw">match </span><span class="self">self </span>{
+            EventType::InstantiateContract =&gt; <span class="string">&quot;instantiate_contract&quot;</span>,
+            EventType::MigrateContract =&gt; <span class="string">&quot;migrate_contract&quot;</span>,
+            EventType::OnboardAsset =&gt; <span class="string">&quot;onboard_asset&quot;</span>,
+            EventType::VerifyAsset =&gt; <span class="string">&quot;verify_asset&quot;</span>,
+            EventType::AddAssetDefinition =&gt; <span class="string">&quot;add_asset_definition&quot;</span>,
+            EventType::UpdateAssetDefinition =&gt; <span class="string">&quot;update_asset_definition&quot;</span>,
+            EventType::ToggleAssetDefinition =&gt; <span class="string">&quot;toggle_asset_definition&quot;</span>,
+            EventType::AddAssetVerifier =&gt; <span class="string">&quot;add_asset_verifier&quot;</span>,
+            EventType::UpdateAssetVerifier =&gt; <span class="string">&quot;update_asset_verifier&quot;</span>,
+            EventType::UpdateAccessRoutes =&gt; <span class="string">&quot;update_access_routes&quot;</span>,
+            EventType::DeleteAssetDefinition =&gt; <span class="string">&quot;delete_asset_definition&quot;</span>,
         }
-        .<span class="ident">into</span>()
+        .into()
     }
 }
-<span class="kw">impl</span> <span class="ident">EventType</span> {
-    <span class="doccomment">/// Utilizes the implementation of Into&lt;String&gt; to automatically derive the event name.  This</span>
-    <span class="doccomment">/// allows an invocation without an explicit type declaration.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_name</span>(<span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">into</span>()
+<span class="kw">impl </span>EventType {
+    <span class="doccomment">/// Utilizes the implementation of Into&lt;String&gt; to automatically derive the event name.  This
+    /// allows an invocation without an explicit type declaration.
+    </span><span class="kw">pub fn </span>event_name(<span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.into()
     }
 }
 
-<span class="doccomment">/// A helper struct to emit attributes for a [Response](cosmwasm_std::Response).</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventAttributes</span> {
-    <span class="doccomment">/// All generated attributes as tuples, which can easily be used to add into a [Response](cosmwasm_std::Response).</span>
-    <span class="ident">attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
+<span class="doccomment">/// A helper struct to emit attributes for a [Response](cosmwasm_std::Response).
+</span><span class="kw">pub struct </span>EventAttributes {
+    <span class="doccomment">/// All generated attributes as tuples, which can easily be used to add into a [Response](cosmwasm_std::Response).
+    </span>attributes: Vec&lt;(String, String)&gt;,
 }
-<span class="kw">impl</span> <span class="ident">EventAttributes</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `event_type` All events should denote their type for external consumers of Provenance</span>
-    <span class="doccomment">/// Blockchain Event Stream, so this value is required for any new instance and appends the</span>
-    <span class="doccomment">/// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">event_type</span>: <span class="ident">EventType</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">EventAttributes</span> {
-            <span class="ident">attributes</span>: <span class="macro">vec!</span>[(<span class="ident">ASSET_EVENT_TYPE_KEY</span>.<span class="ident">into</span>(), <span class="ident">event_type</span>.<span class="ident">into</span>())],
+<span class="kw">impl </span>EventAttributes {
+    <span class="doccomment">/// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `event_type` All events should denote their type for external consumers of Provenance
+    /// Blockchain Event Stream, so this value is required for any new instance and appends the
+    /// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).
+    </span><span class="kw">pub fn </span>new(event_type: EventType) -&gt; <span class="self">Self </span>{
+        EventAttributes {
+            attributes: <span class="macro">vec!</span>[(ASSET_EVENT_TYPE_KEY.into(), event_type.into())],
         }
     }
 
-    <span class="doccomment">/// Certain events like [onboard_asset](crate::execute::onboard_asset::onboard_asset) require a</span>
-    <span class="doccomment">/// standard set of event types.  This is a constructor for the struct that includes those</span>
-    <span class="doccomment">/// values to facilitate the process of generating all events.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `event_type` All events should denote their type for external consumers of Provenance</span>
-    <span class="doccomment">/// Blockchain Event Stream, so this value is required for any new instance and appends the</span>
-    <span class="doccomment">/// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).</span>
-    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-    <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
-    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-    <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_asset_event</span><span class="op">&lt;</span><span class="ident">T1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">T2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">event_type</span>: <span class="ident">EventType</span>,
-        <span class="ident">asset_type</span>: <span class="ident">T1</span>,
-        <span class="ident">scope_address</span>: <span class="ident">T2</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">event_type</span>)
-            .<span class="ident">set_asset_type</span>(<span class="ident">asset_type</span>)
-            .<span class="ident">set_scope_address</span>(<span class="ident">scope_address</span>)
+    <span class="doccomment">/// Certain events like [onboard_asset](crate::execute::onboard_asset::onboard_asset) require a
+    /// standard set of event types.  This is a constructor for the struct that includes those
+    /// values to facilitate the process of generating all events.
+    ///
+    /// # Parameters
+    ///
+    /// * `event_type` All events should denote their type for external consumers of Provenance
+    /// Blockchain Event Stream, so this value is required for any new instance and appends the
+    /// name of the event with the key of [ASSET_EVENT_TYPE_KEY](super::constants::ASSET_EVENT_TYPE_KEY).
+    /// * `asset_type` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+    /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
+    /// * `scope_address` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+    /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
+    </span><span class="kw">pub fn </span>for_asset_event&lt;T1: Into&lt;String&gt;, T2: Into&lt;String&gt;&gt;(
+        event_type: EventType,
+        asset_type: T1,
+        scope_address: T2,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(event_type)
+            .set_asset_type(asset_type)
+            .set_scope_address(scope_address)
     }
 
-    <span class="doccomment">/// Appends an asset type value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `asset_type` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-    <span class="doccomment">/// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_asset_type</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">asset_type</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">ASSET_TYPE_KEY</span>.<span class="ident">into</span>(), <span class="ident">asset_type</span>.<span class="ident">into</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends an asset type value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `asset_type` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+    /// that uses the key [ASSET_TYPE_KEY](super::constants::ASSET_TYPE_KEY).
+    </span><span class="kw">pub fn </span>set_asset_type&lt;T: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, asset_type: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((ASSET_TYPE_KEY.into(), asset_type.into()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends a scope address bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `scope_address` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)</span>
-    <span class="doccomment">/// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scope_address</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scope_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>.<span class="ident">into</span>(), <span class="ident">scope_address</span>.<span class="ident">into</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends a scope address bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_address` A unique key for an [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
+    /// that uses the key [ASSET_SCOPE_ADDRESS_KEY](super::constants::ASSET_SCOPE_ADDRESS_KEY).
+    </span><span class="kw">pub fn </span>set_scope_address&lt;T: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, scope_address: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((ASSET_SCOPE_ADDRESS_KEY.into(), scope_address.into()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends a verifier address bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetailV2::address)</span>
-    <span class="doccomment">/// for a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) that uses the</span>
-    <span class="doccomment">/// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_verifier</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">verifier_address</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">VERIFIER_ADDRESS_KEY</span>.<span class="ident">into</span>(), <span class="ident">verifier_address</span>.<span class="ident">into</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends a verifier address bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `verifier_address` The [address](crate::core::types::verifier_detail::VerifierDetailV2::address)
+    /// for a [VerifierDetailV2](crate::core::types::verifier_detail::VerifierDetailV2) that uses the
+    /// key [VERIFIER_ADDRESS_KEY](super::constants::VERIFIER_ADDRESS_KEY).
+    </span><span class="kw">pub fn </span>set_verifier&lt;T: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, verifier_address: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((VERIFIER_ADDRESS_KEY.into(), verifier_address.into()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends an onboarding status value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">/// * `status` The onboarding status of the current [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)</span>
-    <span class="doccomment">/// associated with the given event.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_new_asset_onboarding_status</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">status</span>: <span class="kw-2">&amp;</span><span class="ident">AssetOnboardingStatus</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">NEW_ASSET_ONBOARDING_STATUS_KEY</span>.<span class="ident">into</span>(), <span class="ident">status</span>.<span class="ident">to_string</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends an onboarding status value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    /// * `status` The onboarding status of the current [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+    /// associated with the given event.
+    </span><span class="kw">pub fn </span>set_new_asset_onboarding_status(<span class="kw-2">mut </span><span class="self">self</span>, status: <span class="kw-2">&amp;</span>AssetOnboardingStatus) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((NEW_ASSET_ONBOARDING_STATUS_KEY.into(), status.to_string()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends a dynamic value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `new_value` Any dynamic value that pertains to the current execution process, using the</span>
-    <span class="doccomment">/// key [NEW_VALUE_KEY](super::constants::NEW_VALUE_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_new_value</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new_value</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">NEW_VALUE_KEY</span>.<span class="ident">into</span>(), <span class="ident">new_value</span>.<span class="ident">to_string</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends a dynamic value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `new_value` Any dynamic value that pertains to the current execution process, using the
+    /// key [NEW_VALUE_KEY](super::constants::NEW_VALUE_KEY).
+    </span><span class="kw">pub fn </span>set_new_value&lt;T: ToString&gt;(<span class="kw-2">mut </span><span class="self">self</span>, new_value: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((NEW_VALUE_KEY.into(), new_value.to_string()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends a scope owner bech32 value to an existing [EventAttributes](self::EventAttributes) and</span>
-    <span class="doccomment">/// returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `scope_owner` A bech32 address that owns a Provenance Metadata Scope referred to by the</span>
-    <span class="doccomment">/// current execution process, appended with the key [SCOPE_OWNER_KEY](super::constants::SCOPE_OWNER_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scope_owner</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToString</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scope_owner</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">push</span>((<span class="ident">SCOPE_OWNER_KEY</span>.<span class="ident">into</span>(), <span class="ident">scope_owner</span>.<span class="ident">to_string</span>()));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Appends a scope owner bech32 value to an existing [EventAttributes](self::EventAttributes) and
+    /// returns the same instance to create a functional chain for further attribute addition.
+    ///
+    /// # Parameters
+    ///
+    /// * `scope_owner` A bech32 address that owns a Provenance Metadata Scope referred to by the
+    /// current execution process, appended with the key [SCOPE_OWNER_KEY](super::constants::SCOPE_OWNER_KEY).
+    </span><span class="kw">pub fn </span>set_scope_owner&lt;T: ToString&gt;(<span class="kw-2">mut </span><span class="self">self</span>, scope_owner: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.attributes
+            .push((SCOPE_OWNER_KEY.into(), scope_owner.to_string()));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Appends a dynamic set of additional metadata to an existing [EventAttributes](self::EventAttributes)</span>
-    <span class="doccomment">/// and returns the same instance to create a functional chain for further attribute addition.</span>
-    <span class="doccomment">/// Note: If the metadata provided is empty, this key will be skipped to prevent strange value</span>
-    <span class="doccomment">/// displays to external consumers.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `additional_metadata` An instance of additional metadata to be displayed to any external</span>
-    <span class="doccomment">/// consumers.  Uses the key of [ADDITIONAL_METADATA_KEY](super::constants::ADDITIONAL_METADATA_KEY).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_additional_metadata</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">additional_metadata</span>: <span class="kw-2">&amp;</span><span class="ident">EventAdditionalMetadata</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="comment">// Only append additional metadata if it actually has keys</span>
-        <span class="kw">if</span> <span class="ident">additional_metadata</span>.<span class="ident">has_metadata</span>() {
-            <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">push</span>((
-                <span class="ident">ADDITIONAL_METADATA_KEY</span>.<span class="ident">into</span>(),
-                <span class="ident">additional_metadata</span>.<span class="ident">get_meta_string</span>(),
+    <span class="doccomment">/// Appends a dynamic set of additional metadata to an existing [EventAttributes](self::EventAttributes)
+    /// and returns the same instance to create a functional chain for further attribute addition.
+    /// Note: If the metadata provided is empty, this key will be skipped to prevent strange value
+    /// displays to external consumers.
+    ///
+    /// # Parameters
+    ///
+    /// * `additional_metadata` An instance of additional metadata to be displayed to any external
+    /// consumers.  Uses the key of [ADDITIONAL_METADATA_KEY](super::constants::ADDITIONAL_METADATA_KEY).
+    </span><span class="kw">pub fn </span>set_additional_metadata(
+        <span class="kw-2">mut </span><span class="self">self</span>,
+        additional_metadata: <span class="kw-2">&amp;</span>EventAdditionalMetadata,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="comment">// Only append additional metadata if it actually has keys
+        </span><span class="kw">if </span>additional_metadata.has_metadata() {
+            <span class="self">self</span>.attributes.push((
+                ADDITIONAL_METADATA_KEY.into(),
+                additional_metadata.get_meta_string(),
             ));
         }
-        <span class="self">self</span>
+        <span class="self">self
+    </span>}
+}
+
+<span class="kw">impl </span>IntoIterator <span class="kw">for </span>EventAttributes {
+    <span class="kw">type </span>Item = (String, String);
+
+    <span class="kw">type </span>IntoIter = std::vec::IntoIter&lt;<span class="self">Self</span>::Item&gt;;
+
+    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        <span class="self">self</span>.attributes.into_iter()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">EventAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">String</span>, <span class="ident">String</span>);
-
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">std::vec::IntoIter</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">into_iter</span>()
-    }
+<span class="doccomment">/// A helper collection that allows underlying processes to specify dynamic key values for processes
+/// that don&#39;t necessarily need to specify a large amount of new event keys.  Emitted values are
+/// aggregated and sorted deterministically, and then displayed using the format:
+/// \[a=1, b=2, c=3, etc\]
+</span><span class="kw">pub struct </span>EventAdditionalMetadata {
+    <span class="doccomment">/// An internal collection of all added metadata.
+    </span>fields: HashMap&lt;String, String&gt;,
 }
-
-<span class="doccomment">/// A helper collection that allows underlying processes to specify dynamic key values for processes</span>
-<span class="doccomment">/// that don&#39;t necessarily need to specify a large amount of new event keys.  Emitted values are</span>
-<span class="doccomment">/// aggregated and sorted deterministically, and then displayed using the format:</span>
-<span class="doccomment">/// \[a=1, b=2, c=3, etc\]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventAdditionalMetadata</span> {
-    <span class="doccomment">/// An internal collection of all added metadata.</span>
-    <span class="ident">fields</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
-}
-<span class="kw">impl</span> <span class="ident">EventAdditionalMetadata</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct with an empty fields set.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">fields</span>: <span class="ident">HashMap::new</span>(),
+<span class="kw">impl </span>EventAdditionalMetadata {
+    <span class="doccomment">/// Constructs a new instance of this struct with an empty fields set.
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            fields: HashMap::new(),
         }
     }
 
-    <span class="doccomment">/// Returns `true` only if metadata fields have been added with the [add_metadata](self::EventAdditionalMetadata::add_metadata)</span>
-    <span class="doccomment">/// function.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="op">!</span><span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>()
+    <span class="doccomment">/// Returns `true` only if metadata fields have been added with the [add_metadata](self::EventAdditionalMetadata::add_metadata)
+    /// function.
+    </span><span class="kw">pub fn </span>has_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        !<span class="self">self</span>.fields.is_empty()
     }
 
-    <span class="doccomment">/// Appends a new key and value pair to the internal fields value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `key` The string key that will be displayed before the = sign in the display.</span>
-    <span class="doccomment">/// * `value` The string value that will be displayed after the = sign in the display.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_metadata</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">S1</span>, <span class="ident">value</span>: <span class="ident">S2</span>) {
-        <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">into</span>(), <span class="ident">value</span>.<span class="ident">into</span>());
+    <span class="doccomment">/// Appends a new key and value pair to the internal fields value.
+    ///
+    /// # Parameters
+    ///
+    /// * `key` The string key that will be displayed before the = sign in the display.
+    /// * `value` The string value that will be displayed after the = sign in the display.
+    </span><span class="kw">pub fn </span>add_metadata&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: S1, value: S2) {
+        <span class="self">self</span>.fields.insert(key.into(), value.into());
     }
 
-    <span class="doccomment">/// Aggregates and deterministically sorts the internal values, resulting in a display string</span>
-    <span class="doccomment">/// for adding as an event attribute in the format: \[a=1, b=2, c=3, etc\]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_meta_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map_displays</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">fields</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">key</span>, <span class="ident">value</span>)<span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;[{key}={value}]&quot;</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-        <span class="comment">// Keep the collection sorted to ensure that output is deterministic</span>
-        <span class="ident">map_displays</span>.<span class="ident">sort</span>();
-        <span class="ident">map_displays</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>)
-    }
-}
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">EventAdditionalMetadata</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
+    <span class="doccomment">/// Aggregates and deterministically sorts the internal values, resulting in a display string
+    /// for adding as an event attribute in the format: \[a=1, b=2, c=3, etc\]
+    </span><span class="kw">pub fn </span>get_meta_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="kw">let </span><span class="kw-2">mut </span>map_displays = <span class="self">self
+            </span>.fields
+            .iter()
+            .map(|(key, value)| <span class="macro">format!</span>(<span class="string">&quot;[{key}={value}]&quot;</span>))
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="comment">// Keep the collection sorted to ensure that output is deterministic
+        </span>map_displays.sort();
+        map_displays.join(<span class="string">&quot;, &quot;</span>)
     }
 }
+<span class="kw">impl </span>Default <span class="kw">for </span>EventAdditionalMetadata {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::Response</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>cosmwasm_std::Response;
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes::EventAdditionalMetadata</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">testutil::test_utilities::single_attribute_for_key</span>,
-        <span class="ident">util::constants</span>::{
-            <span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>, <span class="ident">ASSET_TYPE_KEY</span>, <span class="ident">NEW_VALUE_KEY</span>,
-            <span class="ident">VERIFIER_ADDRESS_KEY</span>,
+    <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventAdditionalMetadata;
+    <span class="kw">use crate</span>::{
+        testutil::test_utilities::single_attribute_for_key,
+        util::constants::{
+            ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY,
+            VERIFIER_ADDRESS_KEY,
         },
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>};
+    <span class="kw">use super</span>::{EventAttributes, EventType};
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_response_consumption</span>() {
-        <span class="kw">let</span> <span class="ident">attributes</span> <span class="op">=</span> <span class="ident">EventAttributes::new</span>(<span class="ident">EventType::OnboardAsset</span>)
-            .<span class="ident">set_asset_type</span>(<span class="string">&quot;asset type&quot;</span>)
-            .<span class="ident">set_scope_address</span>(<span class="string">&quot;scope address&quot;</span>)
-            .<span class="ident">set_verifier</span>(<span class="string">&quot;verifier address&quot;</span>)
-            .<span class="ident">set_new_value</span>(<span class="string">&quot;new value&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span>: <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Response::new</span>().<span class="ident">add_attributes</span>(<span class="ident">attributes</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_response_consumption() {
+        <span class="kw">let </span>attributes = EventAttributes::new(EventType::OnboardAsset)
+            .set_asset_type(<span class="string">&quot;asset type&quot;</span>)
+            .set_scope_address(<span class="string">&quot;scope address&quot;</span>)
+            .set_verifier(<span class="string">&quot;verifier address&quot;</span>)
+            .set_new_value(<span class="string">&quot;new value&quot;</span>);
+        <span class="kw">let </span>response: Response&lt;String&gt; = Response::new().add_attributes(attributes);
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;onboard_asset&quot;</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_EVENT_TYPE_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
             <span class="string">&quot;the event type attribute should be added correctly&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;asset type&quot;</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_TYPE_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_TYPE_KEY),
             <span class="string">&quot;the asset type attribute should be added correctly&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;scope address&quot;</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_SCOPE_ADDRESS_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_SCOPE_ADDRESS_KEY),
             <span class="string">&quot;the scope address attribute should be added correctly&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;verifier address&quot;</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">VERIFIER_ADDRESS_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, VERIFIER_ADDRESS_KEY),
             <span class="string">&quot;the verifier address attribute should be added correctly&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;new value&quot;</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">NEW_VALUE_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, NEW_VALUE_KEY),
             <span class="string">&quot;the new value attribute should be added correctly&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_additional_metadata_string_output</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">EventAdditionalMetadata::new</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_additional_metadata_string_output() {
+        <span class="kw">let </span><span class="kw-2">mut </span>metadata = EventAdditionalMetadata::new();
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;&quot;</span>,
-            <span class="ident">metadata</span>.<span class="ident">get_meta_string</span>(),
+            metadata.get_meta_string(),
             <span class="string">&quot;expected no output to be derived when no metadata has been added&quot;</span>,
         );
-        <span class="ident">metadata</span>.<span class="ident">add_metadata</span>(<span class="string">&quot;b&quot;</span>, <span class="string">&quot;b_value&quot;</span>);
+        metadata.add_metadata(<span class="string">&quot;b&quot;</span>, <span class="string">&quot;b_value&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;[b=b_value]&quot;</span>,
-            <span class="ident">metadata</span>.<span class="ident">get_meta_string</span>(),
+            metadata.get_meta_string(),
             <span class="string">&quot;expected the key/value addition to display properly&quot;</span>,
         );
-        <span class="ident">metadata</span>.<span class="ident">add_metadata</span>(<span class="string">&quot;a&quot;</span>, <span class="string">&quot;a_value&quot;</span>);
+        metadata.add_metadata(<span class="string">&quot;a&quot;</span>, <span class="string">&quot;a_value&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;[a=a_value], [b=b_value]&quot;</span>,
-            <span class="ident">metadata</span>.<span class="ident">get_meta_string</span>(),
+            metadata.get_meta_string(),
             <span class="string">&quot;expected the second key/value addition to also display alongside the first, alphabetically sorted&quot;</span>,
         );
-        <span class="ident">metadata</span>.<span class="ident">add_metadata</span>(<span class="string">&quot;c&quot;</span>, <span class="string">&quot;c_value&quot;</span>);
+        metadata.add_metadata(<span class="string">&quot;c&quot;</span>, <span class="string">&quot;c_value&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;[a=a_value], [b=b_value], [c=c_value]&quot;</span>,
-            <span class="ident">metadata</span>.<span class="ident">get_meta_string</span>(),
+            metadata.get_meta_string(),
             <span class="string">&quot;expected the third key/value addition to also display alongside the first two, alphabetically sorted&quot;</span>,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -578,585 +578,585 @@
 <span id="578">578</span>
 <span id="579">579</span>
 <span id="580">580</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">core::msg::InitMsg</span>, <span class="ident">util::aliases::AssetResult</span>};
-<span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Addr</span>, <span class="ident">Storage</span>};
-<span class="kw">use</span> <span class="ident">cosmwasm_storage</span>::{<span class="ident">singleton</span>, <span class="ident">singleton_read</span>, <span class="ident">ReadonlySingleton</span>, <span class="ident">Singleton</span>};
-<span class="kw">use</span> <span class="ident">cw_storage_plus::Map</span>;
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
-<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail;
+<span class="kw">use crate</span>::{core::msg::InitMsg, util::aliases::AssetResult};
+<span class="kw">use </span>cosmwasm_std::{Addr, Storage};
+<span class="kw">use </span>cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
+<span class="kw">use </span>cw_storage_plus::Map;
+<span class="kw">use </span>result_extensions::ResultExtensions;
+<span class="kw">use </span>schemars::JsonSchema;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::error::ContractError</span>;
+<span class="kw">use </span><span class="kw">super</span>::error::ContractError;
 
-<span class="kw">static</span> <span class="ident">STATE_V2_KEY</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;state_v2&quot;</span>;
-<span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;fee_payment_detail&quot;</span>;
+<span class="kw">static </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;state_v2&quot;</span>;
+<span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;fee_payment_detail&quot;</span>;
 
-<span class="kw">const</span> <span class="ident">FEE_PAYMENT_DETAILS</span>: <span class="ident">Map</span><span class="op">&lt;</span>(<span class="ident">Addr</span>, <span class="ident">String</span>), <span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">Map::new</span>(<span class="ident">FEE_PAYMENT_DETAIL_NAMESPACE</span>);
+<span class="kw">const </span>FEE_PAYMENT_DETAILS: Map&lt;(Addr, String), FeePaymentDetail&gt; =
+    Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
-<span class="doccomment">/// Stores the main configurations for the contract internally.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StateV2</span> {
-    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)</span>
-    <span class="doccomment">/// will use this value as their parent name.</span>
-    <span class="kw">pub</span> <span class="ident">base_contract_name</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The Provenance Blockchain bech32 address that maintains primary control over the contract.</span>
-    <span class="doccomment">/// This address is derived from the sender of the initial contract instantiation, and is the</span>
-    <span class="doccomment">/// only address that can access administrative execution routes in the contract.  It can be</span>
-    <span class="doccomment">/// changed during migrations.</span>
-    <span class="kw">pub</span> <span class="ident">admin</span>: <span class="ident">Addr</span>,
-    <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities</span>
-    <span class="doccomment">/// across the contract&#39;s execution processes.  Notably, this disables a check during the</span>
-    <span class="doccomment">/// onboarding process to determine if onboarded scopes include underlying record values.  This</span>
-    <span class="doccomment">/// should never be set to true in a mainnet environment.</span>
-    <span class="kw">pub</span> <span class="ident">is_test</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Stores the main configurations for the contract internally.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+</span><span class="kw">pub struct </span>StateV2 {
+    <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitions](super::types::access_definition::AccessDefinition)
+    /// will use this value as their parent name.
+    </span><span class="kw">pub </span>base_contract_name: String,
+    <span class="doccomment">/// The Provenance Blockchain bech32 address that maintains primary control over the contract.
+    /// This address is derived from the sender of the initial contract instantiation, and is the
+    /// only address that can access administrative execution routes in the contract.  It can be
+    /// changed during migrations.
+    </span><span class="kw">pub </span>admin: Addr,
+    <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities
+    /// across the contract&#39;s execution processes.  Notably, this disables a check during the
+    /// onboarding process to determine if onboarded scopes include underlying record values.  This
+    /// should never be set to true in a mainnet environment.
+    </span><span class="kw">pub </span>is_test: bool,
 }
-<span class="kw">impl</span> <span class="ident">StateV2</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct for the instantiation process.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `msg` The message submitted by the instantiating account.</span>
-    <span class="doccomment">/// * `admin` The Provenance Blockchain bech32 address of the administrator account for the contract.</span>
-    <span class="doccomment">/// The sender&#39;s address is automatically used for this, and they alone will have access to</span>
-    <span class="doccomment">/// change the admin address to a different one via migrations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">msg</span>: <span class="ident">InitMsg</span>, <span class="ident">admin</span>: <span class="ident">Addr</span>) -&gt; <span class="ident">StateV2</span> {
-        <span class="ident">StateV2</span> {
-            <span class="ident">base_contract_name</span>: <span class="ident">msg</span>.<span class="ident">base_contract_name</span>,
-            <span class="ident">admin</span>,
-            <span class="ident">is_test</span>: <span class="ident">msg</span>.<span class="ident">is_test</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
+<span class="kw">impl </span>StateV2 {
+    <span class="doccomment">/// Constructs a new instance of this struct for the instantiation process.
+    ///
+    /// # Parameters
+    ///
+    /// * `msg` The message submitted by the instantiating account.
+    /// * `admin` The Provenance Blockchain bech32 address of the administrator account for the contract.
+    /// The sender&#39;s address is automatically used for this, and they alone will have access to
+    /// change the admin address to a different one via migrations.
+    </span><span class="kw">pub fn </span>new(msg: InitMsg, admin: Addr) -&gt; StateV2 {
+        StateV2 {
+            base_contract_name: msg.base_contract_name,
+            admin,
+            is_test: msg.is_test.unwrap_or(<span class="bool-val">false</span>),
         }
     }
 }
 
-<span class="doccomment">/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config_v2</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">Singleton</span><span class="op">&lt;</span><span class="ident">StateV2</span><span class="op">&gt;</span> {
-    <span class="ident">singleton</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
+<span class="doccomment">/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC).
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+</span><span class="kw">pub fn </span>config_v2(storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage) -&gt; Singleton&lt;StateV2&gt; {
+    singleton(storage, STATE_V2_KEY)
 }
 
-<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract&#39;s state.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config_read_v2</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">ReadonlySingleton</span><span class="op">&lt;</span><span class="ident">StateV2</span><span class="op">&gt;</span> {
-    <span class="ident">singleton_read</span>(<span class="ident">storage</span>, <span class="ident">STATE_V2_KEY</span>)
+<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract&#39;s state.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).
+</span><span class="kw">pub fn </span>config_read_v2(storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage) -&gt; ReadonlySingleton&lt;StateV2&gt; {
+    singleton_read(storage, STATE_V2_KEY)
 }
 
-<span class="doccomment">/// Value is currently &#39;asset_definitions_v2&#39; due to a structural change of data (removing an existing field, scope_spec_address) and switching from</span>
-<span class="doccomment">/// and IndexedMap to a regular Map... so everything was changed to be called &#39;v3&#39;, but no migration was actually needed to transition all values to new</span>
-<span class="doccomment">/// keys as the existing config was able to be read as a Map as-is.</span>
-<span class="kw">const</span> <span class="ident">ASSET_DEFINITIONS_NAMESPACE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;asset_definitions_v2&quot;</span>;
-<span class="doccomment">/// The main entrypoint access for [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) state.</span>
-<span class="doccomment">/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator</span>
-<span class="doccomment">/// functionality. Private access to ensure only helper functions below are used.</span>
-<span class="kw">const</span> <span class="ident">ASSET_DEFINITIONS_V3</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Map::new</span>(<span class="ident">ASSET_DEFINITIONS_NAMESPACE</span>);
+<span class="doccomment">/// Value is currently &#39;asset_definitions_v2&#39; due to a structural change of data (removing an existing field, scope_spec_address) and switching from
+/// and IndexedMap to a regular Map... so everything was changed to be called &#39;v3&#39;, but no migration was actually needed to transition all values to new
+/// keys as the existing config was able to be read as a Map as-is.
+</span><span class="kw">const </span>ASSET_DEFINITIONS_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;asset_definitions_v2&quot;</span>;
+<span class="doccomment">/// The main entrypoint access for [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) state.
+/// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
+/// functionality. Private access to ensure only helper functions below are used.
+</span><span class="kw">const </span>ASSET_DEFINITIONS_V3: Map&lt;String, AssetDefinitionV3&gt; = Map::new(ASSET_DEFINITIONS_NAMESPACE);
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_asset_definitions_v3</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> {
-    <span class="ident">ASSET_DEFINITIONS_V3</span>
-        .<span class="ident">range</span>(<span class="ident">storage</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="ident">cosmwasm_std::Order::Descending</span>)
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">is_ok</span>())
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">unwrap</span>().<span class="number">1</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+<span class="kw">pub fn </span>list_asset_definitions_v3(storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage) -&gt; Vec&lt;AssetDefinitionV3&gt; {
+    ASSET_DEFINITIONS_V3
+        .range(storage, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, cosmwasm_std::Order::Descending)
+        .into_iter()
+        .filter(|result| result.is_ok())
+        .map(|result| result.unwrap().<span class="number">1</span>)
+        .collect::&lt;Vec&lt;AssetDefinitionV3&gt;&gt;()
 }
 
-<span class="doccomment">/// Inserts a new asset definition into storage. If a value already exists, an error will be returned.</span>
-<span class="doccomment">/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// value. An error will be returned if this unique constraint is violated.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `definition` The asset definition to insert into storage and derive the unique keys.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_asset_definition_v3</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">ASSET_DEFINITIONS_V3</span>;
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">storage_key</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">existing_def</span>) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">load</span>(<span class="ident">storage</span>, <span class="ident">key</span>.<span class="ident">clone</span>()) {
-        <span class="ident">ContractError::RecordAlreadyExists</span> {
-            <span class="ident">explanation</span>: <span class="macro">format!</span>(
+<span class="doccomment">/// Inserts a new asset definition into storage. If a value already exists, an error will be returned.
+/// Note: Asset definitions must contain a unique [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+/// value. An error will be returned if this unique constraint is violated.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `definition` The asset definition to insert into storage and derive the unique keys.
+</span><span class="kw">pub fn </span>insert_asset_definition_v3(
+    storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
+    definition: <span class="kw-2">&amp;</span>AssetDefinitionV3,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>state = ASSET_DEFINITIONS_V3;
+    <span class="kw">let </span>key = definition.storage_key();
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(existing_def) = state.load(storage, key.clone()) {
+        ContractError::RecordAlreadyExists {
+            explanation: <span class="macro">format!</span>(
                 <span class="string">&quot;unique constraints violated! record exists with asset type [{}]&quot;</span>,
-                <span class="ident">existing_def</span>.<span class="ident">asset_type</span>
+                existing_def.asset_type
             ),
         }
-        .<span class="ident">to_err</span>()
-    } <span class="kw">else</span> {
-        <span class="comment">// At this point, we know there is no old data available, so we can safely call the replace function and</span>
-        <span class="comment">// specify None for the old_data param.</span>
-        <span class="ident">state</span>
-            .<span class="ident">save</span>(<span class="ident">storage</span>, <span class="ident">key</span>, <span class="ident">definition</span>)
-            .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
+        .to_err()
+    } <span class="kw">else </span>{
+        <span class="comment">// At this point, we know there is no old data available, so we can safely call the replace function and
+        // specify None for the old_data param.
+        </span>state
+            .save(storage, key, definition)
+            .map_err(ContractError::Std)
     }
 }
 
-<span class="doccomment">/// Replaces an existing asset definition in state with the provided value.  If no value exists for</span>
-<span class="doccomment">/// the given definition, an error will be returned.  Note: Map (the internal storage type)</span>
-<span class="doccomment">/// provides a really nice update() function that allows two branches (one for</span>
-<span class="doccomment">/// success and one for failure to find) that seems ideal for this functionality, but it requires a</span>
-<span class="doccomment">/// non-reference version of the data to be used. This requires that the provided definition must be</span>
-<span class="doccomment">/// cloned, which makes it vastly inefficient compared to this implementation.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// property.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_asset_definition_v3</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="ident">AssetDefinitionV3</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">ASSET_DEFINITIONS_V3</span>;
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">definition</span>.<span class="ident">storage_key</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">key</span>.<span class="ident">to_string</span>()) {
-        <span class="ident">state</span>
-            .<span class="ident">save</span>(<span class="ident">storage</span>, <span class="ident">key</span>, <span class="ident">definition</span>)
-            .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">ContractError::RecordNotFound</span> {
-            <span class="ident">explanation</span>: <span class="macro">format!</span>(
+<span class="doccomment">/// Replaces an existing asset definition in state with the provided value.  If no value exists for
+/// the given definition, an error will be returned.  Note: Map (the internal storage type)
+/// provides a really nice update() function that allows two branches (one for
+/// success and one for failure to find) that seems ideal for this functionality, but it requires a
+/// non-reference version of the data to be used. This requires that the provided definition must be
+/// cloned, which makes it vastly inefficient compared to this implementation.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+/// property.
+</span><span class="kw">pub fn </span>replace_asset_definition_v3(
+    storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
+    definition: <span class="kw-2">&amp;</span>AssetDefinitionV3,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>state = ASSET_DEFINITIONS_V3;
+    <span class="kw">let </span>key = definition.storage_key();
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) = state.may_load(storage, key.to_string()) {
+        state
+            .save(storage, key, definition)
+            .map_err(ContractError::Std)
+    } <span class="kw">else </span>{
+        ContractError::RecordNotFound {
+            explanation: <span class="macro">format!</span>(
                 <span class="string">&quot;no record exists to update for asset type [{}]&quot;</span>,
-                <span class="kw-2">&amp;</span><span class="ident">definition</span>.<span class="ident">asset_type</span>
+                <span class="kw-2">&amp;</span>definition.asset_type
             ),
         }
-        .<span class="ident">to_err</span>()
+        .to_err()
     }
 }
 
-<span class="doccomment">/// Finds an existing asset definition in state by checking against the provided asset type,</span>
-<span class="doccomment">/// returning an Option that reflects whether or not the definition exists.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_asset_definition_by_type_v3</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">asset_type</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">ASSET_DEFINITIONS_V3</span>
-        <span class="comment">// Coerce to lowercase to match how stored values are keyed</span>
-        .<span class="ident">may_load</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>.<span class="ident">into</span>().<span class="ident">to_lowercase</span>())
-        .<span class="ident">map_err</span>(<span class="ident">ContractError::Std</span>)
+<span class="doccomment">/// Finds an existing asset definition in state by checking against the provided asset type,
+/// returning an Option that reflects whether or not the definition exists.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+/// for the requested asset definition.
+</span><span class="kw">pub fn </span>may_load_asset_definition_by_type_v3&lt;S: Into&lt;String&gt;&gt;(
+    storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage,
+    asset_type: S,
+) -&gt; AssetResult&lt;<span class="prelude-ty">Option</span>&lt;AssetDefinitionV3&gt;&gt; {
+    ASSET_DEFINITIONS_V3
+        <span class="comment">// Coerce to lowercase to match how stored values are keyed
+        </span>.may_load(storage, asset_type.into().to_lowercase())
+        .map_err(ContractError::Std)
 }
 
-<span class="doccomment">/// Finds an existing asset definition by asset type, or returns an error if no definition is found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)</span>
-<span class="doccomment">/// for the requested asset definition.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_asset_definition_by_type_v3</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">asset_type</span>: <span class="ident">S</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">AssetDefinitionV3</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">asset_type</span> <span class="op">=</span> <span class="ident">asset_type</span>.<span class="ident">into</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">asset_definition</span>) <span class="op">=</span> <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>)<span class="question-mark">?</span> {
-        <span class="ident">asset_definition</span>.<span class="ident">to_ok</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">ContractError::RecordNotFound</span> {
-            <span class="ident">explanation</span>: <span class="macro">format!</span>(<span class="string">&quot;no asset definition existed for asset type {}&quot;</span>, <span class="ident">asset_type</span>,),
+<span class="doccomment">/// Finds an existing asset definition by asset type, or returns an error if no definition is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+/// for the requested asset definition.
+</span><span class="kw">pub fn </span>load_asset_definition_by_type_v3&lt;S: Into&lt;String&gt;&gt;(
+    storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage,
+    asset_type: S,
+) -&gt; AssetResult&lt;AssetDefinitionV3&gt; {
+    <span class="kw">let </span>asset_type = asset_type.into();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(asset_definition) = may_load_asset_definition_by_type_v3(storage, <span class="kw-2">&amp;</span>asset_type)<span class="question-mark">? </span>{
+        asset_definition.to_ok()
+    } <span class="kw">else </span>{
+        ContractError::RecordNotFound {
+            explanation: <span class="macro">format!</span>(<span class="string">&quot;no asset definition existed for asset type {}&quot;</span>, asset_type,),
         }
-        .<span class="ident">to_err</span>()
+        .to_err()
     }
 }
 
-<span class="doccomment">/// Attempts to delete an existing asset definition by asset type.  Returns an error if the</span>
-<span class="doccomment">/// definition does not exist or if the deletion fails.  Returns the asset type of the deleted</span>
-<span class="doccomment">/// definition on a successful deletion.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `asset_type` The asset type to delete.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_asset_definition_by_asset_type_v3</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">existing_asset_type</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">storage</span>, <span class="ident">asset_type</span>)<span class="question-mark">?</span>.<span class="ident">asset_type</span>;
-    <span class="ident">ASSET_DEFINITIONS_V3</span>.<span class="ident">remove</span>(<span class="ident">storage</span>, <span class="ident">existing_asset_type</span>.<span class="ident">to_lowercase</span>());
-    <span class="prelude-val">Ok</span>(<span class="ident">existing_asset_type</span>)
+<span class="doccomment">/// Attempts to delete an existing asset definition by asset type.  Returns an error if the
+/// definition does not exist or if the deletion fails.  Returns the asset type of the deleted
+/// definition on a successful deletion.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `asset_type` The asset type to delete.
+</span><span class="kw">pub fn </span>delete_asset_definition_by_asset_type_v3(
+    storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
+    asset_type: <span class="kw-2">&amp;</span>str,
+) -&gt; AssetResult&lt;String&gt; {
+    <span class="kw">let </span>existing_asset_type = load_asset_definition_by_type_v3(storage, asset_type)<span class="question-mark">?</span>.asset_type;
+    ASSET_DEFINITIONS_V3.remove(storage, existing_asset_type.to_lowercase());
+    <span class="prelude-val">Ok</span>(existing_asset_type)
 }
 
-<span class="doccomment">/// Inserts a new payment detail into storage.  If a value already exists, an error will be returned.</span>
-<span class="doccomment">/// Note: Each payment detail must contain a unique [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
-<span class="doccomment">/// value, or the insert will be rejected with an error.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `fee_payment_detail` The detail to insert into storage and derive the unique scope address key.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_fee_payment_detail</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">fee_payment_detail</span>: <span class="kw-2">&amp;</span><span class="ident">FeePaymentDetail</span>,
-    <span class="ident">asset_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>, <span class="ident">asset_type</span>).<span class="ident">is_ok</span>() {
-        <span class="kw">return</span> <span class="ident">ContractError::RecordAlreadyExists</span> {
-            <span class="ident">explanation</span>: <span class="macro">format!</span>(
+<span class="doccomment">/// Inserts a new payment detail into storage.  If a value already exists, an error will be returned.
+/// Note: Each payment detail must contain a unique [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// value, or the insert will be rejected with an error.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `fee_payment_detail` The detail to insert into storage and derive the unique scope address key.
+</span><span class="kw">pub fn </span>insert_fee_payment_detail(
+    storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
+    fee_payment_detail: <span class="kw-2">&amp;</span>FeePaymentDetail,
+    asset_type: <span class="kw-2">&amp;</span>str,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">if </span>load_fee_payment_detail(storage, <span class="kw-2">&amp;</span>fee_payment_detail.scope_address, asset_type).is_ok() {
+        <span class="kw">return </span>ContractError::RecordAlreadyExists {
+            explanation: <span class="macro">format!</span>(
                 <span class="string">&quot;cannot insert payment detail for scope [{}] and asset type [{}] because a record already exists with that address and asset type&quot;</span>,
-                <span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>,
-                <span class="kw-2">&amp;</span><span class="ident">asset_type</span>
+                <span class="kw-2">&amp;</span>fee_payment_detail.scope_address,
+                <span class="kw-2">&amp;</span>asset_type
             )
-        }.<span class="ident">to_err</span>();
+        }.to_err();
     }
-    <span class="ident">FEE_PAYMENT_DETAILS</span>
-        .<span class="ident">save</span>(
-            <span class="ident">storage</span>,
+    FEE_PAYMENT_DETAILS
+        .save(
+            storage,
             (
-                <span class="ident">Addr::unchecked</span>(<span class="kw-2">&amp;</span><span class="ident">fee_payment_detail</span>.<span class="ident">scope_address</span>),
-                <span class="ident">asset_type</span>.<span class="ident">into</span>(),
+                Addr::unchecked(<span class="kw-2">&amp;</span>fee_payment_detail.scope_address),
+                asset_type.into(),
             ),
-            <span class="ident">fee_payment_detail</span>,
-        )<span class="question-mark">?</span>
-        .<span class="ident">to_ok</span>()
+            fee_payment_detail,
+        )<span class="question-mark">?
+        </span>.to_ok()
 }
 
-<span class="doccomment">/// Finds an existing fee payment detail by scope address, or returns an error if no detail is found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
-<span class="doccomment">/// for the requested payment detail.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
-    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> {
-    <span class="ident">FEE_PAYMENT_DETAILS</span>
-        .<span class="ident">load</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>
-        .<span class="ident">to_ok</span>()
+<span class="doccomment">/// Finds an existing fee payment detail by scope address, or returns an error if no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
+</span><span class="kw">pub fn </span>load_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+    storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage,
+    scope_address: S1,
+    asset_type: S2,
+) -&gt; AssetResult&lt;FeePaymentDetail&gt; {
+    FEE_PAYMENT_DETAILS
+        .load(storage, (Addr::unchecked(scope_address), asset_type.into()))<span class="question-mark">?
+        </span>.to_ok()
 }
 
-<span class="doccomment">/// Attempts to find an existing fee payment detail by scope address, or returns a None variant if</span>
-<span class="doccomment">/// an error occurs or no detail is found.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
-<span class="doccomment">/// for the requested payment detail.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">may_load_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
-    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePaymentDetail</span><span class="op">&gt;</span> {
-    <span class="ident">FEE_PAYMENT_DETAILS</span>
-        .<span class="ident">may_load</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>.<span class="ident">into</span>()))
-        .<span class="ident">unwrap_or</span>(<span class="prelude-val">None</span>)
+<span class="doccomment">/// Attempts to find an existing fee payment detail by scope address, or returns a None variant if
+/// an error occurs or no detail is found.
+///
+/// # Parameters
+///
+/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// for the requested payment detail.
+</span><span class="kw">pub fn </span>may_load_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+    storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage,
+    scope_address: S1,
+    asset_type: S2,
+) -&gt; <span class="prelude-ty">Option</span>&lt;FeePaymentDetail&gt; {
+    FEE_PAYMENT_DETAILS
+        .may_load(storage, (Addr::unchecked(scope_address), asset_type.into()))
+        .unwrap_or(<span class="prelude-val">None</span>)
 }
 
-<span class="doccomment">/// Attempts to delete an existing payment detail by scope address.  Returns an error if the detail</span>
-<span class="doccomment">/// does not exist or if deletion fails.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable reference to the contract&#39;s internal storage.</span>
-<span class="doccomment">/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)</span>
-<span class="doccomment">/// of the detail to delete.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_fee_payment_detail</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>,
-    <span class="ident">scope_address</span>: <span class="ident">S1</span>,
-    <span class="ident">asset_type</span>: <span class="ident">S2</span>,
-) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">scope_address</span> <span class="op">=</span> <span class="ident">scope_address</span>.<span class="ident">into</span>();
-    <span class="kw">let</span> <span class="ident">asset_type</span> <span class="op">=</span> <span class="ident">asset_type</span>.<span class="ident">into</span>();
-    <span class="comment">// Verify the detail exists before allowing its deletion.  The standard &quot;remove&quot; function will</span>
-    <span class="comment">// not produce an error if no target value exists, but it is very informative of bad code to</span>
-    <span class="comment">// reveal when unnecessary operations occur.</span>
-    <span class="ident">load_fee_payment_detail</span>(<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">scope_address</span>, <span class="kw-2">&amp;</span><span class="ident">asset_type</span>)<span class="question-mark">?</span>;
-    <span class="ident">FEE_PAYMENT_DETAILS</span>.<span class="ident">remove</span>(<span class="ident">storage</span>, (<span class="ident">Addr::unchecked</span>(<span class="ident">scope_address</span>), <span class="ident">asset_type</span>));
-    ().<span class="ident">to_ok</span>()
+<span class="doccomment">/// Attempts to delete an existing payment detail by scope address.  Returns an error if the detail
+/// does not exist or if deletion fails.
+///
+/// # Parameters
+///
+/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
+/// of the detail to delete.
+</span><span class="kw">pub fn </span>delete_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+    storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
+    scope_address: S1,
+    asset_type: S2,
+) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>scope_address = scope_address.into();
+    <span class="kw">let </span>asset_type = asset_type.into();
+    <span class="comment">// Verify the detail exists before allowing its deletion.  The standard &quot;remove&quot; function will
+    // not produce an error if no target value exists, but it is very informative of bad code to
+    // reveal when unnecessary operations occur.
+    </span>load_fee_payment_detail(storage, <span class="kw-2">&amp;</span>scope_address, <span class="kw-2">&amp;</span>asset_type)<span class="question-mark">?</span>;
+    FEE_PAYMENT_DETAILS.remove(storage, (Addr::unchecked(scope_address), asset_type));
+    ().to_ok()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::StdError</span>;
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>cosmwasm_std::StdError;
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::error::ContractError</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state</span>::{
-        <span class="ident">delete_asset_definition_by_asset_type_v3</span>, <span class="ident">delete_fee_payment_detail</span>,
-        <span class="ident">insert_asset_definition_v3</span>, <span class="ident">insert_fee_payment_detail</span>, <span class="ident">load_asset_definition_by_type_v3</span>,
-        <span class="ident">load_fee_payment_detail</span>, <span class="ident">may_load_asset_definition_by_type_v3</span>, <span class="ident">may_load_fee_payment_detail</span>,
-        <span class="ident">replace_asset_definition_v3</span>,
+    <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::{
+        delete_asset_definition_by_asset_type_v3, delete_fee_payment_detail,
+        insert_asset_definition_v3, insert_fee_payment_detail, load_asset_definition_by_type_v3,
+        load_fee_payment_detail, may_load_asset_definition_by_type_v3, may_load_fee_payment_detail,
+        replace_asset_definition_v3,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_constants</span>::{<span class="ident">DEFAULT_ASSET_TYPE</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::{DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS};
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::get_duped_fee_payment_detail;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_insert_asset_definition</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;insert should work correctly&quot;</span>);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::RecordAlreadyExists</span> { <span class="ident">explanation</span> } =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_insert_asset_definition() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
+            .expect(<span class="string">&quot;insert should work correctly&quot;</span>);
+        <span class="kw">let </span>error = insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::RecordAlreadyExists { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     <span class="string">&quot;unique constraints violated! record exists with asset type [heloc]&quot;</span>,
-                    <span class="ident">explanation</span>,
-                    <span class="string">&quot;the proper record type should be returned in the resulting error&quot;</span>
-                );
+                    explanation,
+                    <span class="string">&quot;the proper record type should be returned in the resulting error&quot;
+                </span>);
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
         }
-        <span class="kw">let</span> <span class="ident">loaded_asset_definition</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;asset definition should load without error&quot;</span>);
+        <span class="kw">let </span>loaded_asset_definition =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
+                .expect(<span class="string">&quot;asset definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">loaded_asset_definition</span>, <span class="ident">def</span>,
-            <span class="string">&quot;the asset definition should be inserted correctly&quot;</span>
-        );
+            loaded_asset_definition, def,
+            <span class="string">&quot;the asset definition should be inserted correctly&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_replace_asset_definition</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span>
-            <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">replace_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::RecordNotFound</span> { <span class="ident">explanation</span> } =&gt; {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_replace_asset_definition() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>def =
+            AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>error = replace_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::RecordNotFound { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;no record exists to update for asset type [heloc]&quot;</span>, <span class="ident">explanation</span>,
+                    <span class="string">&quot;no record exists to update for asset type [heloc]&quot;</span>, explanation,
                     <span class="string">&quot;the proper record type should be returned in the resulting error&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
         };
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;insert should work correctly&quot;</span>);
-        <span class="ident">def</span>.<span class="ident">enabled</span> <span class="op">=</span> <span class="op">!</span><span class="ident">def</span>.<span class="ident">enabled</span>;
-        <span class="ident">replace_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;update should work correctly&quot;</span>);
-        <span class="kw">let</span> <span class="ident">loaded_asset_definition</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;asset definition should load without error&quot;</span>);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
+            .expect(<span class="string">&quot;insert should work correctly&quot;</span>);
+        def.enabled = !def.enabled;
+        replace_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
+            .expect(<span class="string">&quot;update should work correctly&quot;</span>);
+        <span class="kw">let </span>loaded_asset_definition =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
+                .expect(<span class="string">&quot;asset definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">loaded_asset_definition</span>, <span class="ident">def</span>,
-            <span class="string">&quot;the asset definition should be updated appropriately&quot;</span>
-        );
+            loaded_asset_definition, def,
+            <span class="string">&quot;the asset definition should be updated appropriately&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_may_load_asset_definition_by_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert without error&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_may_load_asset_definition_by_type() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
+            .expect(<span class="string">&quot;the heloc definition should insert without error&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="string">&quot;not-heloc&quot;</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
-                .<span class="ident">is_none</span>(),
+            may_load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="string">&quot;not-heloc&quot;</span>)
+                .expect(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
+                .is_none(),
             <span class="string">&quot;expected the missing asset definition to return an empty Option&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">may_load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition loaded by a populated type to be present&quot;</span>),
-            <span class="ident">heloc</span>,
+            may_load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>heloc.asset_type)
+            .expect(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
+            .expect(<span class="string">&quot;expected the asset definition loaded by a populated type to be present&quot;</span>),
+            heloc,
             <span class="string">&quot;expected the loaded asset definition to equate to the original value that was inserted&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_load_asset_definition_by_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">heloc</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">mortgage</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;DEATH PLEDGE&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should insert appropriately&quot;</span>);
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should insert appropriately&quot;</span>);
-        <span class="kw">let</span> <span class="ident">heloc_from_storage</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">heloc</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;the heloc definition should load without error&quot;</span>);
-        <span class="kw">let</span> <span class="ident">mortgage_from_storage</span> <span class="op">=</span>
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">mortgage</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;the mortgage definition should load without error&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_load_asset_definition_by_type() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>mortgage = AssetDefinitionV3::new(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;DEATH PLEDGE&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
+            .expect(<span class="string">&quot;the heloc definition should insert appropriately&quot;</span>);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>mortgage)
+            .expect(<span class="string">&quot;the mortgage definition should insert appropriately&quot;</span>);
+        <span class="kw">let </span>heloc_from_storage =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>heloc.asset_type)
+                .expect(<span class="string">&quot;the heloc definition should load without error&quot;</span>);
+        <span class="kw">let </span>mortgage_from_storage =
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>mortgage.asset_type)
+                .expect(<span class="string">&quot;the mortgage definition should load without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">heloc</span>, <span class="ident">heloc_from_storage</span>,
-            <span class="string">&quot;the heloc definition should be the same after loading from storage&quot;</span>
-        );
+            heloc, heloc_from_storage,
+            <span class="string">&quot;the heloc definition should be the same after loading from storage&quot;
+        </span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">mortgage</span>, <span class="ident">mortgage_from_storage</span>,
-            <span class="string">&quot;the mortgage definition should be the same after loading from storage&quot;</span>
-        );
+            mortgage, mortgage_from_storage,
+            <span class="string">&quot;the mortgage definition should be the same after loading from storage&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_delete_asset_definition_by_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">AssetDefinitionV3::new</span>(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.<span class="ident">to_some</span>(), <span class="macro">vec!</span>[]);
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored without error&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_delete_asset_definition_by_type() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
+            .expect(<span class="string">&quot;expected the asset definition to be stored without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
+                .expect(<span class="string">&quot;expected the load to succeed&quot;</span>),
+            def,
             <span class="string">&quot;sanity check: asset definition should be accessible by asset type&quot;</span>,
         );
-        <span class="ident">delete_asset_definition_by_asset_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-            .<span class="ident">expect_err</span>(
+        delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def.asset_type)
+            .expect(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
+        <span class="kw">let </span>err = load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
+            .expect_err(
                 <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
             );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
+            <span class="macro">matches!</span>(err, ContractError::RecordNotFound { .. }),
             <span class="string">&quot;expected the record not found error to occur when attempting to load by asset type, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
-        <span class="ident">insert_asset_definition_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the asset definition to be stored again without error&quot;</span>);
+        insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
+            .expect(<span class="string">&quot;expected the asset definition to be stored again without error&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">load_asset_definition_by_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">asset_type</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;expected the load to succeed&quot;</span>),
-            <span class="ident">def</span>,
+            load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
+                .expect(<span class="string">&quot;expected the load to succeed&quot;</span>),
+            def,
             <span class="string">&quot;the definition should be once again successfully attainable by asset type&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_delete_nonexistent_asset_definition_by_type_failure</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_asset_definition_by_asset_type_v3</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="string">&quot;fake-type&quot;</span>)
-            .<span class="ident">expect_err</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_delete_nonexistent_asset_definition_by_type_failure() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="string">&quot;fake-type&quot;</span>)
+            .expect_err(
                 <span class="string">&quot;expected an error to occur when attempting to delete a missing asset type&quot;</span>,
             );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordNotFound</span> { .. }),
+            <span class="macro">matches!</span>(err, ContractError::RecordNotFound { .. }),
             <span class="string">&quot;expected a record not found error to be emitted when the definition does not exist, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_insert_and_load_fee_payment_detail</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_insert_and_load_fee_payment_detail() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>err = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect_err</span>(
+        .expect_err(
             <span class="string">&quot;an error should occur when trying to load a payment detail that does not exist&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::Std</span>(<span class="ident">StdError::NotFound</span> { .. })),
+            <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
             <span class="string">&quot;a not found error should occur when the payment detail is not found, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
-        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
+            .expect(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
+        <span class="kw">let </span>loaded_payment_detail = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;loading the stored payment detail should succeed&quot;</span>);
+        .expect(<span class="string">&quot;loading the stored payment detail should succeed&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payment_detail</span>, <span class="ident">loaded_payment_detail</span>,
+            payment_detail, loaded_payment_detail,
             <span class="string">&quot;the loaded payment detail should equate to the stored value&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">insert_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">loaded_payment_detail</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        <span class="kw">let </span>err = insert_fee_payment_detail(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>loaded_payment_detail,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect_err</span>(<span class="string">&quot;an error should occur when attempting to insert a duplicate payment detail&quot;</span>);
+        .expect_err(<span class="string">&quot;an error should occur when attempting to insert a duplicate payment detail&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::RecordAlreadyExists</span> { .. }),
+            <span class="macro">matches!</span>(err, ContractError::RecordAlreadyExists { .. }),
             <span class="string">&quot;a record already exists error should occur, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_may_load_fee_payment_detail</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_may_load_fee_payment_detail() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         <span class="macro">assert!</span>(
-            <span class="ident">may_load_fee_payment_detail</span>(
-                <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-                <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-                <span class="ident">DEFAULT_ASSET_TYPE</span>
+            may_load_fee_payment_detail(
+                deps.as_ref().storage,
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE
             )
-            .<span class="ident">is_none</span>(),
+            .is_none(),
             <span class="string">&quot;attempting to load a detail that does not exist should produce a None variant&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">loaded_payment_detail</span> <span class="op">=</span> <span class="ident">may_load_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
+            .expect(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
+        <span class="kw">let </span>loaded_payment_detail = may_load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;the fee payment detail should load successfully&quot;</span>);
+        .expect(<span class="string">&quot;the fee payment detail should load successfully&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payment_detail</span>, <span class="ident">loaded_payment_detail</span>,
+            payment_detail, loaded_payment_detail,
             <span class="string">&quot;the loaded payment detail should equate to the inserted value&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_delete_fee_payment_detail</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">delete_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="ident">DEFAULT_SCOPE_ADDRESS</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>).<span class="ident">expect_err</span>(
-            <span class="string">&quot;an error should occur when attempting to delete a fee payment detail that does not exist&quot;</span>
-        );
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_delete_fee_payment_detail() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span>err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect_err(
+            <span class="string">&quot;an error should occur when attempting to delete a fee payment detail that does not exist&quot;
+        </span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::Std</span>(<span class="ident">StdError::NotFound</span> { .. })),
+            <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
             <span class="string">&quot;a not found error should occur when the payment detail is not found, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
-        <span class="kw">let</span> <span class="ident">payment_detail</span> <span class="op">=</span> <span class="ident">get_duped_fee_payment_detail</span>(<span class="ident">DEFAULT_SCOPE_ADDRESS</span>);
-        <span class="ident">insert_fee_payment_detail</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>, <span class="kw-2">&amp;</span><span class="ident">payment_detail</span>, <span class="ident">DEFAULT_ASSET_TYPE</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;inserting a payment detail should succeed&quot;</span>);
+        <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
+        insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
+            .expect(<span class="string">&quot;inserting a payment detail should succeed&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">load_fee_payment_detail</span>(
-                <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-                <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-                <span class="ident">DEFAULT_ASSET_TYPE</span>
+            load_fee_payment_detail(
+                deps.as_ref().storage,
+                DEFAULT_SCOPE_ADDRESS,
+                DEFAULT_ASSET_TYPE
             )
-            .<span class="ident">is_ok</span>(),
+            .is_ok(),
             <span class="string">&quot;sanity check: fee payment detail should be available after insert&quot;</span>,
         );
-        <span class="ident">delete_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        delete_fee_payment_detail(
+            deps.as_mut().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;deleting a payment detail should succeed&quot;</span>);
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">load_fee_payment_detail</span>(
-            <span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>,
-            <span class="ident">DEFAULT_SCOPE_ADDRESS</span>,
-            <span class="ident">DEFAULT_ASSET_TYPE</span>,
+        .expect(<span class="string">&quot;deleting a payment detail should succeed&quot;</span>);
+        <span class="kw">let </span>err = load_fee_payment_detail(
+            deps.as_ref().storage,
+            DEFAULT_SCOPE_ADDRESS,
+            DEFAULT_ASSET_TYPE,
         )
-        .<span class="ident">expect_err</span>(
+        .expect_err(
             <span class="string">&quot;an error should occur when trying to load a payment detail after it has been deleted&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">err</span>, <span class="ident">ContractError::Std</span>(<span class="ident">StdError::NotFound</span> { .. })),
+            <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
             <span class="string">&quot;a not found error should occur when the payment detail is loaded after deletion, but got: {:?}&quot;</span>,
-            <span class="ident">err</span>,
+            err,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

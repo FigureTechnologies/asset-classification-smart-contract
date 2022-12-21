@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/migrate/migrate_contract.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>migrate_contract.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/migrate/migrate_contract.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>migrate_contract.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -284,291 +284,291 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">cosmwasm_std</span>::{<span class="ident">Response</span>, <span class="ident">Storage</span>};
-<span class="kw">use</span> <span class="ident">result_extensions::ResultExtensions</span>;
-<span class="kw">use</span> <span class="ident">semver::Version</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>cosmwasm_std::{Response, Storage};
+<span class="kw">use </span>result_extensions::ResultExtensions;
+<span class="kw">use </span>semver::Version;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::msg::MigrationOptions</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_v2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::event_attributes::EventAdditionalMetadata</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">core::error::ContractError</span>,
-    <span class="ident">util</span>::{
-        <span class="ident">aliases</span>::{<span class="ident">AssetResult</span>, <span class="ident">DepsMutC</span>, <span class="ident">EntryPointResponse</span>},
-        <span class="ident">event_attributes</span>::{<span class="ident">EventAttributes</span>, <span class="ident">EventType</span>},
+<span class="kw">use </span><span class="kw">crate</span>::core::msg::MigrationOptions;
+<span class="kw">use </span><span class="kw">crate</span>::core::state::config_v2;
+<span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventAdditionalMetadata;
+<span class="kw">use </span><span class="kw">crate</span>::util::scope_address_utils::bech32_string_to_addr;
+<span class="kw">use crate</span>::{
+    core::error::ContractError,
+    util::{
+        aliases::{AssetResult, DepsMutC, EntryPointResponse},
+        event_attributes::{EventAttributes, EventType},
     },
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::version_info</span>::{
-    <span class="ident">get_version_info</span>, <span class="ident">migrate_version_info</span>, <span class="ident">CONTRACT_NAME</span>, <span class="ident">CONTRACT_VERSION</span>,
+<span class="kw">use </span><span class="kw">super</span>::version_info::{
+    get_version_info, migrate_version_info, CONTRACT_NAME, CONTRACT_VERSION,
 };
 
-<span class="doccomment">/// The main entrypoint function for running a code migration.  Referred to in the [contract file](crate::contract).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `deps` A DepsMutC provided by cosmwasm in the migrate entrypoint.</span>
-<span class="doccomment">/// * `options` An optional instance of [MigrationOptions](crate::core::msg::MigrationOptions) that</span>
-<span class="doccomment">/// dictates whether or not to execute optional functionality during the migration.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate_contract</span>(<span class="ident">deps</span>: <span class="ident">DepsMutC</span>, <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MigrationOptions</span><span class="op">&gt;</span>) -&gt; <span class="ident">EntryPointResponse</span> {
-    <span class="comment">// Ensure the migration is not attempting to revert to an old version or something crazier</span>
-    <span class="ident">check_valid_migration_versioning</span>(<span class="ident">deps</span>.<span class="ident">storage</span>)<span class="question-mark">?</span>;
-    <span class="comment">// Store the new version info</span>
-    <span class="kw">let</span> <span class="ident">new_version_info</span> <span class="op">=</span> <span class="ident">migrate_version_info</span>(<span class="ident">deps</span>.<span class="ident">storage</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">additional_metadata</span> <span class="op">=</span> <span class="ident">EventAdditionalMetadata::new</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">options</span>) <span class="op">=</span> <span class="ident">options</span> {
-        <span class="comment">// Only load and update the state if any options have actually been specified</span>
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">has_changes</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_storage</span> <span class="op">=</span> <span class="ident">config_v2</span>(<span class="ident">deps</span>.<span class="ident">storage</span>);
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">state_storage</span>.<span class="ident">load</span>()<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">new_admin_address</span>) <span class="op">=</span> <span class="ident">options</span>.<span class="ident">new_admin_address</span> {
-                <span class="comment">// Only set a new specified admin if it is a legitimate bech32 Provenance Blockchain address</span>
-                <span class="ident">state</span>.<span class="ident">admin</span> <span class="op">=</span> <span class="ident">bech32_string_to_addr</span>(<span class="kw-2">&amp;</span><span class="ident">new_admin_address</span>)<span class="question-mark">?</span>;
-                <span class="ident">additional_metadata</span>.<span class="ident">add_metadata</span>(<span class="string">&quot;new_admin_address&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">new_admin_address</span>);
+<span class="doccomment">/// The main entrypoint function for running a code migration.  Referred to in the [contract file](crate::contract).
+///
+/// # Parameters
+///
+/// * `deps` A DepsMutC provided by cosmwasm in the migrate entrypoint.
+/// * `options` An optional instance of [MigrationOptions](crate::core::msg::MigrationOptions) that
+/// dictates whether or not to execute optional functionality during the migration.
+</span><span class="kw">pub fn </span>migrate_contract(deps: DepsMutC, options: <span class="prelude-ty">Option</span>&lt;MigrationOptions&gt;) -&gt; EntryPointResponse {
+    <span class="comment">// Ensure the migration is not attempting to revert to an old version or something crazier
+    </span>check_valid_migration_versioning(deps.storage)<span class="question-mark">?</span>;
+    <span class="comment">// Store the new version info
+    </span><span class="kw">let </span>new_version_info = migrate_version_info(deps.storage)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>additional_metadata = EventAdditionalMetadata::new();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(options) = options {
+        <span class="comment">// Only load and update the state if any options have actually been specified
+        </span><span class="kw">if </span>options.has_changes() {
+            <span class="kw">let </span><span class="kw-2">mut </span>state_storage = config_v2(deps.storage);
+            <span class="kw">let </span><span class="kw-2">mut </span>state = state_storage.load()<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(new_admin_address) = options.new_admin_address {
+                <span class="comment">// Only set a new specified admin if it is a legitimate bech32 Provenance Blockchain address
+                </span>state.admin = bech32_string_to_addr(<span class="kw-2">&amp;</span>new_admin_address)<span class="question-mark">?</span>;
+                additional_metadata.add_metadata(<span class="string">&quot;new_admin_address&quot;</span>, <span class="kw-2">&amp;</span>new_admin_address);
             }
-            <span class="comment">// Persist all changes to the state</span>
-            <span class="ident">state_storage</span>.<span class="ident">save</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Persist all changes to the state
+            </span>state_storage.save(<span class="kw-2">&amp;</span>state)<span class="question-mark">?</span>;
         }
     }
-    <span class="ident">Response::new</span>()
-        .<span class="ident">add_attributes</span>(
-            <span class="ident">EventAttributes::new</span>(<span class="ident">EventType::MigrateContract</span>)
-                .<span class="ident">set_new_value</span>(<span class="kw-2">&amp;</span><span class="ident">new_version_info</span>.<span class="ident">version</span>)
-                <span class="comment">// Note: If additional metadata is empty, it will not be appended as an attribute</span>
-                .<span class="ident">set_additional_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">additional_metadata</span>),
+    Response::new()
+        .add_attributes(
+            EventAttributes::new(EventType::MigrateContract)
+                .set_new_value(<span class="kw-2">&amp;</span>new_version_info.version)
+                <span class="comment">// Note: If additional metadata is empty, it will not be appended as an attribute
+                </span>.set_additional_metadata(<span class="kw-2">&amp;</span>additional_metadata),
         )
-        .<span class="ident">to_ok</span>()
+        .to_ok()
 }
 
-<span class="doccomment">/// Verifies that the migration is going to a proper version and the contract name of the new wasm matches</span>
-<span class="doccomment">/// the value in the Cargo.toml.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * `storage` A mutable instance of the contract&#39;s internal storage for data manipulation.</span>
-<span class="kw">fn</span> <span class="ident">check_valid_migration_versioning</span>(<span class="ident">storage</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Storage</span>) -&gt; <span class="ident">AssetResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">stored_version_info</span> <span class="op">=</span> <span class="ident">get_version_info</span>(<span class="ident">storage</span>)<span class="question-mark">?</span>;
-    <span class="comment">// If the contract name has changed or another contract attempts to overwrite this one, this</span>
-    <span class="comment">// check will reject the change</span>
-    <span class="kw">if</span> <span class="ident">CONTRACT_NAME</span> <span class="op">!</span><span class="op">=</span> <span class="ident">stored_version_info</span>.<span class="ident">contract</span> {
-        <span class="kw">return</span> <span class="ident">ContractError::InvalidContractName</span> {
-            <span class="ident">current_contract</span>: <span class="ident">stored_version_info</span>.<span class="ident">contract</span>,
-            <span class="ident">migration_contract</span>: <span class="ident">CONTRACT_NAME</span>.<span class="ident">to_string</span>(),
+<span class="doccomment">/// Verifies that the migration is going to a proper version and the contract name of the new wasm matches
+/// the value in the Cargo.toml.
+///
+/// # Parameters
+///
+/// * `storage` A mutable instance of the contract&#39;s internal storage for data manipulation.
+</span><span class="kw">fn </span>check_valid_migration_versioning(storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">let </span>stored_version_info = get_version_info(storage)<span class="question-mark">?</span>;
+    <span class="comment">// If the contract name has changed or another contract attempts to overwrite this one, this
+    // check will reject the change
+    </span><span class="kw">if </span>CONTRACT_NAME != stored_version_info.contract {
+        <span class="kw">return </span>ContractError::InvalidContractName {
+            current_contract: stored_version_info.contract,
+            migration_contract: CONTRACT_NAME.to_string(),
         }
-        .<span class="ident">to_err</span>();
+        .to_err();
     }
-    <span class="kw">let</span> <span class="ident">contract_version</span> <span class="op">=</span> <span class="ident">CONTRACT_VERSION</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Version</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-    <span class="comment">// If the stored version in the contract is greater than the derived version from the package,</span>
-    <span class="comment">// then this migration is effectively a downgrade and should not be committed</span>
-    <span class="kw">if</span> <span class="ident">stored_version_info</span>.<span class="ident">parse_sem_ver</span>()<span class="question-mark">?</span> <span class="op">&gt;</span> <span class="ident">contract_version</span> {
-        <span class="kw">return</span> <span class="ident">ContractError::InvalidContractVersion</span> {
-            <span class="ident">current_version</span>: <span class="ident">stored_version_info</span>.<span class="ident">version</span>,
-            <span class="ident">migration_version</span>: <span class="ident">CONTRACT_VERSION</span>.<span class="ident">to_string</span>(),
+    <span class="kw">let </span>contract_version = CONTRACT_VERSION.parse::&lt;Version&gt;()<span class="question-mark">?</span>;
+    <span class="comment">// If the stored version in the contract is greater than the derived version from the package,
+    // then this migration is effectively a downgrade and should not be committed
+    </span><span class="kw">if </span>stored_version_info.parse_sem_ver()<span class="question-mark">? </span>&gt; contract_version {
+        <span class="kw">return </span>ContractError::InvalidContractVersion {
+            current_version: stored_version_info.version,
+            migration_version: CONTRACT_VERSION.to_string(),
         }
-        .<span class="ident">to_err</span>();
+        .to_err();
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">provwasm_mocks::mock_dependencies</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::state::config_read_v2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutil::test_utilities</span>::{<span class="ident">test_instantiate_success</span>, <span class="ident">InstArgs</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::ADDITIONAL_METADATA_KEY</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">migrate::version_info</span>::{<span class="ident">set_version_info</span>, <span class="ident">VersionInfoV1</span>},
-        <span class="ident">testutil::test_utilities::single_attribute_for_key</span>,
-        <span class="ident">util::constants</span>::{<span class="ident">ASSET_EVENT_TYPE_KEY</span>, <span class="ident">NEW_VALUE_KEY</span>},
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::config_read_v2;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::{test_instantiate_success, InstArgs};
+    <span class="kw">use </span><span class="kw">crate</span>::util::constants::ADDITIONAL_METADATA_KEY;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+    <span class="kw">use crate</span>::{
+        migrate::version_info::{set_version_info, VersionInfoV1},
+        testutil::test_utilities::single_attribute_for_key,
+        util::constants::{ASSET_EVENT_TYPE_KEY, NEW_VALUE_KEY},
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_migration</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">set_version_info</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">VersionInfoV1</span> {
-                <span class="ident">contract</span>: <span class="ident">CONTRACT_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">version</span>: <span class="string">&quot;0.0.0&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_successful_migration() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        set_version_info(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>VersionInfoV1 {
+                contract: CONTRACT_NAME.to_string(),
+                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">migrate_contract</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="prelude-val">None</span>).<span class="ident">expect</span>(
+        .expect(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
+        <span class="kw">let </span>response = migrate_contract(deps.as_mut(), <span class="prelude-val">None</span>).expect(
             <span class="string">&quot;a migration should be successful when the contract is migrating to a new version&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">is_empty</span>(),
-            <span class="string">&quot;a migration should not produce messages, and they would be ignored&quot;</span>
-        );
+            response.messages.is_empty(),
+            <span class="string">&quot;a migration should not produce messages, and they would be ignored&quot;
+        </span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
-            <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
+            response.attributes.len(),
             <span class="string">&quot;the migration should produce the correct number of attributes&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">EventType::MigrateContract</span>.<span class="ident">event_name</span>().<span class="ident">as_str</span>(),
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_EVENT_TYPE_KEY</span>),
+            EventType::MigrateContract.event_name().as_str(),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
             <span class="string">&quot;the proper event type attribute should be emitted&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">CONTRACT_VERSION</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">NEW_VALUE_KEY</span>),
+            CONTRACT_VERSION,
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, NEW_VALUE_KEY),
             <span class="string">&quot;the new value key should equate to the current contract version&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_successful_migration_with_admin_change</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="ident">set_version_info</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">VersionInfoV1</span> {
-                <span class="ident">contract</span>: <span class="ident">CONTRACT_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">version</span>: <span class="string">&quot;0.0.0&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_successful_migration_with_admin_change() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        set_version_info(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>VersionInfoV1 {
+                contract: CONTRACT_NAME.to_string(),
+                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
-        <span class="kw">let</span> <span class="ident">new_admin_address</span> <span class="op">=</span> <span class="string">&quot;tp1hsqtppgy7mgd64q0uvk7q39qa7h8hp30urqs6n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">migrate_contract</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">MigrationOptions</span> {
-                <span class="comment">// Address randomly generated externally</span>
-                <span class="ident">new_admin_address</span>: <span class="ident">new_admin_address</span>.<span class="ident">to_string</span>().<span class="ident">to_some</span>(),
+        .expect(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
+        <span class="kw">let </span>new_admin_address = <span class="string">&quot;tp1hsqtppgy7mgd64q0uvk7q39qa7h8hp30urqs6n&quot;</span>;
+        <span class="kw">let </span>response = migrate_contract(
+            deps.as_mut(),
+            MigrationOptions {
+                <span class="comment">// Address randomly generated externally
+                </span>new_admin_address: new_admin_address.to_string().to_some(),
             }
-            .<span class="ident">to_some</span>(),
+            .to_some(),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;expected a new admin address with correct bech32 specification to succeed&quot;</span>);
+        .expect(<span class="string">&quot;expected a new admin address with correct bech32 specification to succeed&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="ident">response</span>.<span class="ident">messages</span>.<span class="ident">is_empty</span>(),
+            response.messages.is_empty(),
             <span class="string">&quot;a migration should not produce messages, and they would be ignored&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">3</span>,
-            <span class="ident">response</span>.<span class="ident">attributes</span>.<span class="ident">len</span>(),
+            response.attributes.len(),
             <span class="string">&quot;the migration should produce the correct number of attributes&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">EventType::MigrateContract</span>.<span class="ident">event_name</span>().<span class="ident">as_str</span>(),
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ASSET_EVENT_TYPE_KEY</span>),
+            EventType::MigrateContract.event_name().as_str(),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
             <span class="string">&quot;the proper event type attribute should be emitted&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">CONTRACT_VERSION</span>,
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">NEW_VALUE_KEY</span>),
+            CONTRACT_VERSION,
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, NEW_VALUE_KEY),
             <span class="string">&quot;the new value key should equate to the current contract version&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(<span class="string">&quot;[new_admin_address={new_admin_address}]&quot;</span>),
-            <span class="ident">single_attribute_for_key</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>, <span class="ident">ADDITIONAL_METADATA_KEY</span>),
+            single_attribute_for_key(<span class="kw-2">&amp;</span>response, ADDITIONAL_METADATA_KEY),
             <span class="string">&quot;the additional metadata should specify the new admin address&quot;</span>,
         );
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">config_read_v2</span>(<span class="ident">deps</span>.<span class="ident">as_ref</span>().<span class="ident">storage</span>)
-            .<span class="ident">load</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;expected the contract config to load without issue&quot;</span>);
+        <span class="kw">let </span>state = config_read_v2(deps.as_ref().storage)
+            .load()
+            .expect(<span class="string">&quot;expected the contract config to load without issue&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">new_admin_address</span>,
-            <span class="ident">state</span>.<span class="ident">admin</span>.<span class="ident">as_str</span>(),
+            new_admin_address,
+            state.admin.as_str(),
             <span class="string">&quot;expected the new admin address to be persisted in the contract state&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_failed_migration_for_incorrect_name</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">set_version_info</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">VersionInfoV1</span> {
-                <span class="ident">contract</span>: <span class="string">&quot;Wrong name&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">version</span>: <span class="ident">CONTRACT_VERSION</span>.<span class="ident">to_string</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_failed_migration_for_incorrect_name() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        set_version_info(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>VersionInfoV1 {
+                contract: <span class="string">&quot;Wrong name&quot;</span>.to_string(),
+                version: CONTRACT_VERSION.to_string(),
             },
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">migrate_contract</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="prelude-val">None</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::InvalidContractName</span> {
-                <span class="ident">current_contract</span>,
-                <span class="ident">migration_contract</span>,
+        .unwrap();
+        <span class="kw">let </span>error = migrate_contract(deps.as_mut(), <span class="prelude-val">None</span>).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::InvalidContractName {
+                current_contract,
+                migration_contract,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     <span class="string">&quot;Wrong name&quot;</span>,
-                    <span class="ident">current_contract</span>.<span class="ident">as_str</span>(),
+                    current_contract.as_str(),
                     <span class="string">&quot;the current contract name should equate to the value stored in contract storage&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
-                    <span class="ident">CONTRACT_NAME</span>,
-                    <span class="ident">migration_contract</span>.<span class="ident">as_str</span>(),
+                    CONTRACT_NAME,
+                    migration_contract.as_str(),
                     <span class="string">&quot;the migration contract should be the env contract name&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_failed_migration_for_too_low_version</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">set_version_info</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">VersionInfoV1</span> {
-                <span class="ident">contract</span>: <span class="ident">CONTRACT_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">version</span>: <span class="string">&quot;99.9.9&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_failed_migration_for_too_low_version() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        set_version_info(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>VersionInfoV1 {
+                contract: CONTRACT_NAME.to_string(),
+                version: <span class="string">&quot;99.9.9&quot;</span>.to_string(),
             },
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">migrate_contract</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="prelude-val">None</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">match</span> <span class="ident">error</span> {
-            <span class="ident">ContractError::InvalidContractVersion</span> {
-                <span class="ident">current_version</span>,
-                <span class="ident">migration_version</span>,
+        .unwrap();
+        <span class="kw">let </span>error = migrate_contract(deps.as_mut(), <span class="prelude-val">None</span>).unwrap_err();
+        <span class="kw">match </span>error {
+            ContractError::InvalidContractVersion {
+                current_version,
+                migration_version,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     <span class="string">&quot;99.9.9&quot;</span>,
-                    <span class="ident">current_version</span>.<span class="ident">as_str</span>(),
+                    current_version.as_str(),
                     <span class="string">&quot;the current contract version should equate to the value stored in contract storage&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
-                    <span class="ident">CONTRACT_VERSION</span>,
-                    <span class="ident">migration_version</span>.<span class="ident">as_str</span>(),
+                    CONTRACT_VERSION,
+                    migration_version.as_str(),
                     <span class="string">&quot;the migration contract version should equate to the env value&quot;</span>,
                 );
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, <span class="ident">error</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_failed_migration_for_invalid_new_admin_address</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">mock_dependencies</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="ident">test_instantiate_success</span>(<span class="ident">deps</span>.<span class="ident">as_mut</span>(), <span class="ident">InstArgs::default</span>());
-        <span class="ident">set_version_info</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>().<span class="ident">storage</span>,
-            <span class="kw-2">&amp;</span><span class="ident">VersionInfoV1</span> {
-                <span class="ident">contract</span>: <span class="ident">CONTRACT_NAME</span>.<span class="ident">to_string</span>(),
-                <span class="ident">version</span>: <span class="string">&quot;0.0.0&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_failed_migration_for_invalid_new_admin_address() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        set_version_info(
+            deps.as_mut().storage,
+            <span class="kw-2">&amp;</span>VersionInfoV1 {
+                contract: CONTRACT_NAME.to_string(),
+                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
             },
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;overriding version info should not fail&quot;</span>);
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">migrate_contract</span>(
-            <span class="ident">deps</span>.<span class="ident">as_mut</span>(),
-            <span class="ident">MigrationOptions</span> {
-                <span class="ident">new_admin_address</span>: <span class="string">&quot;not a bech32 thing that&#39;s for sure&quot;</span>.<span class="ident">to_string</span>().<span class="ident">to_some</span>(),
+        .expect(<span class="string">&quot;overriding version info should not fail&quot;</span>);
+        <span class="kw">let </span>error = migrate_contract(
+            deps.as_mut(),
+            MigrationOptions {
+                new_admin_address: <span class="string">&quot;not a bech32 thing that&#39;s for sure&quot;</span>.to_string().to_some(),
             }
-            .<span class="ident">to_some</span>(),
+            .to_some(),
         )
-        .<span class="ident">expect_err</span>(
+        .expect_err(
             <span class="string">&quot;expected an error to occur when using a non-bech32 address as the new admin address&quot;</span>,
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">error</span>, <span class="ident">ContractError::Bech32Error</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(error, ContractError::Bech32Error(<span class="kw">_</span>)),
             <span class="string">&quot;expected a bech32 error to occur when an invalid bech32 address was provided as the new admin&quot;</span>,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

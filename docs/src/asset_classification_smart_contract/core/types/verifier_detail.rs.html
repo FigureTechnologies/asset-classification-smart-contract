@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/verifier_detail.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier_detail.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/verifier_detail.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier_detail.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../asset_classification_smart_contract/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -303,135 +303,135 @@
 <span id="303">303</span>
 <span id="304">304</span>
 <span id="305">305</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail</span>;
-<span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
-<span class="kw">use</span> <span class="ident">schemars::JsonSchema</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost;
+<span class="kw">use </span><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
+<span class="kw">use </span>cosmwasm_std::Uint128;
+<span class="kw">use </span>schemars::JsonSchema;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::entity_detail::EntityDetail</span>;
+<span class="kw">use </span><span class="kw">super</span>::entity_detail::EntityDetail;
 
-<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">JsonSchema</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;snake_case&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VerifierDetailV2</span> {
-    <span class="doccomment">/// The Provenance Blockchain bech32 address of the verifier account.</span>
-    <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The total amount charged to use the onboarding process this this verifier.</span>
-    <span class="kw">pub</span> <span class="ident">onboarding_cost</span>: <span class="ident">Uint128</span>,
-    <span class="doccomment">/// The coin denomination used for this onboarding process.</span>
-    <span class="kw">pub</span> <span class="ident">onboarding_denom</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Each account that should receive fees when onboarding a new scope to the contract.</span>
-    <span class="doccomment">/// All of these destinations&#39; individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties</span>
-    <span class="doccomment">/// should sum to an amount less than or equal to the [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost).</span>
-    <span class="doccomment">/// Amounts not precisely equal in sum will cause this verifier detail to be considered invalid</span>
-    <span class="doccomment">/// and rejected in requests that include it.</span>
-    <span class="kw">pub</span> <span class="ident">fee_destinations</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FeeDestinationV2</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// An optional set of fields that define the verifier, including its name and home URL location.</span>
-    <span class="kw">pub</span> <span class="ident">entity_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntityDetail</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost) and</span>
-    <span class="doccomment">/// [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed</span>
-    <span class="doccomment">/// verification.  If not present, the original values used for the first verification will be</span>
-    <span class="doccomment">/// used.</span>
-    <span class="kw">pub</span> <span class="ident">retry_cost</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OnboardingCost</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// An optional set of fields that define behaviors when classification is being run for an</span>
-    <span class="doccomment">/// asset that is already classified as a different type.</span>
-    <span class="kw">pub</span> <span class="ident">subsequent_classification_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SubsequentClassificationDetail</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Defines the fees and addresses for a single verifier account for an [AssetDefinitionV3](super::asset_definition::AssetDefinitionV3).
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+</span><span class="kw">pub struct </span>VerifierDetailV2 {
+    <span class="doccomment">/// The Provenance Blockchain bech32 address of the verifier account.
+    </span><span class="kw">pub </span>address: String,
+    <span class="doccomment">/// The total amount charged to use the onboarding process this this verifier.
+    </span><span class="kw">pub </span>onboarding_cost: Uint128,
+    <span class="doccomment">/// The coin denomination used for this onboarding process.
+    </span><span class="kw">pub </span>onboarding_denom: String,
+    <span class="doccomment">/// Each account that should receive fees when onboarding a new scope to the contract.
+    /// All of these destinations&#39; individual [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) properties
+    /// should sum to an amount less than or equal to the [onboarding_cost](super::verifier_detail::VerifierDetailV2::onboarding_cost).
+    /// Amounts not precisely equal in sum will cause this verifier detail to be considered invalid
+    /// and rejected in requests that include it.
+    </span><span class="kw">pub </span>fee_destinations: Vec&lt;FeeDestinationV2&gt;,
+    <span class="doccomment">/// An optional set of fields that define the verifier, including its name and home URL location.
+    </span><span class="kw">pub </span>entity_detail: <span class="prelude-ty">Option</span>&lt;EntityDetail&gt;,
+    <span class="doccomment">/// Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost) and
+    /// [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed
+    /// verification.  If not present, the original values used for the first verification will be
+    /// used.
+    </span><span class="kw">pub </span>retry_cost: <span class="prelude-ty">Option</span>&lt;OnboardingCost&gt;,
+    <span class="doccomment">/// An optional set of fields that define behaviors when classification is being run for an
+    /// asset that is already classified as a different type.
+    </span><span class="kw">pub </span>subsequent_classification_detail: <span class="prelude-ty">Option</span>&lt;SubsequentClassificationDetail&gt;,
 }
-<span class="kw">impl</span> <span class="ident">VerifierDetailV2</span> {
-    <span class="doccomment">/// Constructs a new instance of this struct.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `address` The Provenance Blockchain bech32 address of the verifier account.</span>
-    <span class="doccomment">/// * `onboarding_cost` The total amount charged to use the onboarding process this this verifier.</span>
-    <span class="doccomment">/// * `onboarding_denom` The coin denomination used for this onboarding process.</span>
-    <span class="doccomment">/// * `fee_destinations` Each account that should receive some (or all) of the amount specified in [onboarding_cost](self::VerifierDetailV2::onboarding_cost).</span>
-    <span class="doccomment">/// * `entity_detail` An optional set of fields that define the verifier, including its name and home URL location.</span>
-    <span class="doccomment">/// * `retry_cost` Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost)</span>
-    <span class="doccomment">/// and [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed</span>
-    <span class="doccomment">/// verification.  If not present, the original values used for the first verification will be</span>
-    <span class="doccomment">/// used.</span>
-    <span class="doccomment">/// * `subsequent_classification_detail` An optional set of fields that define behaviors when</span>
-    <span class="doccomment">/// classification is being run for an asset that is already classified as a different type.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S1</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">S2</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="ident">address</span>: <span class="ident">S1</span>,
-        <span class="ident">onboarding_cost</span>: <span class="ident">Uint128</span>,
-        <span class="ident">onboarding_denom</span>: <span class="ident">S2</span>,
-        <span class="ident">fee_destinations</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FeeDestinationV2</span><span class="op">&gt;</span>,
-        <span class="ident">entity_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">EntityDetail</span><span class="op">&gt;</span>,
-        <span class="ident">retry_cost</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OnboardingCost</span><span class="op">&gt;</span>,
-        <span class="ident">subsequent_classification_detail</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SubsequentClassificationDetail</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident">VerifierDetailV2</span> {
-            <span class="ident">address</span>: <span class="ident">address</span>.<span class="ident">into</span>(),
-            <span class="ident">onboarding_cost</span>,
-            <span class="ident">onboarding_denom</span>: <span class="ident">onboarding_denom</span>.<span class="ident">into</span>(),
-            <span class="ident">fee_destinations</span>,
-            <span class="ident">entity_detail</span>,
-            <span class="ident">retry_cost</span>,
-            <span class="ident">subsequent_classification_detail</span>,
+<span class="kw">impl </span>VerifierDetailV2 {
+    <span class="doccomment">/// Constructs a new instance of this struct.
+    ///
+    /// # Parameters
+    ///
+    /// * `address` The Provenance Blockchain bech32 address of the verifier account.
+    /// * `onboarding_cost` The total amount charged to use the onboarding process this this verifier.
+    /// * `onboarding_denom` The coin denomination used for this onboarding process.
+    /// * `fee_destinations` Each account that should receive some (or all) of the amount specified in [onboarding_cost](self::VerifierDetailV2::onboarding_cost).
+    /// * `entity_detail` An optional set of fields that define the verifier, including its name and home URL location.
+    /// * `retry_cost` Defines the cost to use in place of the root [onboarding_cost](self::VerifierDetailV2::onboarding_cost)
+    /// and [fee_destinations](self::VerifierDetailV2::fee_destinations) when retrying classification for a failed
+    /// verification.  If not present, the original values used for the first verification will be
+    /// used.
+    /// * `subsequent_classification_detail` An optional set of fields that define behaviors when
+    /// classification is being run for an asset that is already classified as a different type.
+    </span><span class="kw">pub fn </span>new&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
+        address: S1,
+        onboarding_cost: Uint128,
+        onboarding_denom: S2,
+        fee_destinations: Vec&lt;FeeDestinationV2&gt;,
+        entity_detail: <span class="prelude-ty">Option</span>&lt;EntityDetail&gt;,
+        retry_cost: <span class="prelude-ty">Option</span>&lt;OnboardingCost&gt;,
+        subsequent_classification_detail: <span class="prelude-ty">Option</span>&lt;SubsequentClassificationDetail&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        VerifierDetailV2 {
+            address: address.into(),
+            onboarding_cost,
+            onboarding_denom: onboarding_denom.into(),
+            fee_destinations,
+            entity_detail,
+            retry_cost,
+            subsequent_classification_detail,
         }
     }
 
-    <span class="doccomment">/// Calculates a sum of all held [fee_destinations](self::VerifierDetailV2::fee_destinations)</span>
-    <span class="doccomment">/// respective [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) fields.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_fee_total</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u128</span> {
-        <span class="self">self</span>.<span class="ident">fee_destinations</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">fee_amount</span>.<span class="ident">u128</span>())
-            .<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u128</span><span class="op">&gt;</span>()
+    <span class="doccomment">/// Calculates a sum of all held [fee_destinations](self::VerifierDetailV2::fee_destinations)
+    /// respective [fee_amount](super::fee_destination::FeeDestinationV2::fee_amount) fields.
+    </span><span class="kw">pub fn </span>get_fee_total(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u128 {
+        <span class="self">self</span>.fee_destinations
+            .iter()
+            .map(|d| d.fee_amount.u128())
+            .sum::&lt;u128&gt;()
     }
 
-    <span class="doccomment">/// Packs the root-level onboarding_cost and fee_destinations fields into an OnboardingCost</span>
-    <span class="doccomment">/// struct.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_default_cost</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">OnboardingCost</span> {
-        <span class="ident">OnboardingCost::new</span>(<span class="self">self</span>.<span class="ident">onboarding_cost</span>.<span class="ident">u128</span>(), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fee_destinations</span>)
+    <span class="doccomment">/// Packs the root-level onboarding_cost and fee_destinations fields into an OnboardingCost
+    /// struct.
+    </span><span class="kw">pub fn </span>get_default_cost(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; OnboardingCost {
+        OnboardingCost::new(<span class="self">self</span>.onboarding_cost.u128(), <span class="kw-2">&amp;</span><span class="self">self</span>.fee_destinations)
     }
 
-    <span class="doccomment">/// Determines the values to use for retrying classification on an asset that has been rejected</span>
-    <span class="doccomment">/// by a verifier.  Will try to use the root [retry_cost](self::VerifierDetailV2::retry_cost) values, if present.</span>
-    <span class="doccomment">/// If missing, the default costs will be used.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_retry_cost</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">OnboardingCost</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">retry_cost</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">retry_cost</span> {
-            <span class="ident">retry_cost</span>.<span class="ident">to_owned</span>()
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">get_default_cost</span>()
+    <span class="doccomment">/// Determines the values to use for retrying classification on an asset that has been rejected
+    /// by a verifier.  Will try to use the root [retry_cost](self::VerifierDetailV2::retry_cost) values, if present.
+    /// If missing, the default costs will be used.
+    </span><span class="kw">pub fn </span>get_retry_cost(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; OnboardingCost {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>retry_cost) = <span class="self">self</span>.retry_cost {
+            retry_cost.to_owned()
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.get_default_cost()
         }
     }
 
-    <span class="doccomment">/// Determines the values to use for classifying an asset that has been previously classified</span>
-    <span class="doccomment">/// as a different asset type.  If the [subsequent_classification_detail](self::VerifierDetailV2::subsequent_classification_detail)</span>
-    <span class="doccomment">/// field is populated, its [cost](super::subsequent_classification_detail::SubsequentClassificationDetail::cost) field will be</span>
-    <span class="doccomment">/// used to determine costs paid during onboarding.  If it is not populated, the default costs</span>
-    <span class="doccomment">/// will be used.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_subsequent_classification_cost</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">OnboardingCost</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">subsequent_detail</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">subsequent_classification_detail</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">cost</span>) <span class="op">=</span> <span class="ident">subsequent_detail</span>.<span class="ident">cost</span> {
-                <span class="kw">return</span> <span class="ident">cost</span>.<span class="ident">to_owned</span>();
+    <span class="doccomment">/// Determines the values to use for classifying an asset that has been previously classified
+    /// as a different asset type.  If the [subsequent_classification_detail](self::VerifierDetailV2::subsequent_classification_detail)
+    /// field is populated, its [cost](super::subsequent_classification_detail::SubsequentClassificationDetail::cost) field will be
+    /// used to determine costs paid during onboarding.  If it is not populated, the default costs
+    /// will be used.
+    </span><span class="kw">pub fn </span>get_subsequent_classification_cost(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; OnboardingCost {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>subsequent_detail) = <span class="self">self</span>.subsequent_classification_detail {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>cost) = subsequent_detail.cost {
+                <span class="kw">return </span>cost.to_owned();
             }
         }
-        <span class="self">self</span>.<span class="ident">get_default_cost</span>()
+        <span class="self">self</span>.get_default_cost()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::constants::NHASH</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::traits::OptionExtensions</span>;
-    <span class="kw">use</span> <span class="ident">cosmwasm_std::Uint128</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::onboarding_cost::OnboardingCost;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
+    <span class="kw">use </span><span class="kw">crate</span>::util::constants::NHASH;
+    <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
+    <span class="kw">use </span>cosmwasm_std::Uint128;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_no_fee_destinations_fee_total</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_no_fee_destinations_fee_total() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
             <span class="macro">vec!</span>[],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
@@ -439,174 +439,174 @@
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">0</span>,
-            <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>().<span class="ident">get_fee_total</span>(),
+            verifier.get_default_cost().get_fee_total(),
             <span class="string">&quot;expected the fee total to be zero when no fee definitions are listed&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_one_fee_destination_fee_total</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_one_fee_destination_fee_total() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address&quot;</span>, <span class="number">55</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-address&quot;</span>, <span class="number">55</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="number">55</span>, <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>().<span class="ident">get_fee_total</span>(),
+            <span class="number">55</span>, verifier.get_default_cost().get_fee_total(),
             <span class="string">&quot;expected the fee total to directly reflect the amount listed in the single fee destination&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_many_fee_destinations_fee_total</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_many_fee_destinations_fee_total() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">1000</span>),
-            <span class="ident">NHASH</span>,
+            Uint128::new(<span class="number">1000</span>),
+            NHASH,
             <span class="macro">vec!</span>[
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-1&quot;</span>, <span class="number">10</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-2&quot;</span>, <span class="number">20</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-3&quot;</span>, <span class="number">30</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-4&quot;</span>, <span class="number">40</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-5&quot;</span>, <span class="number">50</span>),
-                <span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-address-6&quot;</span>, <span class="number">60</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-1&quot;</span>, <span class="number">10</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-2&quot;</span>, <span class="number">20</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-3&quot;</span>, <span class="number">30</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-4&quot;</span>, <span class="number">40</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-5&quot;</span>, <span class="number">50</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fee-address-6&quot;</span>, <span class="number">60</span>),
             ],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="number">210</span>, <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>().<span class="ident">get_fee_total</span>(),
+            <span class="number">210</span>, verifier.get_default_cost().get_fee_total(),
             <span class="string">&quot;expected the fee total to be the sum of all fee destinations&#39; fee amounts (10 + 20 + 30 + 40 + 50 + 60 = 210)&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_default_cost_uses_the_root_fields_as_source</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_default_cost_uses_the_root_fields_as_source() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">onboarding_cost</span> <span class="op">=</span> <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>();
+        <span class="kw">let </span>onboarding_cost = verifier.get_default_cost();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier</span>.<span class="ident">onboarding_cost</span>, <span class="ident">onboarding_cost</span>.<span class="ident">cost</span>,
+            verifier.onboarding_cost, onboarding_cost.cost,
             <span class="string">&quot;the cost of the onboarding cost should equate to the value specified in the root of the verifier&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier</span>.<span class="ident">fee_destinations</span>,
-            <span class="ident">onboarding_cost</span>.<span class="ident">fee_destinations</span>,
+            verifier.fee_destinations,
+            onboarding_cost.fee_destinations,
             <span class="string">&quot;the fee destinations of the onboarding cost should equate to the value specified in the root of the verifier&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_retry_cost_uses_default_when_not_specified</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_retry_cost_uses_default_when_not_specified() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>(),
-            <span class="ident">verifier</span>.<span class="ident">get_retry_cost</span>(),
+            verifier.get_default_cost(),
+            verifier.get_retry_cost(),
             <span class="string">&quot;the retry cost should equate to the default cost when the retry node is not specified&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_retry_cost_uses_provided_values_when_specified</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_retry_cost_uses_provided_values_when_specified() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
-            <span class="ident">OnboardingCost::new</span>(<span class="number">150</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee-2&quot;</span>, <span class="number">5</span>)]).<span class="ident">to_some</span>(),
+            OnboardingCost::new(<span class="number">150</span>, <span class="kw-2">&amp;</span>[FeeDestinationV2::new(<span class="string">&quot;fee-2&quot;</span>, <span class="number">5</span>)]).to_some(),
             <span class="prelude-val">None</span>,
         );
-        <span class="kw">let</span> <span class="ident">root_retry_cost</span> <span class="op">=</span> <span class="ident">verifier</span>
-            .<span class="ident">retry_cost</span>
-            .<span class="ident">clone</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;retry cost should be set on the root of the verifier&quot;</span>);
+        <span class="kw">let </span>root_retry_cost = verifier
+            .retry_cost
+            .clone()
+            .expect(<span class="string">&quot;retry cost should be set on the root of the verifier&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">root_retry_cost</span>,
-            <span class="ident">verifier</span>.<span class="ident">get_retry_cost</span>(),
+            root_retry_cost,
+            verifier.get_retry_cost(),
             <span class="string">&quot;the root retry cost should be returned when it is set on the verifier&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_subsequent_classification_cost_uses_default_when_none_specified</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_subsequent_classification_cost_uses_default_when_none_specified() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>(),
-            <span class="ident">verifier</span>.<span class="ident">get_subsequent_classification_cost</span>(),
+            verifier.get_default_cost(),
+            verifier.get_subsequent_classification_cost(),
             <span class="string">&quot;the default costs should be used for subsequent classification cost when no subsequent detail is provided&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_subsequent_classification_cost_uses_default_when_subsequent_node_is_empty</span>() {
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_subsequent_classification_cost_uses_default_when_subsequent_node_is_empty() {
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
-            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">to_some</span>(),
+            SubsequentClassificationDetail::new::&lt;String&gt;(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[]).to_some(),
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">verifier</span>.<span class="ident">get_default_cost</span>(),
-            <span class="ident">verifier</span>.<span class="ident">get_subsequent_classification_cost</span>(),
+            verifier.get_default_cost(),
+            verifier.get_subsequent_classification_cost(),
             <span class="string">&quot;the default costs should be used for subsequent classification cost when the subsequent detail is blank&quot;</span>,
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_get_subsequent_classification_cost_uses_inner_default_when_provided</span>() {
-        <span class="kw">let</span> <span class="ident">expected_onboarding_cost</span> <span class="op">=</span>
-            <span class="ident">OnboardingCost::new</span>(<span class="number">100</span>, <span class="kw-2">&amp;</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;default_cost_fee&quot;</span>, <span class="number">7</span>)]);
-        <span class="kw">let</span> <span class="ident">verifier</span> <span class="op">=</span> <span class="ident">VerifierDetailV2::new</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_get_subsequent_classification_cost_uses_inner_default_when_provided() {
+        <span class="kw">let </span>expected_onboarding_cost =
+            OnboardingCost::new(<span class="number">100</span>, <span class="kw-2">&amp;</span>[FeeDestinationV2::new(<span class="string">&quot;default_cost_fee&quot;</span>, <span class="number">7</span>)]);
+        <span class="kw">let </span>verifier = VerifierDetailV2::new(
             <span class="string">&quot;address&quot;</span>,
-            <span class="ident">Uint128::new</span>(<span class="number">100</span>),
-            <span class="ident">NHASH</span>,
-            <span class="macro">vec!</span>[<span class="ident">FeeDestinationV2::new</span>(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
+            Uint128::new(<span class="number">100</span>),
+            NHASH,
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">1</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
-            <span class="ident">SubsequentClassificationDetail::new</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(
-                <span class="ident">expected_onboarding_cost</span>.<span class="ident">clone</span>().<span class="ident">to_some</span>(),
+            SubsequentClassificationDetail::new::&lt;String&gt;(
+                expected_onboarding_cost.clone().to_some(),
                 <span class="kw-2">&amp;</span>[],
             )
-            .<span class="ident">to_some</span>(),
+            .to_some(),
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">expected_onboarding_cost</span>,
-            <span class="ident">verifier</span>.<span class="ident">get_subsequent_classification_cost</span>(),
+            expected_onboarding_cost,
+            verifier.get_subsequent_classification_cost(),
             <span class="string">&quot;the default subsequent classification cost should be used when no asset type targets match&quot;</span>,
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="asset_classification_smart_contract" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

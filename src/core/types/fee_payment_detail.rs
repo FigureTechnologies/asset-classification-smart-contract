@@ -64,7 +64,7 @@ impl FeePaymentDetail {
             });
             fee_total += destination.fee_amount.u128();
         }
-        // Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should
+        // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
         if fee_total > onboarding_cost.cost.u128() {
@@ -425,13 +425,6 @@ mod tests {
         assert_eq!(6, messages.len(), "expected six messages to be sent");
         test_messages_contains_fee_for_address(
             &messages,
-            "verifier",
-            200,
-            NHASH,
-            "expected half of all funds to be sent to the verifier",
-        );
-        test_messages_contains_fee_for_address(
-            &messages,
             "first",
             40,
             NHASH,
@@ -464,6 +457,13 @@ mod tests {
             30,
             NHASH,
             "expected 15 nhash of the fee to be sent to the fifth fee destination",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "verifier",
+            200,
+            NHASH,
+            "expected all remaining funds to be sent to the verifier",
         );
     }
 

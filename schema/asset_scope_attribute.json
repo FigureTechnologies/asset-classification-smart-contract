@@ -101,10 +101,21 @@
     },
     "AccessDefinitionType": {
       "description": "Allows access definitions to be differentiated based on their overarching type, versus having to differentiate them based on known addresses.",
-      "type": "string",
-      "enum": [
-        "requestor",
-        "verifier"
+      "oneOf": [
+        {
+          "description": "Indicates that the access definition was created by the requestor that onboarded the scope.",
+          "type": "string",
+          "enum": [
+            "requestor"
+          ]
+        },
+        {
+          "description": "Indicates that the access definition was created by the verifier for a scope.",
+          "type": "string",
+          "enum": [
+            "verifier"
+          ]
+        }
       ]
     },
     "AccessRoute": {
@@ -133,11 +144,28 @@
     },
     "AssetOnboardingStatus": {
       "description": "An enum that denotes the various states that an [AssetScopeAttribute](super::asset_scope_attribute::AssetScopeAttribute) can have.",
-      "type": "string",
-      "enum": [
-        "pending",
-        "denied",
-        "approved"
+      "oneOf": [
+        {
+          "description": "Indicates that the asset has been onboarded but has yet to be verified.",
+          "type": "string",
+          "enum": [
+            "pending"
+          ]
+        },
+        {
+          "description": "Indicates that the asset has been verified and is determined to be unfit to be classified as its designated asset type.",
+          "type": "string",
+          "enum": [
+            "denied"
+          ]
+        },
+        {
+          "description": "Indicates that the asset has been verified and has been successfully classified as its designated asset type.",
+          "type": "string",
+          "enum": [
+            "approved"
+          ]
+        }
       ]
     },
     "AssetVerificationResult": {

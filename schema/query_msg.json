@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
   "description": "Defines all routes in which the contract can be queried.  These are all handled directly in the [contract file](crate::contract::query).",
-  "anyOf": [
+  "oneOf": [
     {
       "description": "This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract's internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null response will be returned.",
       "type": "object",

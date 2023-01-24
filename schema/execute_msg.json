@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
   "description": "Defines all routes in which the contract can be executed.  These are all handled directly in the [contract file](crate::contract::execute).",
-  "anyOf": [
+  "oneOf": [
     {
       "description": "This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is \"asset\" and the asset type is \"myasset\", the attribute would be assigned under the name of \"myasset.asset\".  All available asset types are queryable, and stored in the contract as [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus) of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending), indicating that the asset has been onboarded to the contract but is awaiting verification.",
       "type": "object",

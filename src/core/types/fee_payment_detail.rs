@@ -126,7 +126,7 @@ pub struct FeePayment {
     /// The amount to be charged during the asset verification process.  The denom will always
     /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
     /// amount.  The coin's amount will be equal to the amount for a fee_destination in the verifier detail,
-    /// and (onboarding_cost- fee_destination_total0 for the verifier itself if that amount is > 0.
+    /// and (onboarding_cost- fee_destination_total) for the verifier itself if that amount is > 0.
     pub amount: Coin,
     /// A name describing to the end user (requestor) the purpose and target of the fee.
     pub name: String,

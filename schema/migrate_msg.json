@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MigrateMsg",
   "description": "The struct used to migrate the contract from one code instance to another.  Utilized in the core [contract file](crate::contract::migrate).",
-  "anyOf": [
+  "oneOf": [
     {
       "description": "Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract) function.",
       "type": "object",

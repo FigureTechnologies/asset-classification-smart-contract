@@ -157,11 +157,10 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
             self.append_messages(&[assess_custom_fee(
                 Coin {
                     denom: verifier_detail.onboarding_denom.clone(),
-                    // The payment detail now contains the originally-specified fee to be charged,
-                    // but halved.  Charge a fee to the onboarding requestor using double the value
-                    // derived in the payment detail to ensure the correct funds are sent to the
-                    // contract
-                    amount: Uint128::new(payment_detail.sum_costs() * 2),
+                    // The payment detail now contains the originally-specified fee to be charged.
+                    // Charge a fee to the onboarding requestor for this amount to send the correct
+                    // amount of funds to the contract.
+                    amount: Uint128::new(payment_detail.sum_costs()),
                 },
                 Some("Asset Classification Onboarding Fee"),
                 // The contract address must always be used as the "from" value to ensure that
@@ -806,7 +805,7 @@ mod tests {
         fee_payment_detail.payments = vec![fee_payment_detail.payments[0].clone()];
         fee_payment_detail.payments[0].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
         fee_payment_detail.payments[0].amount =
-            Coin::new(DEFAULT_ONBOARDING_COST / 2, DEFAULT_ONBOARDING_DENOM);
+            Coin::new(DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM);
         insert_fee_payment_detail(&mut deps.storage, &fee_payment_detail, DEFAULT_ASSET_TYPE)
             .unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
@@ -895,8 +894,8 @@ mod tests {
                 );
                 assert_eq!(
                     amount.first().unwrap().amount.u128(),
-                    DEFAULT_ONBOARDING_COST / 2,
-                    "bank send fee message should be half the default onboarding cost"
+                    DEFAULT_ONBOARDING_COST,
+                    "bank send fee message should be the default onboarding cost"
                 );
                 assert_eq!(
                     amount.first().unwrap().denom,
@@ -1305,10 +1304,7 @@ mod tests {
                     "fee message should go to the verifier"
                 );
                 assert_eq!(
-                    &vec![Coin::new(
-                        DEFAULT_ONBOARDING_COST / 2,
-                        DEFAULT_ONBOARDING_DENOM
-                    )],
+                    &vec![Coin::new(DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM)],
                     amount,
                     "fee message should be of the proper amount"
                 );
@@ -1446,9 +1442,9 @@ mod tests {
                     "exactly one coin amount should be present on bank send message"
                 );
                 assert_eq!(
-                    DEFAULT_ONBOARDING_COST / 2,
+                    DEFAULT_ONBOARDING_COST,
                     amount.first().unwrap().amount.u128(),
-                    "the fee amount should equate to half the onboarding cost due to provenance's 50% fee cut",
+                    "the fee amount should equate to the onboarding cost",
                 );
                 assert_eq!(
                     DEFAULT_ONBOARDING_DENOM,

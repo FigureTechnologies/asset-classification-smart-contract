@@ -199,17 +199,10 @@ fn validate_onboarding_cost_internal<S: Into<String>>(
 ) -> Vec<String> {
     let source = source.into();
     let mut invalid_fields: Vec<String> = vec![];
-    // onboarding cost must be even, as the Provenance Message Fees module takes half and we need to know how much goes into contract escrow exactly
-    if onboarding_cost.cost.u128() % 2 != 0 {
-        invalid_fields.push(format!(
-            "{}: onboarding_cost:cost must be an even number",
-            source
-        ));
-    }
     if !onboarding_cost.fee_destinations.is_empty()
-        && onboarding_cost.get_fee_total() > onboarding_cost.cost.u128() / 2
+        && onboarding_cost.get_fee_total() > onboarding_cost.cost.u128()
     {
-        invalid_fields.push(format!("{}: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost", source));
+        invalid_fields.push(format!("{}: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost", source));
     }
     if distinct_count_by_property(&onboarding_cost.fee_destinations, |dest| &dest.address)
         != onboarding_cost.fee_destinations.len()
@@ -294,7 +287,7 @@ pub mod tests {
                     NHASH,
                     vec![FeeDestinationV2::new(
                         "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
-                        100,
+                        200,
                     )],
                     get_default_entity_detail().to_some(),
                     None,
@@ -322,7 +315,7 @@ pub mod tests {
                         NHASH,
                         vec![FeeDestinationV2::new(
                             "tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95",
-                            100,
+                            200,
                         )],
                         get_default_entity_detail().to_some(),
                         None,
@@ -339,8 +332,8 @@ pub mod tests {
                         Uint128::new(500),
                         NHASH,
                         vec![
-                            FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 125),
-                            FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 125),
+                            FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 250),
+                            FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 250),
                         ],
                         get_default_entity_detail().to_some(),
                         None,
@@ -375,11 +368,11 @@ pub mod tests {
                             vec![
                                 FeeDestinationV2::new(
                                     "tp1jdcwtaendn9y75jv9dqnmlm7dy8pv4kgu9fs9g",
-                                    250000,
+                                    500000,
                                 ),
                                 FeeDestinationV2::new(
                                     "tp16dxelgu5nz7u0ygs3qu8tqzjv7gxq5wqucjclm",
-                                    750000,
+                                    1500000,
                                 ),
                             ],
                             get_default_entity_detail().to_some(),
@@ -479,7 +472,7 @@ pub mod tests {
                 NHASH,
                 vec![FeeDestinationV2::new(
                     "tp1pq2yt466fvxrf399atkxrxazptkkmp04x2slew",
-                    100,
+                    200,
                 )],
                 get_default_entity_detail().to_some(),
                 None,
@@ -609,11 +602,11 @@ pub mod tests {
             Uint128::new(4000),
             NHASH,
             vec![
-                FeeDestinationV2::new("tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89", 100),
-                FeeDestinationV2::new("tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95", 1650),
-                FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 50),
-                FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 199),
-                FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", 1),
+                FeeDestinationV2::new("tp14evhfcwnj9hz8p49lysp6uvz6ch3lq8r29xv89", 200),
+                FeeDestinationV2::new("tp16e7gwxzr2g5ktfsa69mhy2qqtwxy3g3eansn95", 3300),
+                FeeDestinationV2::new("tp1szfeeasdxjdj55sps0m8835wppkykj5wgkhu2p", 100),
+                FeeDestinationV2::new("tp1m2ar35p73amqxwaxgcya0tckd0nmm9l9xe74l7", 398),
+                FeeDestinationV2::new("tp1aujf44ge8zydwckk8zwa5g548czys53dkcp2lq", 2),
             ],
             get_default_entity_detail().to_some(),
             None,
@@ -684,12 +677,12 @@ pub mod tests {
                 "address",
                 Uint128::new(2020),
                 NHASH,
-                vec![FeeDestinationV2::new("fee", 1011)],
+                vec![FeeDestinationV2::new("fee", 2021)],
                 get_default_entity_detail().to_some(),
                 None,
                 None,
             ),
-            "verifier onboarding costs: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to half the onboarding cost",
+            "verifier onboarding costs: onboarding_cost:fee_destinations:fee_amounts must sum to be less than or equal to the onboarding cost",
         );
     }
 
@@ -701,8 +694,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 50),
+                    FeeDestinationV2::new("fee-guy", 50),
                 ],
                 get_default_entity_detail().to_some(),
                 None,
@@ -739,23 +732,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
-                ],
-                get_default_entity_detail().to_some(),
-                OnboardingCost::new(3, &[]).to_some(),
-                None,
-            ),
-            "verifier retry costs: onboarding_cost:cost must be an even number",
-        );
-        test_invalid_verifier(
-            &VerifierDetailV2::new(
-                "address",
-                Uint128::new(100),
-                NHASH,
-                vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 50),
+                    FeeDestinationV2::new("fee-guy", 50),
                 ],
                 get_default_entity_detail().to_some(),
                 OnboardingCost::new(4, &[FeeDestinationV2::new("", 2)]).to_some(),
@@ -796,27 +774,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
-                ],
-                get_default_entity_detail().to_some(),
-                None,
-                SubsequentClassificationDetail::new::<String>(
-                    OnboardingCost::new(3, &[]).to_some(),
-                    &[],
-                )
-                .to_some(),
-            ),
-            "verifier subsequent classification cost: onboarding_cost:cost must be an even number",
-        );
-        test_invalid_verifier(
-            &VerifierDetailV2::new(
-                "address",
-                Uint128::new(100),
-                NHASH,
-                vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 50),
+                    FeeDestinationV2::new("fee-guy", 50),
                 ],
                 get_default_entity_detail().to_some(),
                 None,
@@ -838,8 +797,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 50),
+                    FeeDestinationV2::new("fee-guy", 50),
                 ],
                 get_default_entity_detail().to_some(),
                 None,
@@ -857,8 +816,8 @@ pub mod tests {
                 Uint128::new(100),
                 NHASH,
                 vec![
-                    FeeDestinationV2::new("fee-guy", 25),
-                    FeeDestinationV2::new("fee-guy", 25),
+                    FeeDestinationV2::new("fee-guy", 50),
+                    FeeDestinationV2::new("fee-guy", 50),
                 ],
                 get_default_entity_detail().to_some(),
                 None,

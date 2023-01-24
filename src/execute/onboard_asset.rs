@@ -979,7 +979,7 @@ mod tests {
                 .retry_cost
                 .expect("the default verifier should have a retry cost")
                 .cost
-                .u128() / 2,
+                .u128(),
             payment_detail_after_retry.sum_costs(),
             "the payments in the generated detail should sum to the defined retry cost divided by two to account for provenance fee handling",
         );
@@ -1249,7 +1249,7 @@ mod tests {
         let secondary_asset_definition = AssetDefinitionV3::new(
             DEFAULT_SECONDARY_ASSET_TYPE,
             Some("secondary asset"),
-            vec![secondary_verifier.clone()],
+            vec![secondary_verifier],
         );
         add_asset_definition(
             deps.as_mut(),
@@ -1287,9 +1287,9 @@ mod tests {
         );
         let payment_detail = subsequent_onboard_fee_detail.payments.first().unwrap();
         assert_eq!(
-            150,
+            300,
             payment_detail.amount.amount.u128(),
-            "the payment amount should be 300, which is half of the default onboarding cost",
+            "the payment amount should be 300, which is the entirety of the onboarding cost",
         );
         assert_eq!(
             DEFAULT_VERIFIER_ADDRESS,

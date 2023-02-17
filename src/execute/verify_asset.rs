@@ -132,20 +132,15 @@ where
         .to_err();
     }
 
-    let updated_attribute = repository.verify_asset(
-        &asset_identifiers.scope_address,
-        msg.asset_type,
-        msg.success,
-        msg.message,
-        msg.access_routes,
-    )?;
+    let updated_attribute =
+        repository.verify_asset(scope_attribute, msg.success, msg.message, msg.access_routes)?;
 
     // construct/emit verification attributes
     Response::new()
         .add_attributes(
             EventAttributes::for_asset_event(
                 EventType::VerifyAsset,
-                &scope_attribute.asset_type,
+                &updated_attribute.asset_type,
                 &asset_identifiers.scope_address,
             )
             .set_verifier(info.sender.as_str())
@@ -157,7 +152,7 @@ where
                 info.sender.as_str(),
             )
             .with_access_grant_id(generate_os_gateway_grant_id(
-                scope_attribute.asset_type,
+                &updated_attribute.asset_type,
                 asset_identifiers.scope_address,
             )),
         )

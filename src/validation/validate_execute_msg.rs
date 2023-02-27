@@ -4,6 +4,7 @@ use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::util::aliases::AssetResult;
+use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::util::traits::OptionExtensions;
 use crate::validation::validate_init_msg::{
     validate_asset_definition, validate_verifier_with_provided_errors,
@@ -79,8 +80,8 @@ fn validate_onboard_asset(
     if asset_type.is_empty() {
         invalid_fields.push("asset_type: must not be blank".to_string());
     }
-    if verifier_address.is_empty() {
-        invalid_fields.push("verifier_address: must not be blank".to_string());
+    if bech32_string_to_addr(verifier_address).is_err() {
+        invalid_fields.push("verifier_address: must be valid bech32".to_string());
     }
     gen_validation_response("ExecuteMsg::OnboardAsset", invalid_fields)
 }
@@ -251,6 +252,7 @@ fn gen_validation_response<S: Into<String>>(
 #[cfg(test)]
 mod tests {
     use crate::core::types::serialized_enum::SerializedEnum;
+    use crate::testutil::test_constants::DEFAULT_VERIFIER_ADDRESS;
     use crate::validation::validate_execute_msg::{
         validate_delete_asset_definition, validate_update_access_routes,
     };
@@ -266,7 +268,7 @@ mod tests {
         validate_onboard_asset(
             &AssetIdentifier::asset_uuid("asset_uuid").to_serialized_enum(),
             "asset_type",
-            "verifier_address",
+            DEFAULT_VERIFIER_ADDRESS,
         )
         .expect("expected validation to pass when all arguments are properly supplied");
     }
@@ -276,7 +278,7 @@ mod tests {
         validate_onboard_asset(
             &AssetIdentifier::scope_address("scope_address").to_serialized_enum(),
             "asset_type",
-            "verifier_address",
+            DEFAULT_VERIFIER_ADDRESS,
         )
         .expect("expected validation to pass when all arguments are properly supplied");
     }
@@ -286,7 +288,7 @@ mod tests {
         let result = validate_onboard_asset(
             &AssetIdentifier::asset_uuid("asset_uuid").to_serialized_enum(),
             "",
-            "verifier_address",
+            DEFAULT_VERIFIER_ADDRESS,
         );
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
@@ -312,7 +314,7 @@ mod tests {
         let result = validate_onboard_asset(
             &AssetIdentifier::asset_uuid("asset_uuid").to_serialized_enum(),
             "asset_type",
-            "",
+            "not_bech32",
         );
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(
@@ -326,7 +328,7 @@ mod tests {
                 "expected only a single invalid field to be found"
             );
             assert_eq!(
-                "verifier_address: must not be blank",
+                "verifier_address: must be valid bech32",
                 invalid_fields.first().unwrap().as_str(),
                 "expected the appropriate error message to be returned",
             );
@@ -338,7 +340,7 @@ mod tests {
         let result = validate_onboard_asset(
             &SerializedEnum::new("incorrect_variant", "value"),
             "asset_type",
-            "verifier_address",
+            DEFAULT_VERIFIER_ADDRESS,
         );
         test_invalid_message_fields(result, |message_type, invalid_fields| {
             assert_eq!(

@@ -846,8 +846,6 @@
 <a href="#846" id="846">846</a>
 <a href="#847" id="847">847</a>
 <a href="#848" id="848">848</a>
-<a href="#849" id="849">849</a>
-<a href="#850" id="850">850</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
 <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_destination::FeeDestinationV2;
 <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
@@ -914,23 +912,21 @@
             });
             fee_total += destination.fee_amount.u128();
         }
-        <span class="comment">// Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should
+        <span class="comment">// Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
-        </span><span class="kw">if </span>fee_total &gt; onboarding_cost.cost.u128() / <span class="number">2 </span>{
+        </span><span class="kw">if </span>fee_total &gt; onboarding_cost.cost.u128() {
             <span class="kw">return </span>ContractError::generic(
-                <span class="macro">format!</span>(<span class="string">&quot;misconfigured fee destinations! fee total ({}{}) was greater than half the specified onboarding cost ({}{} / 2 = {}{})&quot;</span>,
+                <span class="macro">format!</span>(<span class="string">&quot;misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})&quot;</span>,
                         fee_total,
                         <span class="kw-2">&amp;</span>verifier.onboarding_denom,
                         onboarding_cost.cost.u128(),
-                        <span class="kw-2">&amp;</span>verifier.onboarding_denom,
-                        onboarding_cost.cost.u128() / <span class="number">2</span>,
                         <span class="kw-2">&amp;</span>verifier.onboarding_denom,
                 )
             ).to_err();
         }
         <span class="comment">// The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-        </span><span class="kw">let </span>verifier_cost = (onboarding_cost.cost.u128() / <span class="number">2</span>) - fee_total;
+        </span><span class="kw">let </span>verifier_cost = onboarding_cost.cost.u128() - fee_total;
         <span class="comment">// Only append payment info for the verifier if it actually has a cost
         </span><span class="kw">if </span>verifier_cost &gt; <span class="number">0 </span>{
             payments.push(FeePayment {
@@ -978,7 +974,7 @@
     <span class="doccomment">/// The amount to be charged during the asset verification process.  The denom will always
     /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
     /// amount.  The coin&#39;s amount will be equal to the amount for a fee_destination in the verifier detail,
-    /// and (onboarding_cost / 2) - fee_destination_total for the verifier itself if that amount is &gt; 0.
+    /// and (onboarding_cost- fee_destination_total) for the verifier itself if that amount is &gt; 0.
     </span><span class="kw">pub </span>amount: Coin,
     <span class="doccomment">/// A name describing to the end user (requestor) the purpose and target of the fee.
     </span><span class="kw">pub </span>name: String,
@@ -1147,7 +1143,7 @@
             <span class="string">&quot;address&quot;</span>,
             Uint128::new(<span class="number">200</span>),
             NHASH,
-            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">101</span>)],
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee&quot;</span>, <span class="number">201</span>)],
             get_default_entity_detail().to_some(),
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
@@ -1163,7 +1159,7 @@
         <span class="kw">match </span>error {
             ContractError::GenericError { msg } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;misconfigured fee destinations! fee total (101nhash) was greater than half the specified onboarding cost (200nhash / 2 = 100nhash)&quot;</span>,
+                    <span class="string">&quot;misconfigured fee destinations! fee total (201nhash) was greater than the specified onboarding cost (200nhash)&quot;</span>,
                     msg.as_str(),
                     <span class="string">&quot;unexpected error message generated&quot;</span>,
                 );
@@ -1195,7 +1191,7 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;verifier&quot;</span>,
-            <span class="number">100</span>,
+            <span class="number">200</span>,
             NHASH,
             <span class="string">&quot;expected all funds to be sent to the verifier&quot;</span>,
         );
@@ -1207,7 +1203,7 @@
             <span class="string">&quot;verifier&quot;</span>,
             Uint128::new(<span class="number">200</span>),
             NHASH,
-            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">100</span>)],
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">200</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
@@ -1221,7 +1217,7 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;fee-destination&quot;</span>,
-            <span class="number">100</span>,
+            <span class="number">200</span>,
             NHASH,
             <span class="string">&quot;expected all funds to be sent to the fee destination&quot;</span>,
         );
@@ -1233,7 +1229,7 @@
             <span class="string">&quot;verifier&quot;</span>,
             Uint128::new(<span class="number">200</span>),
             NHASH,
-            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">50</span>)],
+            <span class="macro">vec!</span>[FeeDestinationV2::new(<span class="string">&quot;fee-destination&quot;</span>, <span class="number">100</span>)],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
@@ -1243,14 +1239,14 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;verifier&quot;</span>,
-            <span class="number">50</span>,
+            <span class="number">100</span>,
             NHASH,
             <span class="string">&quot;expected half of the funds to be sent to the verifier&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;fee-destination&quot;</span>,
-            <span class="number">50</span>,
+            <span class="number">100</span>,
             NHASH,
             <span class="string">&quot;expected half of the funds to be sent to the fee destination&quot;</span>,
         );
@@ -1263,11 +1259,11 @@
             Uint128::new(<span class="number">400</span>),
             NHASH,
             <span class="macro">vec!</span>[
-                FeeDestinationV2::new(<span class="string">&quot;first&quot;</span>, <span class="number">20</span>),
-                FeeDestinationV2::new(<span class="string">&quot;second&quot;</span>, <span class="number">20</span>),
-                FeeDestinationV2::new(<span class="string">&quot;third&quot;</span>, <span class="number">40</span>),
-                FeeDestinationV2::new(<span class="string">&quot;fourth&quot;</span>, <span class="number">5</span>),
-                FeeDestinationV2::new(<span class="string">&quot;fifth&quot;</span>, <span class="number">15</span>),
+                FeeDestinationV2::new(<span class="string">&quot;first&quot;</span>, <span class="number">40</span>),
+                FeeDestinationV2::new(<span class="string">&quot;second&quot;</span>, <span class="number">40</span>),
+                FeeDestinationV2::new(<span class="string">&quot;third&quot;</span>, <span class="number">80</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fourth&quot;</span>, <span class="number">10</span>),
+                FeeDestinationV2::new(<span class="string">&quot;fifth&quot;</span>, <span class="number">30</span>),
             ],
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
@@ -1277,45 +1273,45 @@
         <span class="macro">assert_eq!</span>(<span class="number">6</span>, messages.len(), <span class="string">&quot;expected six messages to be sent&quot;</span>);
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
-            <span class="string">&quot;verifier&quot;</span>,
-            <span class="number">100</span>,
-            NHASH,
-            <span class="string">&quot;expected half of all funds to be sent to the verifier&quot;</span>,
-        );
-        test_messages_contains_fee_for_address(
-            <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;first&quot;</span>,
-            <span class="number">20</span>,
+            <span class="number">40</span>,
             NHASH,
             <span class="string">&quot;expected 20 nhash of the fee to be sent to the first fee destination&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;second&quot;</span>,
-            <span class="number">20</span>,
+            <span class="number">40</span>,
             NHASH,
             <span class="string">&quot;expected 20 nhash of the fee to be sent to the second fee destination&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;third&quot;</span>,
-            <span class="number">40</span>,
+            <span class="number">80</span>,
             NHASH,
             <span class="string">&quot;expected 40 nhash of the fee to be sent to the third fee destination&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;fourth&quot;</span>,
-            <span class="number">5</span>,
+            <span class="number">10</span>,
             NHASH,
             <span class="string">&quot;expected 5 nhash of the fee to be sent to the fourth fee destination&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;fifth&quot;</span>,
-            <span class="number">15</span>,
+            <span class="number">30</span>,
             NHASH,
             <span class="string">&quot;expected 15 nhash of the fee to be sent to the fifth fee destination&quot;</span>,
+        );
+        test_messages_contains_fee_for_address(
+            <span class="kw-2">&amp;</span>messages,
+            <span class="string">&quot;verifier&quot;</span>,
+            <span class="number">200</span>,
+            NHASH,
+            <span class="string">&quot;expected all remaining funds to be sent to the verifier&quot;</span>,
         );
     }
 
@@ -1335,9 +1331,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;verifier&quot;</span>,
-            <span class="number">80</span>,
+            <span class="number">180</span>,
             NHASH,
-            <span class="string">&quot;expected half of the funds to be sent to the verifier, minus the 20 for fee&quot;</span>,
+            <span class="string">&quot;expected the funds to be sent to the verifier, minus the 20 for fee&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1376,9 +1372,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">100</span>,
+            <span class="number">400</span>,
             NHASH,
-            <span class="string">&quot;the verifier should receive the correct amount of nhash: 600 / 2 - 200fee = 100&quot;</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 600 - 200fee = 400&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1404,9 +1400,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             <span class="string">&quot;verifier&quot;</span>,
-            <span class="number">65</span>,
+            <span class="number">140</span>,
             NHASH,
-            <span class="string">&quot;the correct amount of nhash should be sent to the verifier: 150 /2 - 10fee = 65&quot;</span>,
+            <span class="string">&quot;the correct amount of nhash should be sent to the verifier: 150 - 10fee = 140&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1445,9 +1441,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">150</span>,
+            <span class="number">400</span>,
             NHASH,
-            <span class="string">&quot;expected 150 nhash to go to the verifier: 500 / 2 - 100fee = 150&quot;</span>,
+            <span class="string">&quot;expected 400 nhash to go to the verifier: 500 - 100fee = 400&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1482,9 +1478,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">50</span>,
+            <span class="number">150</span>,
             NHASH,
-            <span class="string">&quot;the verifier should receive the correct amount of nhash: 200 / 2 - 50fee = 50&quot;</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 200 - 50fee = 150&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1523,9 +1519,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">490</span>,
+            <span class="number">990</span>,
             NHASH,
-            <span class="string">&quot;the verifier should receive the correct amount of nhash: 1000 / 2 - 10fee = 490&quot;</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 1000 - 10fee = 990&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1568,9 +1564,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">400</span>,
+            <span class="number">850</span>,
             NHASH,
-            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400&quot;</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 - 50fee = 850&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
@@ -1611,9 +1607,9 @@
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,
             DEFAULT_VERIFIER_ADDRESS,
-            <span class="number">400</span>,
+            <span class="number">850</span>,
             NHASH,
-            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400&quot;</span>,
+            <span class="string">&quot;the verifier should receive the correct amount of nhash: 900 - 50fee = 850&quot;</span>,
         );
         test_messages_contains_fee_for_address(
             <span class="kw-2">&amp;</span>messages,

@@ -2522,7 +2522,7 @@
                 .retry_cost
                 .expect(<span class="string">&quot;the default verifier should have a retry cost&quot;</span>)
                 .cost
-                .u128() / <span class="number">2</span>,
+                .u128(),
             payment_detail_after_retry.sum_costs(),
             <span class="string">&quot;the payments in the generated detail should sum to the defined retry cost divided by two to account for provenance fee handling&quot;</span>,
         );
@@ -2792,7 +2792,7 @@
         <span class="kw">let </span>secondary_asset_definition = AssetDefinitionV3::new(
             DEFAULT_SECONDARY_ASSET_TYPE,
             <span class="prelude-val">Some</span>(<span class="string">&quot;secondary asset&quot;</span>),
-            <span class="macro">vec!</span>[secondary_verifier.clone()],
+            <span class="macro">vec!</span>[secondary_verifier],
         );
         add_asset_definition(
             deps.as_mut(),
@@ -2830,9 +2830,9 @@
         );
         <span class="kw">let </span>payment_detail = subsequent_onboard_fee_detail.payments.first().unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="number">150</span>,
+            <span class="number">300</span>,
             payment_detail.amount.amount.u128(),
-            <span class="string">&quot;the payment amount should be 300, which is half of the default onboarding cost&quot;</span>,
+            <span class="string">&quot;the payment amount should be 300, which is the entirety of the onboarding cost&quot;</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_VERIFIER_ADDRESS,

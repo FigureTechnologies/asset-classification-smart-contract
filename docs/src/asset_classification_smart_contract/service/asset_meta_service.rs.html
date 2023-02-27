@@ -1386,10 +1386,6 @@
 <a href="#1386" id="1386">1386</a>
 <a href="#1387" id="1387">1387</a>
 <a href="#1388" id="1388">1388</a>
-<a href="#1389" id="1389">1389</a>
-<a href="#1390" id="1390">1390</a>
-<a href="#1391" id="1391">1391</a>
-<a href="#1392" id="1392">1392</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashSet;
 
 <span class="kw">use </span>cosmwasm_std::{to_binary, Coin, CosmosMsg, Env, Uint128};
@@ -1533,11 +1529,10 @@
             <span class="self">self</span>.append_messages(<span class="kw-2">&amp;</span>[assess_custom_fee(
                 Coin {
                     denom: verifier_detail.onboarding_denom.clone(),
-                    <span class="comment">// The payment detail now contains the originally-specified fee to be charged,
-                    // but halved.  Charge a fee to the onboarding requestor using double the value
-                    // derived in the payment detail to ensure the correct funds are sent to the
-                    // contract
-                    </span>amount: Uint128::new(payment_detail.sum_costs() * <span class="number">2</span>),
+                    <span class="comment">// The payment detail now contains the originally-specified fee to be charged.
+                    // Charge a fee to the onboarding requestor for this amount to send the correct
+                    // amount of funds to the contract.
+                    </span>amount: Uint128::new(payment_detail.sum_costs()),
                 },
                 <span class="prelude-val">Some</span>(<span class="string">&quot;Asset Classification Onboarding Fee&quot;</span>),
                 <span class="comment">// The contract address must always be used as the &quot;from&quot; value to ensure that
@@ -2110,7 +2105,7 @@
         fee_payment_detail.payments = <span class="macro">vec!</span>[fee_payment_detail.payments[<span class="number">0</span>].clone()];
         fee_payment_detail.payments[<span class="number">0</span>].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
         fee_payment_detail.payments[<span class="number">0</span>].amount =
-            Coin::new(DEFAULT_ONBOARDING_COST / <span class="number">2</span>, DEFAULT_ONBOARDING_DENOM);
+            Coin::new(DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM);
         insert_fee_payment_detail(<span class="kw-2">&amp;mut </span>deps.storage, <span class="kw-2">&amp;</span>fee_payment_detail, DEFAULT_ASSET_TYPE)
             .unwrap();
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
@@ -2200,8 +2195,8 @@
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     amount.first().unwrap().amount.u128(),
-                    DEFAULT_ONBOARDING_COST / <span class="number">2</span>,
-                    <span class="string">&quot;bank send fee message should be half the default onboarding cost&quot;
+                    DEFAULT_ONBOARDING_COST,
+                    <span class="string">&quot;bank send fee message should be the default onboarding cost&quot;
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     amount.first().unwrap().denom,
@@ -2604,10 +2599,7 @@
                     <span class="string">&quot;fee message should go to the verifier&quot;
                 </span>);
                 <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span><span class="macro">vec!</span>[Coin::new(
-                        DEFAULT_ONBOARDING_COST / <span class="number">2</span>,
-                        DEFAULT_ONBOARDING_DENOM
-                    )],
+                    <span class="kw-2">&amp;</span><span class="macro">vec!</span>[Coin::new(DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM)],
                     amount,
                     <span class="string">&quot;fee message should be of the proper amount&quot;
                 </span>);
@@ -2744,9 +2736,9 @@
                     <span class="string">&quot;exactly one coin amount should be present on bank send message&quot;
                 </span>);
                 <span class="macro">assert_eq!</span>(
-                    DEFAULT_ONBOARDING_COST / <span class="number">2</span>,
+                    DEFAULT_ONBOARDING_COST,
                     amount.first().unwrap().amount.u128(),
-                    <span class="string">&quot;the fee amount should equate to half the onboarding cost due to provenance&#39;s 50% fee cut&quot;</span>,
+                    <span class="string">&quot;the fee amount should equate to the onboarding cost&quot;</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ONBOARDING_DENOM,

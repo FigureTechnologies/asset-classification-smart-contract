@@ -50,7 +50,7 @@
       ],
       "properties": {
         "amount": {
-          "description": "The amount to be charged during the asset verification process.  The denom will always match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom) amount.  The coin's amount will be equal to the amount for a fee_destination in the verifier detail, and (onboarding_cost / 2) - fee_destination_total for the verifier itself if that amount is > 0.",
+          "description": "The amount to be charged during the asset verification process.  The denom will always match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom) amount.  The coin's amount will be equal to the amount for a fee_destination in the verifier detail, and (onboarding_cost- fee_destination_total) for the verifier itself if that amount is > 0.",
           "allOf": [
             {
               "$ref": "#/definitions/Coin"

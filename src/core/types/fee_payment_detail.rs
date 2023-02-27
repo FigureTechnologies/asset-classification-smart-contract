@@ -64,23 +64,21 @@ impl FeePaymentDetail {
             });
             fee_total += destination.fee_amount.u128();
         }
-        // Fee distribution can, at most, be equal to half the onboarding cost (half to account for the 50% fee cut that the custom fee distributes).  The onboarding cost should
+        // Fee distribution can, at most, be equal to the onboarding cost.  The onboarding cost should
         // always reflect the exact total that is taken from the requestor address when onboarding a new
         // scope.
-        if fee_total > onboarding_cost.cost.u128() / 2 {
+        if fee_total > onboarding_cost.cost.u128() {
             return ContractError::generic(
-                format!("misconfigured fee destinations! fee total ({}{}) was greater than half the specified onboarding cost ({}{} / 2 = {}{})",
+                format!("misconfigured fee destinations! fee total ({}{}) was greater than the specified onboarding cost ({}{})",
                         fee_total,
                         &verifier.onboarding_denom,
                         onboarding_cost.cost.u128(),
-                        &verifier.onboarding_denom,
-                        onboarding_cost.cost.u128() / 2,
                         &verifier.onboarding_denom,
                 )
             ).to_err();
         }
         // The total funds disbursed to the verifier itself is the remainder from subtracting the fee cost from the onboarding cost
-        let verifier_cost = (onboarding_cost.cost.u128() / 2) - fee_total;
+        let verifier_cost = onboarding_cost.cost.u128() - fee_total;
         // Only append payment info for the verifier if it actually has a cost
         if verifier_cost > 0 {
             payments.push(FeePayment {
@@ -128,7 +126,7 @@ pub struct FeePayment {
     /// The amount to be charged during the asset verification process.  The denom will always
     /// match the [onboarding_denom](super::verifier_detail::VerifierDetailV2::onboarding_denom)
     /// amount.  The coin's amount will be equal to the amount for a fee_destination in the verifier detail,
-    /// and (onboarding_cost / 2) - fee_destination_total for the verifier itself if that amount is > 0.
+    /// and (onboarding_cost- fee_destination_total) for the verifier itself if that amount is > 0.
     pub amount: Coin,
     /// A name describing to the end user (requestor) the purpose and target of the fee.
     pub name: String,
@@ -297,7 +295,7 @@ mod tests {
             "address",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee", 101)],
+            vec![FeeDestinationV2::new("fee", 201)],
             get_default_entity_detail().to_some(),
             None,
             None,
@@ -313,7 +311,7 @@ mod tests {
         match error {
             ContractError::GenericError { msg } => {
                 assert_eq!(
-                    "misconfigured fee destinations! fee total (101nhash) was greater than half the specified onboarding cost (200nhash / 2 = 100nhash)",
+                    "misconfigured fee destinations! fee total (201nhash) was greater than the specified onboarding cost (200nhash)",
                     msg.as_str(),
                     "unexpected error message generated",
                 );
@@ -345,7 +343,7 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             "verifier",
-            100,
+            200,
             NHASH,
             "expected all funds to be sent to the verifier",
         );
@@ -357,7 +355,7 @@ mod tests {
             "verifier",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee-destination", 100)],
+            vec![FeeDestinationV2::new("fee-destination", 200)],
             None,
             None,
             None,
@@ -371,7 +369,7 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             "fee-destination",
-            100,
+            200,
             NHASH,
             "expected all funds to be sent to the fee destination",
         );
@@ -383,7 +381,7 @@ mod tests {
             "verifier",
             Uint128::new(200),
             NHASH,
-            vec![FeeDestinationV2::new("fee-destination", 50)],
+            vec![FeeDestinationV2::new("fee-destination", 100)],
             None,
             None,
             None,
@@ -393,14 +391,14 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             "verifier",
-            50,
+            100,
             NHASH,
             "expected half of the funds to be sent to the verifier",
         );
         test_messages_contains_fee_for_address(
             &messages,
             "fee-destination",
-            50,
+            100,
             NHASH,
             "expected half of the funds to be sent to the fee destination",
         );
@@ -413,11 +411,11 @@ mod tests {
             Uint128::new(400),
             NHASH,
             vec![
-                FeeDestinationV2::new("first", 20),
-                FeeDestinationV2::new("second", 20),
-                FeeDestinationV2::new("third", 40),
-                FeeDestinationV2::new("fourth", 5),
-                FeeDestinationV2::new("fifth", 15),
+                FeeDestinationV2::new("first", 40),
+                FeeDestinationV2::new("second", 40),
+                FeeDestinationV2::new("third", 80),
+                FeeDestinationV2::new("fourth", 10),
+                FeeDestinationV2::new("fifth", 30),
             ],
             None,
             None,
@@ -427,45 +425,45 @@ mod tests {
         assert_eq!(6, messages.len(), "expected six messages to be sent");
         test_messages_contains_fee_for_address(
             &messages,
-            "verifier",
-            100,
-            NHASH,
-            "expected half of all funds to be sent to the verifier",
-        );
-        test_messages_contains_fee_for_address(
-            &messages,
             "first",
-            20,
+            40,
             NHASH,
             "expected 20 nhash of the fee to be sent to the first fee destination",
         );
         test_messages_contains_fee_for_address(
             &messages,
             "second",
-            20,
+            40,
             NHASH,
             "expected 20 nhash of the fee to be sent to the second fee destination",
         );
         test_messages_contains_fee_for_address(
             &messages,
             "third",
-            40,
+            80,
             NHASH,
             "expected 40 nhash of the fee to be sent to the third fee destination",
         );
         test_messages_contains_fee_for_address(
             &messages,
             "fourth",
-            5,
+            10,
             NHASH,
             "expected 5 nhash of the fee to be sent to the fourth fee destination",
         );
         test_messages_contains_fee_for_address(
             &messages,
             "fifth",
-            15,
+            30,
             NHASH,
             "expected 15 nhash of the fee to be sent to the fifth fee destination",
+        );
+        test_messages_contains_fee_for_address(
+            &messages,
+            "verifier",
+            200,
+            NHASH,
+            "expected all remaining funds to be sent to the verifier",
         );
     }
 
@@ -485,9 +483,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             "verifier",
-            80,
+            180,
             NHASH,
-            "expected half of the funds to be sent to the verifier, minus the 20 for fee",
+            "expected the funds to be sent to the verifier, minus the 20 for fee",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -526,9 +524,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            100,
+            400,
             NHASH,
-            "the verifier should receive the correct amount of nhash: 600 / 2 - 200fee = 100",
+            "the verifier should receive the correct amount of nhash: 600 - 200fee = 400",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -554,9 +552,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             "verifier",
-            65,
+            140,
             NHASH,
-            "the correct amount of nhash should be sent to the verifier: 150 /2 - 10fee = 65",
+            "the correct amount of nhash should be sent to the verifier: 150 - 10fee = 140",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -595,9 +593,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            150,
+            400,
             NHASH,
-            "expected 150 nhash to go to the verifier: 500 / 2 - 100fee = 150",
+            "expected 400 nhash to go to the verifier: 500 - 100fee = 400",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -632,9 +630,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            50,
+            150,
             NHASH,
-            "the verifier should receive the correct amount of nhash: 200 / 2 - 50fee = 50",
+            "the verifier should receive the correct amount of nhash: 200 - 50fee = 150",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -673,9 +671,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            490,
+            990,
             NHASH,
-            "the verifier should receive the correct amount of nhash: 1000 / 2 - 10fee = 490",
+            "the verifier should receive the correct amount of nhash: 1000 - 10fee = 990",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -718,9 +716,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            400,
+            850,
             NHASH,
-            "the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400",
+            "the verifier should receive the correct amount of nhash: 900 - 50fee = 850",
         );
         test_messages_contains_fee_for_address(
             &messages,
@@ -761,9 +759,9 @@ mod tests {
         test_messages_contains_fee_for_address(
             &messages,
             DEFAULT_VERIFIER_ADDRESS,
-            400,
+            850,
             NHASH,
-            "the verifier should receive the correct amount of nhash: 900 / 2 - 50fee = 400",
+            "the verifier should receive the correct amount of nhash: 900 - 50fee = 850",
         );
         test_messages_contains_fee_for_address(
             &messages,

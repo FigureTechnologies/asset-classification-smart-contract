@@ -1,6 +1,6 @@
 [package]
 name = "asset-classification-smart-contract"
-version = "3.2.1"
+version = "3.3.0"
 authors = [
   "Jake Schwartz <jschwartz@figure.com>",
   "Pierce Trey <ptrey@figure.com>",
@@ -35,13 +35,13 @@ library = []
 
 [dependencies]
 bech32 = "=0.8.1"
-provwasm-std = { version = "=1.1.0" }
-cosmwasm-std = { version = "=1.0.0" }
-cosmwasm-storage = { version = "=1.0.0" }
+provwasm-std = { version = "=1.1.2" }
+cosmwasm-std = { version = "=1.2.0" }
+cosmwasm-storage = { version = "=1.2.0" }
 cw-storage-plus = "=0.12.1"
 os-gateway-contract-attributes = "=1.0.1"
 result-extensions = "=1.0.2"
-schemars = "=0.8.3"
+schemars = "=0.8.11"
 semver = "=1.0.7"
 serde = { version = "=1.0.137", default-features = false, features = ["derive"] }
 serde-json-wasm = { version = "=0.4.1" }
@@ -49,6 +49,6 @@ thiserror = { version = "=1.0.26" }
 uuid = "=0.8.2"
 
 [dev-dependencies]
-provwasm-mocks = { version = "=1.1.0" }
-cosmwasm-schema = { version = "=1.0.0" }
+provwasm-mocks = { version = "=1.1.2" }
+cosmwasm-schema = { version = "=1.2.0" }
 uuid = { version = "=0.8.2", features = ["v4"] }

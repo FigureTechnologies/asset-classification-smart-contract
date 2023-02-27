@@ -130,6 +130,14 @@ fn validate_asset_definition_internal(asset_definition: &AssetDefinitionV3) -> V
                 .to_string(),
         );
     }
+    if distinct_count_by_property(&asset_definition.verifiers, |verifier| &verifier.address)
+        != asset_definition.verifiers.len()
+    {
+        invalid_fields.push(
+            "asset_definitions:verifiers: each verifier detail must have a unique address"
+                .to_string(),
+        );
+    }
     let mut verifier_messages = asset_definition
         .verifiers
         .iter()
@@ -512,6 +520,37 @@ pub mod tests {
         test_invalid_asset_definition(
             &AssetDefinitionV3::new("mortgage", "MORTGAGE".to_some(), vec![]),
             "asset_definition:verifiers: at least one verifier must be supplied per asset type",
+        );
+    }
+
+    #[test]
+    fn test_invalid_asset_definition_duplicate_verifier_addresses() {
+        test_invalid_asset_definition(
+            &AssetDefinitionV3::new(
+                "heloc",
+                "very best heloc ever".to_some(),
+                vec![
+                    VerifierDetailV2::new(
+                        "duplicate",
+                        Uint128::new(100),
+                        NHASH,
+                        vec![FeeDestinationV2::new("fee", 100)],
+                        get_default_entity_detail().to_some(),
+                        None,
+                        None,
+                    ),
+                    VerifierDetailV2::new(
+                        "duplicate",
+                        Uint128::new(100),
+                        NHASH,
+                        vec![FeeDestinationV2::new("fee", 100)],
+                        get_default_entity_detail().to_some(),
+                        None,
+                        None,
+                    ),
+                ],
+            ),
+            "asset_definitions:verifiers: each verifier detail must have a unique address",
         );
     }
 

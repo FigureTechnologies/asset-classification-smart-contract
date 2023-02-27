@@ -1,6 +1,6 @@
 [package]
 name = "asset-classification-smart-contract"
-version = "3.2.0"
+version = "3.2.1"
 authors = [
   "Jake Schwartz <jschwartz@figure.com>",
   "Pierce Trey <ptrey@figure.com>",

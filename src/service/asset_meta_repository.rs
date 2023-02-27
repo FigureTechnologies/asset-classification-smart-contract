@@ -105,8 +105,8 @@ pub trait AssetMetaRepository {
     ///
     /// # Parameters
     ///
-    /// * `scope_address` A Provenance Blockchain bech32 address with an hrp of "scope".  Links to
-    /// the desired scope to verify.
+    /// * `scope_attribute` The [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
+    /// to be verified.
     /// * `success` Whether or not the scope should be considered verified when the process completes.
     /// * `verification_message` An optional value that will be displayed to external observers when
     /// fetching the [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
@@ -114,12 +114,11 @@ pub trait AssetMetaRepository {
     /// * `access_routes` Additional access routes that the verifier provides for external consumers
     /// to retrieve the underlying asset data from the scope, potentially without access an object
     /// store.
-    fn verify_asset<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    fn verify_asset<S: Into<String>>(
         &self,
-        scope_address: S1,
-        asset_type: S2,
+        scope_attribute: AssetScopeAttribute,
         success: bool,
-        verification_message: Option<S3>,
+        verification_message: Option<S>,
         access_routes: Vec<AccessRoute>,
     ) -> AssetResult<AssetScopeAttribute>;
 }

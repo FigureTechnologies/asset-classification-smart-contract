@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["AccessRoute","Defines a method of obtaining underlying asset data for a scope."]]};
+window.SIDEBAR_ITEMS = {"struct":["AccessRoute"]};

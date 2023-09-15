@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["toggle_asset_definition","The function used by execute when an ExecuteMsg::ToggleAssetDefinition message is provided.  Attempts to swap the enabled property from true to false, or false to true."]],"struct":[["ToggleAssetDefinitionV1","A transformation of ExecuteMsg::ToggleAssetDefinition for ease of use in the underlying toggle_asset_definition function."]]};
+window.SIDEBAR_ITEMS = {"fn":["toggle_asset_definition"],"struct":["ToggleAssetDefinitionV1"]};

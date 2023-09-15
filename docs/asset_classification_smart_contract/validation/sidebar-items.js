@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["validate_execute_msg","Validates the integrity of an intercepted ExecuteMsg variant."],["validate_init_msg","Validates the integrity of an intercepted InitMsg and its associated AssetDefinitionV3 values."]]};
+window.SIDEBAR_ITEMS = {"mod":["validate_execute_msg","validate_init_msg"]};

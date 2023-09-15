@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["AssetMetaService","Ties all service code together into a cohesive struct to use for complex operations during the onboarding and verification processes."]]};
+window.SIDEBAR_ITEMS = {"struct":["AssetMetaService"]};

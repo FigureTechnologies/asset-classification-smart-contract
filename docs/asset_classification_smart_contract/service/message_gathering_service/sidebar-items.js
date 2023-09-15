@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["MessageGatheringService","Specifies a trait used for dynamically aggregating CosmosMsg values without requiring the owning struct to be mutable."]]};
+window.SIDEBAR_ITEMS = {"trait":["MessageGatheringService"]};

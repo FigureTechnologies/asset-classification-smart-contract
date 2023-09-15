@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["OptionExtensions","Allows any Sized type to functionally move itself into an Option"]]};
+window.SIDEBAR_ITEMS = {"trait":["OptionExtensions"]};

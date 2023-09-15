@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["query_asset_definitions","A query that fetches all AssetDefinitionV3s from the contract’s internal storage."]]};
+window.SIDEBAR_ITEMS = {"fn":["query_asset_definitions"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["EntityDetail","Various fields describing an entity, which could be an organization, account, etc."]]};
+window.SIDEBAR_ITEMS = {"struct":["EntityDetail"]};

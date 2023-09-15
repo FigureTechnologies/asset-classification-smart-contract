@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["validate_execute_msg","The main branch of validation for an execute msg.  Funnels the intercepted value based on variant to one of the various sub-functions in this module."]]};
+window.SIDEBAR_ITEMS = {"fn":["validate_execute_msg"]};

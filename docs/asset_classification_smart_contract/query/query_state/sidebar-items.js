@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["query_state","A query that directly returns the contract’s stored StateV2 value."]]};
+window.SIDEBAR_ITEMS = {"fn":["query_state"]};

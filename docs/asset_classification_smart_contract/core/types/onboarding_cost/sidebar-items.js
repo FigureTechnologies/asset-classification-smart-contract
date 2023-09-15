@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["OnboardingCost","Defines costs used to onboard an asset to the contract for classification."]]};
+window.SIDEBAR_ITEMS = {"struct":["OnboardingCost"]};

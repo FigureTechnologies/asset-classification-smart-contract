@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["query_version","Pulls the version info for the contract out of the version store. On a success, serializes the value to a cosmwasm Binary and responds with Ok."]]};
+window.SIDEBAR_ITEMS = {"fn":["query_version"]};

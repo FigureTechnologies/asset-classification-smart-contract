@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"type":[["AssetResult","All contract pathways with exceptional code should return a result that has a contract error as its resulting error type."],["DepsC","Type alias to shorten the lengthy Deps<’a, T> declaration. Short for Dependencies Contract."],["DepsMutC","Type alias to shorten the lengthy DepsMut<’a, T> declaration. Short for Dependencies Mutable Contract."],["EntryPointResponse","Shortens the lengthy response type for contract entrypoints."]]};
+window.SIDEBAR_ITEMS = {"type":["AssetResult","DepsC","DepsMutC","EntryPointResponse"]};

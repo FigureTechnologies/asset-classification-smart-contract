@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["SubsequentClassificationDetail","The root subsequent classifications node for a VerifierDetailV2. Contains the default subsequent costs for onboarding an asset with this verifier after already classifying it as a different type with the same verifier."]]};
+window.SIDEBAR_ITEMS = {"struct":["SubsequentClassificationDetail"]};

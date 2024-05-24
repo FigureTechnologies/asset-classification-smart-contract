@@ -41,7 +41,7 @@ cosmwasm-storage = { version = "=1.2.0" }
 cw-storage-plus = "=0.12.1"
 os-gateway-contract-attributes = "=1.0.1"
 result-extensions = "=1.0.2"
-schemars = "=0.8.11"
+schemars = "=0.8.21"
 semver = "=1.0.7"
 serde = { version = "=1.0.137", default-features = false, features = ["derive"] }
 serde-json-wasm = { version = "=0.4.1" }

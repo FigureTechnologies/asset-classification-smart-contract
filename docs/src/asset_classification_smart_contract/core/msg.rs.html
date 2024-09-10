@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/msg.rs`."><title>msg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/msg.rs`."><title>msg.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -296,14 +296,14 @@
 
 <span class="doccomment">/// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub struct </span>InitMsg {
     <span class="doccomment">/// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3)
     /// will use this value as their parent name.
     </span><span class="kw">pub </span>base_contract_name: String,
     <span class="doccomment">/// If `true`, the contract will automatically try to bind its [base_contract_name](self::InitMsg::base_contract_name)
     /// during the instantiation process to itself.  No action will be taken if the value is `false`,
-    /// but the base name will still be recorded in the contract&#39;s [state](super::state::StateV2)
+    /// but the base name will still be recorded in the contract's [state](super::state::StateV2)
     /// and be used for child names for [AssetDefinitions](super::types::asset_definition::AssetDefinitionV3).
     </span><span class="kw">pub </span>bind_base_name: bool,
     <span class="doccomment">/// All the initial [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) for the
@@ -311,7 +311,7 @@
     /// functionality.
     </span><span class="kw">pub </span>asset_definitions: Vec&lt;AssetDefinitionInputV3&gt;,
     <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities
-    /// across the contract&#39;s execution processes.  Notably, this disables a check during the
+    /// across the contract's execution processes.  Notably, this disables a check during the
     /// onboarding process to determine if onboarded scopes include underlying record values.  This
     /// should never be set to true in a mainnet environment.
     </span><span class="kw">pub </span>is_test: <span class="prelude-ty">Option</span>&lt;bool&gt;,
@@ -320,9 +320,9 @@
 <span class="doccomment">/// Defines all routes in which the contract can be queried.  These are all handled directly in
 /// the [contract file](crate::contract::query).
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub enum </span>QueryMsg {
-    <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract&#39;s
+    <span class="doccomment">/// This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract's
     /// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
     /// response will be returned.
     </span>QueryAssetDefinition {
@@ -336,7 +336,7 @@
     <span class="doccomment">/// This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have
     /// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
     /// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
-    /// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been
+    /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
     /// successfully classified by a verifier.
     </span>QueryAssetScopeAttributes {
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
@@ -346,7 +346,7 @@
     <span class="doccomment">/// This route can be used to retrieve an existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) that has
     /// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
     /// contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
-    /// This is a useful route for external consumers of the contract&#39;s data to determine if a scope (aka asset) has been
+    /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
     /// successfully classified by a verifier for a specific asset type.
     </span>QueryAssetScopeAttributeForAssetType {
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
@@ -357,7 +357,7 @@
     },
     <span class="doccomment">/// This route can be used to retrieve an existing [FeePaymentDetail](super::types::fee_payment_detail::FeePaymentDetail)
     /// that has been stored from a [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
-    /// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route&#39;s processes.  This
+    /// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This
     /// route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset)
     /// route is executed.
     </span>QueryFeePayments {
@@ -380,14 +380,14 @@
 <span class="doccomment">/// Defines all routes in which the contract can be executed.  These are all handled directly in
 /// the [contract file](crate::contract::execute).
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub enum </span>ExecuteMsg {
     <span class="doccomment">/// This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of
     /// asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the
     /// provided scope that stages the scope for verification of authenticity by the specified verifier in the request.  The
     /// attribute is attached based on the [base_contract_name](self::InitMsg::base_contract_name) specified in the contract, combined with the specified asset type
-    /// in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is &quot;asset&quot; and the asset type is &quot;myasset&quot;, the attribute would be assigned
-    /// under the name of &quot;myasset.asset&quot;.  All available asset types are queryable, and stored in the contract as [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+    /// in the request.  Ex: if [base_contract_name](self::InitMsg::base_contract_name) is "asset" and the asset type is "myasset", the attribute would be assigned
+    /// under the name of "myasset.asset".  All available asset types are queryable, and stored in the contract as [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
     /// values.  After onboarding is completed, an [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute) will be
     /// stored on the scope with an [AssetOnboardingStatus](super::types::asset_onboarding_status::AssetOnboardingStatus)
     /// of [Pending](super::types::asset_onboarding_status::AssetOnboardingStatus::Pending),
@@ -396,7 +396,7 @@
         <span class="doccomment">/// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
         </span>identifier: SerializedEnum,
-        <span class="doccomment">/// A name that must directly match one of the contract&#39;s internal [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+        <span class="doccomment">/// A name that must directly match one of the contract's internal [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
         /// names.  Any request with a specified type not matching an asset definition will be rejected outright.
         </span>asset_type: String,
         <span class="doccomment">/// The bech32 address of a Verifier Account associated with the targeted [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3),
@@ -405,7 +405,7 @@
         <span class="doccomment">/// An optional parameter that allows the specification of a location to get the underlying asset data
         /// for the specified scope.  The [AccessRoute](super::types::access_route::AccessRoute) struct is very generic in its composition
         /// for the purpose of allowing various different solutions to fetching asset data.  If the verification process requires
-        /// generic lookups for each onboarded asset, access routes on the scope&#39;s [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
+        /// generic lookups for each onboarded asset, access routes on the scope's [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)
         /// can be leveraged to easily determine the source of the underlying data.  If these values are omitted at first, but later needed,
         /// they can always be added by using the [UpdateAccessRoutes](self::ExecuteMsg::UpdateAccessRoutes) execution route.
         /// Note: Access routes can specify a [name](super::types::access_route::AccessRoute::name)
@@ -414,9 +414,9 @@
         <span class="doccomment">/// An optional parameter that will cause the emitted events to include values that signal
         /// to any [Object Store Gateway](https://github.com/FigureTechnologies/object-store-gateway)
         /// watching the events that the selected verifier has permission to inspect the identified
-        /// scope&#39;s records via fetch routes.  This will only cause a gateway to grant permissions
+        /// scope's records via fetch routes.  This will only cause a gateway to grant permissions
         /// to a scope to which the gateway itself already has read permissions.  This essentially
-        /// means that a key held by a gateway instance must have been used to store the scope&#39;s
+        /// means that a key held by a gateway instance must have been used to store the scope's
         /// records in [Provenance Object Store](https://github.com/provenance-io/object-store).
         ///
         /// This behavior defaults to TRUE.
@@ -428,7 +428,7 @@
     /// validity of the underlying data, will either mark the classification as a success or failure.  This route will reject
     /// all invokers except for Verifiers linked to a scope by the scope attribute, ensuring that only the verifier requested
     /// has the permission needed to classify an asset.  In this way, the process for verification ensures that all involved
-    /// parties&#39; requirements for security are satisfied.  In addition, the verifier used in the process is stored on the scope
+    /// parties' requirements for security are satisfied.  In addition, the verifier used in the process is stored on the scope
     /// attribute after the fact, ensuring that external inspectors of the generated attribute can choose which verifications to
     /// acknowledge and which to disregard.
     </span>VerifyAsset {
@@ -453,33 +453,33 @@
         /// interaction.
         </span>access_routes: <span class="prelude-ty">Option</span>&lt;Vec&lt;AccessRoute&gt;&gt;,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__  This route allows a new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
-    /// value to be added to the contract&#39;s internal storage.  These asset definitions dictate which asset types are allowed to
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address.__  This route allows a new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+    /// value to be added to the contract's internal storage.  These asset definitions dictate which asset types are allowed to
     /// be onboarded, as well as which verifiers are tied to each asset type.  Each added asset definition must be unique in
     /// the following criteria:
     /// * Its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) value must not yet be registered in a different asset definition.
     </span>AddAssetDefinition {
-        <span class="doccomment">/// An asset definition input value defining all of the new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s
+        <span class="doccomment">/// An asset definition input value defining all of the new [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)'s
         /// values.  The execution route converts the incoming value to an asset definition.
         </span>asset_definition: AssetDefinitionInputV3,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route allows an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
-    /// value to be updated.  It works by matching the input&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) to an existing asset definition and overwriting the
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address.__ This route allows an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+    /// value to be updated.  It works by matching the input's [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type) to an existing asset definition and overwriting the
     /// existing values.  If no asset definition exists for the given type, the request will be rejected.
     </span>UpdateAssetDefinition {
-        <span class="doccomment">/// An asset definition input value defining all of the updated [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s
+        <span class="doccomment">/// An asset definition input value defining all of the updated [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)'s
         /// values.  The execution route converts the incoming value to an asset definition.
         </span>asset_definition: AssetDefinitionInputV3,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route toggles an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address.__ This route toggles an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)
     /// from enabled to disabled, or disabled to enabled.  When disabled, an asset definition will no longer allow new assets to
     /// be onboarded to the contract.  Existing assets already onboarded to the contract and in pending status will still be
     /// allowed to be verified, but new values will be rejected.  This same functionality could be achieved with an invocation of
     /// the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) route but swapping the [enabled](super::types::asset_definition::AssetDefinitionV3::enabled)
     /// value on the `asset_definition` parameter, but this route is significantly simpler and prevents
-    /// accidental data mutation due to it not requiring the entirety of the definition&#39;s values.
+    /// accidental data mutation due to it not requiring the entirety of the definition's values.
     </span>ToggleAssetDefinition {
-        <span class="doccomment">/// The type of asset for which the definition&#39;s [enabled](super::types::asset_definition::AssetDefinitionV3::enabled) value will be toggled.  As the asset type value
+        <span class="doccomment">/// The type of asset for which the definition's [enabled](super::types::asset_definition::AssetDefinitionV3::enabled) value will be toggled.  As the asset type value
         /// on each asset definition is guaranteed to be unique, this key is all that is needed to find the target definition.
         </span>asset_type: String,
         <span class="doccomment">/// The value of [enabled](super::types::asset_definition::AssetDefinitionV3::enabled) after the toggle takes place.  This value is required to ensure that
@@ -487,13 +487,13 @@
         /// the asset definition is in the intended state during the execution of the route.
         </span>expected_result: bool,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address or the address of the verifier being updated.__ This route adds a new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
     /// to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3).  This route is intended to register new verifiers
     /// without the bulky requirements of the [UpdateAssetDefinition](self::ExecuteMsg::UpdateAssetDefinition) execution route.  This route will reject verifiers added
     /// with addresses that match any other verifiers on the target asset definition.
     </span>AddAssetVerifier {
         <span class="doccomment">/// The type of asset for which the new [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be added.
-        /// This must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+        /// This must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)'s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
         /// value, or the request will be rejected.
         </span>asset_type: String,
         <span class="doccomment">/// The new verifier detail to be added to the asset definition, with all of its required
@@ -501,14 +501,14 @@
         /// parameter, or the request will be rejected.
         </span>verifier: VerifierDetailV2,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route updates an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address.__ This route updates an existing [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2)
     /// in an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3).  This route is intended to be used when the values
     /// of a single verifier detail need to change, but not the entire asset definition.  The request will be rejected if the
     /// referenced asset definition is not present within the contract, or if a verifier does not exist within the asset
     /// definition that matches the address of the provided verifier data.
     </span>UpdateAssetVerifier {
         <span class="doccomment">/// The type of asset for which the [VerifierDetailV2](super::types::verifier_detail::VerifierDetailV2) will be updated. This
-        /// must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)&#39;s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
+        /// must refer to an existing [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3)'s [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
         /// value, or the request will be rejected.
         </span>asset_type: String,
         <span class="doccomment">/// The updated verifier detail to be modified in the asset definition. An existing verifier
@@ -516,7 +516,7 @@
         /// value, or the request will be rejected.
         </span>verifier: VerifierDetailV2,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address OR to the owner of the access routes being updated.__
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address OR to the owner of the access routes being updated.__
     /// This route will swap all existing access routes for a specific owner for a specific scope to the provided values. These
     /// access routes either correspond to those created during the onboarding process, or those created during the verification
     /// process.
@@ -535,7 +535,7 @@
         /// routes need to be included in the request alongside the new route(s).
         </span>access_routes: Vec&lt;AccessRoute&gt;,
     },
-    <span class="doccomment">/// __This route is only accessible to the contract&#39;s admin address.__ This route facilitates the removal of bad data.
+    <span class="doccomment">/// __This route is only accessible to the contract's admin address.__ This route facilitates the removal of bad data.
     /// IMPORTANT: If an asset definition is completely removed, all contract references to it will
     /// fail to function.  This can cause assets currently in the onboarding process for a deleted
     /// type to have failures when interactions occur with them.  This functionality should only be
@@ -549,7 +549,7 @@
 <span class="doccomment">/// The struct used to migrate the contract from one code instance to another.  Utilized in the core
 /// [contract file](crate::contract::migrate).
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub enum </span>MigrateMsg {
     <span class="doccomment">/// Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract)
     /// function.
@@ -562,7 +562,7 @@
 
 <span class="doccomment">/// Sub-level struct that defines optional changes that can occur during the migration process.
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub struct </span>MigrationOptions {
     <span class="doccomment">/// Sets the contract admin to a new address when populated.  Must be a valid Provenance
     /// Blockchain bech32 address.

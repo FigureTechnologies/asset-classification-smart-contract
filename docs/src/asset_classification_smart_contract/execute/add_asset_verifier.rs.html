@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_verifier.rs`."><title>add_asset_verifier.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_verifier.rs`."><title>add_asset_verifier.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -387,7 +387,7 @@
     ///
     /// # Parameters
     ///
-    /// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     </span><span class="kw">pub fn </span>from_execute_msg(msg: ExecuteMsg) -&gt; AssetResult&lt;AddAssetVerifierV1&gt; {
         <span class="kw">match </span>msg {
             ExecuteMsg::AddAssetVerifier {
@@ -395,7 +395,7 @@
                 verifier,
             } =&gt; AddAssetVerifierV1::new(asset_type, verifier).to_ok(),
             <span class="kw">_ </span>=&gt; ContractError::InvalidMessageType {
-                expected_message_type: <span class="string">&quot;ExecuteMsg::AddAssetVerifier&quot;</span>.to_string(),
+                expected_message_type: <span class="string">"ExecuteMsg::AddAssetVerifier"</span>.to_string(),
             }
             .to_err(),
         }
@@ -470,8 +470,8 @@
     <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
     <span class="comment">// Addresses must be valid bech32, so these are valid randomly-generated values for testing
-    </span><span class="kw">const </span>TEST_VERIFIER_ADDRESS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;tp1g83pm46c8wxsnlra2ytruec7nuy95ttc8yy5n3&quot;</span>;
-    <span class="kw">const </span>TEST_FEE_ADDRESS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;tp1jz6mk0mfxd7heqhveezd2yf8ht0m3nekm6xve6&quot;</span>;
+    </span><span class="kw">const </span>TEST_VERIFIER_ADDRESS: <span class="kw-2">&amp;</span>str = <span class="string">"tp1g83pm46c8wxsnlra2ytruec7nuy95ttc8yy5n3"</span>;
+    <span class="kw">const </span>TEST_FEE_ADDRESS: <span class="kw-2">&amp;</span>str = <span class="string">"tp1jz6mk0mfxd7heqhveezd2yf8ht0m3nekm6xve6"</span>;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_verifier_via_execute() {
@@ -487,30 +487,30 @@
                 verifier: verifier.clone(),
             },
         )
-        .expect(<span class="string">&quot;expected the add verifier function to execute properly&quot;</span>);
+        .expect(<span class="string">"expected the add verifier function to execute properly"</span>);
         <span class="macro">assert!</span>(
             response.messages.is_empty(),
-            <span class="string">&quot;adding an asset verifier should not require messages&quot;</span>,
+            <span class="string">"adding an asset verifier should not require messages"</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">3</span>,
             response.attributes.len(),
-            <span class="string">&quot;adding an asset verifier should produce the correct number of attributes&quot;</span>,
+            <span class="string">"adding an asset verifier should produce the correct number of attributes"</span>,
         );
         <span class="macro">assert_eq!</span>(
             EventType::AddAssetVerifier.event_name().as_str(),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;expected the correct event type to be emitted&quot;</span>,
+            <span class="string">"expected the correct event type to be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_ASSET_TYPE,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_TYPE_KEY),
-            <span class="string">&quot;expected the default asset type to be used for the main add key&quot;</span>,
+            <span class="string">"expected the default asset type to be used for the main add key"</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="kw-2">&amp;</span>verifier.address,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, VERIFIER_ADDRESS_KEY),
-            <span class="string">&quot;expected the new verifier&#39;s address to be emitted as an attribute&quot;</span>,
+            <span class="string">"expected the new verifier's address to be emitted as an attribute"</span>,
         );
         test_default_verifier_was_added(<span class="kw-2">&amp;</span>verifier, <span class="kw-2">&amp;</span>deps.as_ref());
     }
@@ -525,7 +525,7 @@
             mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
             msg.clone(),
         )
-        .expect(<span class="string">&quot;expected the add verifier function to return properly&quot;</span>);
+        .expect(<span class="string">"expected the add verifier function to return properly"</span>);
         test_default_verifier_was_added(<span class="kw-2">&amp;</span>msg.verifier, <span class="kw-2">&amp;</span>deps.as_ref());
     }
 
@@ -546,7 +546,7 @@
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidMessageFields { .. }),
-            <span class="string">&quot;when an invalid asset type is provided to execute, the invalid message fields error should be returned, but got: {:?}&quot;</span>,
+            <span class="string">"when an invalid asset type is provided to execute, the invalid message fields error should be returned, but got: {:?}"</span>,
             error,
         );
     }
@@ -563,7 +563,7 @@
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 <span class="comment">// Invalid because the address is blank
                 </span>verifier: VerifierDetailV2::new(
-                    <span class="string">&quot;&quot;</span>,
+                    <span class="string">""</span>,
                     Uint128::zero(),
                     NHASH,
                     <span class="macro">vec!</span>[],
@@ -576,7 +576,7 @@
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidMessageFields { .. }),
-            <span class="string">&quot;when an invalid verifier is provided to execute, the invalid message fields error should be returned, but got: {:?}&quot;</span>,
+            <span class="string">"when an invalid verifier is provided to execute, the invalid message fields error should be returned, but got: {:?}"</span>,
             error,
         );
     }
@@ -587,13 +587,13 @@
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         <span class="kw">let </span>error = add_asset_verifier(
             deps.as_mut(),
-            mock_info(<span class="string">&quot;non-admin-person&quot;</span>, <span class="kw-2">&amp;</span>[]),
+            mock_info(<span class="string">"non-admin-person"</span>, <span class="kw-2">&amp;</span>[]),
             get_add_verifier(),
         )
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::Unauthorized { .. }),
-            <span class="string">&quot;expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}&quot;</span>,
+            <span class="string">"expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}"</span>,
             error,
         );
     }
@@ -604,13 +604,13 @@
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         <span class="kw">let </span>error = add_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">6900</span>, <span class="string">&quot;nhash&quot;</span>)]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">6900</span>, <span class="string">"nhash"</span>)]),
             get_add_verifier(),
         )
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidFunds(<span class="kw">_</span>)),
-            <span class="string">&quot;expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}&quot;</span>,
+            <span class="string">"expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}"</span>,
             error,
         );
     }
@@ -638,20 +638,20 @@
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::DuplicateVerifierProvided),
-            <span class="string">&quot;expected the duplcate verifier error to be returned when the verifier to be added is already placed on the asset definition, but got: {:?}&quot;</span>,
+            <span class="string">"expected the duplcate verifier error to be returned when the verifier to be added is already placed on the asset definition, but got: {:?}"</span>,
             error,
         );
     }
 
-    <span class="comment">// Checks that the verifier passed in was added to the default asset type&#39;s definition
+    <span class="comment">// Checks that the verifier passed in was added to the default asset type's definition
     </span><span class="kw">fn </span>test_default_verifier_was_added(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2, deps: <span class="kw-2">&amp;</span>DepsC) {
         <span class="kw">let </span>state_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;expected the default asset type to be stored in the state&quot;</span>);
+            .expect(<span class="string">"expected the default asset type to be stored in the state"</span>);
         <span class="kw">let </span>target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)
-            .expect(<span class="string">&quot;expected a single verifier to be produced when searching for the new verifier&#39;s address&quot;</span>);
+            .expect(<span class="string">"expected a single verifier to be produced when searching for the new verifier's address"</span>);
         <span class="macro">assert_eq!</span>(
             verifier, <span class="kw-2">&amp;</span>target_verifier,
-            <span class="string">&quot;expected the verifier stored in state to equate to the newly-added verifier&quot;</span>,
+            <span class="string">"expected the verifier stored in state to equate to the newly-added verifier"</span>,
         );
     }
 
@@ -665,7 +665,7 @@
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        validate_verifier(<span class="kw-2">&amp;</span>verifier).expect(<span class="string">&quot;expected the new verifier to pass validation&quot;</span>);
+        validate_verifier(<span class="kw-2">&amp;</span>verifier).expect(<span class="string">"expected the new verifier to pass validation"</span>);
         verifier
     }
 

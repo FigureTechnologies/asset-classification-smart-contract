@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_identifier.rs`."><title>asset_identifier.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_identifier.rs`."><title>asset_identifier.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -313,16 +313,16 @@
     scope_address_utils::{asset_uuid_to_scope_address, scope_address_to_asset_uuid},
 };
 
-<span class="kw">const </span>ASSET_UUID_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;asset_uuid&quot;</span>;
-<span class="kw">const </span>SCOPE_ADDRESS_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;scope_address&quot;</span>;
+<span class="kw">const </span>ASSET_UUID_NAME: <span class="kw-2">&amp;</span>str = <span class="string">"asset_uuid"</span>;
+<span class="kw">const </span>SCOPE_ADDRESS_NAME: <span class="kw-2">&amp;</span>str = <span class="string">"scope_address"</span>;
 
 <span class="doccomment">/// An enum containing interchangeable values that can be used to define an asset (uuid or address).
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub enum </span>AssetIdentifier {
     <span class="doccomment">/// A uuid v4 represented by a string.
     </span>AssetUuid(String),
-    <span class="doccomment">/// A bech32 Provenance Blockchain address that begins with &quot;scope&quot;.
+    <span class="doccomment">/// A bech32 Provenance Blockchain address that begins with "scope".
     </span>ScopeAddress(String),
 }
 <span class="kw">impl </span>AssetIdentifier {
@@ -339,7 +339,7 @@
             SCOPE_ADDRESS_NAME =&gt; <span class="self">Self</span>::scope_address(<span class="kw-2">&amp;</span>e.value).to_ok(),
             <span class="kw">_ </span>=&gt; ContractError::UnexpectedSerializedEnum {
                 received_type: e.r#type.clone(),
-                explanation: <span class="macro">format!</span>(<span class="string">&quot;Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]&quot;</span>),
+                explanation: <span class="macro">format!</span>(<span class="string">"Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]"</span>),
             }
             .to_err(),
         }
@@ -367,7 +367,7 @@
     ///
     /// # Parameters
     ///
-    /// * `scope_address` A bech32 address with an hrp of &quot;scope&quot;.
+    /// * `scope_address` A bech32 address with an hrp of "scope".
     </span><span class="kw">pub fn </span>scope_address&lt;S: Into&lt;String&gt;&gt;(scope_address: S) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::ScopeAddress(scope_address.into())
     }
@@ -406,7 +406,7 @@
 </span><span class="kw">pub struct </span>AssetIdentifiers {
     <span class="doccomment">/// A uuid v4 value.
     </span><span class="kw">pub </span>asset_uuid: String,
-    <span class="doccomment">/// A bech32 address value with an hrp of &quot;scope&quot;.
+    <span class="doccomment">/// A bech32 address value with an hrp of "scope".
     </span><span class="kw">pub </span>scope_address: String,
 }
 <span class="kw">impl </span>AssetIdentifiers {
@@ -415,7 +415,7 @@
     /// # Parameters
     ///
     /// * `asset_uuid` A uuid v4 value.
-    /// * `scope_address` A bech32 address value with an hrp of &quot;scope&quot;.
+    /// * `scope_address` A bech32 address value with an hrp of "scope".
     </span><span class="kw">pub fn </span>new&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(asset_uuid: S1, scope_address: S2) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             asset_uuid: asset_uuid.into(),
@@ -435,85 +435,85 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_asset_identifier_parse_for_asset_uuid() {
-        <span class="comment">// The uuid was generated randomly and the scope address was derived via provenance&#39;s MetadataAddress util
-        </span><span class="kw">let </span>asset_uuid = <span class="string">&quot;0c39efb6-9fef-11ec-ab21-6bf5c9fb3f83&quot;</span>;
-        <span class="kw">let </span>expected_scope_address = <span class="string">&quot;scope1qqxrnmaknlh3rm9ty94ltj0m87psnapt5l&quot;</span>;
+        <span class="comment">// The uuid was generated randomly and the scope address was derived via provenance's MetadataAddress util
+        </span><span class="kw">let </span>asset_uuid = <span class="string">"0c39efb6-9fef-11ec-ab21-6bf5c9fb3f83"</span>;
+        <span class="kw">let </span>expected_scope_address = <span class="string">"scope1qqxrnmaknlh3rm9ty94ltj0m87psnapt5l"</span>;
         <span class="kw">let </span>identifier = AssetIdentifier::asset_uuid(asset_uuid);
         <span class="kw">let </span>result_identifiers = identifier
             .to_identifiers()
-            .expect(<span class="string">&quot;parsing idenitifiers should succeed&quot;</span>);
+            .expect(<span class="string">"parsing idenitifiers should succeed"</span>);
         <span class="macro">assert_eq!</span>(
             asset_uuid,
             result_identifiers.asset_uuid.as_str(),
-            <span class="string">&quot;expected the asset uuid value to pass through successfully&quot;</span>,
+            <span class="string">"expected the asset uuid value to pass through successfully"</span>,
         );
         <span class="macro">assert_eq!</span>(
             expected_scope_address,
             result_identifiers.scope_address.as_str(),
-            <span class="string">&quot;expected the scope address to be derived correctly&quot;</span>,
+            <span class="string">"expected the scope address to be derived correctly"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_asset_identifier_parse_for_scope_address() {
-        <span class="comment">// The uuid was generated randomly and the scope address was derived via provenance&#39;s MetadataAddress util
-        </span><span class="kw">let </span>scope_address = <span class="string">&quot;scope1qz3s7dvsnlh3rmyy3pm5tszs2v7qhwhde8&quot;</span>;
-        <span class="kw">let </span>expected_asset_uuid = <span class="string">&quot;a30f3590-9fef-11ec-8488-7745c050533c&quot;</span>;
+        <span class="comment">// The uuid was generated randomly and the scope address was derived via provenance's MetadataAddress util
+        </span><span class="kw">let </span>scope_address = <span class="string">"scope1qz3s7dvsnlh3rmyy3pm5tszs2v7qhwhde8"</span>;
+        <span class="kw">let </span>expected_asset_uuid = <span class="string">"a30f3590-9fef-11ec-8488-7745c050533c"</span>;
         <span class="kw">let </span>identifier = AssetIdentifier::scope_address(scope_address);
         <span class="kw">let </span>result_identifiers = identifier
             .to_identifiers()
-            .expect(<span class="string">&quot;parsing identifiers should succeed&quot;</span>);
+            .expect(<span class="string">"parsing identifiers should succeed"</span>);
         <span class="macro">assert_eq!</span>(
             scope_address,
             result_identifiers.scope_address.as_str(),
-            <span class="string">&quot;expected the scope address to pass through successfully&quot;</span>,
+            <span class="string">"expected the scope address to pass through successfully"</span>,
         );
         <span class="macro">assert_eq!</span>(
             expected_asset_uuid,
             result_identifiers.asset_uuid.as_str(),
-            <span class="string">&quot;expected the asset uuid to be derived correctly&quot;</span>,
+            <span class="string">"expected the asset uuid to be derived correctly"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_asset_identifier_to_functions_from_asset_uuid() {
-        <span class="kw">let </span>initial_uuid = <span class="string">&quot;5134f836-a15c-11ec-abb6-a733aad66af8&quot;</span>;
-        <span class="kw">let </span>expected_scope_address = <span class="string">&quot;scope1qpgnf7pk59wprm9tk6nn82kkdtuq2wlq5p&quot;</span>;
+        <span class="kw">let </span>initial_uuid = <span class="string">"5134f836-a15c-11ec-abb6-a733aad66af8"</span>;
+        <span class="kw">let </span>expected_scope_address = <span class="string">"scope1qpgnf7pk59wprm9tk6nn82kkdtuq2wlq5p"</span>;
         <span class="kw">let </span>identifier = AssetIdentifier::asset_uuid(initial_uuid);
         <span class="kw">let </span>asset_uuid = identifier
             .get_asset_uuid()
-            .expect(<span class="string">&quot;the asset uuid should be directly accessible&quot;</span>);
+            .expect(<span class="string">"the asset uuid should be directly accessible"</span>);
         <span class="kw">let </span>scope_address = identifier
             .get_scope_address()
-            .expect(<span class="string">&quot;the scope address should be accessible by conversion&quot;</span>);
+            .expect(<span class="string">"the scope address should be accessible by conversion"</span>);
         <span class="macro">assert_eq!</span>(
             initial_uuid, asset_uuid,
-            <span class="string">&quot;the asset uuid output should be identical to the input&quot;
+            <span class="string">"the asset uuid output should be identical to the input"
         </span>);
         <span class="macro">assert_eq!</span>(
             expected_scope_address, scope_address,
-            <span class="string">&quot;the scope address output should be as expected&quot;
+            <span class="string">"the scope address output should be as expected"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_asset_identifier_to_functions_from_scope_address() {
-        <span class="kw">let </span>initial_address = <span class="string">&quot;scope1qzdyhglu59w3rm9n0z0h3mn657yqrgjcwl&quot;</span>;
-        <span class="kw">let </span>expected_asset_uuid = <span class="string">&quot;9a4ba3fc-a15d-11ec-b378-9f78ee7aa788&quot;</span>;
+        <span class="kw">let </span>initial_address = <span class="string">"scope1qzdyhglu59w3rm9n0z0h3mn657yqrgjcwl"</span>;
+        <span class="kw">let </span>expected_asset_uuid = <span class="string">"9a4ba3fc-a15d-11ec-b378-9f78ee7aa788"</span>;
         <span class="kw">let </span>identifier = AssetIdentifier::scope_address(initial_address);
         <span class="kw">let </span>scope_address = identifier
             .get_scope_address()
-            .expect(<span class="string">&quot;the scope address should be directly accessible&quot;</span>);
+            .expect(<span class="string">"the scope address should be directly accessible"</span>);
         <span class="kw">let </span>asset_uuid = identifier
             .get_asset_uuid()
-            .expect(<span class="string">&quot;the asset uuid should be accessible by conversion&quot;</span>);
+            .expect(<span class="string">"the asset uuid should be accessible by conversion"</span>);
         <span class="macro">assert_eq!</span>(
             initial_address, scope_address,
-            <span class="string">&quot;the scope address output should be identical to the input&quot;
+            <span class="string">"the scope address output should be identical to the input"
         </span>);
         <span class="macro">assert_eq!</span>(
             expected_asset_uuid, asset_uuid,
-            <span class="string">&quot;the asset uuid output should be as expected&quot;
+            <span class="string">"the asset uuid output should be as expected"
         </span>);
     }
 
@@ -522,56 +522,56 @@
         <span class="kw">let </span>uuid = Uuid::new_v4().to_string();
         <span class="kw">let </span>ser_enum = SerializedEnum::new(ASSET_UUID_NAME, <span class="kw-2">&amp;</span>uuid);
         <span class="kw">let </span>identifier = AssetIdentifier::from_serialized_enum(<span class="kw-2">&amp;</span>ser_enum)
-            .expect(<span class="string">&quot;expected serialized enum to identifier to succeed&quot;</span>);
+            .expect(<span class="string">"expected serialized enum to identifier to succeed"</span>);
         <span class="kw">match </span>identifier {
             AssetIdentifier::AssetUuid(asset_uuid) =&gt; {
                 <span class="macro">assert_eq!</span>(
                     uuid, asset_uuid,
-                    <span class="string">&quot;expected the asset uuid to be properly derived&quot;</span>,
+                    <span class="string">"expected the asset uuid to be properly derived"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived from type {:?}&quot;</span>, identifier),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected identifier derived from type {:?}"</span>, identifier),
         };
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_from_serialized_enum_to_scope_address() {
-        <span class="kw">let </span>ser_enum = SerializedEnum::new(SCOPE_ADDRESS_NAME, <span class="string">&quot;my-address&quot;</span>);
+        <span class="kw">let </span>ser_enum = SerializedEnum::new(SCOPE_ADDRESS_NAME, <span class="string">"my-address"</span>);
         <span class="kw">let </span>identifier = AssetIdentifier::from_serialized_enum(<span class="kw-2">&amp;</span>ser_enum)
-            .expect(<span class="string">&quot;expected serialized enum to identifier to succeed&quot;</span>);
+            .expect(<span class="string">"expected serialized enum to identifier to succeed"</span>);
         <span class="kw">match </span>identifier {
             AssetIdentifier::ScopeAddress(scope_address) =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;my-address&quot;</span>, scope_address,
-                    <span class="string">&quot;expected the scope address to be properly derived&quot;</span>,
+                    <span class="string">"my-address"</span>, scope_address,
+                    <span class="string">"expected the scope address to be properly derived"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected identifier derived from type {:?}&quot;</span>, identifier),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected identifier derived from type {:?}"</span>, identifier),
         };
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_from_serialized_enum_wrong_type_error() {
-        <span class="kw">let </span>ser_enum = SerializedEnum::new(<span class="string">&quot;bad_type&quot;</span>, <span class="string">&quot;some_value&quot;</span>);
+        <span class="kw">let </span>ser_enum = SerializedEnum::new(<span class="string">"bad_type"</span>, <span class="string">"some_value"</span>);
         <span class="kw">let </span>err = AssetIdentifier::from_serialized_enum(<span class="kw-2">&amp;</span>ser_enum)
-            .expect_err(<span class="string">&quot;expected an incompatible type to cause an error&quot;</span>);
+            .expect_err(<span class="string">"expected an incompatible type to cause an error"</span>);
         <span class="kw">match </span>err {
             ContractError::UnexpectedSerializedEnum {
                 received_type,
                 explanation,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;bad_type&quot;</span>, received_type,
-                    <span class="string">&quot;expected the unexpected type to be provided in the error message&quot;</span>,
+                    <span class="string">"bad_type"</span>, received_type,
+                    <span class="string">"expected the unexpected type to be provided in the error message"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"Invalid AssetIdentifier. Expected one of [{ASSET_UUID_NAME}, {SCOPE_ADDRESS_NAME}]"</span>),
                     explanation,
-                    <span class="string">&quot;expected the explanation to list the type of the enum and the expected values&quot;</span>,
+                    <span class="string">"expected the explanation to list the type of the enum and the expected values"</span>,
                 );
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error encountered on bad type provided: {:?}&quot;</span>,
+                <span class="string">"unexpected error encountered on bad type provided: {:?}"</span>,
                 err
             ),
         };
@@ -584,25 +584,25 @@
         <span class="kw">let </span>ser_enum = asset_uuid.to_serialized_enum();
         <span class="macro">assert_eq!</span>(
             ASSET_UUID_NAME, ser_enum.r#type,
-            <span class="string">&quot;expected the proper enum type to be derived&quot;</span>,
+            <span class="string">"expected the proper enum type to be derived"</span>,
         );
         <span class="macro">assert_eq!</span>(
             uuid, ser_enum.value,
-            <span class="string">&quot;expected the proper value to be derived&quot;</span>,
+            <span class="string">"expected the proper value to be derived"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_to_serialized_enum_scope_address() {
-        <span class="kw">let </span>scope_address = AssetIdentifier::scope_address(<span class="string">&quot;my-address&quot;</span>);
+        <span class="kw">let </span>scope_address = AssetIdentifier::scope_address(<span class="string">"my-address"</span>);
         <span class="kw">let </span>ser_enum = scope_address.to_serialized_enum();
         <span class="macro">assert_eq!</span>(
             SCOPE_ADDRESS_NAME, ser_enum.r#type,
-            <span class="string">&quot;expected the proper enum type to be derived&quot;</span>,
+            <span class="string">"expected the proper enum type to be derived"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;my-address&quot;</span>, ser_enum.value,
-            <span class="string">&quot;expected the proper value to be derived&quot;</span>,
+            <span class="string">"my-address"</span>, ser_enum.value,
+            <span class="string">"expected the proper value to be derived"</span>,
         );
     }
 }

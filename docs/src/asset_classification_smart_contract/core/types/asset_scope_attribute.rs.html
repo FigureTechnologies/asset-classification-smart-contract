@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_scope_attribute.rs`."><title>asset_scope_attribute.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/types/asset_scope_attribute.rs`."><title>asset_scope_attribute.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -367,11 +367,11 @@
 <span class="doccomment">/// An asset scope attribute contains all relevant information for asset classification, and is serialized directly
 /// as json into a Provenance Blockchain Attribute Module attribute on a Provenance Blockchain Metadata Scope.
 </span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
+#[serde(rename_all = <span class="string">"snake_case"</span>)]
 </span><span class="kw">pub struct </span>AssetScopeAttribute {
     <span class="doccomment">/// A unique uuid v4 value that defines the asset contained within the scope.
     </span><span class="kw">pub </span>asset_uuid: String,
-    <span class="doccomment">/// The bech32 address with a prefix of &quot;scope&quot; that uniquely defines the scope.
+    <span class="doccomment">/// The bech32 address with a prefix of "scope" that uniquely defines the scope.
     </span><span class="kw">pub </span>scope_address: String,
     <span class="doccomment">/// The name of the type of asset that is being used to classify this scope.
     </span><span class="kw">pub </span>asset_type: String,
@@ -423,7 +423,7 @@
         <span class="kw">let </span>ver_addr = bech32_string_to_addr(verifier_address)<span class="question-mark">?</span>;
         <span class="comment">// Remove all access routes that are empty strings to prevent bad data from being provided
         </span><span class="kw">let </span>filtered_access_routes = filter_valid_access_routes(access_routes);
-        <span class="comment">// If access routes were provided as an empty array, or the array only contains empty strings, don&#39;t create an access definition for the requestor
+        <span class="comment">// If access routes were provided as an empty array, or the array only contains empty strings, don't create an access definition for the requestor
         </span><span class="kw">let </span>access_definitions = <span class="kw">if </span>filtered_access_routes.is_empty() {
             <span class="macro">vec!</span>[]
         } <span class="kw">else </span>{
@@ -468,29 +468,29 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_filters_bad_access_routes() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[
-                AccessRoute::route_only(<span class="string">&quot;    &quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;  &quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;&quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;good route&quot;</span>),
+                AccessRoute::route_only(<span class="string">"    "</span>),
+                AccessRoute::route_only(<span class="string">"  "</span>),
+                AccessRoute::route_only(<span class="string">""</span>),
+                AccessRoute::route_only(<span class="string">"good route"</span>),
             ],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="kw">let </span>access_definition = assert_single_item(
             <span class="kw-2">&amp;</span>attribute.access_definitions,
-            <span class="string">&quot;there should be one access definition created when at least one valid route is provided in the access routes&quot;</span>,
+            <span class="string">"there should be one access definition created when at least one valid route is provided in the access routes"</span>,
         );
         <span class="kw">let </span>access_route = assert_single_item(
             <span class="kw-2">&amp;</span>access_definition.access_routes,
-            <span class="string">&quot;only one access definition should be added because the rest were invalid strings&quot;</span>,
+            <span class="string">"only one access definition should be added because the rest were invalid strings"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;good route&quot;</span>, access_route.route,
-            <span class="string">&quot;the only access route should be the route that contained a proper string&quot;</span>,
+            <span class="string">"good route"</span>, access_route.route,
+            <span class="string">"the only access route should be the route that contained a proper string"</span>,
         );
     }
 
@@ -498,20 +498,20 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_creates_no_definition_when_no_valid_routes_are_provided() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[
-                AccessRoute::route_only(<span class="string">&quot;    &quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;  &quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;&quot;</span>),
+                AccessRoute::route_only(<span class="string">"    "</span>),
+                AccessRoute::route_only(<span class="string">"  "</span>),
+                AccessRoute::route_only(<span class="string">""</span>),
             ],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="macro">assert!</span>(
             attribute.access_definitions.is_empty(),
-            <span class="string">&quot;there should not be any access definitions when no valid access routes are provided&quot;</span>,
+            <span class="string">"there should not be any access definitions when no valid access routes are provided"</span>,
         );
     }
 
@@ -519,16 +519,16 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_creates_no_definition_when_no_routes_are_provided() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="macro">assert!</span>(
             attribute.access_definitions.is_empty(),
-            <span class="string">&quot;there should not be any access definitions when no access routes are provided&quot;</span>,
+            <span class="string">"there should not be any access definitions when no access routes are provided"</span>,
         );
     }
 
@@ -536,34 +536,34 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_trims_access_routes() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[AccessRoute::route_and_name(
-                <span class="string">&quot;   test-route   &quot;</span>,
-                <span class="string">&quot;my cool name                 &quot;</span>,
+                <span class="string">"   test-route   "</span>,
+                <span class="string">"my cool name                 "</span>,
             )],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="kw">let </span>access_definition = assert_single_item(
             <span class="kw-2">&amp;</span>attribute.access_definitions,
-            <span class="string">&quot;a single access definition should be kept because an access route was defined&quot;</span>,
+            <span class="string">"a single access definition should be kept because an access route was defined"</span>,
         );
         <span class="kw">let </span>access_route = assert_single_item(
             <span class="kw-2">&amp;</span>access_definition.access_routes,
-            <span class="string">&quot;only one access route should be present in the access definition&quot;</span>,
+            <span class="string">"only one access route should be present in the access definition"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;test-route&quot;</span>, access_route.route,
-            <span class="string">&quot;the access route&#39;s route property should be trimmed&quot;</span>,
+            <span class="string">"test-route"</span>, access_route.route,
+            <span class="string">"the access route's route property should be trimmed"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;my cool name&quot;</span>,
+            <span class="string">"my cool name"</span>,
             access_route
                 .name
-                .expect(<span class="string">&quot;the access route should have a valid name&quot;</span>),
-            <span class="string">&quot;the access route&#39;s name property should be properly trimmed&quot;</span>,
+                .expect(<span class="string">"the access route should have a valid name"</span>),
+            <span class="string">"the access route's name property should be properly trimmed"</span>,
         );
     }
 
@@ -571,20 +571,20 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_keeps_duplicate_routes_with_different_names() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[
-                AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name1&quot;</span>),
-                AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name2&quot;</span>),
+                AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"name1"</span>),
+                AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"name2"</span>),
             ],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             attribute.access_definitions.len(),
-            <span class="string">&quot;an access definition should be kept because access routes were defined&quot;</span>,
+            <span class="string">"an access definition should be kept because access routes were defined"</span>,
         );
         <span class="kw">let </span>routes = attribute
             .access_definitions
@@ -595,21 +595,21 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             routes.len(),
-            <span class="string">&quot;both access routes should be kept because they have different names&quot;</span>,
+            <span class="string">"both access routes should be kept because they have different names"</span>,
         );
         <span class="macro">assert!</span>(
             routes.iter().any(
-                |r| r.to_owned().name.expect(<span class="string">&quot;all names should be Some&quot;</span>) == <span class="string">&quot;name1&quot;
-                    </span>&amp;&amp; r.route == <span class="string">&quot;test-route&quot;
+                |r| r.to_owned().name.expect(<span class="string">"all names should be Some"</span>) == <span class="string">"name1"
+                    </span>&amp;&amp; r.route == <span class="string">"test-route"
             </span>),
-            <span class="string">&quot;expected the name1 access route to be included in the vector and keep its proper name&quot;</span>,
+            <span class="string">"expected the name1 access route to be included in the vector and keep its proper name"</span>,
         );
         <span class="macro">assert!</span>(
             routes.iter().any(
-                |r| r.to_owned().name.expect(<span class="string">&quot;name should be Some&quot;</span>) == <span class="string">&quot;name2&quot;
-                    </span>&amp;&amp; r.route == <span class="string">&quot;test-route&quot;
+                |r| r.to_owned().name.expect(<span class="string">"name should be Some"</span>) == <span class="string">"name2"
+                    </span>&amp;&amp; r.route == <span class="string">"test-route"
             </span>),
-            <span class="string">&quot;expected the name2 access route to be included in the vector and keep its proper name&quot;</span>,
+            <span class="string">"expected the name2 access route to be included in the vector and keep its proper name"</span>,
         );
     }
 
@@ -617,20 +617,20 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_keeps_duplicate_routes_with_some_and_none_names() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[
-                AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;hey look at my name right here&quot;</span>),
-                AccessRoute::route_only(<span class="string">&quot;test-route&quot;</span>),
+                AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"hey look at my name right here"</span>),
+                AccessRoute::route_only(<span class="string">"test-route"</span>),
             ],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             attribute.access_definitions.len(),
-            <span class="string">&quot;an access definition should be kept because access routes were defined&quot;</span>,
+            <span class="string">"an access definition should be kept because access routes were defined"</span>,
         );
         <span class="kw">let </span>routes = attribute
             .access_definitions
@@ -641,21 +641,21 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             routes.len(),
-            <span class="string">&quot;both access routes should be kept because they have different names&quot;</span>,
+            <span class="string">"both access routes should be kept because they have different names"</span>,
         );
         <span class="macro">assert!</span>(
             routes
                 .iter()
-                .any(|r| r.to_owned().name.unwrap_or(<span class="string">&quot;not the expected name&quot;</span>.to_string())
-                    == <span class="string">&quot;hey look at my name right here&quot;
-                    </span>&amp;&amp; r.route == <span class="string">&quot;test-route&quot;</span>),
-            <span class="string">&quot;expected the populated name access route to be included in the vector and keep its proper name&quot;</span>,
+                .any(|r| r.to_owned().name.unwrap_or(<span class="string">"not the expected name"</span>.to_string())
+                    == <span class="string">"hey look at my name right here"
+                    </span>&amp;&amp; r.route == <span class="string">"test-route"</span>),
+            <span class="string">"expected the populated name access route to be included in the vector and keep its proper name"</span>,
         );
         <span class="macro">assert!</span>(
             routes
                 .iter()
-                .any(|r| r.to_owned().name.is_none() &amp;&amp; r.route == <span class="string">&quot;test-route&quot;</span>),
-            <span class="string">&quot;expected the name2 access route to be included in the vector and keep its proper name&quot;</span>,
+                .any(|r| r.to_owned().name.is_none() &amp;&amp; r.route == <span class="string">"test-route"</span>),
+            <span class="string">"expected the name2 access route to be included in the vector and keep its proper name"</span>,
         );
     }
 
@@ -663,32 +663,32 @@
     </span><span class="kw">fn </span>test_new_asset_scope_attribute_skips_duplicate_routes_after_trimming_them() {
         <span class="kw">let </span>attribute = AssetScopeAttribute::new(
             <span class="kw-2">&amp;</span>AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
-            <span class="string">&quot;heloc&quot;</span>,
+            <span class="string">"heloc"</span>,
             DEFAULT_SENDER_ADDRESS,
             DEFAULT_VERIFIER_ADDRESS,
             AssetOnboardingStatus::Pending.to_some(),
             <span class="macro">vec!</span>[
-                AccessRoute::route_and_name(<span class="string">&quot;test-route     &quot;</span>, <span class="string">&quot;myname&quot;</span>),
-                AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;myname    &quot;</span>),
+                AccessRoute::route_and_name(<span class="string">"test-route     "</span>, <span class="string">"myname"</span>),
+                AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"myname    "</span>),
             ],
         )
-        .expect(<span class="string">&quot;validation should succeed for a properly-formatted asset scope attribute&quot;</span>);
+        .expect(<span class="string">"validation should succeed for a properly-formatted asset scope attribute"</span>);
         <span class="kw">let </span>access_definition = assert_single_item(
             <span class="kw-2">&amp;</span>attribute.access_definitions,
-            <span class="string">&quot;a single access definition should be kept because an access route should be added&quot;</span>,
+            <span class="string">"a single access definition should be kept because an access route should be added"</span>,
         );
         <span class="kw">let </span>access_route = assert_single_item(
             <span class="kw-2">&amp;</span>access_definition.access_routes,
-            <span class="string">&quot;only one access route should be present in the access definition due to them being identical after trimming&quot;</span>,
+            <span class="string">"only one access route should be present in the access definition due to them being identical after trimming"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;test-route&quot;</span>, access_route.route,
-            <span class="string">&quot;the trimmed route name should be produced correctly&quot;</span>,
+            <span class="string">"test-route"</span>, access_route.route,
+            <span class="string">"the trimmed route name should be produced correctly"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;myname&quot;</span>,
-            access_route.name.expect(<span class="string">&quot;the name should be set&quot;</span>),
-            <span class="string">&quot;the trimmed name should be produced correctly&quot;</span>,
+            <span class="string">"myname"</span>,
+            access_route.name.expect(<span class="string">"the name should be set"</span>),
+            <span class="string">"the trimmed name should be produced correctly"</span>,
         );
     }
 }

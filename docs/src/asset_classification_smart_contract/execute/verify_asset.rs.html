@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/verify_asset.rs`."><title>verify_asset.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/verify_asset.rs`."><title>verify_asset.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -747,7 +747,7 @@
     ///
     /// # Parameters
     ///
-    /// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     </span><span class="kw">pub fn </span>from_execute_msg(msg: ExecuteMsg) -&gt; AssetResult&lt;VerifyAssetV1&gt; {
         <span class="kw">match </span>msg {
             ExecuteMsg::VerifyAsset {
@@ -765,7 +765,7 @@
             }
             .to_ok(),
             <span class="kw">_ </span>=&gt; ContractError::InvalidMessageType {
-                expected_message_type: <span class="string">&quot;ExecuteMsg::VerifyAsset&quot;</span>.to_string(),
+                expected_message_type: <span class="string">"ExecuteMsg::VerifyAsset"</span>.to_string(),
             }
             .to_err(),
         }
@@ -781,18 +781,18 @@
 ///
 /// * `repository` A helper collection of traits that allows complex lookups of scope values and
 /// emits messages to construct the process of verification as a collection of messages to produce
-/// in the function&#39;s result.
+/// in the function's result.
 /// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
 /// of the instantiation message, as well as the funds provided as an amount during the transaction.
 /// * `msg` An instance of the verify asset v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
-</span><span class="kw">pub fn </span>verify_asset&lt;<span class="lifetime">&#39;a</span>, T&gt;(
+</span><span class="kw">pub fn </span>verify_asset&lt;<span class="lifetime">'a</span>, T&gt;(
     repository: T,
     info: MessageInfo,
     msg: VerifyAssetV1,
 ) -&gt; EntryPointResponse
 <span class="kw">where
-    </span>T: AssetMetaRepository + MessageGatheringService + DepsManager&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>T: AssetMetaRepository + MessageGatheringService + DepsManager&lt;<span class="lifetime">'a</span>&gt;,
 {
     <span class="comment">// Ensure the verifier does not send funds - this entry point should only move funds TO entities,
     // not receive them for any reason
@@ -912,7 +912,7 @@
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::InvalidFunds(<span class="kw">_</span>)),
-            <span class="string">&quot;unexpected error type encountered when validating against funds present during verify asset: {:?}&quot;</span>,
+            <span class="string">"unexpected error type encountered when validating against funds present during verify asset: {:?}"</span>,
             err,
         );
     }
@@ -939,16 +939,16 @@
             ContractError::NotFound { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     <span class="macro">format!</span>(
-                        <span class="string">&quot;scope at address [{}] did not include an asset scope attribute for asset type [{}]&quot;</span>,
+                        <span class="string">"scope at address [{}] did not include an asset scope attribute for asset type [{}]"</span>,
                         DEFAULT_SCOPE_ADDRESS,
                         DEFAULT_ASSET_TYPE
                     ),
                     explanation,
-                    <span class="string">&quot;the asset not found message should reflect that the asset was not found&quot;
+                    <span class="string">"the asset not found message should reflect that the asset was not found"
                 </span>);
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error when non-onboarded asset provided: {:?}&quot;</span>,
+                <span class="string">"unexpected error when non-onboarded asset provided: {:?}"</span>,
                 err
             ),
         }
@@ -961,7 +961,7 @@
 
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
 
-        <span class="kw">let </span>info = empty_mock_info(<span class="string">&quot;tp129z88fpzthllrdzktw98cck3ypd34wv77nqfyl&quot;</span>);
+        <span class="kw">let </span>info = empty_mock_info(<span class="string">"tp129z88fpzthllrdzktw98cck3ypd34wv77nqfyl"</span>);
         <span class="kw">let </span>err = verify_asset(
             AssetMetaService::new(deps.as_mut()),
             info.clone(),
@@ -984,23 +984,23 @@
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
-                    <span class="string">&quot;the unauthorized verifier message should reflect the scope address&quot;
+                    <span class="string">"the unauthorized verifier message should reflect the scope address"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ASSET_TYPE, asset_type,
-                    <span class="string">&quot;the unauthorized verifier message should reflect the asset type&quot;
+                    <span class="string">"the unauthorized verifier message should reflect the asset type"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     info.sender.to_string(), verifier_address,
-                    <span class="string">&quot;the unauthorized verifier message should reflect the provided (sender) verifier address&quot;
+                    <span class="string">"the unauthorized verifier message should reflect the provided (sender) verifier address"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_VERIFIER_ADDRESS, expected_verifier_address,
-                    <span class="string">&quot;the unauthorized verifier message should reflect the expected verifier address (from onboarding)&quot;
+                    <span class="string">"the unauthorized verifier message should reflect the expected verifier address (from onboarding)"
                 </span>);
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error when unauthorized verifier submits verification: {:?}&quot;</span>,
+                <span class="string">"unexpected error when unauthorized verifier submits verification: {:?}"</span>,
                 err
             ),
         }
@@ -1019,7 +1019,7 @@
                 identifier: AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 success: <span class="bool-val">true</span>,
-                message: <span class="string">&quot;Your data sucks&quot;</span>.to_string().to_some(),
+                message: <span class="string">"Your data sucks"</span>.to_string().to_some(),
                 access_routes: <span class="macro">vec!</span>[],
             },
         )
@@ -1028,7 +1028,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             result.messages.len(),
-            <span class="string">&quot;verify asset should produce two messages: update attribute msg to new status and bank send to default verifier&quot;
+            <span class="string">"verify asset should produce two messages: update attribute msg to new status and bank send to default verifier"
         </span>);
     }
 
@@ -1061,20 +1061,20 @@
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
-                    <span class="string">&quot;the response message should contain the expected scope address&quot;</span>,
+                    <span class="string">"the response message should contain the expected scope address"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ASSET_TYPE, asset_type,
-                    <span class="string">&quot;the response message should contain the expected asset type&quot;</span>,
+                    <span class="string">"the response message should contain the expected asset type"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     status,
                     AssetOnboardingStatus::Approved,
-                    <span class="string">&quot;the response message should indicate that the asset was already approved by the verifier&quot;</span>,
+                    <span class="string">"the response message should indicate that the asset was already approved by the verifier"</span>,
                 );
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error encountered when submitting duplicate verification: {:?}&quot;</span>,
+                <span class="string">"unexpected error encountered when submitting duplicate verification: {:?}"</span>,
                 err
             ),
         };
@@ -1100,20 +1100,20 @@
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_SCOPE_ADDRESS, scope_address,
-                    <span class="string">&quot;the response message should contain the expected scope address&quot;</span>,
+                    <span class="string">"the response message should contain the expected scope address"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ASSET_TYPE, asset_type,
-                    <span class="string">&quot;the response message should contain the expected asset type&quot;</span>,
+                    <span class="string">"the response message should contain the expected asset type"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     status,
                     AssetOnboardingStatus::Denied,
-                    <span class="string">&quot;the response message should indicate that the asset was denied by the verifier&quot;</span>,
+                    <span class="string">"the response message should indicate that the asset was denied by the verifier"</span>,
                 );
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected error encountered when submitting duplicate verification: {:?}&quot;</span>,
+                <span class="string">"unexpected error encountered when submitting duplicate verification: {:?}"</span>,
                 err
             ),
         };
@@ -1155,9 +1155,9 @@
                 (
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     to_string(<span class="kw-2">&amp;</span>default_attribute)
-                        .expect(<span class="string">&quot;expected the scope attribute to convert to json without error&quot;</span>)
+                        .expect(<span class="string">"expected the scope attribute to convert to json without error"</span>)
                         .as_str(),
-                    <span class="string">&quot;json&quot;</span>,
+                    <span class="string">"json"</span>,
                 ),
                 (
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(
@@ -1165,9 +1165,9 @@
                         DEFAULT_CONTRACT_BASE_NAME,
                     ),
                     to_string(<span class="kw-2">&amp;</span>default_secondary_attribute)
-                        .expect(<span class="string">&quot;expected the scope attribute to convert to json without error&quot;</span>)
+                        .expect(<span class="string">"expected the scope attribute to convert to json without error"</span>)
                         .as_str(),
-                    <span class="string">&quot;json&quot;</span>,
+                    <span class="string">"json"</span>,
                 ),
             ],
         );
@@ -1176,18 +1176,18 @@
         </span>test_verify_asset(<span class="kw-2">&amp;mut </span>deps, TestVerifyAsset::default()).unwrap();
         <span class="kw">let </span>updated_default_attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;after validating the asset, the scope attribute should be present&quot;</span>);
+            .expect(<span class="string">"after validating the asset, the scope attribute should be present"</span>);
         <span class="macro">assert_eq!</span>(
             AssetOnboardingStatus::Approved,
             updated_default_attribute.onboarding_status,
-            <span class="string">&quot;the asset should be in approved status after onboarding with a status of success = true&quot;</span>,
+            <span class="string">"the asset should be in approved status after onboarding with a status of success = true"</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="prelude-val">None</span>,
             may_load_fee_payment_detail(<span class="kw-2">&amp;</span>deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE),
-            <span class="string">&quot;the asset&#39;s payment details should be removed after successful onboarding for a specific type&quot;
+            <span class="string">"the asset's payment details should be removed after successful onboarding for a specific type"
         </span>);
-        may_load_fee_payment_detail(<span class="kw-2">&amp;</span>deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE).expect(<span class="string">&quot;the asset&#39;s payment details for an unrelated secondary asset type should be unaffected by onboarding a different type&quot;</span>);
+        may_load_fee_payment_detail(<span class="kw-2">&amp;</span>deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE).expect(<span class="string">"the asset's payment details for an unrelated secondary asset type should be unaffected by onboarding a different type"</span>);
 
         <span class="comment">// dumb hack AGAIN to get both the updated attribute and untouched in the ProvenanceMockQuerier... our interception of the AddOrUpdateParams stuff can only
         // set the one attribute in the mock querier at a time, as the existing attributes get overwritten and there is no way to
@@ -1198,9 +1198,9 @@
                 (
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     to_string(<span class="kw-2">&amp;</span>updated_default_attribute)
-                        .expect(<span class="string">&quot;expected the scope attribute to convert to json without error&quot;</span>)
+                        .expect(<span class="string">"expected the scope attribute to convert to json without error"</span>)
                         .as_str(),
-                    <span class="string">&quot;json&quot;</span>,
+                    <span class="string">"json"</span>,
                 ),
                 (
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(
@@ -1208,9 +1208,9 @@
                         DEFAULT_CONTRACT_BASE_NAME,
                     ),
                     to_string(<span class="kw-2">&amp;</span>default_secondary_attribute)
-                        .expect(<span class="string">&quot;expected the scope attribute to convert to json without error&quot;</span>)
+                        .expect(<span class="string">"expected the scope attribute to convert to json without error"</span>)
                         .as_str(),
-                    <span class="string">&quot;json&quot;</span>,
+                    <span class="string">"json"</span>,
                 ),
             ],
         );
@@ -1230,12 +1230,12 @@
         <span class="macro">assert_eq!</span>(
             <span class="prelude-val">None</span>,
             may_load_fee_payment_detail(<span class="kw-2">&amp;</span>deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE),
-            <span class="string">&quot;the asset&#39;s payment details should still be missing for the initial verification asset type&quot;
+            <span class="string">"the asset's payment details should still be missing for the initial verification asset type"
         </span>);
         <span class="macro">assert_eq!</span>(
             <span class="prelude-val">None</span>,
             may_load_fee_payment_detail(<span class="kw-2">&amp;</span>deps.storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
-            <span class="string">&quot;the asset&#39;s payment details should still be removed for the secondary verification asset type&quot;
+            <span class="string">"the asset's payment details should still be removed for the secondary verification asset type"
         </span>);
     }
 
@@ -1257,14 +1257,14 @@
                 ..TestVerifyAsset::default()
             },
         )
-        .expect_err(<span class="string">&quot;attempting to validate an asset as the wrong type should be denied&quot;</span>);
+        .expect_err(<span class="string">"attempting to validate an asset as the wrong type should be denied"</span>);
         <span class="kw">match </span>err {
                 ContractError::NotFound { explanation } =&gt; <span class="macro">assert_eq!</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;scope at address [{}] did not include an asset scope attribute for asset type [{}]&quot;</span>, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
+                    <span class="macro">format!</span>(<span class="string">"scope at address [{}] did not include an asset scope attribute for asset type [{}]"</span>, DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE),
                     explanation,
-                    <span class="string">&quot;the error message should reflect the scope address the verification was attempted for&quot;
+                    <span class="string">"the error message should reflect the scope address the verification was attempted for"
                 </span>),
-                e =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type {:?}&quot;</span>, e)
+                e =&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error type {:?}"</span>, e)
             }
     }
 
@@ -1277,11 +1277,11 @@
         assert_verify_response_attributes_are_correct(<span class="kw-2">&amp;</span>response, AssetOnboardingStatus::Approved);
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;after validating the asset, the scope attribute should be present&quot;</span>);
+            .expect(<span class="string">"after validating the asset, the scope attribute should be present"</span>);
         <span class="macro">assert_eq!</span>(
             AssetOnboardingStatus::Approved,
             attribute.onboarding_status,
-            <span class="string">&quot;the asset should be in approved status after onboarding with a status of success = true&quot;</span>,
+            <span class="string">"the asset should be in approved status after onboarding with a status of success = true"</span>,
         );
     }
 
@@ -1295,11 +1295,11 @@
         assert_verify_response_attributes_are_correct(<span class="kw-2">&amp;</span>response, AssetOnboardingStatus::Denied);
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;after validating the asset, the scope attribute should be present&quot;</span>);
+            .expect(<span class="string">"after validating the asset, the scope attribute should be present"</span>);
         <span class="macro">assert_eq!</span>(
             AssetOnboardingStatus::Denied,
             attribute.onboarding_status,
-            <span class="string">&quot;the asset should be in denied status after onboarding with a status of success = false&quot;</span>,
+            <span class="string">"the asset should be in denied status after onboarding with a status of success = false"</span>,
         );
     }
 
@@ -1321,12 +1321,12 @@
             },
         );
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;onboarding when free should succeed&quot;</span>);
+            .expect(<span class="string">"onboarding when free should succeed"</span>);
         <span class="kw">let </span>response = test_verify_asset(<span class="kw-2">&amp;mut </span>deps, TestVerifyAsset::default())
-            .expect(<span class="string">&quot;verification when onboarding is free should succeed&quot;</span>);
+            .expect(<span class="string">"verification when onboarding is free should succeed"</span>);
         test_no_money_moved_in_response(
             <span class="kw-2">&amp;</span>response,
-            <span class="string">&quot;verification after a free onboard should not produce any messages that move funds&quot;</span>,
+            <span class="string">"verification after a free onboard should not produce any messages that move funds"</span>,
         );
     }
 
@@ -1337,52 +1337,52 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">9</span>,
             response.attributes.len(),
-            <span class="string">&quot;the correct number of response attributes should be emitted&quot;</span>,
+            <span class="string">"the correct number of response attributes should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;verify_asset&quot;</span>,
+            <span class="string">"verify_asset"</span>,
             single_attribute_for_key(response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;the correct event type attribute should be emitted&quot;</span>,
+            <span class="string">"the correct event type attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_ASSET_TYPE,
             single_attribute_for_key(response, ASSET_TYPE_KEY),
-            <span class="string">&quot;the correct asset type attribute should be emitted&quot;</span>,
+            <span class="string">"the correct asset type attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_SCOPE_ADDRESS,
             single_attribute_for_key(response, ASSET_SCOPE_ADDRESS_KEY),
-            <span class="string">&quot;the correct scope address attribute should be emitted&quot;</span>,
+            <span class="string">"the correct scope address attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_VERIFIER_ADDRESS,
             single_attribute_for_key(response, VERIFIER_ADDRESS_KEY),
-            <span class="string">&quot;the correct verifier address attribute should be emitted&quot;</span>,
+            <span class="string">"the correct verifier address attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             expected_onboarding_status.to_string(),
             single_attribute_for_key(response, NEW_ASSET_ONBOARDING_STATUS_KEY),
-            <span class="string">&quot;expected the correct onboarding status to be emitted&quot;</span>,
+            <span class="string">"expected the correct onboarding status to be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             OS_GATEWAY_EVENT_TYPES.access_revoke,
             single_attribute_for_key(response, OS_GATEWAY_KEYS.event_type),
-            <span class="string">&quot;the correct object store gateway event type attribute should be emitted&quot;</span>,
+            <span class="string">"the correct object store gateway event type attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_SCOPE_ADDRESS,
             single_attribute_for_key(response, OS_GATEWAY_KEYS.scope_address),
-            <span class="string">&quot;the correct object store gateway scope address attribute should be emitted&quot;</span>,
+            <span class="string">"the correct object store gateway scope address attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_VERIFIER_ADDRESS,
             single_attribute_for_key(response, OS_GATEWAY_KEYS.target_account),
-            <span class="string">&quot;the correct object store gateway target account address attribute should be emitted&quot;</span>,
+            <span class="string">"the correct object store gateway target account address attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             generate_os_gateway_grant_id(DEFAULT_ASSET_TYPE, DEFAULT_SCOPE_ADDRESS),
             single_attribute_for_key(response, OS_GATEWAY_KEYS.access_grant_id),
-            <span class="string">&quot;the correct object store gateway access grant id attribute should be emitted&quot;</span>,
+            <span class="string">"the correct object store gateway access grant id attribute should be emitted"</span>,
         );
     }
 }

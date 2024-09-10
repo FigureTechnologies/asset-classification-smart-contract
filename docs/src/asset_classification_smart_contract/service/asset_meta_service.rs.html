@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><title>asset_meta_service.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><title>asset_meta_service.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1432,28 +1432,28 @@
 
 <span class="doccomment">/// Ties all service code together into a cohesive struct to use for complex operations during the
 /// onboarding and verification processes.
-</span><span class="kw">pub struct </span>AssetMetaService&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">pub struct </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// A wrapper for a [DepsMutC](core::util::aliases::DepsMutC] that allows access to it without
     /// moving the value.
-    </span>deps: DepsContainer&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>deps: DepsContainer&lt;<span class="lifetime">'a</span>&gt;,
     <span class="doccomment">/// All messages generated over the course of function invocations.
     </span>messages: VecContainer&lt;CosmosMsg&lt;ProvenanceMsg&gt;&gt;,
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AssetMetaService&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Constructs a new instance of this struct.
     ///
     /// # Parameters
     ///
     /// * `deps` The cosmwasm deps that will be moved into a [DepsContainer](crate::util::deps_container::DepsContainer)
     /// for future access.
-    </span><span class="kw">pub fn </span>new(deps: DepsMutC&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(deps: DepsMutC&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             deps: DepsContainer::new(deps),
             messages: VecContainer::new(),
         }
     }
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AssetMetaRepository <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AssetMetaRepository <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>has_asset&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         scope_address: S1,
@@ -1493,7 +1493,7 @@
         </span><span class="kw">if </span>is_retry {
             <span class="self">self</span>.update_attribute(attribute)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
-            <span class="comment">// On a first time execution, simply add the attribute to the scope - it&#39;s already been
+            <span class="comment">// On a first time execution, simply add the attribute to the scope - it's already been
             // verified that the attribute does not yet exist
             </span><span class="kw">let </span>contract_base_name = <span class="self">self
                 </span>.use_deps(|d| config_read_v2(d.storage).load())<span class="question-mark">?
@@ -1534,8 +1534,8 @@
                     // amount of funds to the contract.
                     </span>amount: Uint128::new(payment_detail.sum_costs()),
                 },
-                <span class="prelude-val">Some</span>(<span class="string">&quot;Asset Classification Onboarding Fee&quot;</span>),
-                <span class="comment">// The contract address must always be used as the &quot;from&quot; value to ensure that
+                <span class="prelude-val">Some</span>(<span class="string">"Asset Classification Onboarding Fee"</span>),
+                <span class="comment">// The contract address must always be used as the "from" value to ensure that
                 // permission issues do not occur when submitting the message.
                 </span>env.contract.address.to_owned(),
                 <span class="prelude-val">Some</span>(env.contract.address.to_owned()),
@@ -1566,8 +1566,8 @@
             </span>AttributeValueType::Json,
             <span class="comment">// update_value: The attribute with changes
             </span>to_binary(<span class="kw-2">&amp;</span>updated_attribute)<span class="question-mark">?</span>,
-            <span class="comment">// update_value_type: Maintain Json typing. it&#39;s awesome that this can change between updates,
-            // but this code doesn&#39;t want that
+            <span class="comment">// update_value_type: Maintain Json typing. it's awesome that this can change between updates,
+            // but this code doesn't want that
             </span>AttributeValueType::Json,
         )<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(())
@@ -1636,8 +1636,8 @@
     ) -&gt; AssetResult&lt;AssetScopeAttribute&gt; {
         <span class="kw">let </span>message = verification_message.map(|m| m.into()).unwrap_or_else(|| {
             <span class="kw">match </span>success {
-                <span class="bool-val">true </span>=&gt; <span class="string">&quot;verification successful&quot;</span>,
-                <span class="bool-val">false </span>=&gt; <span class="string">&quot;verification failure&quot;</span>,
+                <span class="bool-val">true </span>=&gt; <span class="string">"verification successful"</span>,
+                <span class="bool-val">false </span>=&gt; <span class="string">"verification failure"</span>,
             }
             .to_string()
         });
@@ -1725,7 +1725,7 @@
         scope_attribute.to_ok()
     }
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DepsManager&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; DepsManager&lt;<span class="lifetime">'a</span>&gt; <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>use_deps&lt;T, F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, deps_fn: F) -&gt; T
     <span class="kw">where
         </span>F: FnMut(<span class="kw-2">&amp;mut </span>DepsMutC) -&gt; T,
@@ -1733,11 +1733,11 @@
         <span class="self">self</span>.deps.use_deps(deps_fn)
     }
 
-    <span class="kw">fn </span>into_deps(<span class="self">self</span>) -&gt; DepsMutC&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>into_deps(<span class="self">self</span>) -&gt; DepsMutC&lt;<span class="lifetime">'a</span>&gt; {
         <span class="self">self</span>.deps.get()
     }
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; MessageGatheringService <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; MessageGatheringService <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>get_messages(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;CosmosMsg&lt;ProvenanceMsg&gt;&gt; {
         <span class="self">self</span>.messages.get_cloned()
     }
@@ -1819,7 +1819,7 @@
             .unwrap();
         <span class="macro">assert!</span>(
             !result,
-            <span class="string">&quot;Repository should return false when asset does not have attribute&quot;
+            <span class="string">"Repository should return false when asset does not have attribute"
         </span>);
     }
 
@@ -1837,7 +1837,7 @@
 
         <span class="macro">assert!</span>(
             result,
-            <span class="string">&quot;Repository should return true when asset does have attribute&quot;
+            <span class="string">"Repository should return true when asset does have attribute"
         </span>);
     }
 
@@ -1858,7 +1858,7 @@
 
         <span class="macro">assert!</span>(
             !result,
-            <span class="string">&quot;Repository should return false when asset doesn&#39;t have attribute for specified type (but does for another type)&quot;
+            <span class="string">"Repository should return false when asset doesn't have attribute for specified type (but does for another type)"
         </span>);
     }
 
@@ -1884,7 +1884,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             messages.len(),
-            <span class="string">&quot;add_asset should generate the correct number of messages&quot;
+            <span class="string">"add_asset should generate the correct number of messages"
         </span>);
         messages.iter().for_each(|msg| <span class="kw">match </span><span class="kw-2">&amp;</span>msg {
             CosmosMsg::Custom(ProvenanceMsg {
@@ -1900,18 +1900,18 @@
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     name,
-                    <span class="string">&quot;attribute name should match what is expected&quot;
+                    <span class="string">"attribute name should match what is expected"
                 </span>);
                 <span class="kw">let </span>deserialized: AssetScopeAttribute = from_binary(value).unwrap();
                 <span class="kw">let </span>expected = get_default_asset_scope_attribute();
                 <span class="macro">assert_eq!</span>(
                     expected, deserialized,
-                    <span class="string">&quot;attribute should contain proper values&quot;
+                    <span class="string">"attribute should contain proper values"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AttributeValueType::Json,
                     value_type,
-                    <span class="string">&quot;generated attribute value_type should be Json&quot;
+                    <span class="string">"generated attribute value_type should be Json"
                 </span>);
             }
             CosmosMsg::Custom(ProvenanceMsg {
@@ -1927,25 +1927,25 @@
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ONBOARDING_COST,
                     amount.amount.u128(),
-                    <span class="string">&quot;double the onboarding cost should be charged to account for provenance fees&quot;</span>,
+                    <span class="string">"double the onboarding cost should be charged to account for provenance fees"</span>,
                 );
-                <span class="macro">assert!</span>(name.is_some(), <span class="string">&quot;a fee name should be provided&quot;</span>,);
+                <span class="macro">assert!</span>(name.is_some(), <span class="string">"a fee name should be provided"</span>,);
                 <span class="macro">assert_eq!</span>(
                     MOCK_CONTRACT_ADDR,
                     from.as_str(),
-                    <span class="string">&quot;the contract address should be set as the from value&quot;</span>,
+                    <span class="string">"the contract address should be set as the from value"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     MOCK_CONTRACT_ADDR,
                     recipient
                         .to_owned()
-                        .expect(<span class="string">&quot;a recipient should be defined&quot;</span>)
+                        .expect(<span class="string">"a recipient should be defined"</span>)
                         .as_str(),
-                    <span class="string">&quot;the verifier should receive the fees&quot;</span>,
+                    <span class="string">"the verifier should receive the fees"</span>,
                 );
             }
             msg =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected message type resulting from add_asset: {:?}&quot;</span>,
+                <span class="string">"Unexpected message type resulting from add_asset: {:?}"</span>,
                 msg
             ),
         });
@@ -1964,14 +1964,14 @@
         <span class="kw">match </span>err {
             ContractError::NotFound { explanation } =&gt; <span class="macro">assert_eq!</span>(
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;scope at address [{}] did not include an asset scope attribute for asset type [{}]&quot;</span>,
+                    <span class="string">"scope at address [{}] did not include an asset scope attribute for asset type [{}]"</span>,
                     DEFAULT_SCOPE_ADDRESS,
                     DEFAULT_ASSET_TYPE
                 ),
                 explanation
             ),
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected error type returned from get_asset on non-existant asset {:?}&quot;</span>,
+                <span class="string">"Unexpected error type returned from get_asset on non-existant asset {:?}"</span>,
                 err
             ),
         }
@@ -1991,7 +1991,7 @@
         <span class="macro">assert_eq!</span>(
             get_default_asset_scope_attribute(),
             attribute,
-            <span class="string">&quot;Attribute returned from get_asset should match what is expected&quot;
+            <span class="string">"Attribute returned from get_asset should match what is expected"
         </span>);
     }
 
@@ -2007,7 +2007,7 @@
 
         <span class="macro">assert_eq!</span>(
             <span class="prelude-val">None</span>, result,
-            <span class="string">&quot;try_get_asset should return None for a non-onboarded asset&quot;
+            <span class="string">"try_get_asset should return None for a non-onboarded asset"
         </span>);
     }
 
@@ -2020,20 +2020,20 @@
 
         <span class="kw">let </span>result = repository
             .try_get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;asset result should return without error&quot;</span>)
-            .expect(<span class="string">&quot;encapsulated asset should be present in the Option&quot;</span>);
+            .expect(<span class="string">"asset result should return without error"</span>)
+            .expect(<span class="string">"encapsulated asset should be present in the Option"</span>);
 
         <span class="macro">assert_eq!</span>(
             get_default_asset_scope_attribute(),
             result,
-            <span class="string">&quot;try_get_asset should return attribute for an onboarded asset&quot;
+            <span class="string">"try_get_asset should return attribute for an onboarded asset"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>verify_asset_generates_attribute_update_message_sequence_successful_verification_with_message(
     ) {
-        test_verification_result(<span class="string">&quot;cool good job&quot;</span>.to_some(), <span class="bool-val">true</span>);
+        test_verification_result(<span class="string">"cool good job"</span>.to_some(), <span class="bool-val">true</span>);
     }
 
     <span class="attr">#[test]
@@ -2045,7 +2045,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>verify_asset_generates_attribute_update_message_sequence_negative_verification_with_message()
     {
-        test_verification_result(<span class="string">&quot;you suck&quot;</span>.to_some(), <span class="bool-val">false</span>);
+        test_verification_result(<span class="string">"you suck"</span>.to_some(), <span class="bool-val">false</span>);
     }
 
     <span class="attr">#[test]
@@ -2061,7 +2061,7 @@
         <span class="kw">let </span>deps = service.into_deps();
         config_read_v2(deps.storage)
             .load()
-            .expect(<span class="string">&quot;expected storage to load from relinquished deps&quot;</span>);
+            .expect(<span class="string">"expected storage to load from relinquished deps"</span>);
     }
 
     <span class="attr">#[test]
@@ -2084,19 +2084,19 @@
                     access_definitions: <span class="macro">vec!</span>[
                         AccessDefinition {
                             owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;ownerroute1&quot;</span>)],
+                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
                             definition_type: AccessDefinitionType::Requestor,
                         },
                         AccessDefinition {
                             owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;existingroute&quot;</span>)],
+                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"existingroute"</span>)],
                             definition_type: AccessDefinitionType::Verifier,
                         },
                     ],
                 })
                 .unwrap()
                 .as_str(),
-                <span class="string">&quot;json&quot;</span>,
+                <span class="string">"json"</span>,
             )],
         );
 
@@ -2111,13 +2111,13 @@
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
         <span class="kw">let </span>scope_attribute = repository
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;scope attribute should exist for asset&quot;</span>);
+            .expect(<span class="string">"scope attribute should exist for asset"</span>);
         repository
             .verify_asset::&lt;<span class="kw-2">&amp;</span>str&gt;(
                 scope_attribute,
                 <span class="bool-val">true</span>,
-                <span class="string">&quot;Great jaerb there Hamstar&quot;</span>.to_some(),
-                <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;newroute&quot;</span>)],
+                <span class="string">"Great jaerb there Hamstar"</span>.to_some(),
+                <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"newroute"</span>)],
             )
             .unwrap();
 
@@ -2126,7 +2126,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             messages.len(),
-            <span class="string">&quot;verify asset should produce 2 messages (update attribute msg and 1 bank send msg)&quot;
+            <span class="string">"verify asset should produce 2 messages (update attribute msg and 1 bank send msg)"
         </span>);
 
         <span class="kw">let </span>first_message = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
@@ -2143,12 +2143,12 @@
                 <span class="macro">assert_eq!</span>(
                     <span class="number">2</span>,
                     deserialized.access_definitions.len(),
-                    <span class="string">&quot;Modified scope attribute should only have 2 access route groups listed&quot;</span>,
+                    <span class="string">"Modified scope attribute should only have 2 access route groups listed"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AccessDefinition {
                         owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">&quot;ownerroute1&quot;</span>)],
+                        access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
                         definition_type: AccessDefinitionType::Requestor,
                     },
                     deserialized
@@ -2156,14 +2156,14 @@
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
                         .unwrap(),
-                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>,
+                    <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AccessDefinition {
                         owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
                         access_routes: <span class="macro">vec!</span>[
-                            AccessRoute::route_only(<span class="string">&quot;existingroute&quot;</span>),
-                            AccessRoute::route_only(<span class="string">&quot;newroute&quot;</span>)
+                            AccessRoute::route_only(<span class="string">"existingroute"</span>),
+                            AccessRoute::route_only(<span class="string">"newroute"</span>)
                         ],
                         definition_type: AccessDefinitionType::Verifier,
                     },
@@ -2172,11 +2172,11 @@
                         .iter()
                         .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
                         .unwrap(),
-                    <span class="string">&quot;sender access route should be unchanged after verifier routes updated&quot;</span>,
+                    <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
                 );
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected first message type for verify_asset: {:?}&quot;</span>,
+                <span class="string">"Unexpected first message type for verify_asset: {:?}"</span>,
                 first_message,
             ),
         }
@@ -2186,26 +2186,26 @@
                 <span class="macro">assert_eq!</span>(
                     to_address,
                     <span class="kw-2">&amp;</span>DEFAULT_VERIFIER_ADDRESS.to_string(),
-                    <span class="string">&quot;fee message should go to default verifier address&quot;
+                    <span class="string">"fee message should go to default verifier address"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     <span class="number">1</span>,
                     amount.len(),
-                    <span class="string">&quot;exactly one coin type should be present on bank send fee message&quot;
+                    <span class="string">"exactly one coin type should be present on bank send fee message"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     amount.first().unwrap().amount.u128(),
                     DEFAULT_ONBOARDING_COST,
-                    <span class="string">&quot;bank send fee message should be the default onboarding cost&quot;
+                    <span class="string">"bank send fee message should be the default onboarding cost"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     amount.first().unwrap().denom,
                     DEFAULT_ONBOARDING_DENOM.to_string(),
-                    <span class="string">&quot;bank send fee message should use the default onboarding denom&quot;
+                    <span class="string">"bank send fee message should use the default onboarding denom"
                 </span>);
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected second message type for verify_asset: {:?}&quot;</span>,
+                <span class="string">"Unexpected second message type for verify_asset: {:?}"</span>,
                 second_message
             ),
         }
@@ -2223,10 +2223,10 @@
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// All invalid (empty or whitespace-only strings) access routes should be filtered from output
                     </span>access_routes: <span class="macro">vec!</span>[
-                        AccessRoute::route_only(<span class="string">&quot;   &quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;       &quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;&quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;real route&quot;</span>),
+                        AccessRoute::route_only(<span class="string">"   "</span>),
+                        AccessRoute::route_only(<span class="string">"       "</span>),
+                        AccessRoute::route_only(<span class="string">""</span>),
+                        AccessRoute::route_only(<span class="string">"real route"</span>),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -2236,7 +2236,7 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>verifier_access_definitions = attribute
             .access_definitions
             .into_iter()
@@ -2245,18 +2245,18 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             verifier_access_definitions.len(),
-            <span class="string">&quot;there should only be one entry for verifier access definitions&quot;</span>,
+            <span class="string">"there should only be one entry for verifier access definitions"</span>,
         );
         <span class="kw">let </span>verifier_definition = verifier_access_definitions.first().unwrap();
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             verifier_definition.access_routes.len(),
-            <span class="string">&quot;only one access definition route should be added because the empty strings should be filtered out of the result&quot;</span>,
+            <span class="string">"only one access definition route should be added because the empty strings should be filtered out of the result"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;real route&quot;</span>,
+            <span class="string">"real route"</span>,
             verifier_definition.access_routes.first().unwrap().route,
-            <span class="string">&quot;the only route in the verifier&#39;s access definition should be the non-blank string provided&quot;</span>,
+            <span class="string">"the only route in the verifier's access definition should be the non-blank string provided"</span>,
         );
     }
 
@@ -2272,9 +2272,9 @@
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
                     </span>access_routes: <span class="macro">vec!</span>[
-                        AccessRoute::route_only(<span class="string">&quot;   &quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;       &quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;&quot;</span>),
+                        AccessRoute::route_only(<span class="string">"   "</span>),
+                        AccessRoute::route_only(<span class="string">"       "</span>),
+                        AccessRoute::route_only(<span class="string">""</span>),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -2284,13 +2284,13 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="macro">assert!</span>(
             !attribute
                 .access_definitions
                 .into_iter()
                 .any(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS),
-            <span class="string">&quot;when no valid access routes for the verifier are provided, no access definition record should be added&quot;</span>,
+            <span class="string">"when no valid access routes for the verifier are provided, no access definition record should be added"</span>,
         );
     }
 
@@ -2305,7 +2305,7 @@
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
-                    </span>access_routes: <span class="macro">vec!</span>[AccessRoute::route_and_name(<span class="string">&quot;route       &quot;</span>, <span class="string">&quot;   name   &quot;</span>)],
+                    </span>access_routes: <span class="macro">vec!</span>[AccessRoute::route_and_name(<span class="string">"route       "</span>, <span class="string">"   name   "</span>)],
                     ..TestVerifyAsset::default_verify_asset()
                 },
                 ..Default::default()
@@ -2314,28 +2314,28 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>access_routes = assert_single_item(
             <span class="kw-2">&amp;</span>attribute
                 .access_definitions
                 .into_iter()
                 .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
                 .collect::&lt;Vec&lt;AccessDefinition&gt;&gt;(),
-            <span class="string">&quot;expected only a single access definition to be provided for the verifier&quot;</span>,
+            <span class="string">"expected only a single access definition to be provided for the verifier"</span>,
         )
         .access_routes;
         <span class="kw">let </span>access_route = assert_single_item(
             <span class="kw-2">&amp;</span>access_routes,
-            <span class="string">&quot;expected only a sigle access route to exist for the verifier&quot;</span>,
+            <span class="string">"expected only a sigle access route to exist for the verifier"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;route&quot;</span>, access_route.route,
-            <span class="string">&quot;the route value should be trimmed of all whitespace&quot;</span>,
+            <span class="string">"route"</span>, access_route.route,
+            <span class="string">"the route value should be trimmed of all whitespace"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;name&quot;</span>,
-            access_route.name.expect(<span class="string">&quot;the name value should be set&quot;</span>),
-            <span class="string">&quot;the name value should be trimmed of all whitespice&quot;</span>,
+            <span class="string">"name"</span>,
+            access_route.name.expect(<span class="string">"the name value should be set"</span>),
+            <span class="string">"the name value should be trimmed of all whitespice"</span>,
         );
     }
 
@@ -2351,8 +2351,8 @@
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
                     </span>access_routes: <span class="macro">vec!</span>[
-                        AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name1&quot;</span>),
-                        AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name2&quot;</span>),
+                        AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"name1"</span>),
+                        AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"name2"</span>),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -2362,25 +2362,25 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>access_routes = assert_single_item(
             <span class="kw-2">&amp;</span>attribute
                 .access_definitions
                 .into_iter()
                 .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
                 .collect::&lt;Vec&lt;AccessDefinition&gt;&gt;(),
-            <span class="string">&quot;expected only a single access definition to be provided for the verifier&quot;</span>,
+            <span class="string">"expected only a single access definition to be provided for the verifier"</span>,
         )
         .access_routes;
         <span class="macro">assert!</span>(
-            access_routes.iter().any(|r| r.route == <span class="string">&quot;test-route&quot;
-                </span>&amp;&amp; r.to_owned().name.expect(<span class="string">&quot;all names should be Some&quot;</span>) == <span class="string">&quot;name1&quot;</span>),
-            <span class="string">&quot;the first name route should be included in the access routes&quot;</span>,
+            access_routes.iter().any(|r| r.route == <span class="string">"test-route"
+                </span>&amp;&amp; r.to_owned().name.expect(<span class="string">"all names should be Some"</span>) == <span class="string">"name1"</span>),
+            <span class="string">"the first name route should be included in the access routes"</span>,
         );
         <span class="macro">assert!</span>(
-            access_routes.iter().any(|r| r.route == <span class="string">&quot;test-route&quot;
-                </span>&amp;&amp; r.to_owned().name.expect(<span class="string">&quot;all names should be Some&quot;</span>) == <span class="string">&quot;name2&quot;</span>),
-            <span class="string">&quot;the second name route should be included in the access routes&quot;</span>,
+            access_routes.iter().any(|r| r.route == <span class="string">"test-route"
+                </span>&amp;&amp; r.to_owned().name.expect(<span class="string">"all names should be Some"</span>) == <span class="string">"name2"</span>),
+            <span class="string">"the second name route should be included in the access routes"</span>,
         );
     }
 
@@ -2396,8 +2396,8 @@
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
                     </span>access_routes: <span class="macro">vec!</span>[
-                        AccessRoute::route_and_name(<span class="string">&quot;test-route&quot;</span>, <span class="string">&quot;name&quot;</span>),
-                        AccessRoute::route_only(<span class="string">&quot;test-route&quot;</span>),
+                        AccessRoute::route_and_name(<span class="string">"test-route"</span>, <span class="string">"name"</span>),
+                        AccessRoute::route_only(<span class="string">"test-route"</span>),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -2407,29 +2407,29 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>access_routes = assert_single_item(
             <span class="kw-2">&amp;</span>attribute
                 .access_definitions
                 .into_iter()
                 .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
                 .collect::&lt;Vec&lt;AccessDefinition&gt;&gt;(),
-            <span class="string">&quot;expected only a single access definition to be provided for the verifier&quot;</span>,
+            <span class="string">"expected only a single access definition to be provided for the verifier"</span>,
         )
         .access_routes;
         <span class="macro">assert!</span>(
-            access_routes.iter().any(|r| r.route == <span class="string">&quot;test-route&quot;
+            access_routes.iter().any(|r| r.route == <span class="string">"test-route"
                 </span>&amp;&amp; r.to_owned()
                     .name
-                    .unwrap_or_else(|| <span class="string">&quot;not the right name&quot;</span>.to_string())
-                    == <span class="string">&quot;name&quot;</span>),
-            <span class="string">&quot;the named route should be kept&quot;</span>,
+                    .unwrap_or_else(|| <span class="string">"not the right name"</span>.to_string())
+                    == <span class="string">"name"</span>),
+            <span class="string">"the named route should be kept"</span>,
         );
         <span class="macro">assert!</span>(
             access_routes
                 .iter()
-                .any(|r| r.route == <span class="string">&quot;test-route&quot; </span>&amp;&amp; r.name.is_none()),
-            <span class="string">&quot;the unnamed route should be kept&quot;</span>,
+                .any(|r| r.route == <span class="string">"test-route" </span>&amp;&amp; r.name.is_none()),
+            <span class="string">"the unnamed route should be kept"</span>,
         );
     }
 
@@ -2445,8 +2445,8 @@
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
                     </span>access_routes: <span class="macro">vec!</span>[
-                        AccessRoute::route_and_name(<span class="string">&quot;test-route            &quot;</span>, <span class="string">&quot;name       &quot;</span>),
-                        AccessRoute::route_and_name(<span class="string">&quot;      test-route&quot;</span>, <span class="string">&quot;          name&quot;</span>),
+                        AccessRoute::route_and_name(<span class="string">"test-route            "</span>, <span class="string">"name       "</span>),
+                        AccessRoute::route_and_name(<span class="string">"      test-route"</span>, <span class="string">"          name"</span>),
                     ],
                     ..TestVerifyAsset::default_verify_asset()
                 },
@@ -2456,28 +2456,28 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>access_routes = assert_single_item(
             <span class="kw-2">&amp;</span>attribute
                 .access_definitions
                 .into_iter()
                 .filter(|d| d.owner_address.as_str() == DEFAULT_VERIFIER_ADDRESS)
                 .collect::&lt;Vec&lt;AccessDefinition&gt;&gt;(),
-            <span class="string">&quot;expected only a single access definition to be provided for the verifier&quot;</span>,
+            <span class="string">"expected only a single access definition to be provided for the verifier"</span>,
         )
         .access_routes;
         <span class="kw">let </span>access_route = assert_single_item(
             <span class="kw-2">&amp;</span>access_routes,
-            <span class="macro">format!</span>(<span class="string">&quot;only a single access route should remain due to them being duplicates after trimming, but found {access_routes:?}&quot;</span>),
+            <span class="macro">format!</span>(<span class="string">"only a single access route should remain due to them being duplicates after trimming, but found {access_routes:?}"</span>),
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;test-route&quot;</span>, access_route.route,
-            <span class="string">&quot;the access route should have the trimmed route&quot;</span>,
+            <span class="string">"test-route"</span>, access_route.route,
+            <span class="string">"the access route should have the trimmed route"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;name&quot;</span>,
-            access_route.name.expect(<span class="string">&quot;the route&#39;s name should be set&quot;</span>),
-            <span class="string">&quot;the access route should have the trimmed name&quot;</span>,
+            <span class="string">"name"</span>,
+            access_route.name.expect(<span class="string">"the route's name should be set"</span>),
+            <span class="string">"the access route should have the trimmed name"</span>,
         );
     }
 
@@ -2501,7 +2501,7 @@
         .unwrap();
         <span class="kw">let </span>attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the scope attribute should be fetched&quot;</span>);
+            .expect(<span class="string">"the scope attribute should be fetched"</span>);
         <span class="kw">let </span>verifier_access_definitions = attribute
             .access_definitions
             .into_iter()
@@ -2509,7 +2509,7 @@
             .collect::&lt;Vec&lt;AccessDefinition&gt;&gt;();
         <span class="macro">assert!</span>(
             verifier_access_definitions.is_empty(),
-            <span class="string">&quot;when no access routes for the verifier are provided, no access definition record should be added&quot;</span>,
+            <span class="string">"when no access routes for the verifier are provided, no access definition record should be added"</span>,
         );
     }
 
@@ -2531,7 +2531,7 @@
         <span class="kw">let </span>original_attribute_value = repository
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect(
-                <span class="string">&quot;original attribute value should load from Provenance Blockchain without issue&quot;</span>,
+                <span class="string">"original attribute value should load from Provenance Blockchain without issue"</span>,
             );
         repository
             .verify_asset::&lt;<span class="kw-2">&amp;</span>str&gt;(original_attribute_value.clone(), result, message, <span class="macro">vec!</span>[])
@@ -2542,7 +2542,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             messages.len(),
-            <span class="string">&quot;verify asset should produce two message (update attribute msg and one bank send message)&quot;
+            <span class="string">"verify asset should produce two message (update attribute msg and one bank send message)"
         </span>);
         <span class="kw">let </span>first_message = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
         <span class="kw">match </span>first_message {
@@ -2554,9 +2554,9 @@
                 value.latest_verification_result = AssetVerificationResult {
                     message: message
                         .unwrap_or(<span class="kw">if </span>result {
-                            <span class="string">&quot;verification successful&quot;
+                            <span class="string">"verification successful"
                         </span>} <span class="kw">else </span>{
-                            <span class="string">&quot;verification failure&quot;
+                            <span class="string">"verification failure"
                         </span>})
                         .to_string(),
                     success: result,
@@ -2582,11 +2582,11 @@
                         update_value_type: AttributeValueType::Json
                     },
                     msg.to_owned(),
-                    <span class="string">&quot;add attribute message should match what is expected&quot;
+                    <span class="string">"add attribute message should match what is expected"
                 </span>);
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected first message type for verify_asset: {:?}&quot;</span>,
+                <span class="string">"Unexpected first message type for verify_asset: {:?}"</span>,
                 first_message
             ),
         }
@@ -2596,16 +2596,16 @@
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>DEFAULT_VERIFIER_ADDRESS.to_string(),
                     to_address,
-                    <span class="string">&quot;fee message should go to the verifier&quot;
+                    <span class="string">"fee message should go to the verifier"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span><span class="macro">vec!</span>[Coin::new(DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM)],
                     amount,
-                    <span class="string">&quot;fee message should be of the proper amount&quot;
+                    <span class="string">"fee message should be of the proper amount"
                 </span>);
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;Unexpected second message type for verify_asset: {:?}&quot;</span>,
+                <span class="string">"Unexpected second message type for verify_asset: {:?}"</span>,
                 second_message
             ),
         }
@@ -2620,7 +2620,7 @@
             AssetOnboardingStatus::Pending.to_some(),
             get_default_access_routes(),
         )
-        .expect(<span class="string">&quot;failed to instantiate default asset scope attribute&quot;</span>)
+        .expect(<span class="string">"failed to instantiate default asset scope attribute"</span>)
     }
 
     <span class="kw">fn </span>assert_verify_classification_success(simulate_deleted_verifier: bool) {
@@ -2632,48 +2632,48 @@
             DEFAULT_SCOPE_ADDRESS,
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;fee payment detail should be stored&quot;</span>);
+        .expect(<span class="string">"fee payment detail should be stored"</span>);
         <span class="comment">// test_verify_asset(&amp;mut deps, TestVerifyAsset::default()).unwrap();
-        // Overwrite the default asset definition with a new verifier detail that&#39;s identical to the
+        // Overwrite the default asset definition with a new verifier detail that's identical to the
         // original value, with the exception of having a new address.  This will effectively
-        // simulate the situation where a verifier &quot;disappears&quot; after an asset has been verified.
+        // simulate the situation where a verifier "disappears" after an asset has been verified.
         // This situation, due to stored fee information, should still be identical to the scenario
         // where the verifier remains in storage
         </span><span class="kw">if </span>simulate_deleted_verifier {
             <span class="kw">let </span><span class="kw-2">mut </span>definition = get_default_asset_definition();
             definition.verifiers.clear();
             <span class="kw">let </span><span class="kw-2">mut </span>verifier = get_default_verifier_detail();
-            verifier.address = <span class="string">&quot;otheraddress&quot;</span>.to_string();
+            verifier.address = <span class="string">"otheraddress"</span>.to_string();
             definition.verifiers.push(verifier);
             update_asset_definition(
                 deps.as_mut(),
                 empty_mock_info(DEFAULT_ADMIN_ADDRESS),
                 UpdateAssetDefinitionV1::new(definition),
             )
-            .expect(<span class="string">&quot;updating the asset definition to remove the verifier should succeed&quot;</span>);
+            .expect(<span class="string">"updating the asset definition to remove the verifier should succeed"</span>);
         }
         <span class="kw">let </span>service = AssetMetaService::new(deps.as_mut());
         <span class="kw">let </span>asset = service
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;the asset should be available after verification&quot;</span>);
+            .expect(<span class="string">"the asset should be available after verification"</span>);
         <span class="macro">assert_eq!</span>(
             AssetOnboardingStatus::Pending,
             asset.onboarding_status,
-            <span class="string">&quot;sanity check: the asset should be in Pending status&quot;</span>,
+            <span class="string">"sanity check: the asset should be in Pending status"</span>,
         );
         service
             .verify_asset(
                 asset.clone(),
                 <span class="bool-val">true</span>,
-                <span class="prelude-val">Some</span>(<span class="string">&quot;great jaerb there hamstar&quot;</span>),
+                <span class="prelude-val">Some</span>(<span class="string">"great jaerb there hamstar"</span>),
                 get_default_access_routes(),
             )
-            .expect(<span class="string">&quot;finalize classification should succeed&quot;</span>);
+            .expect(<span class="string">"finalize classification should succeed"</span>);
         <span class="kw">let </span>messages = service.get_messages();
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             messages.len(),
-            <span class="string">&quot;the correct number of messages should be generated&quot;</span>,
+            <span class="string">"the correct number of messages should be generated"</span>,
         );
         <span class="kw">let </span>update_attribute_msg = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
         <span class="kw">match </span>update_attribute_msg {
@@ -2692,38 +2692,38 @@
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_SCOPE_ADDRESS,
                     address.as_str(),
-                    <span class="string">&quot;the update attribute message should target the scope&quot;</span>,
+                    <span class="string">"the update attribute message should target the scope"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     name,
-                    <span class="string">&quot;the correct attribute name should be included in the update&quot;</span>,
+                    <span class="string">"the correct attribute name should be included in the update"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     asset,
-                    from_binary(original_value).expect(<span class="string">&quot;the original_value should deserialize without error&quot;</span>),
-                    <span class="string">&quot;the asset value before the update was made should be used as the original_value&quot;</span>,
+                    from_binary(original_value).expect(<span class="string">"the original_value should deserialize without error"</span>),
+                    <span class="string">"the asset value before the update was made should be used as the original_value"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AttributeValueType::Json,
                     original_value_type,
-                    <span class="string">&quot;the json value type should be used for the original_value_type&quot;</span>,
+                    <span class="string">"the json value type should be used for the original_value_type"</span>,
                 );
                 <span class="kw">let </span>updated_asset = from_binary::&lt;AssetScopeAttribute&gt;(update_value)
-                    .expect(<span class="string">&quot;the update_value should deserialize without error&quot;</span>);
+                    .expect(<span class="string">"the update_value should deserialize without error"</span>);
                 <span class="macro">assert_eq!</span>(
                     AssetOnboardingStatus::Approved,
                     updated_asset.onboarding_status,
-                    <span class="string">&quot;the updated asset&#39;s onboarding status should be changed to approve&quot;</span>,
+                    <span class="string">"the updated asset's onboarding status should be changed to approve"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AttributeValueType::Json,
                     update_value_type,
-                    <span class="string">&quot;the json value type should be used for the update_value_type&quot;</span>,
+                    <span class="string">"the json value type should be used for the update_value_type"</span>,
                 );
             }
             msg =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;the first message generated should be an update attribute msg, but got: {:?}&quot;</span>,
+                <span class="string">"the first message generated should be an update attribute msg, but got: {:?}"</span>,
                 msg
             ),
         };
@@ -2733,26 +2733,26 @@
                 <span class="macro">assert_eq!</span>(
                     <span class="number">1</span>,
                     amount.len(),
-                    <span class="string">&quot;exactly one coin amount should be present on bank send message&quot;
+                    <span class="string">"exactly one coin amount should be present on bank send message"
                 </span>);
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ONBOARDING_COST,
                     amount.first().unwrap().amount.u128(),
-                    <span class="string">&quot;the fee amount should equate to the onboarding cost&quot;</span>,
+                    <span class="string">"the fee amount should equate to the onboarding cost"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_ONBOARDING_DENOM,
                     amount.first().unwrap().denom,
-                    <span class="string">&quot;the fee should use the correct denom&quot;</span>,
+                    <span class="string">"the fee should use the correct denom"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_VERIFIER_ADDRESS,
                     to_address.as_str(),
-                    <span class="string">&quot;the recipient of the fee should be the verifier&quot;</span>,
+                    <span class="string">"the recipient of the fee should be the verifier"</span>,
                 );
             }
             msg =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;the second message generated should be a bank send msg, but got: {:?}&quot;</span>,
+                <span class="string">"the second message generated should be a bank send msg, but got: {:?}"</span>,
                 msg,
             ),
         };
@@ -2765,11 +2765,11 @@
                 )
             })
             .expect_err(
-                <span class="string">&quot;an error should occur when trying to fetch payment detail after finalization&quot;</span>,
+                <span class="string">"an error should occur when trying to fetch payment detail after finalization"</span>,
             );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
-            <span class="string">&quot;a not found error should occur for the fee payment detail after finalization completes, but got: {:?}&quot;</span>,
+            <span class="string">"a not found error should occur for the fee payment detail after finalization completes, but got: {:?}"</span>,
             err,
         );
     }

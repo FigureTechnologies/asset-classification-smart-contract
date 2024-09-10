@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/migrate/migrate_contract.rs`."><title>migrate_contract.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/migrate/migrate_contract.rs`."><title>migrate_contract.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -325,7 +325,7 @@
             <span class="kw">if let </span><span class="prelude-val">Some</span>(new_admin_address) = options.new_admin_address {
                 <span class="comment">// Only set a new specified admin if it is a legitimate bech32 Provenance Blockchain address
                 </span>state.admin = bech32_string_to_addr(<span class="kw-2">&amp;</span>new_admin_address)<span class="question-mark">?</span>;
-                additional_metadata.add_metadata(<span class="string">&quot;new_admin_address&quot;</span>, <span class="kw-2">&amp;</span>new_admin_address);
+                additional_metadata.add_metadata(<span class="string">"new_admin_address"</span>, <span class="kw-2">&amp;</span>new_admin_address);
             }
             <span class="comment">// Persist all changes to the state
             </span>state_storage.save(<span class="kw-2">&amp;</span>state)<span class="question-mark">?</span>;
@@ -346,7 +346,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable instance of the contract&#39;s internal storage for data manipulation.
+/// * `storage` A mutable instance of the contract's internal storage for data manipulation.
 </span><span class="kw">fn </span>check_valid_migration_versioning(storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage) -&gt; AssetResult&lt;()&gt; {
     <span class="kw">let </span>stored_version_info = get_version_info(storage)<span class="question-mark">?</span>;
     <span class="comment">// If the contract name has changed or another contract attempts to overwrite this one, this
@@ -394,31 +394,31 @@
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>VersionInfoV1 {
                 contract: CONTRACT_NAME.to_string(),
-                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
+                version: <span class="string">"0.0.0"</span>.to_string(),
             },
         )
-        .expect(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
+        .expect(<span class="string">"setting the initial version info should not fail"</span>);
         <span class="kw">let </span>response = migrate_contract(deps.as_mut(), <span class="prelude-val">None</span>).expect(
-            <span class="string">&quot;a migration should be successful when the contract is migrating to a new version&quot;</span>,
+            <span class="string">"a migration should be successful when the contract is migrating to a new version"</span>,
         );
         <span class="macro">assert!</span>(
             response.messages.is_empty(),
-            <span class="string">&quot;a migration should not produce messages, and they would be ignored&quot;
+            <span class="string">"a migration should not produce messages, and they would be ignored"
         </span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             response.attributes.len(),
-            <span class="string">&quot;the migration should produce the correct number of attributes&quot;</span>,
+            <span class="string">"the migration should produce the correct number of attributes"</span>,
         );
         <span class="macro">assert_eq!</span>(
             EventType::MigrateContract.event_name().as_str(),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;the proper event type attribute should be emitted&quot;</span>,
+            <span class="string">"the proper event type attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             CONTRACT_VERSION,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, NEW_VALUE_KEY),
-            <span class="string">&quot;the new value key should equate to the current contract version&quot;</span>,
+            <span class="string">"the new value key should equate to the current contract version"</span>,
         );
     }
 
@@ -430,11 +430,11 @@
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>VersionInfoV1 {
                 contract: CONTRACT_NAME.to_string(),
-                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
+                version: <span class="string">"0.0.0"</span>.to_string(),
             },
         )
-        .expect(<span class="string">&quot;setting the initial version info should not fail&quot;</span>);
-        <span class="kw">let </span>new_admin_address = <span class="string">&quot;tp1hsqtppgy7mgd64q0uvk7q39qa7h8hp30urqs6n&quot;</span>;
+        .expect(<span class="string">"setting the initial version info should not fail"</span>);
+        <span class="kw">let </span>new_admin_address = <span class="string">"tp1hsqtppgy7mgd64q0uvk7q39qa7h8hp30urqs6n"</span>;
         <span class="kw">let </span>response = migrate_contract(
             deps.as_mut(),
             MigrationOptions {
@@ -443,38 +443,38 @@
             }
             .to_some(),
         )
-        .expect(<span class="string">&quot;expected a new admin address with correct bech32 specification to succeed&quot;</span>);
+        .expect(<span class="string">"expected a new admin address with correct bech32 specification to succeed"</span>);
         <span class="macro">assert!</span>(
             response.messages.is_empty(),
-            <span class="string">&quot;a migration should not produce messages, and they would be ignored&quot;</span>,
+            <span class="string">"a migration should not produce messages, and they would be ignored"</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="number">3</span>,
             response.attributes.len(),
-            <span class="string">&quot;the migration should produce the correct number of attributes&quot;</span>,
+            <span class="string">"the migration should produce the correct number of attributes"</span>,
         );
         <span class="macro">assert_eq!</span>(
             EventType::MigrateContract.event_name().as_str(),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;the proper event type attribute should be emitted&quot;</span>,
+            <span class="string">"the proper event type attribute should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             CONTRACT_VERSION,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, NEW_VALUE_KEY),
-            <span class="string">&quot;the new value key should equate to the current contract version&quot;</span>,
+            <span class="string">"the new value key should equate to the current contract version"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;[new_admin_address={new_admin_address}]&quot;</span>),
+            <span class="macro">format!</span>(<span class="string">"[new_admin_address={new_admin_address}]"</span>),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ADDITIONAL_METADATA_KEY),
-            <span class="string">&quot;the additional metadata should specify the new admin address&quot;</span>,
+            <span class="string">"the additional metadata should specify the new admin address"</span>,
         );
         <span class="kw">let </span>state = config_read_v2(deps.as_ref().storage)
             .load()
-            .expect(<span class="string">&quot;expected the contract config to load without issue&quot;</span>);
+            .expect(<span class="string">"expected the contract config to load without issue"</span>);
         <span class="macro">assert_eq!</span>(
             new_admin_address,
             state.admin.as_str(),
-            <span class="string">&quot;expected the new admin address to be persisted in the contract state&quot;</span>,
+            <span class="string">"expected the new admin address to be persisted in the contract state"</span>,
         );
     }
 
@@ -484,7 +484,7 @@
         set_version_info(
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>VersionInfoV1 {
-                contract: <span class="string">&quot;Wrong name&quot;</span>.to_string(),
+                contract: <span class="string">"Wrong name"</span>.to_string(),
                 version: CONTRACT_VERSION.to_string(),
             },
         )
@@ -496,17 +496,17 @@
                 migration_contract,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;Wrong name&quot;</span>,
+                    <span class="string">"Wrong name"</span>,
                     current_contract.as_str(),
-                    <span class="string">&quot;the current contract name should equate to the value stored in contract storage&quot;</span>,
+                    <span class="string">"the current contract name should equate to the value stored in contract storage"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     CONTRACT_NAME,
                     migration_contract.as_str(),
-                    <span class="string">&quot;the migration contract should be the env contract name&quot;</span>,
+                    <span class="string">"the migration contract should be the env contract name"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         };
     }
 
@@ -517,7 +517,7 @@
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>VersionInfoV1 {
                 contract: CONTRACT_NAME.to_string(),
-                version: <span class="string">&quot;99.9.9&quot;</span>.to_string(),
+                version: <span class="string">"99.9.9"</span>.to_string(),
             },
         )
         .unwrap();
@@ -528,17 +528,17 @@
                 migration_version,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;99.9.9&quot;</span>,
+                    <span class="string">"99.9.9"</span>,
                     current_version.as_str(),
-                    <span class="string">&quot;the current contract version should equate to the value stored in contract storage&quot;</span>,
+                    <span class="string">"the current contract version should equate to the value stored in contract storage"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     CONTRACT_VERSION,
                     migration_version.as_str(),
-                    <span class="string">&quot;the migration contract version should equate to the env value&quot;</span>,
+                    <span class="string">"the migration contract version should equate to the env value"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         };
     }
 
@@ -550,23 +550,23 @@
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>VersionInfoV1 {
                 contract: CONTRACT_NAME.to_string(),
-                version: <span class="string">&quot;0.0.0&quot;</span>.to_string(),
+                version: <span class="string">"0.0.0"</span>.to_string(),
             },
         )
-        .expect(<span class="string">&quot;overriding version info should not fail&quot;</span>);
+        .expect(<span class="string">"overriding version info should not fail"</span>);
         <span class="kw">let </span>error = migrate_contract(
             deps.as_mut(),
             MigrationOptions {
-                new_admin_address: <span class="string">&quot;not a bech32 thing that&#39;s for sure&quot;</span>.to_string().to_some(),
+                new_admin_address: <span class="string">"not a bech32 thing that's for sure"</span>.to_string().to_some(),
             }
             .to_some(),
         )
         .expect_err(
-            <span class="string">&quot;expected an error to occur when using a non-bech32 address as the new admin address&quot;</span>,
+            <span class="string">"expected an error to occur when using a non-bech32 address as the new admin address"</span>,
         );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::Bech32Error(<span class="kw">_</span>)),
-            <span class="string">&quot;expected a bech32 error to occur when an invalid bech32 address was provided as the new admin&quot;</span>,
+            <span class="string">"expected a bech32 error to occur when an invalid bech32 address was provided as the new admin"</span>,
         );
     }
 }

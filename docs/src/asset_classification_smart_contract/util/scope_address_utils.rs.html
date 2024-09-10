@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/scope_address_utils.rs`."><title>scope_address_utils.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/util/scope_address_utils.rs`."><title>scope_address_utils.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -247,12 +247,12 @@
 
 <span class="comment">// Standard scope key prefix from the Provenance libs
 </span><span class="kw">const </span>KEY_SCOPE: u8 = <span class="number">0x00</span>;
-<span class="comment">// Standard bech32 encoding for mainnet addresses simply begins the with the string &quot;pb&quot;
-</span><span class="kw">const </span>MAINNET_HRP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;pb&quot;</span>;
-<span class="comment">// Standard bech32 encoding for testnet addresses simply begins with the string &quot;tp&quot;
-</span><span class="kw">const </span>TESTNET_HRP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;tp&quot;</span>;
-<span class="comment">// Standard bech32 encoding for scope addresses simply begins with the string &quot;scope&quot;
-</span><span class="kw">const </span>SCOPE_HRP: <span class="kw-2">&amp;</span>str = <span class="string">&quot;scope&quot;</span>;
+<span class="comment">// Standard bech32 encoding for mainnet addresses simply begins the with the string "pb"
+</span><span class="kw">const </span>MAINNET_HRP: <span class="kw-2">&amp;</span>str = <span class="string">"pb"</span>;
+<span class="comment">// Standard bech32 encoding for testnet addresses simply begins with the string "tp"
+</span><span class="kw">const </span>TESTNET_HRP: <span class="kw-2">&amp;</span>str = <span class="string">"tp"</span>;
+<span class="comment">// Standard bech32 encoding for scope addresses simply begins with the string "scope"
+</span><span class="kw">const </span>SCOPE_HRP: <span class="kw-2">&amp;</span>str = <span class="string">"scope"</span>;
 <span class="comment">// All valid hrps for use in the underlying functions
 </span><span class="kw">const </span>VALID_HRPS: [<span class="kw-2">&amp;</span>str; <span class="number">3</span>] = [MAINNET_HRP, TESTNET_HRP, SCOPE_HRP];
 
@@ -271,7 +271,7 @@
 ///
 /// # Parameters
 ///
-/// * `scope_address` A valid bech32 address with an hrp of &quot;scope&quot;.
+/// * `scope_address` A valid bech32 address with an hrp of "scope".
 </span><span class="kw">pub fn </span>scope_address_to_asset_uuid&lt;S: Into&lt;String&gt;&gt;(scope_address: S) -&gt; AssetResult&lt;String&gt; {
     address_to_uuid(scope_address, SCOPE_HRP)
 }
@@ -288,7 +288,7 @@
     <span class="kw">if </span>!VALID_HRPS.contains(<span class="kw-2">&amp;</span>hrp.as_str()) {
         ContractError::InvalidAddress {
             address: address_string,
-            explanation: <span class="macro">format!</span>(<span class="string">&quot;invalid address prefix [{}]&quot;</span>, hrp),
+            explanation: <span class="macro">format!</span>(<span class="string">"invalid address prefix [{}]"</span>, hrp),
         }
         .to_err()
     } <span class="kw">else </span>{
@@ -333,7 +333,7 @@
     </span><span class="kw">if </span>hrp != expected_hrp_string {
         <span class="kw">return </span>ContractError::InvalidAddress {
             address: target_address,
-             explanation: <span class="macro">format!</span>(<span class="string">&quot;expected the prefix [{}] to be included in the specified address, but the prefix was [{}]&quot;</span>, expected_hrp_string, hrp)
+             explanation: <span class="macro">format!</span>(<span class="string">"expected the prefix [{}] to be included in the specified address, but the prefix was [{}]"</span>, expected_hrp_string, hrp)
         }
         .to_err();
     }
@@ -345,7 +345,7 @@
         .try_into()
         .map_err(|<span class="kw">_</span>| {
             ContractError::generic(<span class="macro">format!</span>(
-                <span class="string">&quot;Failed deserializing base32 data for address {}&quot;</span>,
+                <span class="string">"Failed deserializing base32 data for address {}"</span>,
                 <span class="kw-2">&amp;</span>target_address,
             ))
         })<span class="question-mark">?</span>;
@@ -366,16 +366,16 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_successful_asset_uuid_to_scope_address() {
         <span class="comment">// Source uuid randomly generated via CLI tool
-        </span><span class="kw">let </span>source_uuid = <span class="string">&quot;a5e5a828-9a48-11ec-8193-1731fd63d6a6&quot;</span>;
+        </span><span class="kw">let </span>source_uuid = <span class="string">"a5e5a828-9a48-11ec-8193-1731fd63d6a6"</span>;
         <span class="comment">// Expected result taken from MetadataAddress Provenance tool for verification that this
         // functionality set produces the same result
-        </span><span class="kw">let </span>expected_bech32 = <span class="string">&quot;scope1qzj7t2pgnfyprmypjvtnrltr66nqd4c3cq&quot;</span>;
+        </span><span class="kw">let </span>expected_bech32 = <span class="string">"scope1qzj7t2pgnfyprmypjvtnrltr66nqd4c3cq"</span>;
         <span class="kw">let </span>result = asset_uuid_to_scope_address(source_uuid)
-            .expect(<span class="string">&quot;conversion should execute without failure&quot;</span>);
+            .expect(<span class="string">"conversion should execute without failure"</span>);
         <span class="macro">assert_eq!</span>(
             expected_bech32,
             result.as_str(),
-            <span class="string">&quot;the resulting scope address should match&quot;
+            <span class="string">"the resulting scope address should match"
         </span>);
     }
 
@@ -383,16 +383,16 @@
     </span><span class="kw">fn </span>test_invalid_asset_uuid_to_scope_address() {
         <span class="comment">// Close to a UUID but has invalid characters
         </span><span class="kw">let </span>similar_but_bad =
-            asset_uuid_to_scope_address(<span class="string">&quot;zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz&quot;</span>).unwrap_err();
+            asset_uuid_to_scope_address(<span class="string">"zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz"</span>).unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(similar_but_bad, ContractError::UuidError(<span class="kw">_</span>)),
-            <span class="string">&quot;a uuid error should occur when an invalid uuid is processed: similar to good uuid but invalid characters. Got error: {:?}&quot;</span>,
+            <span class="string">"a uuid error should occur when an invalid uuid is processed: similar to good uuid but invalid characters. Got error: {:?}"</span>,
             similar_but_bad,
         );
-        <span class="kw">let </span>not_even_close = asset_uuid_to_scope_address(<span class="string">&quot;definitely not a uuid&quot;</span>).unwrap_err();
+        <span class="kw">let </span>not_even_close = asset_uuid_to_scope_address(<span class="string">"definitely not a uuid"</span>).unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(not_even_close, ContractError::UuidError(<span class="kw">_</span>)),
-            <span class="string">&quot;a uuid error should occur when an invalid uuid is processed: very malformatted uuid. Got error: {:?}&quot;</span>,
+            <span class="string">"a uuid error should occur when an invalid uuid is processed: very malformatted uuid. Got error: {:?}"</span>,
             not_even_close,
         );
     }
@@ -400,62 +400,62 @@
     </span><span class="kw">fn </span>test_successful_scope_address_to_asset_uuid() {
         <span class="comment">// These values were generated using the MetadataAddress kotlin helper to verify their authenticity
         // from random input
-        </span><span class="kw">let </span>scope_address = <span class="string">&quot;scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra&quot;</span>;
-        <span class="kw">let </span>expected_uuid = <span class="string">&quot;9d62ec88-9fd9-11ec-ba6b-f73d7c938348&quot;</span>;
+        </span><span class="kw">let </span>scope_address = <span class="string">"scope1qzwk9mygnlv3rm96d0mn6lynsdyqwn6nra"</span>;
+        <span class="kw">let </span>expected_uuid = <span class="string">"9d62ec88-9fd9-11ec-ba6b-f73d7c938348"</span>;
         <span class="kw">let </span>result_uuid = scope_address_to_asset_uuid(scope_address)
-            .expect(<span class="string">&quot;expected the conversion to occur without error&quot;</span>);
+            .expect(<span class="string">"expected the conversion to occur without error"</span>);
         <span class="macro">assert_eq!</span>(
             expected_uuid, result_uuid,
-            <span class="string">&quot;the function produced an incorrect uuid value&quot;</span>,
+            <span class="string">"the function produced an incorrect uuid value"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_scope_address_to_asset_uuid_for_invalid_address() {
-        <span class="kw">let </span>error = scope_address_to_asset_uuid(<span class="string">&quot;not a scope address&quot;</span>).unwrap_err();
+        <span class="kw">let </span>error = scope_address_to_asset_uuid(<span class="string">"not a scope address"</span>).unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::Bech32Error(<span class="kw">_</span>)),
-            <span class="string">&quot;a bech32 error should occur when attempting to parse an invalid scope address, but got error: {:?}&quot;</span>,
+            <span class="string">"a bech32 error should occur when attempting to parse an invalid scope address, but got error: {:?}"</span>,
             error,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_scope_address_to_asset_uuid_for_wrong_address_type() {
-        <span class="kw">let </span>error = scope_address_to_asset_uuid(<span class="string">&quot;scopespec1qj3s7dvsnlh3rmyy3pm5tszs2v7qegwr7j&quot;</span>)
+        <span class="kw">let </span>error = scope_address_to_asset_uuid(<span class="string">"scopespec1qj3s7dvsnlh3rmyy3pm5tszs2v7qegwr7j"</span>)
             .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidAddress { .. }),
-            <span class="string">&quot;an invalid address error should be returned when the wrong address type is provided, but got error: {:?}&quot;</span>,
+            <span class="string">"an invalid address error should be returned when the wrong address type is provided, but got error: {:?}"</span>,
             error,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_bech32_to_addr() {
-        <span class="kw">let </span>bech_32_string = <span class="string">&quot;tp15e6l9dv8s2rdshjfn34k8a2nju55tr4z42phrt&quot;</span>;
+        <span class="kw">let </span>bech_32_string = <span class="string">"tp15e6l9dv8s2rdshjfn34k8a2nju55tr4z42phrt"</span>;
         <span class="kw">let </span>addr = bech32_string_to_addr(bech_32_string)
-            .expect(<span class="string">&quot;the resulting value should be converted to an Addr&quot;</span>);
+            .expect(<span class="string">"the resulting value should be converted to an Addr"</span>);
         <span class="macro">assert_eq!</span>(
             bech_32_string,
             addr.as_str(),
-            <span class="string">&quot;the resulting Addr value should reflect the input&quot;
+            <span class="string">"the resulting Addr value should reflect the input"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_bech32_to_addr_non_address_input() {
-        <span class="kw">let </span>error = bech32_string_to_addr(<span class="string">&quot;not an address&quot;</span>).unwrap_err();
+        <span class="kw">let </span>error = bech32_string_to_addr(<span class="string">"not an address"</span>).unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::Bech32Error(<span class="kw">_</span>)),
-            <span class="string">&quot;the underlying bech32 library should provide an error for an invalid address, but got error: {:?}&quot;</span>,
+            <span class="string">"the underlying bech32 library should provide an error for an invalid address, but got error: {:?}"</span>,
             error,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_bech32_to_addr_unsupported_hrp() {
-        <span class="kw">let </span>bc_address = <span class="string">&quot;bc1q35a3dc2e5lj237ns39q5pd7t8wxm2ah7rdvx5d&quot;</span>;
+        <span class="kw">let </span>bc_address = <span class="string">"bc1q35a3dc2e5lj237ns39q5pd7t8wxm2ah7rdvx5d"</span>;
         <span class="kw">let </span>error = bech32_string_to_addr(bc_address).unwrap_err();
         <span class="kw">match </span>error {
             ContractError::InvalidAddress {
@@ -465,14 +465,14 @@
                 <span class="macro">assert_eq!</span>(
                     bc_address,
                     address.as_str(),
-                    <span class="string">&quot;expected the address to be appended to the error&quot;</span>,
+                    <span class="string">"expected the address to be appended to the error"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;invalid address prefix [bc]&quot;</span>, explanation,
-                    <span class="string">&quot;expected the explanation to include the invalid hrp&quot;</span>,
+                    <span class="string">"invalid address prefix [bc]"</span>, explanation,
+                    <span class="string">"expected the explanation to include the invalid hrp"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         }
     }
 }

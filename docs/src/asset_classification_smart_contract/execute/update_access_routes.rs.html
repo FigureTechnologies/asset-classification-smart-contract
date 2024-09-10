@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_access_routes.rs`."><title>update_access_routes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_access_routes.rs`."><title>update_access_routes.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -688,7 +688,7 @@
     ///
     /// # Parameters
     ///
-    /// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     </span><span class="kw">pub fn </span>from_execute_msg(msg: ExecuteMsg) -&gt; AssetResult&lt;<span class="self">Self</span>&gt; {
         <span class="kw">match </span>msg {
             ExecuteMsg::UpdateAccessRoutes {
@@ -704,7 +704,7 @@
             )
             .to_ok(),
             <span class="kw">_ </span>=&gt; ContractError::InvalidMessageType {
-                expected_message_type: <span class="string">&quot;ExecuteMsg::UpdateAccessRoutes&quot;</span>.to_string(),
+                expected_message_type: <span class="string">"ExecuteMsg::UpdateAccessRoutes"</span>.to_string(),
             }
             .to_err(),
         }
@@ -720,18 +720,18 @@
 ///
 /// * `repository` A helper collection of traits that allows complex lookups of scope values and
 /// emits messages to construct the process of updating access routes as a collection of messages
-/// to produce in the function&#39;s result.
+/// to produce in the function's result.
 /// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
 /// of the instantiation message, as well as the funds provided as an amount during the transaction.
 /// * `msg` An instance of the update access routes v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
-</span><span class="kw">pub fn </span>update_access_routes&lt;<span class="lifetime">&#39;a</span>, T&gt;(
+</span><span class="kw">pub fn </span>update_access_routes&lt;<span class="lifetime">'a</span>, T&gt;(
     repository: T,
     info: MessageInfo,
     msg: UpdateAccessRoutesV1,
 ) -&gt; EntryPointResponse
 <span class="kw">where
-    </span>T: AssetMetaRepository + MessageGatheringService + DepsManager&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>T: AssetMetaRepository + MessageGatheringService + DepsManager&lt;<span class="lifetime">'a</span>&gt;,
 {
     check_funds_are_empty(<span class="kw-2">&amp;</span>info)<span class="question-mark">?</span>;
     <span class="comment">// If the sender is not the specified owner address and the sender is not the admin, they are
@@ -744,7 +744,7 @@
     {
         <span class="kw">return </span>ContractError::Unauthorized {
             explanation:
-                <span class="string">&quot;only the admin or owner of the given access routes can make modifications to them&quot;
+                <span class="string">"only the admin or owner of the given access routes can make modifications to them"
                     </span>.to_string(),
         }
         .to_err();
@@ -752,7 +752,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>access_routes = filter_valid_access_routes(msg.access_routes.clone());
     <span class="kw">if </span>msg.access_routes.len() != access_routes.len() {
         <span class="comment">// The filtration function will trim duplicate routes, as well as invalid routes
-        </span><span class="kw">return </span>ContractError::generic(<span class="string">&quot;invalid or duplicate access routes were provided&quot;</span>).to_err();
+        </span><span class="kw">return </span>ContractError::generic(<span class="string">"invalid or duplicate access routes were provided"</span>).to_err();
     }
     <span class="kw">let </span>scope_address = msg.identifier.get_scope_address()<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>scope_attribute = repository.get_asset_by_asset_type(<span class="kw-2">&amp;</span>scope_address, msg.asset_type)<span class="question-mark">?</span>;
@@ -762,7 +762,7 @@
         .find(|def| def.owner_address == msg.owner_address)
         .map(|def| def.to_owned())
     {
-        <span class="comment">// Filter the access definition to be changed from the attribute&#39;s vector
+        <span class="comment">// Filter the access definition to be changed from the attribute's vector
         </span>scope_attribute.access_definitions = scope_attribute
             .access_definitions
             .into_iter()
@@ -774,7 +774,7 @@
         </span>target_access_definition
             .access_routes
             .append(<span class="kw-2">&amp;mut </span>access_routes);
-        <span class="comment">// Append the altered definition to the scope attribute, effectively &quot;replacing&quot; the original record
+        <span class="comment">// Append the altered definition to the scope attribute, effectively "replacing" the original record
         </span>scope_attribute
             .access_definitions
             .push(target_access_definition);
@@ -784,7 +784,7 @@
         // invalid and should be rejected
         </span><span class="kw">return </span>ContractError::InvalidAddress {
             address: msg.owner_address,
-            explanation: <span class="macro">format!</span>(<span class="string">&quot;scope attribute for address [{scope_address}] does not have access definitions for specified owner&quot;</span>),
+            explanation: <span class="macro">format!</span>(<span class="string">"scope attribute for address [{scope_address}] does not have access definitions for specified owner"</span>),
         }.to_err();
     }
     Response::new()
@@ -829,21 +829,21 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         <span class="kw">let </span>err = update_access_routes(
             AssetMetaService::new(deps.as_mut()),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">111</span>, <span class="string">&quot;coindollars&quot;</span>)]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">111</span>, <span class="string">"coindollars"</span>)]),
             get_valid_update_routes_v1(),
         )
-        .expect_err(<span class="string">&quot;expected a ContractError to be emitted when funds are provided&quot;</span>);
+        .expect_err(<span class="string">"expected a ContractError to be emitted when funds are provided"</span>);
         <span class="kw">match </span>err {
             ContractError::InvalidFunds(message) =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;route requires no funds be present&quot;</span>, message,
-                    <span class="string">&quot;unexpected InvalidFunds message encountered&quot;</span>,
+                    <span class="string">"route requires no funds be present"</span>, message,
+                    <span class="string">"unexpected InvalidFunds message encountered"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, err),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, err),
         }
     }
 
@@ -852,22 +852,22 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         <span class="kw">let </span>err = update_access_routes(
             AssetMetaService::new(deps.as_mut()),
-            empty_mock_info(<span class="string">&quot;wrong-sender&quot;</span>),
+            empty_mock_info(<span class="string">"wrong-sender"</span>),
             get_valid_update_routes_v1(),
         )
-        .expect_err(<span class="string">&quot;expected a ContractError to be emitted when an invalid sender is provided&quot;</span>);
+        .expect_err(<span class="string">"expected a ContractError to be emitted when an invalid sender is provided"</span>);
         <span class="kw">match </span>err {
             ContractError::Unauthorized { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;only the admin or owner of the given access routes can make modifications to them&quot;</span>,
+                    <span class="string">"only the admin or owner of the given access routes can make modifications to them"</span>,
                     explanation,
-                    <span class="string">&quot;unexpected Unauthorized error message encountered&quot;</span>,
+                    <span class="string">"unexpected Unauthorized error message encountered"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, err),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, err),
         }
     }
 
@@ -878,7 +878,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         <span class="kw">let </span>err = update_access_routes(
             AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
@@ -886,20 +886,20 @@
                 AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
                 DEFAULT_SENDER_ADDRESS,
-                <span class="macro">vec!</span>[AccessRoute::new(<span class="string">&quot;&quot;</span>, <span class="string">&quot;&quot;</span>.to_some())],
+                <span class="macro">vec!</span>[AccessRoute::new(<span class="string">""</span>, <span class="string">""</span>.to_some())],
             ),
         )
         .expect_err(
-            <span class="string">&quot;expected a ContractError to be emitted when an invalid AccessRoutes are provided&quot;</span>,
+            <span class="string">"expected a ContractError to be emitted when an invalid AccessRoutes are provided"</span>,
         );
         <span class="kw">match </span>err {
             ContractError::GenericError { msg } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;invalid or duplicate access routes were provided&quot;</span>, msg,
-                    <span class="string">&quot;unexpected generic error message countered&quot;
+                    <span class="string">"invalid or duplicate access routes were provided"</span>, msg,
+                    <span class="string">"unexpected generic error message countered"
                 </span>);
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, err),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, err),
         }
     }
 
@@ -908,18 +908,18 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         <span class="kw">let </span>err = update_access_routes(
             AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             UpdateAccessRoutesV1::new(
                 AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
                 DEFAULT_ASSET_TYPE,
-                <span class="string">&quot;some random person&quot;</span>,
-                <span class="macro">vec!</span>[AccessRoute::new(<span class="string">&quot;fakeroute&quot;</span>, <span class="string">&quot;something-idk&quot;</span>.to_some())],
+                <span class="string">"some random person"</span>,
+                <span class="macro">vec!</span>[AccessRoute::new(<span class="string">"fakeroute"</span>, <span class="string">"something-idk"</span>.to_some())],
             )
         ).expect_err(
-            <span class="string">&quot;expected a ContractError to be emitted when the specified owner does not have an access definition on the scope&quot;</span>,
+            <span class="string">"expected a ContractError to be emitted when the specified owner does not have an access definition on the scope"</span>,
         );
         <span class="kw">match </span>err {
             ContractError::InvalidAddress {
@@ -927,16 +927,16 @@
                 explanation,
             } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;some random person&quot;</span>, address,
-                    <span class="string">&quot;expected the input address to be used in the error message&quot;</span>,
+                    <span class="string">"some random person"</span>, address,
+                    <span class="string">"expected the input address to be used in the error message"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;scope attribute for address [{DEFAULT_SCOPE_ADDRESS}] does not have access definitions for specified owner&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"scope attribute for address [{DEFAULT_SCOPE_ADDRESS}] does not have access definitions for specified owner"</span>),
                     explanation,
-                    <span class="string">&quot;unexpected InvalidAddress explanation encountered&quot;</span>,
+                    <span class="string">"unexpected InvalidAddress explanation encountered"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, err),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, err),
         }
     }
 
@@ -945,24 +945,24 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         <span class="kw">let </span>attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
-            <span class="string">&quot;expected a scope attribute to be available for the default address after onboarding&quot;</span>,
+            <span class="string">"expected a scope attribute to be available for the default address after onboarding"</span>,
         );
         <span class="macro">assert!</span>(
             attribute_before_update
                 .access_definitions
                 .iter()
                 .any(|def| def.owner_address == DEFAULT_SENDER_ADDRESS),
-            <span class="string">&quot;expected an access definition to exist for the sender address&quot;</span>,
+            <span class="string">"expected an access definition to exist for the sender address"</span>,
         );
         <span class="kw">let </span>access_route_before_update = assert_single_item(
             <span class="kw-2">&amp;</span>assert_single_item(
                 <span class="kw-2">&amp;</span>attribute_before_update.access_definitions,
-                <span class="string">&quot;an onboard should leave only a single access definition on the scope attribute&quot;</span>,
+                <span class="string">"an onboard should leave only a single access definition on the scope attribute"</span>,
             )
             .access_routes,
-            <span class="string">&quot;only a single access route should be added during onboarding&quot;</span>,
+            <span class="string">"only a single access route should be added during onboarding"</span>,
         );
         <span class="comment">// Use test_update_access_routes to ensure the AssetScopeAttribute changes get recorded and
         // are available after execution
@@ -973,17 +973,17 @@
                 update_access_routes: get_valid_update_routes_v1(),
             },
         )
-        .expect(<span class="string">&quot;expected the update to complete successfully&quot;</span>);
+        .expect(<span class="string">"expected the update to complete successfully"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             response.messages.len(),
-            <span class="string">&quot;expected the update to emit the correct number of messages&quot;
+            <span class="string">"expected the update to emit the correct number of messages"
         </span>);
         <span class="kw">let </span>expected_attribute_name =
             generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
         <span class="kw">let </span>attribute_after_update = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;expected to retrieve the attribute successfully after the access route update is completed&quot;</span>);
+            .expect(<span class="string">"expected to retrieve the attribute successfully after the access route update is completed"</span>);
         response.messages.iter().for_each(|msg| <span class="kw">match </span><span class="kw-2">&amp;</span>msg.msg {
             CosmosMsg::Custom(ProvenanceMsg {
                 params:
@@ -1000,88 +1000,88 @@
                 <span class="macro">assert_eq!</span>(
                     DEFAULT_SCOPE_ADDRESS,
                     address.to_string(),
-                    <span class="string">&quot;the UpdateAttribute should target the scope&#39;s address&quot;</span>,
+                    <span class="string">"the UpdateAttribute should target the scope's address"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>expected_attribute_name, name,
-                    <span class="string">&quot;the UpdateAttribute should target the default attribute name&quot;</span>,
+                    <span class="string">"the UpdateAttribute should target the default attribute name"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     attribute_before_update,
-                    from_binary(original_value).expect(<span class="string">&quot;original value deserialization failure&quot;</span>),
-                    <span class="string">&quot;the attribute before the update should be equivalent to the serialized original_value&quot;</span>,
+                    from_binary(original_value).expect(<span class="string">"original value deserialization failure"</span>),
+                    <span class="string">"the attribute before the update should be equivalent to the serialized original_value"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AttributeValueType::Json,
                     original_value_type,
-                    <span class="string">&quot;the original_value_type should always be json&quot;</span>,
+                    <span class="string">"the original_value_type should always be json"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     attribute_after_update,
-                    from_binary(update_value).expect(<span class="string">&quot;update value deserialization failure&quot;</span>),
-                    <span class="string">&quot;the attribute after the update should be equivalent to the serialized update_value&quot;</span>,
+                    from_binary(update_value).expect(<span class="string">"update value deserialization failure"</span>),
+                    <span class="string">"the attribute after the update should be equivalent to the serialized update_value"</span>,
                 );
                 <span class="macro">assert_eq!</span>(
                     <span class="kw-2">&amp;</span>AttributeValueType::Json,
                     update_value_type,
-                    <span class="string">&quot;the update_value_type should always be json&quot;</span>,
+                    <span class="string">"the update_value_type should always be json"</span>,
                 );
             }
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;unexpected message emitted during update access routes: {:?}&quot;</span>,
+                <span class="string">"unexpected message emitted during update access routes: {:?}"</span>,
                 <span class="kw-2">&amp;</span>msg.msg
             ),
         });
         <span class="macro">assert_eq!</span>(
             <span class="number">3</span>,
             response.attributes.len(),
-            <span class="string">&quot;expected the correct number of attributes to be emitted&quot;
+            <span class="string">"expected the correct number of attributes to be emitted"
         </span>);
         <span class="macro">assert_eq!</span>(
             EventType::UpdateAccessRoutes.event_name(),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;expected the correct event type to be emitted&quot;</span>,
+            <span class="string">"expected the correct event type to be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_ASSET_TYPE,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_TYPE_KEY),
-            <span class="string">&quot;expected the correct asset type to be emitted&quot;</span>,
+            <span class="string">"expected the correct asset type to be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             DEFAULT_SCOPE_ADDRESS,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_SCOPE_ADDRESS_KEY),
-            <span class="string">&quot;expected the correct scope address to be emitted&quot;</span>,
+            <span class="string">"expected the correct scope address to be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             attribute_before_update.access_definitions.len(),
             attribute_after_update.access_definitions.len(),
-            <span class="string">&quot;the update process should not cause the number of access definitions to change&quot;</span>,
+            <span class="string">"the update process should not cause the number of access definitions to change"</span>,
         );
         <span class="kw">let </span>access_route_after_update = assert_single_item(
             <span class="kw-2">&amp;</span>assert_single_item(
                 <span class="kw-2">&amp;</span>attribute_after_update.access_definitions,
-                <span class="string">&quot;only a single access definition should exist after the update occurs&quot;</span>,
+                <span class="string">"only a single access definition should exist after the update occurs"</span>,
             )
             .access_routes,
-            <span class="string">&quot;only a single access route should remain after the update&quot;</span>,
+            <span class="string">"only a single access route should remain after the update"</span>,
         );
         <span class="macro">assert_ne!</span>(
             access_route_before_update.route, access_route_after_update.route,
-            <span class="string">&quot;the route should be altered after the update&quot;</span>,
+            <span class="string">"the route should be altered after the update"</span>,
         );
         <span class="kw">let </span>name_after_update = access_route_after_update.name.unwrap();
         <span class="macro">assert_ne!</span>(
             <span class="kw-2">&amp;</span>access_route_before_update.name.unwrap(),
             <span class="kw-2">&amp;</span>name_after_update,
-            <span class="string">&quot;the name should be altered after the update&quot;</span>,
+            <span class="string">"the name should be altered after the update"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;grpcs://fake.route:1234&quot;</span>, access_route_after_update.route,
-            <span class="string">&quot;the route should reflect the value provided during the update&quot;</span>,
+            <span class="string">"grpcs://fake.route:1234"</span>, access_route_after_update.route,
+            <span class="string">"the route should reflect the value provided during the update"</span>,
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;fake_name&quot;</span>, name_after_update,
-            <span class="string">&quot;the name should reflect the value provided during the update&quot;</span>,
+            <span class="string">"fake_name"</span>, name_after_update,
+            <span class="string">"the name should reflect the value provided during the update"</span>,
         );
     }
 
@@ -1090,7 +1090,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         test_update_access_routes(
             <span class="kw-2">&amp;mut </span>deps,
             TestUpdateAccessRoutes {
@@ -1098,7 +1098,7 @@
                 update_access_routes: get_valid_update_routes_v1(),
             },
         )
-        .expect(<span class="string">&quot;expected the update to complete successfully&quot;</span>);
+        .expect(<span class="string">"expected the update to complete successfully"</span>);
     }
 
     <span class="attr">#[test]
@@ -1106,7 +1106,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         test_update_access_routes(
             <span class="kw-2">&amp;mut </span>deps,
             TestUpdateAccessRoutes {
@@ -1119,17 +1119,17 @@
                 ),
             },
         )
-        .expect(<span class="string">&quot;expected the update to complete successfully&quot;</span>);
+        .expect(<span class="string">"expected the update to complete successfully"</span>);
         <span class="kw">let </span>scope_attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;expected the scope attribute to be available after an update&quot;</span>);
+            .expect(<span class="string">"expected the scope attribute to be available after an update"</span>);
         <span class="kw">let </span>access_definition = assert_single_item(
             <span class="kw-2">&amp;</span>scope_attribute.access_definitions,
-            <span class="string">&quot;only one access definition should be available after an onboard and update&quot;</span>,
+            <span class="string">"only one access definition should be available after an onboard and update"</span>,
         );
         <span class="macro">assert!</span>(
             access_definition.access_routes.is_empty(),
-            <span class="string">&quot;expected the access routes to be empty after the update succeeds&quot;</span>,
+            <span class="string">"expected the access routes to be empty after the update succeeds"</span>,
         );
     }
 
@@ -1138,26 +1138,26 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         test_verify_asset(<span class="kw-2">&amp;mut </span>deps, TestVerifyAsset::default())
-            .expect(<span class="string">&quot;expected the default asset verification to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset verification to succeed"</span>);
         <span class="kw">let </span>attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
-            <span class="string">&quot;expected a scope attribute to be available for the default address after onboarding&quot;</span>,
+            <span class="string">"expected a scope attribute to be available for the default address after onboarding"</span>,
         );
         <span class="kw">let </span>verifier_definition_before_update = attribute_before_update
             .access_definitions
             .iter()
             .find(|def| def.owner_address == DEFAULT_VERIFIER_ADDRESS)
-            .expect(<span class="string">&quot;expected an access definition for the verifier to exist&quot;</span>);
+            .expect(<span class="string">"expected an access definition for the verifier to exist"</span>);
         <span class="kw">let </span>sender_definition_before_update = attribute_before_update
             .access_definitions
             .iter()
             .find(|def| def.owner_address == DEFAULT_SENDER_ADDRESS)
-            .expect(<span class="string">&quot;expected an access definition for the sender to exist&quot;</span>);
+            .expect(<span class="string">"expected an access definition for the sender to exist"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             attribute_before_update.access_definitions.len(),
-            <span class="string">&quot;expected the attribute to contain two different access definitions before the update&quot;</span>,
+            <span class="string">"expected the attribute to contain two different access definitions before the update"</span>,
         );
         test_update_access_routes(
             <span class="kw-2">&amp;mut </span>deps,
@@ -1166,32 +1166,32 @@
                 update_access_routes: get_valid_update_routes_v1(),
             },
         )
-        .expect(<span class="string">&quot;expected the update to complete successfully&quot;</span>);
+        .expect(<span class="string">"expected the update to complete successfully"</span>);
         <span class="kw">let </span>attribute_after_update = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;expected the scope attribute to be available after the update&quot;</span>);
+            .expect(<span class="string">"expected the scope attribute to be available after the update"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             attribute_after_update.access_definitions.len(),
-            <span class="string">&quot;expected the attribute to still contain both access definitions after the update&quot;</span>,
+            <span class="string">"expected the attribute to still contain both access definitions after the update"</span>,
         );
         <span class="kw">let </span>verifier_definition_after_update = attribute_after_update
             .access_definitions
             .iter()
             .find(|def| def.owner_address == DEFAULT_VERIFIER_ADDRESS)
-            .expect(<span class="string">&quot;expected an access definition for the verifier to exist after the update&quot;</span>);
+            .expect(<span class="string">"expected an access definition for the verifier to exist after the update"</span>);
         <span class="macro">assert_eq!</span>(
             verifier_definition_before_update, verifier_definition_after_update,
-            <span class="string">&quot;expected the verifier access definition to be completely unmodified after the update&quot;</span>,
+            <span class="string">"expected the verifier access definition to be completely unmodified after the update"</span>,
         );
         <span class="kw">let </span>sender_definition_after_update = attribute_after_update
             .access_definitions
             .iter()
             .find(|def| def.owner_address == DEFAULT_SENDER_ADDRESS)
-            .expect(<span class="string">&quot;expected an access definition for the sender to exist after the update&quot;</span>);
+            .expect(<span class="string">"expected an access definition for the sender to exist after the update"</span>);
         <span class="macro">assert_ne!</span>(
             sender_definition_before_update, sender_definition_after_update,
-            <span class="string">&quot;expected the sender&#39;s access definition to be changed after the update&quot;</span>,
+            <span class="string">"expected the sender's access definition to be changed after the update"</span>,
         );
     }
 
@@ -1200,7 +1200,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the default asset onboarding to succeed&quot;</span>);
+            .expect(<span class="string">"expected the default asset onboarding to succeed"</span>);
         execute(
             deps.as_mut(),
             mock_env(),
@@ -1210,10 +1210,10 @@
                     .to_serialized_enum(),
                 asset_type: DEFAULT_ASSET_TYPE.into(),
                 owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                access_routes: <span class="macro">vec!</span>[AccessRoute::new(<span class="string">&quot;grpcs://no.u:4433&quot;</span>, <span class="string">&quot;some_name&quot;</span>.to_some())],
+                access_routes: <span class="macro">vec!</span>[AccessRoute::new(<span class="string">"grpcs://no.u:4433"</span>, <span class="string">"some_name"</span>.to_some())],
             },
         )
-        .expect(<span class="string">&quot;expected an update through the execute function to complete successfully&quot;</span>);
+        .expect(<span class="string">"expected an update through the execute function to complete successfully"</span>);
     }
 
     <span class="kw">fn </span>get_valid_update_routes_v1() -&gt; UpdateAccessRoutesV1 {
@@ -1222,8 +1222,8 @@
             DEFAULT_ASSET_TYPE,
             DEFAULT_SENDER_ADDRESS,
             <span class="macro">vec!</span>[AccessRoute::new(
-                <span class="string">&quot;grpcs://fake.route:1234&quot;</span>,
-                <span class="string">&quot;fake_name&quot;</span>.to_some(),
+                <span class="string">"grpcs://fake.route:1234"</span>,
+                <span class="string">"fake_name"</span>.to_some(),
             )],
         )
     }

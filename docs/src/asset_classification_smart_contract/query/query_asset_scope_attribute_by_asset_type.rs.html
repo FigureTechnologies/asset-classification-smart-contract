@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_scope_attribute_by_asset_type.rs`."><title>query_asset_scope_attribute_by_asset_type.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_scope_attribute_by_asset_type.rs`."><title>query_asset_scope_attribute_by_asset_type.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -411,14 +411,14 @@
         scope_address.clone(),
         <span class="kw-2">&amp;</span>asset_type,
     )<span class="question-mark">?</span>;
-    <span class="comment">// This is a normal scenario, which just means the scope didn&#39;t have an attribute.  This can happen if a scope was
+    <span class="comment">// This is a normal scenario, which just means the scope didn't have an attribute.  This can happen if a scope was
     // never registered by using onboard_asset.
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(attr) = scope_attribute {
         attr.to_ok()
     } <span class="kw">else </span>{
         ContractError::NotFound {
             explanation: <span class="macro">format!</span>(
-                <span class="string">&quot;scope at address [{}] did not include an asset scope attribute for asset type [{}]&quot;</span>,
+                <span class="string">"scope at address [{}] did not include an asset scope attribute for asset type [{}]"</span>,
                 scope_address,
                 asset_type
             ),
@@ -480,7 +480,7 @@
     <span class="comment">// Second, query up the asset definition by the asset type
     </span><span class="kw">let </span>asset_definition = load_asset_definition_by_type_v3(deps.storage, <span class="kw-2">&amp;</span>asset_type.into())<span class="question-mark">?</span>;
 
-    <span class="comment">// Third, construct the attribute name that the scope attribute lives on by mixing the asset definition&#39;s asset type with state values
+    <span class="comment">// Third, construct the attribute name that the scope attribute lives on by mixing the asset definition's asset type with state values
     </span><span class="kw">let </span>attribute_name = asset_definition.attribute_name(deps)<span class="question-mark">?</span>;
 
     <span class="comment">// Fourth, query up scope attributes attached to the scope address under the name attribute.
@@ -494,7 +494,7 @@
     // that manually removed the bad attributes
     </span><span class="kw">if </span>scope_attributes.len() &gt; <span class="number">1 </span>{
         <span class="kw">return </span>ContractError::generic(<span class="macro">format!</span>(
-            <span class="string">&quot;more than one asset scope attribute exists at address [{}]. data repair needed&quot;</span>,
+            <span class="string">"more than one asset scope attribute exists at address [{}]. data repair needed"</span>,
             scope_address_str
         ))
         .to_err();
@@ -531,33 +531,33 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
-            .expect(<span class="string">&quot;expected the asset onboard to succeed&quot;</span>);
+            .expect(<span class="string">"expected the asset onboard to succeed"</span>);
         <span class="kw">let </span>binary_from_asset_uuid = query_asset_scope_attribute_by_asset_type(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;expected the scope attribute to be fetched as binary by asset uuid&quot;</span>);
+        .expect(<span class="string">"expected the scope attribute to be fetched as binary by asset uuid"</span>);
         <span class="kw">let </span>scope_attribute_from_asset_uuid =
             from_binary::&lt;<span class="prelude-ty">Option</span>&lt;AssetScopeAttribute&gt;&gt;(<span class="kw-2">&amp;</span>binary_from_asset_uuid)
                 .expect(
-                    <span class="string">&quot;expected the asset attribute fetched by asset uuid to deserialize properly&quot;</span>,
+                    <span class="string">"expected the asset attribute fetched by asset uuid to deserialize properly"</span>,
                 )
-                .expect(<span class="string">&quot;expected the asset attribute to be present in the resulting Option&quot;</span>);
+                .expect(<span class="string">"expected the asset attribute to be present in the resulting Option"</span>);
         <span class="kw">let </span>binary_from_scope_address = query_asset_scope_attribute_by_asset_type(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;expected the scope attribute to be fetched as binary by scope address&quot;</span>);
+        .expect(<span class="string">"expected the scope attribute to be fetched as binary by scope address"</span>);
         <span class="kw">let </span>scope_attribute_from_scope_address = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;AssetScopeAttribute&gt;&gt;(
             <span class="kw-2">&amp;</span>binary_from_scope_address,
         )
-        .expect(<span class="string">&quot;expected the asset attribute fetched by scope address to deserialize properly&quot;</span>)
-        .expect(<span class="string">&quot;expected the asset attribute fetched by scope address to be present in the resulting Option&quot;</span>);
+        .expect(<span class="string">"expected the asset attribute fetched by scope address to deserialize properly"</span>)
+        .expect(<span class="string">"expected the asset attribute fetched by scope address to be present in the resulting Option"</span>);
         <span class="macro">assert_eq!</span>(
             scope_attribute_from_asset_uuid, scope_attribute_from_scope_address,
-            <span class="string">&quot;expected the value fetched by scope address to equate to the original value appeneded to the scope&quot;</span>,
+            <span class="string">"expected the value fetched by scope address to equate to the original value appeneded to the scope"</span>,
         );
     }
 
@@ -567,7 +567,7 @@
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         <span class="kw">let </span>error = query_asset_scope_attribute_by_asset_type(
             <span class="kw-2">&amp;</span>deps.as_ref(),
-            AssetIdentifier::scope_address(<span class="string">&quot;missing-scope-address&quot;</span>),
+            AssetIdentifier::scope_address(<span class="string">"missing-scope-address"</span>),
             DEFAULT_ASSET_TYPE,
         )
         .unwrap_err();
@@ -575,17 +575,17 @@
             ContractError::Std(e) =&gt; <span class="kw">match </span>e {
                 StdError::GenericErr { msg, .. } =&gt; {
                     <span class="macro">assert!</span>(
-                        msg.contains(<span class="string">&quot;metadata not found&quot;</span>),
-                        <span class="string">&quot;the error should be from the metadata module&quot;</span>,
+                        msg.contains(<span class="string">"metadata not found"</span>),
+                        <span class="string">"the error should be from the metadata module"</span>,
                     );
                     <span class="macro">assert!</span>(
-                        msg.contains(<span class="string">&quot;get_scope&quot;</span>),
-                        <span class="string">&quot;the error should denote that the scope fetch was the failure&quot;</span>,
+                        msg.contains(<span class="string">"get_scope"</span>),
+                        <span class="string">"the error should denote that the scope fetch was the failure"</span>,
                     );
                 }
-                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected StdError encountered: {:?}&quot;</span>, e),
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected StdError encountered: {:?}"</span>, e),
             },
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error type encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error type encountered: {:?}"</span>, error),
         };
     }
 
@@ -594,24 +594,24 @@
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         mock_scope(
             <span class="kw-2">&amp;mut </span>deps,
-            <span class="string">&quot;fake-scope-address&quot;</span>,
-            <span class="string">&quot;some-scope-spec-address&quot;</span>,
-            <span class="string">&quot;test-owner&quot;</span>,
+            <span class="string">"fake-scope-address"</span>,
+            <span class="string">"some-scope-spec-address"</span>,
+            <span class="string">"test-owner"</span>,
         );
         <span class="kw">let </span>error = query_asset_scope_attribute_by_asset_type(
             <span class="kw-2">&amp;</span>deps.as_ref(),
-            AssetIdentifier::scope_address(<span class="string">&quot;fake-scope-address&quot;</span>),
-            <span class="string">&quot;bogus-asset-type&quot;</span>,
+            AssetIdentifier::scope_address(<span class="string">"fake-scope-address"</span>),
+            <span class="string">"bogus-asset-type"</span>,
         )
         .unwrap_err();
         <span class="kw">match </span>error {
             ContractError::RecordNotFound { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;no asset definition existed for asset type bogus-asset-type&quot;</span>, explanation,
-                    <span class="string">&quot;incorrect record not found message encountered&quot;</span>,
+                    <span class="string">"no asset definition existed for asset type bogus-asset-type"</span>, explanation,
+                    <span class="string">"incorrect record not found message encountered"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         };
     }
 
@@ -623,26 +623,26 @@
     </span><span class="kw">fn </span>test_query_failure_for_missing_scope_attribute() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         test_instantiate_success(deps.as_mut(), InstArgs::default());
-        <span class="kw">let </span>scope_address = <span class="string">&quot;scope-address&quot;</span>.to_string();
-        <span class="comment">// Wire up the scope correctly to point to the correct address, but don&#39;t actually add the attribute
+        <span class="kw">let </span>scope_address = <span class="string">"scope-address"</span>.to_string();
+        <span class="comment">// Wire up the scope correctly to point to the correct address, but don't actually add the attribute
         // needed for the query to succeed
         </span>mock_scope(
             <span class="kw-2">&amp;mut </span>deps,
             <span class="kw-2">&amp;</span>scope_address,
             DEFAULT_SCOPE_SPEC_ADDRESS,
-            <span class="string">&quot;test-owner&quot;</span>,
+            <span class="string">"test-owner"</span>,
         );
         <span class="kw">let </span>binary = query_asset_scope_attribute_by_asset_type(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::scope_address(<span class="kw-2">&amp;</span>scope_address),
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;the query should execute without error&quot;</span>);
+        .expect(<span class="string">"the query should execute without error"</span>);
         <span class="kw">let </span>result = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;AssetScopeAttribute&gt;&gt;(<span class="kw-2">&amp;</span>binary)
-            .expect(<span class="string">&quot;expected the result to deserialize correctly&quot;</span>);
+            .expect(<span class="string">"expected the result to deserialize correctly"</span>);
         <span class="macro">assert!</span>(
             result.is_none(),
-            <span class="string">&quot;expected the result from the query to be missing because no scope attribute existed at the scope address&quot;</span>,
+            <span class="string">"expected the result from the query to be missing because no scope attribute existed at the scope address"</span>,
         );
     }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><title>state.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -590,8 +590,8 @@
 
 <span class="kw">use </span><span class="kw">super</span>::error::ContractError;
 
-<span class="kw">static </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;state_v2&quot;</span>;
-<span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;fee_payment_detail&quot;</span>;
+<span class="kw">static </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"state_v2"</span>;
+<span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">"fee_payment_detail"</span>;
 
 <span class="kw">const </span>FEE_PAYMENT_DETAILS: Map&lt;(Addr, String), FeePaymentDetail&gt; =
     Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
@@ -608,7 +608,7 @@
     /// changed during migrations.
     </span><span class="kw">pub </span>admin: Addr,
     <span class="doccomment">/// A boolean value allowing for less restrictions to be placed on certain functionalities
-    /// across the contract&#39;s execution processes.  Notably, this disables a check during the
+    /// across the contract's execution processes.  Notably, this disables a check during the
     /// onboarding process to determine if onboarded scopes include underlying record values.  This
     /// should never be set to true in a mainnet environment.
     </span><span class="kw">pub </span>is_test: bool,
@@ -620,7 +620,7 @@
     ///
     /// * `msg` The message submitted by the instantiating account.
     /// * `admin` The Provenance Blockchain bech32 address of the administrator account for the contract.
-    /// The sender&#39;s address is automatically used for this, and they alone will have access to
+    /// The sender's address is automatically used for this, and they alone will have access to
     /// change the admin address to a different one via migrations.
     </span><span class="kw">pub fn </span>new(msg: InitMsg, admin: Addr) -&gt; StateV2 {
         StateV2 {
@@ -635,12 +635,12 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 </span><span class="kw">pub fn </span>config_v2(storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage) -&gt; Singleton&lt;StateV2&gt; {
     singleton(storage, STATE_V2_KEY)
 }
 
-<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract&#39;s state.
+<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract's state.
 ///
 /// # Parameters
 ///
@@ -649,10 +649,10 @@
     singleton_read(storage, STATE_V2_KEY)
 }
 
-<span class="doccomment">/// Value is currently &#39;asset_definitions_v2&#39; due to a structural change of data (removing an existing field, scope_spec_address) and switching from
-/// and IndexedMap to a regular Map... so everything was changed to be called &#39;v3&#39;, but no migration was actually needed to transition all values to new
+<span class="doccomment">/// Value is currently 'asset_definitions_v2' due to a structural change of data (removing an existing field, scope_spec_address) and switching from
+/// and IndexedMap to a regular Map... so everything was changed to be called 'v3', but no migration was actually needed to transition all values to new
 /// keys as the existing config was able to be read as a Map as-is.
-</span><span class="kw">const </span>ASSET_DEFINITIONS_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;asset_definitions_v2&quot;</span>;
+</span><span class="kw">const </span>ASSET_DEFINITIONS_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">"asset_definitions_v2"</span>;
 <span class="doccomment">/// The main entrypoint access for [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) state.
 /// Establishes an index map for all definitions, allowing the standard save(), load() and iterator
 /// functionality. Private access to ensure only helper functions below are used.
@@ -673,7 +673,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 /// * `definition` The asset definition to insert into storage and derive the unique keys.
 </span><span class="kw">pub fn </span>insert_asset_definition_v3(
     storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
@@ -684,7 +684,7 @@
     <span class="kw">if let </span><span class="prelude-val">Ok</span>(existing_def) = state.load(storage, key.clone()) {
         ContractError::RecordAlreadyExists {
             explanation: <span class="macro">format!</span>(
-                <span class="string">&quot;unique constraints violated! record exists with asset type [{}]&quot;</span>,
+                <span class="string">"unique constraints violated! record exists with asset type [{}]"</span>,
                 existing_def.asset_type
             ),
         }
@@ -707,7 +707,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 /// * `definition` The asset definition to replace by matching on its [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// property.
 </span><span class="kw">pub fn </span>replace_asset_definition_v3(
@@ -723,7 +723,7 @@
     } <span class="kw">else </span>{
         ContractError::RecordNotFound {
             explanation: <span class="macro">format!</span>(
-                <span class="string">&quot;no record exists to update for asset type [{}]&quot;</span>,
+                <span class="string">"no record exists to update for asset type [{}]"</span>,
                 <span class="kw-2">&amp;</span>definition.asset_type
             ),
         }
@@ -736,7 +736,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `storage` A reference to the contract's internal storage.
 /// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// for the requested asset definition.
 </span><span class="kw">pub fn </span>may_load_asset_definition_by_type_v3&lt;S: Into&lt;String&gt;&gt;(
@@ -753,7 +753,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `storage` A reference to the contract's internal storage.
 /// * `asset_type` The unique name key [asset_type](super::types::asset_definition::AssetDefinitionV3::asset_type)
 /// for the requested asset definition.
 </span><span class="kw">pub fn </span>load_asset_definition_by_type_v3&lt;S: Into&lt;String&gt;&gt;(
@@ -765,7 +765,7 @@
         asset_definition.to_ok()
     } <span class="kw">else </span>{
         ContractError::RecordNotFound {
-            explanation: <span class="macro">format!</span>(<span class="string">&quot;no asset definition existed for asset type {}&quot;</span>, asset_type,),
+            explanation: <span class="macro">format!</span>(<span class="string">"no asset definition existed for asset type {}"</span>, asset_type,),
         }
         .to_err()
     }
@@ -777,7 +777,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 /// * `asset_type` The asset type to delete.
 </span><span class="kw">pub fn </span>delete_asset_definition_by_asset_type_v3(
     storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
@@ -794,7 +794,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 /// * `fee_payment_detail` The detail to insert into storage and derive the unique scope address key.
 </span><span class="kw">pub fn </span>insert_fee_payment_detail(
     storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage,
@@ -804,7 +804,7 @@
     <span class="kw">if </span>load_fee_payment_detail(storage, <span class="kw-2">&amp;</span>fee_payment_detail.scope_address, asset_type).is_ok() {
         <span class="kw">return </span>ContractError::RecordAlreadyExists {
             explanation: <span class="macro">format!</span>(
-                <span class="string">&quot;cannot insert payment detail for scope [{}] and asset type [{}] because a record already exists with that address and asset type&quot;</span>,
+                <span class="string">"cannot insert payment detail for scope [{}] and asset type [{}] because a record already exists with that address and asset type"</span>,
                 <span class="kw-2">&amp;</span>fee_payment_detail.scope_address,
                 <span class="kw-2">&amp;</span>asset_type
             )
@@ -826,7 +826,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `storage` A reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// for the requested payment detail.
 </span><span class="kw">pub fn </span>load_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
@@ -844,7 +844,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A reference to the contract&#39;s internal storage.
+/// * `storage` A reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// for the requested payment detail.
 </span><span class="kw">pub fn </span>may_load_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
@@ -862,7 +862,7 @@
 ///
 /// # Parameters
 ///
-/// * `storage` A mutable reference to the contract&#39;s internal storage.
+/// * `storage` A mutable reference to the contract's internal storage.
 /// * `scope_address` The unique key [scope_address](super::types::fee_payment_detail::FeePaymentDetail::scope_address)
 /// of the detail to delete.
 </span><span class="kw">pub fn </span>delete_fee_payment_detail&lt;S1: Into&lt;String&gt;, S2: Into&lt;String&gt;&gt;(
@@ -872,7 +872,7 @@
 ) -&gt; AssetResult&lt;()&gt; {
     <span class="kw">let </span>scope_address = scope_address.into();
     <span class="kw">let </span>asset_type = asset_type.into();
-    <span class="comment">// Verify the detail exists before allowing its deletion.  The standard &quot;remove&quot; function will
+    <span class="comment">// Verify the detail exists before allowing its deletion.  The standard "remove" function will
     // not produce an error if no target value exists, but it is very informative of bad code to
     // reveal when unnecessary operations occur.
     </span>load_fee_payment_detail(storage, <span class="kw-2">&amp;</span>scope_address, <span class="kw-2">&amp;</span>asset_type)<span class="question-mark">?</span>;
@@ -900,26 +900,26 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_insert_asset_definition() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
-            .expect(<span class="string">&quot;insert should work correctly&quot;</span>);
+            .expect(<span class="string">"insert should work correctly"</span>);
         <span class="kw">let </span>error = insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def).unwrap_err();
         <span class="kw">match </span>error {
             ContractError::RecordAlreadyExists { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;unique constraints violated! record exists with asset type [heloc]&quot;</span>,
+                    <span class="string">"unique constraints violated! record exists with asset type [heloc]"</span>,
                     explanation,
-                    <span class="string">&quot;the proper record type should be returned in the resulting error&quot;
+                    <span class="string">"the proper record type should be returned in the resulting error"
                 </span>);
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         }
         <span class="kw">let </span>loaded_asset_definition =
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
-                .expect(<span class="string">&quot;asset definition should load without error&quot;</span>);
+                .expect(<span class="string">"asset definition should load without error"</span>);
         <span class="macro">assert_eq!</span>(
             loaded_asset_definition, def,
-            <span class="string">&quot;the asset definition should be inserted correctly&quot;
+            <span class="string">"the asset definition should be inserted correctly"
         </span>);
     }
 
@@ -927,120 +927,120 @@
     </span><span class="kw">fn </span>test_replace_asset_definition() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         <span class="kw">let </span><span class="kw-2">mut </span>def =
-            AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+            AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         <span class="kw">let </span>error = replace_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def).unwrap_err();
         <span class="kw">match </span>error {
             ContractError::RecordNotFound { explanation } =&gt; {
                 <span class="macro">assert_eq!</span>(
-                    <span class="string">&quot;no record exists to update for asset type [heloc]&quot;</span>, explanation,
-                    <span class="string">&quot;the proper record type should be returned in the resulting error&quot;</span>,
+                    <span class="string">"no record exists to update for asset type [heloc]"</span>, explanation,
+                    <span class="string">"the proper record type should be returned in the resulting error"</span>,
                 );
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected error encountered: {:?}&quot;</span>, error),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected error encountered: {:?}"</span>, error),
         };
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
-            .expect(<span class="string">&quot;insert should work correctly&quot;</span>);
+            .expect(<span class="string">"insert should work correctly"</span>);
         def.enabled = !def.enabled;
         replace_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
-            .expect(<span class="string">&quot;update should work correctly&quot;</span>);
+            .expect(<span class="string">"update should work correctly"</span>);
         <span class="kw">let </span>loaded_asset_definition =
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
-                .expect(<span class="string">&quot;asset definition should load without error&quot;</span>);
+                .expect(<span class="string">"asset definition should load without error"</span>);
         <span class="macro">assert_eq!</span>(
             loaded_asset_definition, def,
-            <span class="string">&quot;the asset definition should be updated appropriately&quot;
+            <span class="string">"the asset definition should be updated appropriately"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_may_load_asset_definition_by_type() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
-            .expect(<span class="string">&quot;the heloc definition should insert without error&quot;</span>);
+            .expect(<span class="string">"the heloc definition should insert without error"</span>);
         <span class="macro">assert!</span>(
-            may_load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="string">&quot;not-heloc&quot;</span>)
-                .expect(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
+            may_load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="string">"not-heloc"</span>)
+                .expect(<span class="string">"may load asset definition by type should execute without error"</span>)
                 .is_none(),
-            <span class="string">&quot;expected the missing asset definition to return an empty Option&quot;</span>,
+            <span class="string">"expected the missing asset definition to return an empty Option"</span>,
         );
         <span class="macro">assert_eq!</span>(
             may_load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>heloc.asset_type)
-            .expect(<span class="string">&quot;may load asset definition by type should execute without error&quot;</span>)
-            .expect(<span class="string">&quot;expected the asset definition loaded by a populated type to be present&quot;</span>),
+            .expect(<span class="string">"may load asset definition by type should execute without error"</span>)
+            .expect(<span class="string">"expected the asset definition loaded by a populated type to be present"</span>),
             heloc,
-            <span class="string">&quot;expected the loaded asset definition to equate to the original value that was inserted&quot;</span>,
+            <span class="string">"expected the loaded asset definition to equate to the original value that was inserted"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_load_asset_definition_by_type() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
-        <span class="kw">let </span>mortgage = AssetDefinitionV3::new(<span class="string">&quot;mortgage&quot;</span>, <span class="string">&quot;DEATH PLEDGE&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>mortgage = AssetDefinitionV3::new(<span class="string">"mortgage"</span>, <span class="string">"DEATH PLEDGE"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
-            .expect(<span class="string">&quot;the heloc definition should insert appropriately&quot;</span>);
+            .expect(<span class="string">"the heloc definition should insert appropriately"</span>);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>mortgage)
-            .expect(<span class="string">&quot;the mortgage definition should insert appropriately&quot;</span>);
+            .expect(<span class="string">"the mortgage definition should insert appropriately"</span>);
         <span class="kw">let </span>heloc_from_storage =
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>heloc.asset_type)
-                .expect(<span class="string">&quot;the heloc definition should load without error&quot;</span>);
+                .expect(<span class="string">"the heloc definition should load without error"</span>);
         <span class="kw">let </span>mortgage_from_storage =
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>mortgage.asset_type)
-                .expect(<span class="string">&quot;the mortgage definition should load without error&quot;</span>);
+                .expect(<span class="string">"the mortgage definition should load without error"</span>);
         <span class="macro">assert_eq!</span>(
             heloc, heloc_from_storage,
-            <span class="string">&quot;the heloc definition should be the same after loading from storage&quot;
+            <span class="string">"the heloc definition should be the same after loading from storage"
         </span>);
         <span class="macro">assert_eq!</span>(
             mortgage, mortgage_from_storage,
-            <span class="string">&quot;the mortgage definition should be the same after loading from storage&quot;
+            <span class="string">"the mortgage definition should be the same after loading from storage"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_delete_asset_definition_by_type() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">&quot;heloc&quot;</span>, <span class="string">&quot;Home Equity Line of Credit&quot;</span>.to_some(), <span class="macro">vec!</span>[]);
+        <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
-            .expect(<span class="string">&quot;expected the asset definition to be stored without error&quot;</span>);
+            .expect(<span class="string">"expected the asset definition to be stored without error"</span>);
         <span class="macro">assert_eq!</span>(
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
-                .expect(<span class="string">&quot;expected the load to succeed&quot;</span>),
+                .expect(<span class="string">"expected the load to succeed"</span>),
             def,
-            <span class="string">&quot;sanity check: asset definition should be accessible by asset type&quot;</span>,
+            <span class="string">"sanity check: asset definition should be accessible by asset type"</span>,
         );
         delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def.asset_type)
-            .expect(<span class="string">&quot;expected the deletion to succeed&quot;</span>);
+            .expect(<span class="string">"expected the deletion to succeed"</span>);
         <span class="kw">let </span>err = load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
             .expect_err(
-                <span class="string">&quot;expected an error to occur when attempting to load the deleted definition&quot;</span>,
+                <span class="string">"expected an error to occur when attempting to load the deleted definition"</span>,
             );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::RecordNotFound { .. }),
-            <span class="string">&quot;expected the record not found error to occur when attempting to load by asset type, but got: {:?}&quot;</span>,
+            <span class="string">"expected the record not found error to occur when attempting to load by asset type, but got: {:?}"</span>,
             err,
         );
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
-            .expect(<span class="string">&quot;expected the asset definition to be stored again without error&quot;</span>);
+            .expect(<span class="string">"expected the asset definition to be stored again without error"</span>);
         <span class="macro">assert_eq!</span>(
             load_asset_definition_by_type_v3(deps.as_ref().storage, <span class="kw-2">&amp;</span>def.asset_type)
-                .expect(<span class="string">&quot;expected the load to succeed&quot;</span>),
+                .expect(<span class="string">"expected the load to succeed"</span>),
             def,
-            <span class="string">&quot;the definition should be once again successfully attainable by asset type&quot;</span>,
+            <span class="string">"the definition should be once again successfully attainable by asset type"</span>,
         );
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_delete_nonexistent_asset_definition_by_type_failure() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let </span>err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="string">&quot;fake-type&quot;</span>)
+        <span class="kw">let </span>err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="string">"fake-type"</span>)
             .expect_err(
-                <span class="string">&quot;expected an error to occur when attempting to delete a missing asset type&quot;</span>,
+                <span class="string">"expected an error to occur when attempting to delete a missing asset type"</span>,
             );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::RecordNotFound { .. }),
-            <span class="string">&quot;expected a record not found error to be emitted when the definition does not exist, but got: {:?}&quot;</span>,
+            <span class="string">"expected a record not found error to be emitted when the definition does not exist, but got: {:?}"</span>,
             err,
         );
     }
@@ -1054,35 +1054,35 @@
             DEFAULT_ASSET_TYPE,
         )
         .expect_err(
-            <span class="string">&quot;an error should occur when trying to load a payment detail that does not exist&quot;</span>,
+            <span class="string">"an error should occur when trying to load a payment detail that does not exist"</span>,
         );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
-            <span class="string">&quot;a not found error should occur when the payment detail is not found, but got: {:?}&quot;</span>,
+            <span class="string">"a not found error should occur when the payment detail is not found, but got: {:?}"</span>,
             err,
         );
         <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
+            .expect(<span class="string">"inserting a new fee payment detail should succeed"</span>);
         <span class="kw">let </span>loaded_payment_detail = load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;loading the stored payment detail should succeed&quot;</span>);
+        .expect(<span class="string">"loading the stored payment detail should succeed"</span>);
         <span class="macro">assert_eq!</span>(
             payment_detail, loaded_payment_detail,
-            <span class="string">&quot;the loaded payment detail should equate to the stored value&quot;</span>,
+            <span class="string">"the loaded payment detail should equate to the stored value"</span>,
         );
         <span class="kw">let </span>err = insert_fee_payment_detail(
             deps.as_mut().storage,
             <span class="kw-2">&amp;</span>loaded_payment_detail,
             DEFAULT_ASSET_TYPE,
         )
-        .expect_err(<span class="string">&quot;an error should occur when attempting to insert a duplicate payment detail&quot;</span>);
+        .expect_err(<span class="string">"an error should occur when attempting to insert a duplicate payment detail"</span>);
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::RecordAlreadyExists { .. }),
-            <span class="string">&quot;a record already exists error should occur, but got: {:?}&quot;</span>,
+            <span class="string">"a record already exists error should occur, but got: {:?}"</span>,
             err,
         );
     }
@@ -1097,20 +1097,20 @@
                 DEFAULT_ASSET_TYPE
             )
             .is_none(),
-            <span class="string">&quot;attempting to load a detail that does not exist should produce a None variant&quot;</span>,
+            <span class="string">"attempting to load a detail that does not exist should produce a None variant"</span>,
         );
         <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;inserting a new fee payment detail should succeed&quot;</span>);
+            .expect(<span class="string">"inserting a new fee payment detail should succeed"</span>);
         <span class="kw">let </span>loaded_payment_detail = may_load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;the fee payment detail should load successfully&quot;</span>);
+        .expect(<span class="string">"the fee payment detail should load successfully"</span>);
         <span class="macro">assert_eq!</span>(
             payment_detail, loaded_payment_detail,
-            <span class="string">&quot;the loaded payment detail should equate to the inserted value&quot;</span>,
+            <span class="string">"the loaded payment detail should equate to the inserted value"</span>,
         );
     }
 
@@ -1118,16 +1118,16 @@
     </span><span class="kw">fn </span>test_delete_fee_payment_detail() {
         <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
         <span class="kw">let </span>err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect_err(
-            <span class="string">&quot;an error should occur when attempting to delete a fee payment detail that does not exist&quot;
+            <span class="string">"an error should occur when attempting to delete a fee payment detail that does not exist"
         </span>);
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
-            <span class="string">&quot;a not found error should occur when the payment detail is not found, but got: {:?}&quot;</span>,
+            <span class="string">"a not found error should occur when the payment detail is not found, but got: {:?}"</span>,
             err,
         );
         <span class="kw">let </span>payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, <span class="kw-2">&amp;</span>payment_detail, DEFAULT_ASSET_TYPE)
-            .expect(<span class="string">&quot;inserting a payment detail should succeed&quot;</span>);
+            .expect(<span class="string">"inserting a payment detail should succeed"</span>);
         <span class="macro">assert!</span>(
             load_fee_payment_detail(
                 deps.as_ref().storage,
@@ -1135,25 +1135,25 @@
                 DEFAULT_ASSET_TYPE
             )
             .is_ok(),
-            <span class="string">&quot;sanity check: fee payment detail should be available after insert&quot;</span>,
+            <span class="string">"sanity check: fee payment detail should be available after insert"</span>,
         );
         delete_fee_payment_detail(
             deps.as_mut().storage,
             DEFAULT_SCOPE_ADDRESS,
             DEFAULT_ASSET_TYPE,
         )
-        .expect(<span class="string">&quot;deleting a payment detail should succeed&quot;</span>);
+        .expect(<span class="string">"deleting a payment detail should succeed"</span>);
         <span class="kw">let </span>err = load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
             DEFAULT_ASSET_TYPE,
         )
         .expect_err(
-            <span class="string">&quot;an error should occur when trying to load a payment detail after it has been deleted&quot;</span>,
+            <span class="string">"an error should occur when trying to load a payment detail after it has been deleted"</span>,
         );
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
-            <span class="string">&quot;a not found error should occur when the payment detail is loaded after deletion, but got: {:?}&quot;</span>,
+            <span class="string">"a not found error should occur when the payment detail is loaded after deletion, but got: {:?}"</span>,
             err,
         );
     }

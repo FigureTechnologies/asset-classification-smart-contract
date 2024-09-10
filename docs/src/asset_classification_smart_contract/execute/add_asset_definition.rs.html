@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_definition.rs`."><title>add_asset_definition.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../asset_classification_smart_contract/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_definition.rs`."><title>add_asset_definition.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -380,7 +380,7 @@
 /// [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type).
 /// * `bind_name` An optional parameter.  If omitted or provided as `true`, the contract will attempt
 /// to bind a name branched off of its [base_contract_name](crate::core::state::StateV2::base_contract_name)
-/// with the provided definition&#39;s [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type).
+/// with the provided definition's [asset_type](crate::core::types::asset_definition::AssetDefinitionV3::asset_type).
 </span><span class="attr">#[derive(Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>AddAssetDefinitionV1 {
     <span class="kw">pub </span>asset_definition: AssetDefinitionV3,
@@ -394,7 +394,7 @@
     ///
     /// # Parameters
     ///
-    /// * `msg` An execute msg provided by the contract&#39;s [execute](crate::contract::execute) function.
+    /// * `msg` An execute msg provided by the contract's [execute](crate::contract::execute) function.
     </span><span class="kw">pub fn </span>from_execute_msg(msg: ExecuteMsg) -&gt; AssetResult&lt;<span class="self">Self</span>&gt; {
         <span class="kw">match </span>msg {
             ExecuteMsg::AddAssetDefinition { asset_definition } =&gt; <span class="self">Self </span>{
@@ -403,7 +403,7 @@
             }
             .to_ok(),
             <span class="kw">_ </span>=&gt; ContractError::InvalidMessageType {
-                expected_message_type: <span class="string">&quot;ExecuteMsg::AddAssetDefinition&quot;</span>.to_string(),
+                expected_message_type: <span class="string">"ExecuteMsg::AddAssetDefinition"</span>.to_string(),
             }
             .to_err(),
         }
@@ -412,13 +412,13 @@
 
 <span class="doccomment">/// The function used by [execute](crate::contract::execute) when an [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
 /// message is provided.  Attempts to add a new [AssetDefinitionV3](crate::core::types::asset_definition::AssetDefinitionV3)
-/// to the contract&#39;s internal storage.
+/// to the contract's internal storage.
 ///
 /// # Parameters
 ///
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
-/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract&#39;s
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
 /// details, as well as blockchain information at the time of the transaction.
 /// * `info` A message information object provided by the cosmwasm framework.  Describes the sender
 /// of the instantiation message, as well as the funds provided as an amount during the transaction.
@@ -437,7 +437,7 @@
     // will be returned if a duplicate is attempted
     </span>insert_asset_definition_v3(deps.storage, <span class="kw-2">&amp;</span>msg.asset_definition)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>messages = <span class="macro">vec!</span>[];
-    <span class="comment">// If requested, or the bind_name param is omitted, bind the new asset type&#39;s name the contract in order to be able
+    <span class="comment">// If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
     // to write new attributes for onboarded scopes
     </span><span class="kw">if </span>msg.bind_name.unwrap_or(<span class="bool-val">true</span>) {
         messages.push(bind_name(
@@ -487,7 +487,7 @@
     <span class="kw">use </span>provwasm_mocks::mock_dependencies;
 
     <span class="comment">// These tests board a new asset type, so they need values other than the default to work with
-    </span><span class="kw">const </span>TEST_ASSET_TYPE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;add_asset_type&quot;</span>;
+    </span><span class="kw">const </span>TEST_ASSET_TYPE: <span class="kw-2">&amp;</span>str = <span class="string">"add_asset_type"</span>;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_definition_via_execute() {
@@ -502,27 +502,27 @@
                 asset_definition: asset_definition.clone(),
             },
         )
-        .expect(<span class="string">&quot;expected the add asset checks to work correctly&quot;</span>);
+        .expect(<span class="string">"expected the add asset checks to work correctly"</span>);
         <span class="macro">assert_eq!</span>(
             <span class="number">1</span>,
             response.messages.len(),
-            <span class="string">&quot;the proper number of messages should be added&quot;</span>,
+            <span class="string">"the proper number of messages should be added"</span>,
         );
         test_message_is_name_bind(<span class="kw-2">&amp;</span>response.messages, <span class="kw-2">&amp;</span>asset_definition.asset_type);
         <span class="macro">assert_eq!</span>(
             <span class="number">2</span>,
             response.attributes.len(),
-            <span class="string">&quot;adding an asset definition should produce the correct number of attributes&quot;</span>,
+            <span class="string">"adding an asset definition should produce the correct number of attributes"</span>,
         );
         <span class="macro">assert_eq!</span>(
             EventType::AddAssetDefinition.event_name().as_str(),
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_EVENT_TYPE_KEY),
-            <span class="string">&quot;the proper event type should be emitted&quot;</span>,
+            <span class="string">"the proper event type should be emitted"</span>,
         );
         <span class="macro">assert_eq!</span>(
             TEST_ASSET_TYPE,
             single_attribute_for_key(<span class="kw-2">&amp;</span>response, ASSET_TYPE_KEY),
-            <span class="string">&quot;the value on the attribute should be the loan type of the added definition&quot;</span>,
+            <span class="string">"the value on the attribute should be the loan type of the added definition"</span>,
         );
         test_asset_definition_was_added_for_input(<span class="kw-2">&amp;</span>asset_definition, <span class="kw-2">&amp;</span>deps.as_ref());
     }
@@ -538,7 +538,7 @@
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             msg.clone(),
         )
-        .expect(<span class="string">&quot;expected the add asset definition function to return properly&quot;</span>)
+        .expect(<span class="string">"expected the add asset definition function to return properly"</span>)
         .messages;
         test_message_is_name_bind(<span class="kw-2">&amp;</span>messages, <span class="kw-2">&amp;</span>msg.asset_definition.asset_type);
         test_asset_definition_was_added(<span class="kw-2">&amp;</span>msg.asset_definition, <span class="kw-2">&amp;</span>deps.as_ref());
@@ -558,10 +558,10 @@
                 asset_definition: asset_definition.clone(),
             },
         )
-        .expect(<span class="string">&quot;expected the add asset definition function to return properly&quot;</span>);
+        .expect(<span class="string">"expected the add asset definition function to return properly"</span>);
         <span class="macro">assert!</span>(
             response.messages.is_empty(),
-            <span class="string">&quot;when no name binding is requested, no messages should be emitted&quot;
+            <span class="string">"when no name binding is requested, no messages should be emitted"
         </span>);
         test_asset_definition_was_added(<span class="kw-2">&amp;</span>asset_definition.into_asset_definition(), <span class="kw-2">&amp;</span>deps.as_ref());
     }
@@ -577,11 +577,11 @@
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             msg.clone(),
         )
-        .expect(<span class="string">&quot;expected the add asset definition function to return properly&quot;</span>)
+        .expect(<span class="string">"expected the add asset definition function to return properly"</span>)
         .messages;
         <span class="macro">assert!</span>(
             messages.is_empty(),
-            <span class="string">&quot;when no name binding is requested, no messages should be emitted&quot;
+            <span class="string">"when no name binding is requested, no messages should be emitted"
         </span>);
         test_asset_definition_was_added(<span class="kw-2">&amp;</span>msg.asset_definition, <span class="kw-2">&amp;</span>deps.as_ref());
     }
@@ -592,7 +592,7 @@
         test_instantiate_success(deps.as_mut(), InstArgs::default());
         <span class="kw">let </span>msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInputV3::new(
-                <span class="string">&quot;&quot;</span>,
+                <span class="string">""</span>,
                 <span class="prelude-val">None</span>::&lt;String&gt;,
                 <span class="macro">vec!</span>[],
                 <span class="bool-val">true</span>.to_some(),
@@ -608,7 +608,7 @@
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidMessageFields { .. }),
-            <span class="string">&quot;expected an invalid asset definition to cause an InvalidMessageFields error, but got: {:?}&quot;</span>,
+            <span class="string">"expected an invalid asset definition to cause an InvalidMessageFields error, but got: {:?}"</span>,
             error,
         );
     }
@@ -621,13 +621,13 @@
             deps.as_mut(),
             mock_env(),
             <span class="comment">// Mock info defines the sender with this string - simply use something other than DEFAULT_INFO_NAME to cause the error
-            </span>mock_info(<span class="string">&quot;not-the-admin&quot;</span>, <span class="kw-2">&amp;</span>[]),
+            </span>mock_info(<span class="string">"not-the-admin"</span>, <span class="kw-2">&amp;</span>[]),
             get_valid_add_asset_definition(<span class="bool-val">true</span>),
         )
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::Unauthorized { .. }),
-            <span class="string">&quot;expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}&quot;</span>,
+            <span class="string">"expected the unauthorized response to be returned when a different address than the admin is the sender, but got: {:?}"</span>,
             error,
         );
     }
@@ -639,13 +639,13 @@
         <span class="kw">let </span>error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">150</span>, <span class="string">&quot;nhash&quot;</span>)]),
+            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">150</span>, <span class="string">"nhash"</span>)]),
             get_valid_add_asset_definition(<span class="bool-val">true</span>),
         )
         .unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::InvalidFunds(<span class="kw">_</span>)),
-            <span class="string">&quot;expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}&quot;</span>,
+            <span class="string">"expected the invalid funds response to be returned when funds are provided to the function, but got: {:?}"</span>,
             error,
         );
     }
@@ -662,11 +662,11 @@
                 get_valid_add_asset_definition(<span class="bool-val">true</span>),
             )
         };
-        add_asset().expect(<span class="string">&quot;expected the first asset definition to be added successfully&quot;</span>);
+        add_asset().expect(<span class="string">"expected the first asset definition to be added successfully"</span>);
         <span class="kw">let </span>error = add_asset().unwrap_err();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(error, ContractError::RecordAlreadyExists { .. }),
-            <span class="string">&quot;expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type, but got: {:?}&quot;</span>,
+            <span class="string">"expected the duplicate asset definition response to be returned when the asset definition matches an existing loan type, but got: {:?}"</span>,
             error,
         );
     }
@@ -678,21 +678,21 @@
     <span class="kw">fn </span>test_asset_definition_was_added(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3, deps: <span class="kw-2">&amp;</span>DepsC) {
         <span class="kw">let </span>state_def =
             load_asset_definition_by_type_v3(deps.storage, <span class="kw-2">&amp;</span>asset_definition.asset_type)
-                .expect(<span class="string">&quot;expected the added asset type to be stored in the state&quot;</span>);
+                .expect(<span class="string">"expected the added asset type to be stored in the state"</span>);
         <span class="macro">assert_eq!</span>(
             asset_definition, <span class="kw-2">&amp;</span>state_def,
-            <span class="string">&quot;the value in state should directly equate to the added value&quot;</span>,
+            <span class="string">"the value in state should directly equate to the added value"</span>,
         );
         <span class="macro">assert_eq!</span>(
             <span class="bool-val">true</span>, state_def.enabled,
-            <span class="string">&quot;the default value for added values should be enabled = true&quot;</span>,
+            <span class="string">"the default value for added values should be enabled = true"</span>,
         );
     }
 
     <span class="kw">fn </span>get_valid_asset_definition() -&gt; AssetDefinitionInputV3 {
         <span class="kw">let </span>def = AssetDefinitionInputV3::new(
             TEST_ASSET_TYPE,
-            <span class="prelude-val">Some</span>(<span class="string">&quot;TEST YO&#39;SELF&quot;</span>),
+            <span class="prelude-val">Some</span>(<span class="string">"TEST YO'SELF"</span>),
             <span class="comment">// Defining the verifier to be the same as the default values is fine, because
             // it is realistic that different asset types might use the same verifiers
             </span><span class="macro">vec!</span>[VerifierDetailV2::new(
@@ -707,7 +707,7 @@
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         );
-        validate_asset_definition_input(<span class="kw-2">&amp;</span>def).expect(<span class="string">&quot;expected the asset definition to be valid&quot;</span>);
+        validate_asset_definition_input(<span class="kw-2">&amp;</span>def).expect(<span class="string">"expected the asset definition to be valid"</span>);
         def
     }
 

@@ -7,7 +7,6 @@ use crate::util::functions::bank_send;
 use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
 use crate::core::types::onboarding_cost::OnboardingCost;
 use cosmwasm_std::{coin, Addr, Coin, CosmosMsg};
-use provwasm_std::ProvenanceMsg;
 use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -96,7 +95,7 @@ impl FeePaymentDetail {
 
     /// Converts all the [payments](self::FeePaymentDetail::payments) into Provenance Blockchain
     /// bank send messages in order to charge them to their respective recipients.
-    pub fn to_bank_send_msgs(&self) -> AssetResult<Vec<CosmosMsg<ProvenanceMsg>>> {
+    pub fn to_bank_send_msgs(&self) -> AssetResult<Vec<CosmosMsg>> {
         self.payments
             .iter()
             .map(
@@ -221,7 +220,6 @@ mod tests {
     use crate::util::constants::NHASH;
     use crate::util::traits::OptionExtensions;
     use cosmwasm_std::{BankMsg, CosmosMsg, Uint128};
-    use provwasm_std::ProvenanceMsg;
 
     #[test]
     fn test_generate_fee_destination_fee_name() {
@@ -772,7 +770,7 @@ mod tests {
         );
     }
 
-    fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg<ProvenanceMsg>> {
+    fn test_get_messages(verifier: &VerifierDetailV2) -> Vec<CosmosMsg> {
         test_get_messages_provided(verifier, false, &[])
     }
 
@@ -780,7 +778,7 @@ mod tests {
         verifier: &VerifierDetailV2,
         is_retry: bool,
         existing_scope_attributes: &[AssetScopeAttribute],
-    ) -> Vec<CosmosMsg<ProvenanceMsg>> {
+    ) -> Vec<CosmosMsg> {
         FeePaymentDetail::new(
             DEFAULT_SCOPE_ADDRESS,
             &verifier,
@@ -797,7 +795,7 @@ mod tests {
     /// ensuring that the expected amount was sent in the expected denom to that address.  All output errors are
     /// prefixed with the input error_message string.
     fn test_messages_contains_fee_for_address<S: Into<String>, D: Into<String>, M: Into<String>>(
-        messages: &[CosmosMsg<ProvenanceMsg>],
+        messages: &[CosmosMsg],
         address: S,
         expected_amount: u128,
         expected_denom: D,

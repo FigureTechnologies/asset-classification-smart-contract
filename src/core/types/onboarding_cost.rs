@@ -23,7 +23,7 @@ impl OnboardingCost {
     pub fn new(cost: u128, fee_destinations: &[FeeDestinationV2]) -> Self {
         Self {
             cost: Uint128::new(cost),
-            fee_destinations: fee_destinations.iter().cloned().collect(),
+            fee_destinations: fee_destinations.to_vec(),
         }
     }
 

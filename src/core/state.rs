@@ -2,17 +2,17 @@ use crate::core::types::asset_definition::AssetDefinitionV3;
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::{core::msg::InitMsg, util::aliases::AssetResult};
 use cosmwasm_std::{Addr, Storage};
-use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
-use cw_storage_plus::Map;
+use cw_storage_plus::{Item, Map};
 use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::error::ContractError;
 
-static STATE_V2_KEY: &[u8] = b"state_v2";
-const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
+const STATE_V2_KEY: &str = "state_v2";
+pub const STATE_V2: Item<StateV2> = Item::new(STATE_V2_KEY);
 
+const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
 const FEE_PAYMENT_DETAILS: Map<(Addr, String), FeePaymentDetail> =
     Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
@@ -51,24 +51,6 @@ impl StateV2 {
     }
 }
 
-/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC).
-///
-/// # Parameters
-///
-/// * `storage` A mutable reference to the contract's internal storage.
-pub fn config_v2(storage: &mut dyn Storage) -> Singleton<StateV2> {
-    singleton(storage, STATE_V2_KEY)
-}
-
-/// Fetches a read-only cosmwasm storage singleton instance for loading the contract's state.
-///
-/// # Parameters
-///
-/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).
-pub fn config_read_v2(storage: &dyn Storage) -> ReadonlySingleton<StateV2> {
-    singleton_read(storage, STATE_V2_KEY)
-}
-
 /// Value is currently 'asset_definitions_v2' due to a structural change of data (removing an existing field, scope_spec_address) and switching from
 /// and IndexedMap to a regular Map... so everything was changed to be called 'v3', but no migration was actually needed to transition all values to new
 /// keys as the existing config was able to be read as a Map as-is.
@@ -81,7 +63,6 @@ const ASSET_DEFINITIONS_V3: Map<String, AssetDefinitionV3> = Map::new(ASSET_DEFI
 pub fn list_asset_definitions_v3(storage: &dyn Storage) -> Vec<AssetDefinitionV3> {
     ASSET_DEFINITIONS_V3
         .range(storage, None, None, cosmwasm_std::Order::Descending)
-        .into_iter()
         .filter(|result| result.is_ok())
         .map(|result| result.unwrap().1)
         .collect::<Vec<AssetDefinitionV3>>()
@@ -296,14 +277,20 @@ pub fn delete_fee_payment_detail<S1: Into<String>, S2: Into<String>>(
     // not produce an error if no target value exists, but it is very informative of bad code to
     // reveal when unnecessary operations occur.
     load_fee_payment_detail(storage, &scope_address, &asset_type)?;
-    FEE_PAYMENT_DETAILS.remove(storage, (Addr::unchecked(scope_address), asset_type));
+    FEE_PAYMENT_DETAILS.remove(
+        storage,
+        (
+            Addr::unchecked(scope_address.to_owned()),
+            asset_type.to_owned(),
+        ),
+    );
     ().to_ok()
 }
 
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::StdError;
-    use provwasm_mocks::mock_dependencies;
+    use provwasm_mocks::mock_provenance_dependencies;
 
     use crate::core::error::ContractError;
     use crate::core::state::{
@@ -319,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_insert_asset_definition() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let def = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("insert should work correctly");
@@ -345,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_replace_asset_definition() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let mut def =
             AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         let error = replace_asset_definition_v3(deps.as_mut().storage, &def).unwrap_err();
@@ -374,7 +361,7 @@ mod tests {
 
     #[test]
     fn test_may_load_asset_definition_by_type() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let heloc = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &heloc)
             .expect("the heloc definition should insert without error");
@@ -395,7 +382,7 @@ mod tests {
 
     #[test]
     fn test_load_asset_definition_by_type() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let heloc = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         let mortgage = AssetDefinitionV3::new("mortgage", "DEATH PLEDGE".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &heloc)
@@ -420,7 +407,7 @@ mod tests {
 
     #[test]
     fn test_delete_asset_definition_by_type() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let def = AssetDefinitionV3::new("heloc", "Home Equity Line of Credit".to_some(), vec![]);
         insert_asset_definition_v3(deps.as_mut().storage, &def)
             .expect("expected the asset definition to be stored without error");
@@ -453,7 +440,7 @@ mod tests {
 
     #[test]
     fn test_delete_nonexistent_asset_definition_by_type_failure() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, "fake-type")
             .expect_err(
                 "expected an error to occur when attempting to delete a missing asset type",
@@ -467,7 +454,7 @@ mod tests {
 
     #[test]
     fn test_insert_and_load_fee_payment_detail() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let err = load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
@@ -509,7 +496,7 @@ mod tests {
 
     #[test]
     fn test_may_load_fee_payment_detail() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         assert!(
             may_load_fee_payment_detail(
                 deps.as_ref().storage,
@@ -536,7 +523,7 @@ mod tests {
 
     #[test]
     fn test_delete_fee_payment_detail() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect_err(
             "an error should occur when attempting to delete a fee payment detail that does not exist"
         );

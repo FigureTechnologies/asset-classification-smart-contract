@@ -1,15 +1,15 @@
-use cosmwasm_std::{Response, Storage};
+use cosmwasm_std::{DepsMut, Response, Storage};
 use result_extensions::ResultExtensions;
 use semver::Version;
 
 use crate::core::msg::MigrationOptions;
-use crate::core::state::config_v2;
+use crate::core::state::STATE_V2;
 use crate::util::event_attributes::EventAdditionalMetadata;
 use crate::util::scope_address_utils::bech32_string_to_addr;
 use crate::{
     core::error::ContractError,
     util::{
-        aliases::{AssetResult, DepsMutC, EntryPointResponse},
+        aliases::{AssetResult, EntryPointResponse},
         event_attributes::{EventAttributes, EventType},
     },
 };
@@ -22,10 +22,10 @@ use super::version_info::{
 ///
 /// # Parameters
 ///
-/// * `deps` A DepsMutC provided by cosmwasm in the migrate entrypoint.
+/// * `deps` A DepsMut provided by cosmwasm in the migrate entrypoint.
 /// * `options` An optional instance of [MigrationOptions](crate::core::msg::MigrationOptions) that
 /// dictates whether or not to execute optional functionality during the migration.
-pub fn migrate_contract(deps: DepsMutC, options: Option<MigrationOptions>) -> EntryPointResponse {
+pub fn migrate_contract(deps: DepsMut, options: Option<MigrationOptions>) -> EntryPointResponse {
     // Ensure the migration is not attempting to revert to an old version or something crazier
     check_valid_migration_versioning(deps.storage)?;
     // Store the new version info
@@ -34,15 +34,15 @@ pub fn migrate_contract(deps: DepsMutC, options: Option<MigrationOptions>) -> En
     if let Some(options) = options {
         // Only load and update the state if any options have actually been specified
         if options.has_changes() {
-            let mut state_storage = config_v2(deps.storage);
-            let mut state = state_storage.load()?;
+            let state_storage = STATE_V2;
+            let mut state = state_storage.load(deps.storage)?;
             if let Some(new_admin_address) = options.new_admin_address {
                 // Only set a new specified admin if it is a legitimate bech32 Provenance Blockchain address
                 state.admin = bech32_string_to_addr(&new_admin_address)?;
                 additional_metadata.add_metadata("new_admin_address", &new_admin_address);
             }
             // Persist all changes to the state
-            state_storage.save(&state)?;
+            state_storage.save(deps.storage, &state)?;
         }
     }
     Response::new()
@@ -87,9 +87,9 @@ fn check_valid_migration_versioning(storage: &mut dyn Storage) -> AssetResult<()
 
 #[cfg(test)]
 mod tests {
-    use provwasm_mocks::mock_dependencies;
+    use provwasm_mocks::mock_provenance_dependencies;
 
-    use crate::core::state::config_read_v2;
+    use crate::core::state::STATE_V2;
     use crate::testutil::test_utilities::{test_instantiate_success, InstArgs};
     use crate::util::constants::ADDITIONAL_METADATA_KEY;
     use crate::util::traits::OptionExtensions;
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_successful_migration() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         set_version_info(
             deps.as_mut().storage,
             &VersionInfoV1 {
@@ -138,8 +138,8 @@ mod tests {
 
     #[test]
     fn test_successful_migration_with_admin_change() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         set_version_info(
             deps.as_mut().storage,
             &VersionInfoV1 {
@@ -182,8 +182,8 @@ mod tests {
             single_attribute_for_key(&response, ADDITIONAL_METADATA_KEY),
             "the additional metadata should specify the new admin address",
         );
-        let state = config_read_v2(deps.as_ref().storage)
-            .load()
+        let state = STATE_V2
+            .load(deps.as_ref().storage)
             .expect("expected the contract config to load without issue");
         assert_eq!(
             new_admin_address,
@@ -194,7 +194,7 @@ mod tests {
 
     #[test]
     fn test_failed_migration_for_incorrect_name() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         set_version_info(
             deps.as_mut().storage,
             &VersionInfoV1 {
@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn test_failed_migration_for_too_low_version() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         set_version_info(
             deps.as_mut().storage,
             &VersionInfoV1 {
@@ -258,8 +258,8 @@ mod tests {
 
     #[test]
     fn test_failed_migration_for_invalid_new_admin_address() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         set_version_info(
             deps.as_mut().storage,
             &VersionInfoV1 {

@@ -1,0 +1,6 @@
+{
+    "base_contract_name": "acdemo.sc.pb",
+    "bind_base_name": true,
+    "asset_definitions": [],
+    "is_test": false
+}

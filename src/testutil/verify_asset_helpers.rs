@@ -1,4 +1,4 @@
-use cosmwasm_std::{testing::mock_info, MessageInfo};
+use cosmwasm_std::{testing::message_info, Addr, MessageInfo};
 
 use crate::{
     core::types::asset_identifier::AssetIdentifier,
@@ -44,15 +44,20 @@ impl TestVerifyAsset {
 impl Default for TestVerifyAsset {
     fn default() -> Self {
         Self {
-            info: mock_info(DEFAULT_VERIFIER_ADDRESS, &[]),
+            info: message_info(&Addr::unchecked(DEFAULT_VERIFIER_ADDRESS), &[]),
             contract_base_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
             verify_asset: TestVerifyAsset::default_verify_asset(),
         }
     }
 }
 
-pub fn test_verify_asset(deps: &mut MockOwnedDeps, msg: TestVerifyAsset) -> EntryPointResponse {
+pub fn test_verify_asset(
+    deps: &mut MockOwnedDeps,
+    env: &cosmwasm_std::Env,
+    msg: TestVerifyAsset,
+) -> EntryPointResponse {
     verify_asset(
+        env,
         AssetMetaService::new(deps.as_mut()),
         msg.info,
         msg.verify_asset,

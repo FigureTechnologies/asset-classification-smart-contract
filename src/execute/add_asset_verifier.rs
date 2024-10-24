@@ -2,11 +2,11 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3};
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{DepsMut, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::AddAssetVerifier](crate::core::msg::ExecuteMsg::AddAssetVerifier)
@@ -77,7 +77,7 @@ impl AddAssetVerifierV1 {
 /// * `msg` An instance of the add asset verifier v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn add_asset_verifier(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: AddAssetVerifierV1,
 ) -> EntryPointResponse {
@@ -119,16 +119,15 @@ mod tests {
     use crate::testutil::test_utilities::{
         get_default_entity_detail, single_attribute_for_key, test_instantiate_success, InstArgs,
     };
-    use crate::util::aliases::DepsC;
     use crate::util::constants::{
         ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VERIFIER_ADDRESS_KEY,
     };
     use crate::util::event_attributes::EventType;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_verifier;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{coin, Addr, Deps, Uint128};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     // Addresses must be valid bech32, so these are valid randomly-generated values for testing
     const TEST_VERIFIER_ADDRESS: &str = "tp1g83pm46c8wxsnlra2ytruec7nuy95ttc8yy5n3";
@@ -136,13 +135,13 @@ mod tests {
 
     #[test]
     fn test_valid_add_asset_verifier_via_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let verifier = get_valid_new_verifier();
         let response = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             ExecuteMsg::AddAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 verifier: verifier.clone(),
@@ -178,12 +177,12 @@ mod tests {
 
     #[test]
     fn test_valid_add_asset_verifier_via_internal() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = get_add_verifier();
         add_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             msg.clone(),
         )
         .expect("expected the add verifier function to return properly");
@@ -192,12 +191,12 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_verifier_for_invalid_asset_type() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             ExecuteMsg::AddAssetVerifier {
                 // Invalid because the asset type is missing
                 asset_type: String::new(),
@@ -214,12 +213,12 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_verifier_for_invalid_msg() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             ExecuteMsg::AddAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 // Invalid because the address is blank
@@ -244,11 +243,11 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_verifier_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = add_asset_verifier(
             deps.as_mut(),
-            mock_info("non-admin-person", &[]),
+            message_info(&Addr::unchecked("non-admin-person"), &[]),
             get_add_verifier(),
         )
         .unwrap_err();
@@ -261,11 +260,14 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_verifier_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = add_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(6900, "nhash")]),
+            message_info(
+                &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                &[coin(6900, "nhash")],
+            ),
             get_add_verifier(),
         )
         .unwrap_err();
@@ -278,11 +280,11 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_verifier_for_duplicate_verifier_address() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = add_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             AddAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
                 VerifierDetailV2::new(
@@ -305,7 +307,7 @@ mod tests {
     }
 
     // Checks that the verifier passed in was added to the default asset type's definition
-    fn test_default_verifier_was_added(verifier: &VerifierDetailV2, deps: &DepsC) {
+    fn test_default_verifier_was_added(verifier: &VerifierDetailV2, deps: &Deps) {
         let state_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)

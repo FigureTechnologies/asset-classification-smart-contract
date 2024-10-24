@@ -1,11 +1,11 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::delete_asset_definition_by_asset_type_v3;
-use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{DepsMut, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::DeleteAssetDefinition](crate::core::msg::ExecuteMsg::DeleteAssetDefinition)
@@ -65,7 +65,7 @@ impl DeleteAssetDefinitionV1 {
 /// * `msg` An instance of the delete asset definition v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn delete_asset_definition(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: DeleteAssetDefinitionV1,
 ) -> EntryPointResponse {
@@ -99,12 +99,12 @@ mod tests {
     use crate::util::event_attributes::EventType;
     use cosmwasm_std::coin;
     use cosmwasm_std::testing::mock_env;
-    use provwasm_mocks::mock_dependencies;
+    use provwasm_mocks::mock_provenance_dependencies;
 
     #[test]
     fn test_delete_asset_definition_success_for_asset_type() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         load_asset_definition_by_type_v3(deps.as_ref().storage, DEFAULT_ASSET_TYPE).expect(
             "sanity check: expected the default asset type to be inserted after instantiation",
         );
@@ -144,8 +144,8 @@ mod tests {
 
     #[test]
     fn test_delete_asset_definition_success_from_execute_route() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         execute(
             deps.as_mut(),
             mock_env(),
@@ -166,8 +166,8 @@ mod tests {
 
     #[test]
     fn test_delete_asset_definition_failure_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let err = delete_asset_definition(
             deps.as_mut(),
             empty_mock_info("bad-actor"),
@@ -185,8 +185,8 @@ mod tests {
 
     #[test]
     fn test_delete_asset_definition_failure_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let err = delete_asset_definition(
             deps.as_mut(),
             mock_info_with_funds(DEFAULT_ADMIN_ADDRESS, &[coin(100, "coindollars")]),
@@ -202,8 +202,8 @@ mod tests {
 
     #[test]
     fn test_delete_asset_definition_failure_for_missing_definition() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let err = delete_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),

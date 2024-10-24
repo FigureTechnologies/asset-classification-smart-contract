@@ -1,14 +1,16 @@
-use crate::core::types::asset_definition::AssetDefinitionInputV3;
+use crate::core::state::StateV2;
+use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
+use crate::core::types::asset_scope_attribute::AssetScopeAttribute;
+use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::core::types::serialized_enum::SerializedEnum;
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use crate::migrate::version_info::VersionInfoV1;
+use cosmwasm_schema::cw_serde;
 
 use super::types::access_route::AccessRoute;
 
 /// The struct used to instantiate the contract.  Utilized in the core [contract file](crate::contract::instantiate).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct InitMsg {
     /// The root name from which all asset names branch.  All sub-names specified in the [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3)
     /// will use this value as their parent name.
@@ -31,12 +33,13 @@ pub struct InitMsg {
 
 /// Defines all routes in which the contract can be queried.  These are all handled directly in
 /// the [contract file](crate::contract::query).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
+#[derive(cosmwasm_schema::QueryResponses)]
 pub enum QueryMsg {
     /// This route can be used to retrieve a specific [AssetDefinitionV3](super::types::asset_definition::AssetDefinitionV3) from the contract's
     /// internal storage for inspection of its verifies and other properties.  If the requested value is not found, a null
     /// response will be returned.
+    #[returns(Option<AssetDefinitionV3>)]
     QueryAssetDefinition {
         /// The asset type to query for
         asset_type: String,
@@ -44,12 +47,14 @@ pub enum QueryMsg {
     /// This route can be used to retrieve all [AssetDefinitionV3s](super::types::asset_definition::AssetDefinitionV3) stored in the contract.  This response payload can be quite
     /// large if many complex definitions are stored, so it should only used in circumstances where all asset definitions need
     /// to be inspected or displayed.  The query asset definition route is much more efficient.
+    #[returns(Vec<AssetDefinitionV3>)]
     QueryAssetDefinitions {},
     /// This route can be used to retrieve a list of existing [AssetScopeAttribute](super::types::asset_scope_attribute::AssetScopeAttribute)s that have
     /// been added to a [Provenance Metadata Scope](https://docs.provenance.io/modules/metadata-module#metadata-scope) by this
     /// contract.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
     /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
     /// successfully classified by a verifier.
+    #[returns(Option<Vec<AssetScopeAttribute>>)]
     QueryAssetScopeAttributes {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
@@ -60,6 +65,7 @@ pub enum QueryMsg {
     /// contract for a specific asset type.  This route will return a null (empty option) if the scope has never had a scope attribute added to it by the contract.
     /// This is a useful route for external consumers of the contract's data to determine if a scope (aka asset) has been
     /// successfully classified by a verifier for a specific asset type.
+    #[returns(Option<AssetScopeAttribute>)]
     QueryAssetScopeAttributeForAssetType {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
@@ -72,6 +78,7 @@ pub enum QueryMsg {
     /// during the [OnboardAsset](self::ExecuteMsg::OnboardAsset) execution route's processes.  This
     /// route is useful in showing the expected fees to be paid when the [VerifyAsset](self::ExecuteMsg::VerifyAsset)
     /// route is executed.
+    #[returns(Option<FeePaymentDetail>)]
     QueryFeePayments {
         /// Expects an [AssetIdentifier](super::types::asset_identifier::AssetIdentifier)-compatible
         /// [SerializedEnum](super::types::serialized_enum::SerializedEnum).
@@ -82,17 +89,18 @@ pub enum QueryMsg {
     /// This route can be used to retrieve the internal contract state values.  These are core configurations that denote how
     /// the contract behaves.  They reflect the values created at instantiation and potentially modified during migration.  It
     /// responds with a [StateV2](super::state::StateV2) struct value.
+    #[returns(StateV2)]
     QueryState {},
     /// This route can be used to retrieve the internal contract version information.  It elucidates the current version of the
     /// contract that was derived through instantiation or the most recent code migration.  It responds with a [VersionInfoV1](crate::migrate::version_info::VersionInfoV1)
     /// struct value.
+    #[returns(VersionInfoV1)]
     QueryVersion {},
 }
 
 /// Defines all routes in which the contract can be executed.  These are all handled directly in
 /// the [contract file](crate::contract::execute).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum ExecuteMsg {
     /// This route is the primary interaction point for most consumers.  It consumes an asset uuid or scope address, the type of
     /// asset corresponding to that scope (heloc, mortgage, payable, etc), and, if all checks pass, attaches an attribute to the
@@ -260,8 +268,7 @@ pub enum ExecuteMsg {
 
 /// The struct used to migrate the contract from one code instance to another.  Utilized in the core
 /// [contract file](crate::contract::migrate).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum MigrateMsg {
     /// Performs a standard migration using the underlying [migrate_contract](crate::migrate::migrate_contract::migrate_contract)
     /// function.
@@ -273,8 +280,7 @@ pub enum MigrateMsg {
 }
 
 /// Sub-level struct that defines optional changes that can occur during the migration process.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct MigrationOptions {
     /// Sets the contract admin to a new address when populated.  Must be a valid Provenance
     /// Blockchain bech32 address.

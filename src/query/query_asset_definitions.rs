@@ -1,8 +1,8 @@
-use cosmwasm_std::{to_binary, Binary};
+use cosmwasm_std::{to_json_binary, Binary, Deps};
 use result_extensions::ResultExtensions;
 
 use crate::core::state::list_asset_definitions_v3;
-use crate::util::aliases::{AssetResult, DepsC};
+use crate::util::aliases::AssetResult;
 
 /// A query that fetches all [AssetDefinitionV3s](crate::core::types::asset_definition::AssetDefinitionV3)
 /// from the contract's internal storage.
@@ -11,15 +11,15 @@ use crate::util::aliases::{AssetResult, DepsC};
 ///
 /// * `deps` A dependencies object provided by the cosmwasm framework.  Allows access to useful
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
-pub fn query_asset_definitions(deps: &DepsC) -> AssetResult<Binary> {
+pub fn query_asset_definitions(deps: &Deps) -> AssetResult<Binary> {
     let asset_definitions = list_asset_definitions_v3(deps.storage);
-    to_binary(&asset_definitions)?.to_ok()
+    to_json_binary(&asset_definitions)?.to_ok()
 }
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{from_binary, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::{from_json, Uint128};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     use crate::core::types::asset_definition::{AssetDefinitionInputV3, AssetDefinitionV3};
     use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -33,10 +33,10 @@ mod tests {
 
     #[test]
     fn test_empty_result() {
-        let deps = mock_dependencies(&[]);
+        let deps = mock_provenance_dependencies();
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
+        let query_response = from_json::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert!(
             query_response.is_empty(),
@@ -46,11 +46,11 @@ mod tests {
 
     #[test]
     fn test_default_instantiation_result() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
+        let query_response = from_json::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert_eq!(
             1,
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_many_definitions_result() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let mut def_ids = Vec::with_capacity(20);
         // Populate a vec with 0-19 just for different asset definitions
         def_ids.extend(0..20);
@@ -93,14 +93,14 @@ mod tests {
             .collect::<Vec<AssetDefinitionInputV3>>();
         test_instantiate_success(
             deps.as_mut(),
-            InstArgs {
+            &InstArgs {
                 asset_definitions: asset_definition_inputs.clone(),
                 ..Default::default()
             },
         );
         let response_bin = query_asset_definitions(&deps.as_ref())
             .expect("expected the query to execute appropriately");
-        let query_response = from_binary::<Vec<AssetDefinitionV3>>(&response_bin)
+        let query_response = from_json::<Vec<AssetDefinitionV3>>(&response_bin)
             .expect("expected the query to deserialize from binary correctly");
         assert_eq!(
             20,

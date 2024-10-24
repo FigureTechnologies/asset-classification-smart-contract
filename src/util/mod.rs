@@ -7,7 +7,7 @@ pub mod constants;
 /// Functions that perform common actions for the [execute](crate::contract::execute), [query](crate::contract::query),
 /// [instantiate](crate::contract::instantiate), and [migrate](crate::contract::migrate) functions.
 pub mod contract_helpers;
-/// Allows dynamic delegation of a cosmwasm [DepsMutC](crate::util::aliases::DepsMutC) to prevent
+/// Allows dynamic delegation of a cosmwasm [DepsMut](cosmwasm_std::DepsMut) to prevent
 /// common issues that arise when the struct is moved.
 pub mod deps_container;
 /// Helpers to ensure that emitting event attributes on [execute](crate::contract::execute) calls

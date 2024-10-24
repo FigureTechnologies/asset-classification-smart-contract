@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 CONTAINER_RUNTIME := $(shell which docker 2>/dev/null || which podman 2>/dev/null)
 
+### Recommended image for ARM64 processors: https://hub.docker.com/r/cosmwasm/rust-optimizer-arm64
+OPTIMIZER_IMAGE := cosmwasm/optimizer
+OPTIMIZER_DOCKER_TAG := 0.16.1
+
 .PHONY: all
 all: fmt build test lint schema
 
@@ -36,5 +40,4 @@ optimize:
 	$(CONTAINER_RUNTIME) run --rm -v $(CURDIR):/code:Z \
 		--mount type=volume,source=asset-classification-smart-contract_cache,target=/code/target \
 		--mount type=volume,source=asset-classification-smart-contract_registry_cache,target=/usr/local/cargo/registry \
-		cosmwasm/rust-optimizer:0.12.6
-
+		$(OPTIMIZER_IMAGE):$(OPTIMIZER_DOCKER_TAG)

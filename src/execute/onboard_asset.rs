@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, load_asset_definition_by_type_v3};
+use crate::core::state::{load_asset_definition_by_type_v3, STATE_V2};
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
 use crate::core::types::asset_onboarding_status::AssetOnboardingStatus;
@@ -15,7 +15,7 @@ use crate::util::functions::generate_os_gateway_grant_id;
 use crate::util::traits::OptionExtensions;
 use cosmwasm_std::{Env, MessageInfo, Response};
 use os_gateway_contract_attributes::OsGatewayAttributeGenerator;
-use provwasm_std::ProvenanceQuerier;
+use provwasm_std::types::provenance::metadata::v1::MetadataQuerier;
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::OnboardAsset](crate::core::msg::ExecuteMsg::OnboardAsset)
@@ -133,25 +133,38 @@ where
     check_funds_are_empty(&info)?;
 
     // verify asset (scope) exists
+    let error_response = ContractError::AssetNotFound {
+        scope_address: asset_identifiers.scope_address.to_owned(),
+    }
+    .to_err();
     let scope = match repository.use_deps(|d| {
-        ProvenanceQuerier::new(&d.querier).get_scope(&asset_identifiers.scope_address)
+        MetadataQuerier::new(&d.querier).scope(
+            asset_identifiers.scope_address.to_owned(),
+            String::from(""),
+            String::from(""),
+            false,
+            false,
+            false,
+            false,
+        )
     }) {
-        Err(..) => {
-            return ContractError::AssetNotFound {
-                scope_address: asset_identifiers.scope_address,
-            }
-            .to_err()
-        }
-        Ok(scope) => scope,
+        Err(..) => return error_response,
+        Ok(scope_response) => match scope_response.scope {
+            Some(scope_wrapper) => match scope_wrapper.scope {
+                Some(scope) => scope,
+                None => return error_response,
+            },
+            None => return error_response,
+        },
     };
 
-    let state = repository.use_deps(|deps| config_read_v2(deps.storage).load())?;
+    let state = repository.use_deps(|deps| STATE_V2.load(deps.storage))?;
 
     // verify that the sender of this message is a scope owner
     if !scope
         .owners
         .iter()
-        .any(|owner| owner.address == info.sender)
+        .any(|owner| owner.address == info.sender.as_str())
     {
         return ContractError::Unauthorized {
             explanation: "sender address does not own the scope".to_string(),
@@ -163,15 +176,32 @@ where
     if !state.is_test {
         // pull scope records for validation - if no records exist on the scope, the querier will produce an error here
         let records = repository
-            .use_deps(|d| ProvenanceQuerier::new(&d.querier).get_records(&scope.scope_id))?
+            .use_deps(|d| {
+                MetadataQuerier::new(&d.querier).records(
+                    String::from(""),
+                    asset_identifiers.scope_address.to_owned(),
+                    String::from(""),
+                    String::from(""),
+                    false,
+                    false,
+                    false,
+                    false,
+                )
+            })?
             .records;
 
         // verify scope has at least one record that is not empty
-        if !records.into_iter().any(|record| !record.outputs.is_empty()) {
+        if !records
+            .into_iter()
+            .any(|record_wrapper| match record_wrapper.record {
+                Some(record) => !record.outputs.is_empty(),
+                None => false,
+            })
+        {
             return ContractError::InvalidScope {
                 explanation: format!(
                     "cannot onboard scope [{}]. scope must have at least one non-empty record",
-                    scope.scope_id,
+                    asset_identifiers.scope_address.to_owned(),
                 ),
             }
             .to_err();
@@ -253,13 +283,19 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{coins, from_binary, CosmosMsg, Response, StdError, Uint128};
+    use cosmwasm_std::{coins, from_json, Response, Uint128};
     use os_gateway_contract_attributes::{OS_GATEWAY_EVENT_TYPES, OS_GATEWAY_KEYS};
-    use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{
-        AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, Process, ProcessId,
-        ProvenanceMsg, ProvenanceMsgParams, Record, Records,
+    use provwasm_mocks::mock_provenance_dependencies;
+    use provwasm_std::types::provenance::attribute::v1::{
+        AttributeType, MsgAddAttributeRequest, MsgUpdateAttributeRequest, QueryAttributeRequest,
+        QueryAttributeResponse, QueryAttributesRequest, QueryAttributesResponse,
     };
+    use provwasm_std::types::provenance::metadata::v1::process::ProcessId;
+    use provwasm_std::types::provenance::metadata::v1::{
+        Process, Record, RecordWrapper, RecordsRequest, RecordsResponse, ScopeRequest,
+        ScopeResponse, ScopeWrapper,
+    };
+    use provwasm_std::types::provenance::msgfees::v1::MsgAssessCustomMsgFeeRequest;
 
     use crate::contract::execute;
     use crate::core::msg::ExecuteMsg::OnboardAsset;
@@ -279,11 +315,15 @@ mod tests {
         DEFAULT_ONBOARDING_COST, DEFAULT_RETRY_COST, DEFAULT_SECONDARY_ASSET_TYPE,
     };
     use crate::testutil::test_utilities::{
-        assert_single_item, get_default_asset_definition_input, get_default_verifier_detail,
+        assert_single_item, build_attribute, get_default_asset_definition_input,
+        get_default_verifier_detail, mock_single_scope_attribute, setup_no_attribute_response,
         single_attribute_for_key,
     };
     use crate::util::constants::{NEW_ASSET_ONBOARDING_STATUS_KEY, NHASH};
-    use crate::util::functions::generate_os_gateway_grant_id;
+    use crate::util::functions::{
+        generate_os_gateway_grant_id, try_into_add_attribute_request, try_into_custom_fee_request,
+        try_into_update_attribute_request,
+    };
     use crate::util::traits::OptionExtensions;
     use crate::{
         core::{
@@ -327,8 +367,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_unsupported_asset_type() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -360,8 +400,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_disabled_asset_type() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
         toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
@@ -390,8 +430,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_unsupported_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -431,8 +471,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_funds_provided() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -464,10 +504,21 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_asset_not_found() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
+
         // Some random scope address unrelated to the default scope address, which is mocked during setup_test_suite
         let bogus_scope_address = "scope1qp9szrgvvpy5ph5fmxrzs2euyltssfc3lu";
+        ScopeRequest::mock_response(
+            &mut deps.querier,
+            ScopeResponse {
+                scope: None,
+                sessions: vec![],
+                records: vec![],
+                request: None,
+            },
+        );
 
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -500,8 +551,9 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_asset_pending_status() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let err = onboard_asset(
@@ -549,10 +601,12 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_asset_approved_status() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        test_verify_asset(&mut deps, &instantiate_args.env, TestVerifyAsset::default()).unwrap();
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
             mock_env(),
@@ -585,10 +639,31 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_no_records() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         // Setup the default scope as the result value of a scope query, but don't establish any records
-        deps.querier.with_scope(get_default_scope());
+        ScopeRequest::mock_response(
+            &mut deps.querier,
+            ScopeResponse {
+                scope: Some(ScopeWrapper {
+                    scope: Some(get_default_scope()),
+                    scope_id_info: None,
+                    scope_spec_id_info: None,
+                }),
+                sessions: vec![],
+                records: vec![],
+                request: None,
+            },
+        );
+        RecordsRequest::mock_response(
+            &mut deps.querier,
+            RecordsResponse {
+                scope: None,
+                sessions: vec![],
+                records: vec![],
+                request: None,
+            },
+        );
         let err = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
             mock_env(),
@@ -603,39 +678,41 @@ mod tests {
         )
         .unwrap_err();
         match err {
-            ContractError::Std(e) => match e {
-                StdError::GenericErr { msg, .. } => {
-                    assert!(
-                        msg.contains("Querier system error"),
-                        "the message should denote that the querier failed",
-                    );
-                    assert!(
-                        msg.contains("metadata not found"),
-                        "the message should denote that the issue was related to metadata",
-                    );
-                    assert!(
-                        msg.contains("get_records"),
-                        "the message should denote that the issue was related to records",
-                    );
-                },
-                _ => panic!("unexpected StdError encountered when onboarding a scope with no records: {:?}", e),
+            ContractError::InvalidScope { explanation } => {
+                assert!(
+                    explanation.contains("scope must have at least one non-empty record"),
+                    "the message should denote that the issue was related to the scope not having any records",
+                );
             },
-            _ => panic!("expected the provenance querier to return an error when no records are present for the scope, but got error: {:?}", err),
+            _ => panic!("unexpected ContractError encountered when onboarding a scope with no records: {:?}", err),
         };
     }
 
     #[test]
     fn test_onboard_asset_succeeds_on_no_records_in_test_mode() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         test_instantiate_success(
             deps.as_mut(),
-            InstArgs {
+            &InstArgs {
                 is_test: true,
                 ..Default::default()
             },
         );
         // Setup the default scope as the result value of a scope query, but don't establish any records
-        deps.querier.with_scope(get_default_scope());
+        ScopeRequest::mock_response(
+            &mut deps.querier,
+            ScopeResponse {
+                scope: Some(ScopeWrapper {
+                    scope: Some(get_default_scope()),
+                    scope_id_info: None,
+                    scope_spec_id_info: None,
+                }),
+                sessions: vec![],
+                records: vec![],
+                request: None,
+            },
+        );
+        setup_no_attribute_response(&mut deps, None);
         onboard_asset(
             AssetMetaService::new(deps.as_mut()),
             mock_env(),
@@ -653,28 +730,46 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_errors_on_empty_records() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         // Setup the default scope and add a record, but make sure the record is not formed properly
         let scope = get_default_scope();
-        deps.querier.with_scope(scope.clone());
-        deps.querier.with_records(
-            scope,
-            Records {
-                records: vec![Record {
-                    name: "record-name".to_string(),
-                    session_id: DEFAULT_SESSION_ADDRESS.to_string(),
-                    specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string(),
-                    process: Process {
-                        process_id: ProcessId::Address {
-                            address: String::new(),
-                        },
-                        method: String::new(),
-                        name: String::new(),
-                    },
-                    inputs: vec![],
-                    outputs: vec![],
-                }],
+        let malformed_record = vec![RecordWrapper {
+            record: Some(Record {
+                name: "record-name".to_string(),
+                session_id: DEFAULT_SESSION_ADDRESS.to_string().into(),
+                specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string().into(),
+                process: Some(Process {
+                    process_id: Some(ProcessId::Address(String::new())),
+                    method: String::new(),
+                    name: String::new(),
+                }),
+                inputs: vec![],
+                outputs: vec![],
+            }),
+            record_id_info: None,
+            record_spec_id_info: None,
+        }];
+        ScopeRequest::mock_response(
+            &mut deps.querier,
+            ScopeResponse {
+                scope: Some(ScopeWrapper {
+                    scope: Some(scope.clone()),
+                    scope_id_info: None,
+                    scope_spec_id_info: None,
+                }),
+                sessions: vec![],
+                records: malformed_record.to_owned(),
+                request: None,
+            },
+        );
+        RecordsRequest::mock_response(
+            &mut deps.querier,
+            RecordsResponse {
+                scope: None,
+                sessions: vec![],
+                records: malformed_record,
+                request: None,
             },
         );
         let err = onboard_asset(
@@ -699,36 +794,45 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_succeeds_for_empty_records_in_test_mode() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         test_instantiate_success(
             deps.as_mut(),
-            InstArgs {
+            &InstArgs {
                 is_test: true,
                 ..Default::default()
             },
         );
         // Setup the default scope and add a record, but make sure the record is not formed properly
         let scope = get_default_scope();
-        deps.querier.with_scope(scope.clone());
-        deps.querier.with_records(
-            scope,
-            Records {
-                records: vec![Record {
-                    name: "record-name".to_string(),
-                    session_id: DEFAULT_SESSION_ADDRESS.to_string(),
-                    specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string(),
-                    process: Process {
-                        process_id: ProcessId::Address {
-                            address: String::new(),
-                        },
-                        method: String::new(),
-                        name: String::new(),
-                    },
-                    inputs: vec![],
-                    outputs: vec![],
+        ScopeRequest::mock_response(
+            &mut deps.querier,
+            ScopeResponse {
+                scope: Some(ScopeWrapper {
+                    scope: Some(scope.clone()),
+                    scope_id_info: None,
+                    scope_spec_id_info: None,
+                }),
+                sessions: vec![],
+                records: vec![RecordWrapper {
+                    record: Some(Record {
+                        name: "record-name".to_string(),
+                        session_id: DEFAULT_SESSION_ADDRESS.to_string().into(),
+                        specification_id: DEFAULT_RECORD_SPEC_ADDRESS.to_string().into(),
+                        process: Some(Process {
+                            process_id: Some(ProcessId::Address(String::new())),
+                            method: String::new(),
+                            name: String::new(),
+                        }),
+                        inputs: vec![],
+                        outputs: vec![],
+                    }),
+                    record_id_info: None,
+                    record_spec_id_info: None,
                 }],
+                request: None,
             },
         );
+        setup_no_attribute_response(&mut deps, None);
         onboard_asset(
             AssetMetaService::new(deps.as_mut()),
             mock_env(),
@@ -746,8 +850,9 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_success() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
 
         let result = onboard_asset(
             AssetMetaService::new(deps.as_mut()),
@@ -778,21 +883,19 @@ mod tests {
             result.messages.len(),
             "Onboarding should produce the correct number of messages"
         );
-
-        result.messages.iter().for_each(|msg| match &msg.msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                        name, value, ..
-                    }),
-                ..
-            }) => {
+        result.messages.iter().for_each(|msg| {
+            if let Some(add_attribute_request) = try_into_add_attribute_request(&msg.msg) {
+                let MsgAddAttributeRequest {
+                    name,
+                    value,
+                    ..
+                } = add_attribute_request;
                 assert_eq!(
-                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
                     name,
                     "bound asset name should match what is expected for the asset_type"
                 );
-                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                let deserialized: AssetScopeAttribute = from_json(value).unwrap();
                 assert_eq!(
                     DEFAULT_ASSET_TYPE.to_string(),
                     deserialized.asset_type,
@@ -817,24 +920,22 @@ mod tests {
                     deserialized.access_definitions.first().unwrap(),
                     "Proper access route should be set upon onboarding"
                 );
-            }
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                        amount,
-                        name,
-                        from,
-                        recipient,
-                    }),
-                ..
-            }) => {
+            } else if let Some(custom_fee_request) = try_into_custom_fee_request(&msg.msg) {
+                let MsgAssessCustomMsgFeeRequest {
+                    name,
+                    amount,
+                    recipient,
+                    from,
+                    ..
+                } = custom_fee_request;
                 assert_eq!(
                     DEFAULT_ONBOARDING_COST,
-                    amount.amount.u128(),
+                    amount.expect("fee should have amount defined").amount.parse().expect("amount should be parseable"),
                     "double the default verifier cost should be included in the fee msg to account for the provenance cut",
                 );
-                assert!(
-                    name.is_some(),
+                assert_ne!(
+                    name,
+                    String::from(""),
                     "the fee message should include a fee name",
                 );
                 assert_eq!(
@@ -844,22 +945,23 @@ mod tests {
                 );
                 assert_eq!(
                     MOCK_CONTRACT_ADDR,
-                    recipient.to_owned().expect("a recipient address should be set on the custom fee").as_str(),
+                    recipient.to_owned().as_str(),
                     "the contract's address should be the recipient of the fee",
                 );
+            } else {
+                panic!("Unexpected message from onboard_asset: {:?}", msg)
             }
-            msg => panic!("Unexpected message from onboard_asset: {:?}", msg),
         });
         assert_onboard_response_attributes_are_correct(&result, false);
     }
 
     #[test]
     fn test_onboarding_asset_with_free_onboarding_cost() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         // Set up the contract as normal, but make onboarding free
         setup_test_suite(
             &mut deps,
-            InstArgs {
+            &InstArgs {
                 asset_definitions: vec![AssetDefinitionInputV3 {
                     verifiers: vec![VerifierDetailV2 {
                         onboarding_cost: Uint128::zero(),
@@ -870,6 +972,7 @@ mod tests {
                 ..InstArgs::default()
             },
         );
+        setup_no_attribute_response(&mut deps, None);
         let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_no_money_moved_in_response(
             &response,
@@ -879,8 +982,10 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_retry_success() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let payment_detail_before_retry = load_fee_payment_detail(
             deps.as_ref().storage,
@@ -888,7 +993,12 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("a fee payment detail should be stored for the asset after onboarding");
-        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        test_verify_asset(
+            &mut deps,
+            &instantiate_args.env,
+            TestVerifyAsset::default_with_success(false),
+        )
+        .unwrap();
         load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
@@ -903,6 +1013,14 @@ mod tests {
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
         );
+        QueryAttributesRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributesResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![build_attribute(DEFAULT_SCOPE_ADDRESS, &attribute)],
+                pagination: None,
+            },
+        );
         let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         assert_eq!(
             2,
@@ -910,31 +1028,17 @@ mod tests {
             "two messages should be emitted in the retry. One for an attribute update and one for a message fee",
         );
         assert!(
-            matches!(
-                response.messages[0].msg,
-                CosmosMsg::Custom(ProvenanceMsg {
-                    params: ProvenanceMsgParams::Attribute(
-                        AttributeMsgParams::UpdateAttribute { .. }
-                    ),
-                    ..
-                })
-            ),
+            try_into_update_attribute_request(&response.messages[0].msg).is_some(),
             "the first emitted message should update the attribute",
         );
         assert!(
-            matches!(
-                response.messages[1].msg,
-                CosmosMsg::Custom(ProvenanceMsg {
-                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
-                    ..
-                })
-            ),
+            try_into_custom_fee_request(&response.messages[1].msg).is_some(),
             "the second emitted message should be the message fee"
         );
         test_aggregate_msg_fees_are_charged(
             &response,
             DEFAULT_RETRY_COST,
-            "the retry amount should be used because the the same verifier was used",
+            "the retry amount should be used because the same verifier was used",
         );
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
@@ -987,8 +1091,9 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_retry_success_changing_verifiers() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
         let other_verifier = VerifierDetailV2::new(
             "tp17szfvgwgx9c9kwvyp9megryft3zm77am6x9gal",
             Uint128::new(300),
@@ -1012,6 +1117,7 @@ mod tests {
             },
         )
         .expect("adding the second verifier should succeed without error");
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let payment_detail_before = load_fee_payment_detail(
             deps.as_ref().storage,
@@ -1019,7 +1125,12 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("a fee payment detail should be stored for the asset after onboarding");
-        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        test_verify_asset(
+            &mut deps,
+            &instantiate_args.env,
+            TestVerifyAsset::default_with_success(false),
+        )
+        .unwrap();
         load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
@@ -1051,25 +1162,11 @@ mod tests {
             "two messages should be emitted in the retry. One for an attribute update and one for a message fee",
         );
         assert!(
-            matches!(
-                response.messages[0].msg,
-                CosmosMsg::Custom(ProvenanceMsg {
-                    params: ProvenanceMsgParams::Attribute(
-                        AttributeMsgParams::UpdateAttribute { .. }
-                    ),
-                    ..
-                })
-            ),
+            try_into_update_attribute_request(&response.messages[0].msg).is_some(),
             "the first emitted message should update the attribute",
         );
         assert!(
-            matches!(
-                response.messages[1].msg,
-                CosmosMsg::Custom(ProvenanceMsg {
-                    params: ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee { .. }),
-                    ..
-                })
-            ),
+            try_into_custom_fee_request(&response.messages[1].msg).is_some(),
             "the second emitted message should be the message fee"
         );
         test_aggregate_msg_fees_are_charged(
@@ -1086,7 +1183,8 @@ mod tests {
             "the onboarding status should now be set to pending after retrying the onboard process",
         );
         assert_eq!(
-            attribute.verifier_address, other_verifier.address,
+            attribute.verifier_address.as_str(),
+            other_verifier.address,
             "the attribute should be updated to the other verifier's address",
         );
         let payment_detail_after = load_fee_payment_detail(
@@ -1111,23 +1209,27 @@ mod tests {
 
     #[test]
     fn test_onboarding_asset_retry_success_with_free_retries() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         // Set up the contract as normal, but make retries free
-        setup_test_suite(
-            &mut deps,
-            InstArgs {
-                asset_definitions: vec![AssetDefinitionInputV3 {
-                    verifiers: vec![VerifierDetailV2 {
-                        retry_cost: OnboardingCost::new(0, &[]).to_some(),
-                        ..get_default_verifier_detail()
-                    }],
-                    ..get_default_asset_definition_input()
+        let instantiate_args = InstArgs {
+            asset_definitions: vec![AssetDefinitionInputV3 {
+                verifiers: vec![VerifierDetailV2 {
+                    retry_cost: OnboardingCost::new(0, &[]).to_some(),
+                    ..get_default_verifier_detail()
                 }],
-                ..InstArgs::default()
-            },
-        );
+                ..get_default_asset_definition_input()
+            }],
+            ..InstArgs::default()
+        };
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default_with_success(false)).unwrap();
+        test_verify_asset(
+            &mut deps,
+            &instantiate_args.env,
+            TestVerifyAsset::default_with_success(false),
+        )
+        .unwrap();
         let attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the default scope address should have an attribute attached to it");
@@ -1135,6 +1237,14 @@ mod tests {
             attribute.onboarding_status,
             AssetOnboardingStatus::Denied,
             "sanity check: the onboarding status should be set to denied after the verifier marks the asset as success = false",
+        );
+        QueryAttributesRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributesResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![build_attribute(DEFAULT_SCOPE_ADDRESS, &attribute)],
+                pagination: None,
+            },
         );
         let response = test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         test_no_money_moved_in_response(
@@ -1145,8 +1255,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_as_subsequent_type_uses_subsequent_classification_fees() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
         let secondary_verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(300),
@@ -1178,11 +1288,23 @@ mod tests {
             },
         )
         .expect("adding the secondary asset definition should succeed");
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("onboarding as the default asset type should succeed");
         let existing_scope_attribute = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("the existing asset type should have an asset scope attribute");
+        // We expect to find no match when querying for an existing attribute with the same name as the yet-to-be-added second attribute
+        QueryAttributeRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributeResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![],
+                pagination: None,
+            },
+        );
+        // We expect to find a single match when querying for any existing attributes: the first attribute that was already added
+        mock_single_scope_attribute(&mut deps, &existing_scope_attribute, DEFAULT_SCOPE_ADDRESS);
         let subsequent_response = test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
@@ -1227,8 +1349,8 @@ mod tests {
 
     #[test]
     fn test_onboard_asset_as_subsequent_non_applicable_type_uses_default_fees() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
         let secondary_verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(300),
@@ -1261,8 +1383,10 @@ mod tests {
             },
         )
         .expect("adding the secondary asset definition should succeed");
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("onboarding as the default asset type should succeed");
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
@@ -1300,9 +1424,10 @@ mod tests {
 
     #[test]
     fn test_onboarding_asset_as_subsequent_type_with_free_subsequent_cost() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         // Set up the contract as normal, but make subsequent onboards free
-        setup_test_suite(&mut deps, InstArgs::default());
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         let secondary_verifier = VerifierDetailV2::new(
             DEFAULT_VERIFIER_ADDRESS,
             Uint128::new(300),
@@ -1334,8 +1459,30 @@ mod tests {
             },
         )
         .expect("adding the secondary asset definition should succeed");
+
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("onboarding as the default asset type should succeed");
+        let initial_attribute = AssetMetaService::new(deps.as_mut())
+            .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
+            .expect("the default scope address should have an attribute attached to it");
+        // Ensure a query for all attributes returns the initially onboarded attribute
+        QueryAttributesRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributesResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![build_attribute(DEFAULT_SCOPE_ADDRESS, &initial_attribute)],
+                pagination: None,
+            },
+        );
+        // Ensure the query for the attribute yet to be onboarded returns no results
+        QueryAttributeRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributeResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![],
+                pagination: None,
+            },
+        );
         let response = test_onboard_asset(
             &mut deps,
             TestOnboardAsset {
@@ -1355,10 +1502,12 @@ mod tests {
 
     #[test]
     fn test_update_attribute_generates_appropriate_messages() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
-        test_verify_asset(&mut deps, TestVerifyAsset::default()).unwrap();
+        test_verify_asset(&mut deps, &instantiate_args.env, TestVerifyAsset::default()).unwrap();
         let service = AssetMetaService::new(deps.as_mut());
         let original_attribute = service
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
@@ -1372,7 +1521,7 @@ mod tests {
         // Manually override the onboarding status to pending to test
         updated_attribute.onboarding_status = AssetOnboardingStatus::Pending;
         service
-            .update_attribute(&updated_attribute)
+            .update_attribute(&instantiate_args.env, &updated_attribute)
             .expect("update attribute should work as intended");
         let generated_messages = service.get_messages();
         assert_eq!(
@@ -1382,64 +1531,61 @@ mod tests {
         );
         let target_attribute_name =
             generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME);
-        match &generated_messages[0] {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        address,
-                        name,
-                        original_value,
-                        original_value_type,
-                        update_value,
-                        update_value_type,
-                    }),
+        let first_message = &generated_messages[0];
+        if let Some(update_attribute_request) = try_into_update_attribute_request(first_message) {
+            let MsgUpdateAttributeRequest {
+                ref name,
+                ref original_value,
+                ref update_value,
+                ref account,
                 ..
-            }) => {
-                assert_eq!(
-                    DEFAULT_SCOPE_ADDRESS,
-                    address.as_str(),
-                    "expected the delete attribute message to target the default scope address",
-                );
-                assert_eq!(
-                    &target_attribute_name,
-                    name,
-                    "expected the default attribute name to be the target used when deleting the attribute",
-                );
-                assert_eq!(
-                    original_attribute,
-                    from_binary(original_value)
-                        .expect("the original_value should deserialize to an AssetScopeAttribute"),
-                    "the original_value binary should reflect the original state of the attribute",
-                );
-                assert_eq!(
-                    &AttributeValueType::Json,
-                    original_value_type,
-                    "the original_value_type should always be json",
-                );
-                assert_eq!(
-                    updated_attribute,
-                    from_binary(update_value)
-                        .expect("the update_value should deserialize to an AssetScopeAttribute"),
-                    "the update_value binary should reflect the updated state of the attribute",
-                );
-                assert_eq!(
-                    &AttributeValueType::Json,
-                    update_value_type,
-                    "the update_value_type should always be json",
-                );
-            }
-            msg => panic!(
+            } = update_attribute_request;
+            assert_eq!(
+                DEFAULT_SCOPE_ADDRESS,
+                account.as_str(),
+                "expected the delete attribute message to target the default scope address",
+            );
+            assert_eq!(
+                target_attribute_name,
+                name.to_owned(),
+                "expected the default attribute name to be the target used when deleting the attribute",
+            );
+            assert_eq!(
+                original_attribute,
+                from_json(original_value)
+                    .expect("the original_value should deserialize to an AssetScopeAttribute"),
+                "the original_value binary should reflect the original state of the attribute",
+            );
+            assert_eq!(
+                AttributeType::Json,
+                update_attribute_request.original_attribute_type(),
+                "the original_value_type should always be json",
+            );
+            assert_eq!(
+                updated_attribute,
+                from_json(update_value)
+                    .expect("the update_value should deserialize to an AssetScopeAttribute"),
+                "the update_value binary should reflect the updated state of the attribute",
+            );
+            assert_eq!(
+                AttributeType::Json,
+                update_attribute_request.update_attribute_type(),
+                "the update_value_type should always be json",
+            );
+        } else {
+            panic!(
                 "unexpected first message generated during update attribute: {:?}",
-                msg
-            ),
-        };
+                first_message,
+            )
+        }
     }
 
     #[test]
     fn test_onboard_with_object_store_gateway_permissions() {
         let get_onboard_result = |permission_spec: Option<bool>| {
-            let mut deps = mock_dependencies(&[]);
-            setup_test_suite(&mut deps, InstArgs::default());
+            let mut deps = mock_provenance_dependencies();
+            setup_test_suite(&mut deps, &InstArgs::default());
+            setup_no_attribute_response(&mut deps, None);
             execute(
                 deps.as_mut(),
                 mock_env(),
@@ -1478,7 +1624,7 @@ mod tests {
     }
 
     fn assert_onboard_response_attributes_are_correct(
-        response: &Response<ProvenanceMsg>,
+        response: &Response,
         expect_os_gateway_values: bool,
     ) {
         assert_eq!(

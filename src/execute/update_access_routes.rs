@@ -1,6 +1,6 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::config_read_v2;
+use crate::core::state::STATE_V2;
 use crate::core::types::access_definition::AccessDefinition;
 use crate::core::types::access_route::AccessRoute;
 use crate::core::types::asset_identifier::AssetIdentifier;
@@ -103,6 +103,8 @@ impl UpdateAccessRoutesV1 {
 ///
 /// # Parameters
 ///
+/// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+/// details, as well as blockchain information at the time of the transaction.
 /// * `repository` A helper collection of traits that allows complex lookups of scope values and
 /// emits messages to construct the process of updating access routes as a collection of messages
 /// to produce in the function's result.
@@ -111,6 +113,7 @@ impl UpdateAccessRoutesV1 {
 /// * `msg` An instance of the update access routes v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_access_routes<'a, T>(
+    env: &cosmwasm_std::Env,
     repository: T,
     info: MessageInfo,
     msg: UpdateAccessRoutesV1,
@@ -121,10 +124,10 @@ where
     check_funds_are_empty(&info)?;
     // If the sender is not the specified owner address and the sender is not the admin, they are
     // not authorized to change access routes
-    if info.sender != msg.owner_address
+    if info.sender.as_str() != msg.owner_address
         && info.sender
             != repository
-                .use_deps(|deps| config_read_v2(deps.storage).load())?
+                .use_deps(|deps| STATE_V2.load(deps.storage))?
                 .admin
     {
         return ContractError::Unauthorized {
@@ -163,7 +166,7 @@ where
         scope_attribute
             .access_definitions
             .push(target_access_definition);
-        repository.update_attribute(&scope_attribute)?;
+        repository.update_attribute(env, &scope_attribute)?;
     } else {
         // If no access definitions are established for the given owner address, then the request is
         // invalid and should be rejected
@@ -193,31 +196,40 @@ mod tests {
         DEFAULT_SCOPE_ADDRESS, DEFAULT_SENDER_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
     };
     use crate::testutil::test_utilities::{
-        assert_single_item, empty_mock_info, setup_test_suite, single_attribute_for_key, InstArgs,
+        assert_single_item, empty_mock_info, setup_no_attribute_response, setup_test_suite,
+        single_attribute_for_key, InstArgs,
     };
     use crate::testutil::update_access_routes_helpers::{
         test_update_access_routes, TestUpdateAccessRoutes,
     };
     use crate::testutil::verify_asset_helpers::{test_verify_asset, TestVerifyAsset};
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_SCOPE_ADDRESS_KEY, ASSET_TYPE_KEY};
-    use crate::util::functions::generate_asset_attribute_name;
+    use crate::util::functions::{
+        generate_asset_attribute_name, try_into_update_attribute_request,
+    };
     use crate::util::traits::OptionExtensions;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, from_binary, CosmosMsg};
-    use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{
-        AttributeMsgParams, AttributeValueType, ProvenanceMsg, ProvenanceMsgParams,
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{coin, from_json, Addr};
+    use provwasm_mocks::mock_provenance_dependencies;
+    use provwasm_std::types::provenance::attribute::v1::{
+        AttributeType, MsgUpdateAttributeRequest,
     };
 
     #[test]
     fn test_error_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         let err = update_access_routes(
+            &instantiate_args.env,
             AssetMetaService::new(deps.as_mut()),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(111, "coindollars")]),
+            message_info(
+                &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                &[coin(111, "coindollars")],
+            ),
             get_valid_update_routes_v1(),
         )
         .expect_err("expected a ContractError to be emitted when funds are provided");
@@ -234,11 +246,14 @@ mod tests {
 
     #[test]
     fn test_error_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         let err = update_access_routes(
+            &instantiate_args.env,
             AssetMetaService::new(deps.as_mut()),
             empty_mock_info("wrong-sender"),
             get_valid_update_routes_v1(),
@@ -260,11 +275,14 @@ mod tests {
     // gets rejected to ensure that user error does not result in incorrect output
     #[test]
     fn test_error_for_no_valid_access_routes() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         let err = update_access_routes(
+            &instantiate_args.env,
             AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             UpdateAccessRoutesV1::new(
@@ -290,11 +308,14 @@ mod tests {
 
     #[test]
     fn test_error_for_no_access_definitions_for_owner() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         let err = update_access_routes(
+            &instantiate_args.env,
             AssetMetaService::new(deps.as_mut()),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
             UpdateAccessRoutesV1::new(
@@ -327,8 +348,10 @@ mod tests {
 
     #[test]
     fn test_successful_update_access_routes_by_route_owner() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
@@ -353,6 +376,7 @@ mod tests {
         // are available after execution
         let response = test_update_access_routes(
             &mut deps,
+            &instantiate_args.env,
             TestUpdateAccessRoutes {
                 info: empty_mock_info(DEFAULT_SENDER_ADDRESS),
                 update_access_routes: get_valid_update_routes_v1(),
@@ -369,53 +393,52 @@ mod tests {
         let attribute_after_update = AssetMetaService::new(deps.as_mut())
             .get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
             .expect("expected to retrieve the attribute successfully after the access route update is completed");
-        response.messages.iter().for_each(|msg| match &msg.msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        address,
-                        name,
-                        original_value,
-                        original_value_type,
-                        update_value,
-                        update_value_type,
-                    }),
-                ..
-            }) => {
+        response.messages.iter().for_each(|msg| {
+            if let Some(update_attribute_request) = try_into_update_attribute_request(&msg.msg)
+            {
+                let MsgUpdateAttributeRequest {
+                    ref name,
+                    ref original_value,
+                    ref update_value,
+                    ref account,
+                    ..
+                } = update_attribute_request;
                 assert_eq!(
                     DEFAULT_SCOPE_ADDRESS,
-                    address.to_string(),
+                    account.as_str(),
                     "the UpdateAttribute should target the scope's address",
                 );
                 assert_eq!(
-                    &expected_attribute_name, name,
+                    expected_attribute_name,
+                    name.to_owned(),
                     "the UpdateAttribute should target the default attribute name",
                 );
                 assert_eq!(
                     attribute_before_update,
-                    from_binary(original_value).expect("original value deserialization failure"),
+                    from_json(original_value).expect("original value deserialization failure"),
                     "the attribute before the update should be equivalent to the serialized original_value",
                 );
                 assert_eq!(
-                    &AttributeValueType::Json,
-                    original_value_type,
+                    AttributeType::Json,
+                    update_attribute_request.original_attribute_type(),
                     "the original_value_type should always be json",
                 );
                 assert_eq!(
                     attribute_after_update,
-                    from_binary(update_value).expect("update value deserialization failure"),
+                    from_json(update_value).expect("update value deserialization failure"),
                     "the attribute after the update should be equivalent to the serialized update_value",
                 );
                 assert_eq!(
-                    &AttributeValueType::Json,
-                    update_value_type,
+                    AttributeType::Json,
+                    update_attribute_request.update_attribute_type(),
                     "the update_value_type should always be json",
                 );
+            } else {
+                panic!(
+                    "unexpected message emitted during update access routes: {:?}",
+                    &msg.msg
+                )
             }
-            _ => panic!(
-                "unexpected message emitted during update access routes: {:?}",
-                &msg.msg
-            ),
         });
         assert_eq!(
             3,
@@ -472,12 +495,15 @@ mod tests {
 
     #[test]
     fn test_successful_update_access_routes_by_admin() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         test_update_access_routes(
             &mut deps,
+            &instantiate_args.env,
             TestUpdateAccessRoutes {
                 info: empty_mock_info(DEFAULT_ADMIN_ADDRESS),
                 update_access_routes: get_valid_update_routes_v1(),
@@ -488,12 +514,15 @@ mod tests {
 
     #[test]
     fn test_successful_update_to_remove_access_routes() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         test_update_access_routes(
             &mut deps,
+            &instantiate_args.env,
             TestUpdateAccessRoutes {
                 info: empty_mock_info(DEFAULT_SENDER_ADDRESS),
                 update_access_routes: UpdateAccessRoutesV1::new(
@@ -520,11 +549,13 @@ mod tests {
 
     #[test]
     fn test_successful_update_after_verification_retains_other_access_definitions() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
-        test_verify_asset(&mut deps, TestVerifyAsset::default())
+        test_verify_asset(&mut deps, &instantiate_args.env, TestVerifyAsset::default())
             .expect("expected the default asset verification to succeed");
         let attribute_before_update = AssetMetaService::new(deps.as_mut()).get_asset_by_asset_type(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect(
             "expected a scope attribute to be available for the default address after onboarding",
@@ -546,6 +577,7 @@ mod tests {
         );
         test_update_access_routes(
             &mut deps,
+            &instantiate_args.env,
             TestUpdateAccessRoutes {
                 info: empty_mock_info(DEFAULT_SENDER_ADDRESS),
                 update_access_routes: get_valid_update_routes_v1(),
@@ -582,8 +614,9 @@ mod tests {
 
     #[test]
     fn test_successful_update_through_execute_function() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default())
             .expect("expected the default asset onboarding to succeed");
         execute(

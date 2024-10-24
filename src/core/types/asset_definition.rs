@@ -1,17 +1,12 @@
+use cosmwasm_std::Deps;
 use result_extensions::ResultExtensions;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::core::error::ContractError;
-use crate::core::state::StateV2;
+use crate::core::state::{StateV2, STATE_V2};
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::{
-    core::state::config_read_v2,
-    util::{
-        aliases::{AssetResult, DepsC},
-        functions::generate_asset_attribute_name,
-    },
-};
+use crate::util::{aliases::AssetResult, functions::generate_asset_attribute_name};
 
 /// Defines a specific asset type associated with the contract.  Allows its specified type to be
 /// onboarded and verified.
@@ -59,9 +54,9 @@ impl AssetDefinitionV3 {
     ///
     /// # Parameters
     ///
-    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
-    pub fn attribute_name(&self, deps: &DepsC) -> AssetResult<String> {
-        let state = config_read_v2(deps.storage).load()?;
+    /// * `deps` A read-only instance of the cosmwasm-provided Deps value.
+    pub fn attribute_name(&self, deps: &Deps) -> AssetResult<String> {
+        let state = STATE_V2.load(deps.storage)?;
         self.attribute_name_state(&state).to_ok()
     }
 
@@ -70,7 +65,7 @@ impl AssetDefinitionV3 {
     ///
     /// # Parameters
     ///
-    /// * `deps` A read-only instance of the cosmwasm-provided DepsC value.
+    /// * `deps` A read-only instance of the cosmwasm-provided Deps value.
     pub fn attribute_name_state(&self, state: &StateV2) -> String {
         generate_asset_attribute_name(&self.asset_type, &state.base_contract_name)
     }

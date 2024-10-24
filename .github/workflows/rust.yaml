@@ -48,9 +48,47 @@ jobs:
           name: code-coverage-report
           path: cobertura.xml
 
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build & optimize WASM
+        run: make optimize
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+
+      # Necessary to ensure sufficient permissions for the cargo build output folder
+      - name: Clean Cargo
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+
+      - name: Build project
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Run integration test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --package asset-classification-smart-contract
+            --test integration_tests
+            --
+            --include-ignored
+            --exact --show-output
+
   release:
     name: Release Project Files
-    needs: check
+    needs: [ check, integration-tests ]
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:

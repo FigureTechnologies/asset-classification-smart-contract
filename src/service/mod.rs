@@ -5,7 +5,7 @@ pub mod asset_meta_repository;
 /// Ties all service code together into a cohesive struct to use for complex operations during the
 /// onboarding and verification processes.
 pub mod asset_meta_service;
-/// Allows dynamic delegation of a cosmwasm [DepsMutC](crate::util::aliases::DepsMutC) to prevent
+/// Allows dynamic delegation of a cosmwasm [DepsMut](cosmwasm_std::DepsMut) to prevent
 /// common issues that arise when the struct is moved.
 pub mod deps_manager;
 /// Specifies a trait used for dynamically aggregating [CosmosMsg](cosmwasm_std::CosmosMsg) values

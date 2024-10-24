@@ -18,10 +18,10 @@ use crate::query::query_fee_payments::query_fee_payments;
 use crate::query::query_state::query_state;
 use crate::query::query_version::query_version;
 use crate::service::asset_meta_service::AssetMetaService;
-use crate::util::aliases::{AssetResult, DepsC, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::validation::validate_execute_msg::validate_execute_msg;
 use crate::validation::validate_init_msg::validate_init_msg;
-use cosmwasm_std::{entry_point, Binary, Env, MessageInfo};
+use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo};
 
 /// The entry point used when an external address instantiates a stored code wasm payload of this
 /// contract on the Provenance Blockchain.
@@ -37,12 +37,7 @@ use cosmwasm_std::{entry_point, Binary, Env, MessageInfo};
 /// * `msg` A custom instantiation message defined by this contract for creating the initial
 /// configuration used by the contract.
 #[entry_point]
-pub fn instantiate(
-    deps: DepsMutC,
-    env: Env,
-    info: MessageInfo,
-    msg: InitMsg,
-) -> EntryPointResponse {
+pub fn instantiate(deps: DepsMut, env: Env, info: MessageInfo, msg: InitMsg) -> EntryPointResponse {
     // Ensure the init message is properly formatted before doing anything
     validate_init_msg(&msg)?;
     // Execute the core instantiation code
@@ -63,7 +58,7 @@ pub fn instantiate(
 /// * `msg` A custom query message enum defined by this contract to allow multiple different results
 /// to be determined for this route.
 #[entry_point]
-pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
+pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
     match msg {
         QueryMsg::QueryAssetDefinition { asset_type } => query_asset_definition(&deps, &asset_type),
         QueryMsg::QueryAssetDefinitions {} => query_asset_definitions(&deps),
@@ -104,7 +99,7 @@ pub fn query(deps: DepsC, _env: Env, msg: QueryMsg) -> AssetResult<Binary> {
 /// processes to be defined for the singular execution route entry point allowed by the
 /// cosmwasm framework.
 #[entry_point]
-pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> EntryPointResponse {
+pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> EntryPointResponse {
     // Ensure the execute message is properly formatted before doing anything
     validate_execute_msg(&msg)?;
     match msg {
@@ -115,6 +110,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             OnboardAssetV1::from_execute_msg(msg)?,
         ),
         ExecuteMsg::VerifyAsset { .. } => verify_asset(
+            &env,
             AssetMetaService::new(deps),
             info,
             VerifyAssetV1::from_execute_msg(msg)?,
@@ -138,6 +134,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
             update_asset_verifier(deps, info, UpdateAssetVerifierV1::from_execute_msg(msg)?)
         }
         ExecuteMsg::UpdateAccessRoutes { .. } => update_access_routes(
+            &env,
             AssetMetaService::new(deps),
             info,
             UpdateAccessRoutesV1::from_execute_msg(msg)?,
@@ -162,7 +159,7 @@ pub fn execute(deps: DepsMutC, env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 /// * msg` A custom migrate message enum defined by this contract to allow multiple different
 /// results of invoking the migrate endpoint.
 #[entry_point]
-pub fn migrate(deps: DepsMutC, _env: Env, msg: MigrateMsg) -> EntryPointResponse {
+pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> EntryPointResponse {
     match msg {
         MigrateMsg::ContractUpgrade { options } => migrate_contract(deps, options),
     }

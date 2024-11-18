@@ -32,8 +32,8 @@ use uuid::Uuid;
 fn get_contract_wasm_bytes() -> &'static Vec<u8> {
     use std::sync::OnceLock;
 
-    static OPTIMIZED_CONTRACT_WASM_PATH: OnceLock<Vec<u8>> = OnceLock::new();
-    OPTIMIZED_CONTRACT_WASM_PATH.get_or_init(|| {
+    static OPTIMIZED_CONTRACT_WASM: OnceLock<Vec<u8>> = OnceLock::new();
+    OPTIMIZED_CONTRACT_WASM.get_or_init(|| {
         let file_path = std::env::var("OPTIMIZED_CONTRACT_WASM_PATH").unwrap_or(String::from(
             "./artifacts/asset_classification_smart_contract.wasm",
         ));
@@ -62,9 +62,8 @@ fn happy_path_onboard_and_verify_asset() {
     });
 
     let wasm = Wasm::new(&app);
-    let wasm_byte_code = get_contract_wasm_bytes();
     let store_res = wasm
-        .store_code(&wasm_byte_code, None, admin)
+        .store_code(get_contract_wasm_bytes(), None, admin)
         .expect("storing the WASM code should succeed");
     let code_id = store_res.data.code_id;
     assert_eq!(code_id, 1);

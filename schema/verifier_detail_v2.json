@@ -33,7 +33,7 @@
       }
     },
     "onboarding_cost": {
-      "description": "The total amount charged to use the onboarding process this this verifier.",
+      "description": "The total amount charged to use the onboarding process of this verifier.",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"

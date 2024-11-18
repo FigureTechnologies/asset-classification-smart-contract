@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use super::error::ContractError;
 
-const STATE_V2_KEY: &str = "state_v2";
+const STATE_V2_KEY: &str = "�state_v2";
 pub const STATE_V2: Item<StateV2> = Item::new(STATE_V2_KEY);
 
 const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";

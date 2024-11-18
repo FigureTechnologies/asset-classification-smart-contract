@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "asset-classification-smart-contract"
-version = "3.4.0"
+version = "3.4.1"
 dependencies = [
  "bech32 0.8.1",
  "cosmwasm-schema",

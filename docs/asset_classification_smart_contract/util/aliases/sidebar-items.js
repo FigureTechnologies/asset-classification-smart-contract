@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"type":["AssetResult","DepsC","DepsMutC","EntryPointResponse"]};
+window.SIDEBAR_ITEMS = {"type":["AssetResult","EntryPointResponse"]};

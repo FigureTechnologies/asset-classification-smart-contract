@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_definition.rs`."><title>add_asset_definition.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/add_asset_definition.rs`."><title>add_asset_definition.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -358,17 +358,17 @@
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
 <span class="kw">use </span><span class="kw">crate</span>::core::msg::ExecuteMsg;
-<span class="kw">use </span><span class="kw">crate</span>::core::state::{config_read_v2, insert_asset_definition_v3};
+<span class="kw">use </span><span class="kw">crate</span>::core::state::{insert_asset_definition_v3, STATE_V2};
 <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
-<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, EntryPointResponse};
 <span class="kw">use </span><span class="kw">crate</span>::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::{EventAttributes, EventType};
-<span class="kw">use </span><span class="kw">crate</span>::util::functions::generate_asset_attribute_name;
+<span class="kw">use </span><span class="kw">crate</span>::util::functions::{generate_asset_attribute_name, msg_bind_name};
 
-<span class="kw">use </span>cosmwasm_std::{Env, MessageInfo, Response};
-<span class="kw">use </span>provwasm_std::{bind_name, NameBinding};
+<span class="kw">use </span>cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 <span class="kw">use </span>result_extensions::ResultExtensions;
 
 <span class="doccomment">/// A transformation of [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
@@ -425,7 +425,7 @@
 /// * `msg` An instance of the add asset definition v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 </span><span class="kw">pub fn </span>add_asset_definition(
-    deps: DepsMutC,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: AddAssetDefinitionV1,
@@ -440,13 +440,13 @@
     <span class="comment">// If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
     // to write new attributes for onboarded scopes
     </span><span class="kw">if </span>msg.bind_name.unwrap_or(<span class="bool-val">true</span>) {
-        messages.push(bind_name(
+        messages.push(msg_bind_name(
             generate_asset_attribute_name(
                 <span class="kw-2">&amp;</span>msg.asset_definition.asset_type,
-                config_read_v2(deps.storage).load()<span class="question-mark">?</span>.base_contract_name,
+                STATE_V2.load(deps.storage)<span class="question-mark">?</span>.base_contract_name,
             ),
             env.contract.address,
-            NameBinding::Restricted,
+            <span class="bool-val">true</span>,
         )<span class="question-mark">?</span>);
     }
 
@@ -477,22 +477,21 @@
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
         test_instantiate_success, InstArgs,
     };
-    <span class="kw">use </span><span class="kw">crate</span>::util::aliases::DepsC;
     <span class="kw">use </span><span class="kw">crate</span>::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventType;
     <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
     <span class="kw">use </span><span class="kw">crate</span>::validation::validate_init_msg::validate_asset_definition_input;
-    <span class="kw">use </span>cosmwasm_std::testing::{mock_env, mock_info};
-    <span class="kw">use </span>cosmwasm_std::{coin, Uint128};
-    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
+    <span class="kw">use </span>cosmwasm_std::testing::{message_info, mock_env};
+    <span class="kw">use </span>cosmwasm_std::{coin, Addr, Deps, Uint128};
+    <span class="kw">use </span>provwasm_mocks::mock_provenance_dependencies;
 
     <span class="comment">// These tests board a new asset type, so they need values other than the default to work with
     </span><span class="kw">const </span>TEST_ASSET_TYPE: <span class="kw-2">&amp;</span>str = <span class="string">"add_asset_type"</span>;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_definition_via_execute() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>asset_definition = get_valid_asset_definition();
         <span class="kw">let </span>response = execute(
             deps.as_mut(),
@@ -529,8 +528,8 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_definition_via_internal() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>msg = get_valid_add_asset_definition(<span class="bool-val">true</span>);
         <span class="kw">let </span>messages = add_asset_definition(
             deps.as_mut(),
@@ -546,8 +545,8 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_definition_skip_name_binding_from_execute() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span><span class="kw-2">mut </span>asset_definition = get_valid_asset_definition();
         asset_definition.bind_name = <span class="bool-val">false</span>.to_some();
         <span class="kw">let </span>response = execute(
@@ -568,8 +567,8 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_add_asset_definition_skip_name_binding_from_direct() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>msg = get_valid_add_asset_definition(<span class="bool-val">false</span>);
         <span class="kw">let </span>messages = add_asset_definition(
             deps.as_mut(),
@@ -588,8 +587,8 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_add_asset_definition_for_invalid_msg() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInputV3::new(
                 <span class="string">""</span>,
@@ -615,13 +614,13 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_add_asset_definition_for_invalid_sender() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
             <span class="comment">// Mock info defines the sender with this string - simply use something other than DEFAULT_INFO_NAME to cause the error
-            </span>mock_info(<span class="string">"not-the-admin"</span>, <span class="kw-2">&amp;</span>[]),
+            </span>message_info(<span class="kw-2">&amp;</span>Addr::unchecked(<span class="string">"not-the-admin"</span>), <span class="kw-2">&amp;</span>[]),
             get_valid_add_asset_definition(<span class="bool-val">true</span>),
         )
         .unwrap_err();
@@ -634,12 +633,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_add_asset_definition_for_provided_funds() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">150</span>, <span class="string">"nhash"</span>)]),
+            message_info(
+                <span class="kw-2">&amp;</span>Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                <span class="kw-2">&amp;</span>[coin(<span class="number">150</span>, <span class="string">"nhash"</span>)],
+            ),
             get_valid_add_asset_definition(<span class="bool-val">true</span>),
         )
         .unwrap_err();
@@ -652,8 +654,8 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_add_asset_definition_for_duplicate_loan_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span><span class="kw-2">mut </span>add_asset = || {
             add_asset_definition(
                 deps.as_mut(),
@@ -671,11 +673,11 @@
         );
     }
 
-    <span class="kw">fn </span>test_asset_definition_was_added_for_input(input: <span class="kw-2">&amp;</span>AssetDefinitionInputV3, deps: <span class="kw-2">&amp;</span>DepsC) {
+    <span class="kw">fn </span>test_asset_definition_was_added_for_input(input: <span class="kw-2">&amp;</span>AssetDefinitionInputV3, deps: <span class="kw-2">&amp;</span>Deps) {
         test_asset_definition_was_added(<span class="kw-2">&amp;</span>input.as_asset_definition(), deps)
     }
 
-    <span class="kw">fn </span>test_asset_definition_was_added(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3, deps: <span class="kw-2">&amp;</span>DepsC) {
+    <span class="kw">fn </span>test_asset_definition_was_added(asset_definition: <span class="kw-2">&amp;</span>AssetDefinitionV3, deps: <span class="kw-2">&amp;</span>Deps) {
         <span class="kw">let </span>state_def =
             load_asset_definition_by_type_v3(deps.storage, <span class="kw-2">&amp;</span>asset_definition.asset_type)
                 .expect(<span class="string">"expected the added asset type to be stored in the state"</span>);

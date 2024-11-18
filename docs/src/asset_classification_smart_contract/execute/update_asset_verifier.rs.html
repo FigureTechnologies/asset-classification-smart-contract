@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_asset_verifier.rs`."><title>update_asset_verifier.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/execute/update_asset_verifier.rs`."><title>update_asset_verifier.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -361,16 +361,14 @@
 <a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
 <span class="kw">use </span><span class="kw">crate</span>::core::msg::ExecuteMsg;
-<span class="kw">use </span><span class="kw">crate</span>::core::state::{
-    config_read_v2, load_asset_definition_by_type_v3, replace_asset_definition_v3,
-};
+<span class="kw">use </span><span class="kw">crate</span>::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3, STATE_V2};
 <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
-<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+<span class="kw">use </span><span class="kw">crate</span>::util::aliases::{AssetResult, EntryPointResponse};
 <span class="kw">use </span><span class="kw">crate</span>::util::contract_helpers::check_funds_are_empty;
 <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::{EventAttributes, EventType};
 <span class="kw">use </span><span class="kw">crate</span>::util::functions::replace_single_matching_vec_element;
 
-<span class="kw">use </span>cosmwasm_std::{MessageInfo, Response};
+<span class="kw">use </span>cosmwasm_std::{DepsMut, MessageInfo, Response};
 <span class="kw">use </span>result_extensions::ResultExtensions;
 
 <span class="doccomment">/// A transformation of [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
@@ -442,13 +440,13 @@
 /// * `msg` An instance of the update asset verifier v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 </span><span class="kw">pub fn </span>update_asset_verifier(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: UpdateAssetVerifierV1,
 ) -&gt; EntryPointResponse {
     check_funds_are_empty(<span class="kw-2">&amp;</span>info)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>asset_definition = load_asset_definition_by_type_v3(deps.storage, <span class="kw-2">&amp;</span>msg.asset_type)<span class="question-mark">?</span>;
-    <span class="kw">let </span>state = config_read_v2(deps.storage).load()<span class="question-mark">?</span>;
+    <span class="kw">let </span>state = STATE_V2.load(deps.storage)<span class="question-mark">?</span>;
     <span class="kw">if </span>info.sender != state.admin &amp;&amp; info.sender.as_str() != msg.verifier.address.as_str() {
         <span class="kw">return </span>ContractError::Unauthorized {
             explanation: <span class="string">"admin or verifier required"</span>.to_string(),
@@ -503,23 +501,22 @@
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
         test_instantiate_success, InstArgs,
     };
-    <span class="kw">use </span><span class="kw">crate</span>::util::aliases::DepsC;
     <span class="kw">use </span><span class="kw">crate</span>::util::constants::{
         ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VERIFIER_ADDRESS_KEY,
     };
     <span class="kw">use </span><span class="kw">crate</span>::util::event_attributes::EventType;
     <span class="kw">use </span><span class="kw">crate</span>::util::traits::OptionExtensions;
     <span class="kw">use </span><span class="kw">crate</span>::validation::validate_init_msg::validate_verifier;
-    <span class="kw">use </span>cosmwasm_std::testing::{mock_env, mock_info};
-    <span class="kw">use </span>cosmwasm_std::{coin, Uint128};
-    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
+    <span class="kw">use </span>cosmwasm_std::testing::{message_info, mock_env};
+    <span class="kw">use </span>cosmwasm_std::{coin, Addr, Deps, Uint128};
+    <span class="kw">use </span>provwasm_mocks::mock_provenance_dependencies;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_update_asset_verifier_via_execute() {
         <span class="comment">// Test that both the admin and the verifier can make the update without being rejected
         </span><span class="kw">for </span>sender_address <span class="kw">in </span><span class="macro">vec!</span>[DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
-            <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+            test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
             <span class="kw">let </span>verifier = get_valid_update_verifier();
             <span class="kw">let </span>response = execute(
                 deps.as_mut(),
@@ -563,8 +560,8 @@
     </span><span class="kw">fn </span>test_valid_update_asset_verifier_via_internal() {
         <span class="comment">// Test that both the admin and the verifier can make the update without being rejected
         </span><span class="kw">for </span>sender_address <span class="kw">in </span><span class="macro">vec!</span>[DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
-            <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+            test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
             <span class="kw">let </span>msg = get_valid_update_verifier_msg();
             update_asset_verifier(deps.as_mut(), empty_mock_info(sender_address), msg.clone())
                 .expect(<span class="string">"expected the update verifier function to return properly"</span>);
@@ -574,12 +571,12 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_update_asset_verifier_for_invalid_asset_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            message_info(<span class="kw-2">&amp;</span>Addr::unchecked(DEFAULT_ADMIN_ADDRESS), <span class="kw-2">&amp;</span>[]),
             ExecuteMsg::UpdateAssetVerifier {
                 <span class="comment">// Invalid because the asset type is missing
                 </span>asset_type: String::new(),
@@ -596,12 +593,12 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_update_asset_verifier_for_invalid_msg() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            message_info(<span class="kw-2">&amp;</span>Addr::unchecked(DEFAULT_ADMIN_ADDRESS), <span class="kw-2">&amp;</span>[]),
             ExecuteMsg::UpdateAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 verifier: VerifierDetailV2::new(
@@ -626,11 +623,11 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_update_asset_verifier_for_invalid_sender() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = update_asset_verifier(
             deps.as_mut(),
-            mock_info(<span class="string">"bad-guy"</span>, <span class="kw-2">&amp;</span>[]),
+            message_info(<span class="kw-2">&amp;</span>Addr::unchecked(<span class="string">"bad-guy"</span>), <span class="kw-2">&amp;</span>[]),
             get_valid_update_verifier_msg(),
         )
         .unwrap_err();
@@ -643,11 +640,14 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_update_asset_verifier_for_provided_funds() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = update_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[coin(<span class="number">93849382</span>, <span class="string">"dopehash"</span>)]),
+            message_info(
+                <span class="kw-2">&amp;</span>Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                <span class="kw-2">&amp;</span>[coin(<span class="number">93849382</span>, <span class="string">"dopehash"</span>)],
+            ),
             get_valid_update_verifier_msg(),
         )
         .unwrap_err();
@@ -660,11 +660,11 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_invalid_update_asset_verifier_for_missing_verifier() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>error = update_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, <span class="kw-2">&amp;</span>[]),
+            message_info(<span class="kw-2">&amp;</span>Addr::unchecked(DEFAULT_ADMIN_ADDRESS), <span class="kw-2">&amp;</span>[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
                 VerifierDetailV2::new(
@@ -686,7 +686,7 @@
         );
     }
 
-    <span class="kw">fn </span>test_default_verifier_was_updated(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2, deps: <span class="kw-2">&amp;</span>DepsC) {
+    <span class="kw">fn </span>test_default_verifier_was_updated(verifier: <span class="kw-2">&amp;</span>VerifierDetailV2, deps: <span class="kw-2">&amp;</span>Deps) {
         <span class="kw">let </span>state_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
             .expect(<span class="string">"expected the default asset type to be stored in the state"</span>);
         <span class="kw">let </span>target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)

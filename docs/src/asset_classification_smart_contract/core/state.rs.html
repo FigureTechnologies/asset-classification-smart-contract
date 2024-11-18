@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><title>state.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/state.rs`."><title>state.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -565,34 +565,21 @@
 <a href="#565" id="565">565</a>
 <a href="#566" id="566">566</a>
 <a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
 <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail;
 <span class="kw">use crate</span>::{core::msg::InitMsg, util::aliases::AssetResult};
 <span class="kw">use </span>cosmwasm_std::{Addr, Storage};
-<span class="kw">use </span>cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
-<span class="kw">use </span>cw_storage_plus::Map;
+<span class="kw">use </span>cw_storage_plus::{Item, Map};
 <span class="kw">use </span>result_extensions::ResultExtensions;
 <span class="kw">use </span>schemars::JsonSchema;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">super</span>::error::ContractError;
 
-<span class="kw">static </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"state_v2"</span>;
-<span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">"fee_payment_detail"</span>;
+<span class="kw">const </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>str = <span class="string">"state_v2"</span>;
+<span class="kw">pub const </span>STATE_V2: Item&lt;StateV2&gt; = Item::new(STATE_V2_KEY);
 
+<span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">"fee_payment_detail"</span>;
 <span class="kw">const </span>FEE_PAYMENT_DETAILS: Map&lt;(Addr, String), FeePaymentDetail&gt; =
     Map::new(FEE_PAYMENT_DETAIL_NAMESPACE);
 
@@ -631,24 +618,6 @@
     }
 }
 
-<span class="doccomment">/// Fetches a mutable reference to the storage from a [DepsMutC](crate::util::aliases::DepsMutC).
-///
-/// # Parameters
-///
-/// * `storage` A mutable reference to the contract's internal storage.
-</span><span class="kw">pub fn </span>config_v2(storage: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Storage) -&gt; Singleton&lt;StateV2&gt; {
-    singleton(storage, STATE_V2_KEY)
-}
-
-<span class="doccomment">/// Fetches a read-only cosmwasm storage singleton instance for loading the contract's state.
-///
-/// # Parameters
-///
-/// * `storage` A reference to the storage from a [DepsC](crate::util::aliases::DepsC).
-</span><span class="kw">pub fn </span>config_read_v2(storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage) -&gt; ReadonlySingleton&lt;StateV2&gt; {
-    singleton_read(storage, STATE_V2_KEY)
-}
-
 <span class="doccomment">/// Value is currently 'asset_definitions_v2' due to a structural change of data (removing an existing field, scope_spec_address) and switching from
 /// and IndexedMap to a regular Map... so everything was changed to be called 'v3', but no migration was actually needed to transition all values to new
 /// keys as the existing config was able to be read as a Map as-is.
@@ -661,7 +630,6 @@
 <span class="kw">pub fn </span>list_asset_definitions_v3(storage: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Storage) -&gt; Vec&lt;AssetDefinitionV3&gt; {
     ASSET_DEFINITIONS_V3
         .range(storage, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, cosmwasm_std::Order::Descending)
-        .into_iter()
         .filter(|result| result.is_ok())
         .map(|result| result.unwrap().<span class="number">1</span>)
         .collect::&lt;Vec&lt;AssetDefinitionV3&gt;&gt;()
@@ -876,14 +844,20 @@
     // not produce an error if no target value exists, but it is very informative of bad code to
     // reveal when unnecessary operations occur.
     </span>load_fee_payment_detail(storage, <span class="kw-2">&amp;</span>scope_address, <span class="kw-2">&amp;</span>asset_type)<span class="question-mark">?</span>;
-    FEE_PAYMENT_DETAILS.remove(storage, (Addr::unchecked(scope_address), asset_type));
+    FEE_PAYMENT_DETAILS.remove(
+        storage,
+        (
+            Addr::unchecked(scope_address.to_owned()),
+            asset_type.to_owned(),
+        ),
+    );
     ().to_ok()
 }
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use </span>cosmwasm_std::StdError;
-    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
+    <span class="kw">use </span>provwasm_mocks::mock_provenance_dependencies;
 
     <span class="kw">use </span><span class="kw">crate</span>::core::error::ContractError;
     <span class="kw">use </span><span class="kw">crate</span>::core::state::{
@@ -899,7 +873,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_insert_asset_definition() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
             .expect(<span class="string">"insert should work correctly"</span>);
@@ -925,7 +899,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_replace_asset_definition() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span><span class="kw-2">mut </span>def =
             AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         <span class="kw">let </span>error = replace_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def).unwrap_err();
@@ -954,7 +928,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_may_load_asset_definition_by_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
             .expect(<span class="string">"the heloc definition should insert without error"</span>);
@@ -975,7 +949,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_load_asset_definition_by_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>heloc = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         <span class="kw">let </span>mortgage = AssetDefinitionV3::new(<span class="string">"mortgage"</span>, <span class="string">"DEATH PLEDGE"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>heloc)
@@ -1000,7 +974,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_delete_asset_definition_by_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>def = AssetDefinitionV3::new(<span class="string">"heloc"</span>, <span class="string">"Home Equity Line of Credit"</span>.to_some(), <span class="macro">vec!</span>[]);
         insert_asset_definition_v3(deps.as_mut().storage, <span class="kw-2">&amp;</span>def)
             .expect(<span class="string">"expected the asset definition to be stored without error"</span>);
@@ -1033,7 +1007,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_delete_nonexistent_asset_definition_by_type_failure() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>err = delete_asset_definition_by_asset_type_v3(deps.as_mut().storage, <span class="string">"fake-type"</span>)
             .expect_err(
                 <span class="string">"expected an error to occur when attempting to delete a missing asset type"</span>,
@@ -1047,7 +1021,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_insert_and_load_fee_payment_detail() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>err = load_fee_payment_detail(
             deps.as_ref().storage,
             DEFAULT_SCOPE_ADDRESS,
@@ -1089,7 +1063,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_may_load_fee_payment_detail() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="macro">assert!</span>(
             may_load_fee_payment_detail(
                 deps.as_ref().storage,
@@ -1116,7 +1090,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_delete_fee_payment_detail() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="kw">let </span>err = delete_fee_payment_detail(deps.as_mut().storage, DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE).expect_err(
             <span class="string">"an error should occur when attempting to delete a fee payment detail that does not exist"
         </span>);

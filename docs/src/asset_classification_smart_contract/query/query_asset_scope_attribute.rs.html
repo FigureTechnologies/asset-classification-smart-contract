@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_scope_attribute.rs`."><title>query_asset_scope_attribute.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/query/query_asset_scope_attribute.rs`."><title>query_asset_scope_attribute.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -292,22 +292,60 @@
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::{HashMap, HashSet};
 
-<span class="kw">use </span>cosmwasm_std::{from_binary, to_binary, Addr, Binary};
-<span class="kw">use </span>provwasm_std::{AttributeValueType, ProvenanceQuerier};
+<span class="kw">use </span>cosmwasm_std::{from_json, to_json_binary, Binary, Deps};
+<span class="kw">use </span>provwasm_std::types::provenance::{
+    attribute::v1::{AttributeQuerier, AttributeType},
+    metadata::v1::MetadataQuerier,
+};
 <span class="kw">use </span>result_extensions::ResultExtensions;
 
 <span class="kw">use crate</span>::{
     core::{
         error::ContractError,
-        state::{config_read_v2, list_asset_definitions_v3},
+        state::{list_asset_definitions_v3, STATE_V2},
         types::{asset_identifier::AssetIdentifier, asset_scope_attribute::AssetScopeAttribute},
     },
-    util::{
-        aliases::{AssetResult, DepsC},
-        scope_address_utils::asset_uuid_to_scope_address,
-    },
+    util::{aliases::AssetResult, scope_address_utils::asset_uuid_to_scope_address},
 };
 
 <span class="doccomment">/// Fetches an AssetScopeAttribute by either the asset uuid or the scope address.
@@ -318,7 +356,7 @@
 /// resources like contract internal storage and a querier to retrieve blockchain objects.
 /// * `identifier` Helps derive a unique key that can locate an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 </span><span class="kw">pub fn </span>query_asset_scope_attribute(
-    deps: <span class="kw-2">&amp;</span>DepsC,
+    deps: <span class="kw-2">&amp;</span>Deps,
     identifier: AssetIdentifier,
 ) -&gt; AssetResult&lt;Binary&gt; {
     <span class="kw">let </span>scope_attributes = <span class="kw">match </span>identifier {
@@ -329,7 +367,7 @@
             may_query_scope_attribute_by_scope_address(deps, scope_address)
         }
     }<span class="question-mark">?</span>;
-    to_binary(<span class="kw-2">&amp;</span>scope_attributes)<span class="question-mark">?</span>.to_ok()
+    to_json_binary(<span class="kw-2">&amp;</span>scope_attributes)<span class="question-mark">?</span>.to_ok()
 }
 
 <span class="doccomment">/// Fetches an AssetScopeAttribute by the asset uuid value directly.  Useful for internal contract
@@ -342,7 +380,7 @@
 /// * `asset_uuid` Directly links to the [asset_uuid](crate::core::types::asset_scope_attribute::AssetScopeAttribute::asset_uuid)
 /// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 </span><span class="kw">pub fn </span>query_scope_attribute_by_asset_uuid&lt;S: Into&lt;String&gt;&gt;(
-    deps: <span class="kw-2">&amp;</span>DepsC,
+    deps: <span class="kw-2">&amp;</span>Deps,
     asset_uuid: S,
 ) -&gt; AssetResult&lt;Vec&lt;AssetScopeAttribute&gt;&gt; {
     query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)<span class="question-mark">?</span>)
@@ -359,7 +397,7 @@
 /// * `scope_address` Directly links to the [scope_address](crate::core::types::asset_scope_attribute::AssetScopeAttribute::scope_address)
 /// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 </span><span class="kw">pub fn </span>query_scope_attribute_by_scope_address&lt;S: Into&lt;String&gt;&gt;(
-    deps: <span class="kw-2">&amp;</span>DepsC,
+    deps: <span class="kw-2">&amp;</span>Deps,
     scope_address: S,
 ) -&gt; AssetResult&lt;Vec&lt;AssetScopeAttribute&gt;&gt; {
     <span class="kw">let </span>scope_address_str = scope_address.into();
@@ -389,7 +427,7 @@
 /// * `asset_uuid` Directly links to the [asset_uuid](crate::core::types::asset_scope_attribute::AssetScopeAttribute::asset_uuid)
 /// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 </span><span class="kw">pub fn </span>may_query_scope_attribute_by_asset_uuid&lt;S: Into&lt;String&gt;&gt;(
-    deps: <span class="kw-2">&amp;</span>DepsC,
+    deps: <span class="kw-2">&amp;</span>Deps,
     asset_uuid: S,
 ) -&gt; AssetResult&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt; {
     may_query_scope_attribute_by_scope_address(deps, asset_uuid_to_scope_address(asset_uuid)<span class="question-mark">?</span>)
@@ -407,17 +445,25 @@
 /// * `scope_address` Directly links to the [scope_address](crate::core::types::asset_scope_attribute::AssetScopeAttribute::scope_address)
 /// value on an [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute).
 </span><span class="kw">pub fn </span>may_query_scope_attribute_by_scope_address&lt;S: Into&lt;String&gt;&gt;(
-    deps: <span class="kw-2">&amp;</span>DepsC,
+    deps: <span class="kw-2">&amp;</span>Deps,
     scope_address: S,
 ) -&gt; AssetResult&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt; {
-    <span class="kw">let </span>querier = ProvenanceQuerier::new(<span class="kw-2">&amp;</span>deps.querier);
+    <span class="kw">let </span>metadata_querier = MetadataQuerier::new(<span class="kw-2">&amp;</span>deps.querier);
     <span class="kw">let </span>scope_address_str: String = scope_address.into();
 
     <span class="comment">// First, query up the scope to verify it exists
-    </span><span class="kw">let </span>_scope = querier.get_scope(<span class="kw-2">&amp;</span>scope_address_str)<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>_scope = metadata_querier.scope(
+        scope_address_str.to_owned(),
+        String::from(<span class="string">""</span>),
+        String::from(<span class="string">""</span>),
+        <span class="bool-val">false</span>,
+        <span class="bool-val">false</span>,
+        <span class="bool-val">false</span>,
+        <span class="bool-val">false</span>,
+    )<span class="question-mark">?</span>;
 
     <span class="comment">// Second, query up all possible asset definition names
-    </span><span class="kw">let </span>state = config_read_v2(deps.storage).load()<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>state = STATE_V2.load(deps.storage)<span class="question-mark">?</span>;
     <span class="kw">let </span>asset_definitions: HashSet&lt;String&gt; = list_asset_definitions_v3(deps.storage)
         .iter()
         .map(|def| def.attribute_name_state(<span class="kw-2">&amp;</span>state))
@@ -425,15 +471,16 @@
 
     <span class="comment">// Third, query up asset scope attributes attached to the scope address under the name attribute.
     // In a proper scenario, there should only ever be one of each type of these
-    </span><span class="kw">let </span>scope_attributes_v: Vec&lt;(String, AssetScopeAttribute)&gt; = querier
-        .get_attributes(Addr::unchecked(<span class="kw-2">&amp;</span>scope_address_str), <span class="prelude-val">None</span>::&lt;String&gt;)<span class="question-mark">?
+    </span><span class="kw">let </span>attribute_querier = AttributeQuerier::new(<span class="kw-2">&amp;</span>deps.querier);
+    <span class="kw">let </span>scope_attributes_v: Vec&lt;(String, AssetScopeAttribute)&gt; = attribute_querier
+        .attributes(scope_address_str.to_owned(), <span class="prelude-val">None</span>)<span class="question-mark">?
         </span>.attributes
         .iter()
         .filter(|attr| {
-            asset_definitions.contains(<span class="kw-2">&amp;</span>attr.name) &amp;&amp; attr.value_type == AttributeValueType::Json
+            asset_definitions.contains(<span class="kw-2">&amp;</span>attr.name) &amp;&amp; attr.attribute_type() == AttributeType::Json
         })
         .map(|attr| {
-            from_binary::&lt;AssetScopeAttribute&gt;(<span class="kw-2">&amp;</span>attr.value)
+            from_json::&lt;AssetScopeAttribute&gt;(<span class="kw-2">&amp;</span>attr.value)
                 .map(|v| (attr.name.clone(), v))
                 .map_err(ContractError::Std)
         })
@@ -457,7 +504,7 @@
             <span class="kw">return </span>ContractError::generic(<span class="macro">format!</span>(
                 <span class="string">"more than one asset scope attribute for name [{}] exists at address [{}]. data repair needed"</span>,
                 name,
-                scope_address_str
+                scope_address_str,
             ))
             .to_err();
         }
@@ -476,12 +523,17 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>cosmwasm_std::{from_binary, StdError};
-    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
+    <span class="kw">use </span>cosmwasm_std::{from_json, StdError};
+    <span class="kw">use </span>provwasm_mocks::mock_provenance_dependencies;
+    <span class="kw">use </span>provwasm_std::types::provenance::metadata::v1::ScopeRequest;
 
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::access_definition::{AccessDefinition, AccessDefinitionType};
+    <span class="kw">use </span><span class="kw">crate</span>::core::types::asset_onboarding_status::AssetOnboardingStatus;
     <span class="kw">use </span><span class="kw">crate</span>::testutil::onboard_asset_helpers::{test_onboard_asset, TestOnboardAsset};
     <span class="kw">use </span><span class="kw">crate</span>::testutil::test_constants::DEFAULT_SCOPE_ADDRESS;
-    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::setup_test_suite;
+    <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::{
+        mock_single_scope_attribute, setup_no_attribute_response, setup_test_suite,
+    };
     <span class="kw">use crate</span>::{
         core::{
             error::ContractError,
@@ -499,17 +551,40 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_successful_query_result() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
-        test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default())
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
+        <span class="kw">let </span>onboard_asset_request = TestOnboardAsset::default();
+        test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, onboard_asset_request.to_owned())
             .expect(<span class="string">"expected the asset onboard to succeed"</span>);
+        mock_single_scope_attribute(
+            <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>AssetScopeAttribute {
+                asset_uuid: DEFAULT_ASSET_UUID.to_string(),
+                scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                asset_type: onboard_asset_request.onboard_asset.asset_type,
+                requestor_address: onboard_asset_request.info.sender.to_owned(),
+                verifier_address: cosmwasm_std::Addr::unchecked(
+                    onboard_asset_request.onboard_asset.verifier_address,
+                ),
+                onboarding_status: AssetOnboardingStatus::Pending,
+                latest_verification_result: <span class="prelude-val">None</span>,
+                access_definitions: <span class="macro">vec!</span>[AccessDefinition::new_checked(
+                    onboard_asset_request.info.sender,
+                    onboard_asset_request.onboard_asset.access_routes,
+                    AccessDefinitionType::Requestor,
+                )
+                .unwrap()],
+            },
+            DEFAULT_SCOPE_ADDRESS,
+        );
         <span class="kw">let </span>binary_from_asset_uuid = query_asset_scope_attribute(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::asset_uuid(DEFAULT_ASSET_UUID),
         )
         .expect(<span class="string">"expected the scope attribute to be fetched as binary by asset uuid"</span>);
         <span class="kw">let </span>scope_attribute_from_asset_uuid =
-            from_binary::&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt;(<span class="kw-2">&amp;</span>binary_from_asset_uuid)
+            from_json::&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt;(<span class="kw-2">&amp;</span>binary_from_asset_uuid)
                 .expect(
                     <span class="string">"expected the asset attribute fetched by asset uuid to deserialize properly"</span>,
                 )
@@ -519,7 +594,7 @@
             AssetIdentifier::scope_address(DEFAULT_SCOPE_ADDRESS),
         )
         .expect(<span class="string">"expected the scope attribute to be fetched as binary by scope address"</span>);
-        <span class="kw">let </span>scope_attribute_from_scope_address = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt;(
+        <span class="kw">let </span>scope_attribute_from_scope_address = from_json::&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;AssetScopeAttribute&gt;&gt;&gt;(
             <span class="kw-2">&amp;</span>binary_from_scope_address,
         )
         .expect(<span class="string">"expected the asset attribute fetched by scope address to deserialize properly"</span>)
@@ -531,9 +606,13 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_query_failure_for_missing_scope() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+    </span><span class="kw">fn </span>test_query_failure_for_invalid_scope_address() {
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
+        ScopeRequest::mock_failed_response(
+            <span class="kw-2">&amp;mut </span>deps.querier,
+            String::from(<span class="string">"scope fetch failed due to invalid address"</span>),
+        );
         <span class="kw">let </span>error = query_asset_scope_attribute(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::scope_address(<span class="string">"missing-scope-address"</span>),
@@ -543,13 +622,9 @@
             ContractError::Std(e) =&gt; <span class="kw">match </span>e {
                 StdError::GenericErr { msg, .. } =&gt; {
                     <span class="macro">assert!</span>(
-                        msg.contains(<span class="string">"metadata not found"</span>),
-                        <span class="string">"the error should be from the metadata module"</span>,
-                    );
-                    <span class="macro">assert!</span>(
-                        msg.contains(<span class="string">"get_scope"</span>),
-                        <span class="string">"the error should denote that the scope fetch was the failure"</span>,
-                    );
+                        msg.contains(<span class="string">"scope fetch failed due to invalid address"</span>),
+                        <span class="string">"the error should be due to the metadata module scope fetch"
+                    </span>);
                 }
                 <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unexpected StdError encountered: {:?}"</span>, e),
             },
@@ -563,8 +638,8 @@
     // not remove existing attributes before adding new ones
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_query_failure_for_missing_scope_attribute() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>scope_address = <span class="string">"scope-address"</span>.to_string();
         <span class="comment">// Wire up the scope correctly to point to the correct address
         </span>mock_scope(
@@ -573,12 +648,13 @@
             DEFAULT_SCOPE_SPEC_ADDRESS,
             <span class="string">"test-owner"</span>,
         );
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">Some</span>(scope_address.to_owned()));
         <span class="kw">let </span>binary = query_asset_scope_attribute(
             <span class="kw-2">&amp;</span>deps.as_ref(),
             AssetIdentifier::scope_address(<span class="kw-2">&amp;</span>scope_address),
         )
         .expect(<span class="string">"the query should execute without error"</span>);
-        <span class="kw">let </span>result = from_binary::&lt;<span class="prelude-ty">Option</span>&lt;AssetScopeAttribute&gt;&gt;(<span class="kw-2">&amp;</span>binary)
+        <span class="kw">let </span>result = from_json::&lt;<span class="prelude-ty">Option</span>&lt;AssetScopeAttribute&gt;&gt;(<span class="kw-2">&amp;</span>binary)
             .expect(<span class="string">"expected the result to deserialize correctly"</span>);
         <span class="macro">assert!</span>(
             result.is_none(),

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["check_admin_only","check_funds_are_empty"]};
+window.SIDEBAR_ITEMS = {"fn":["assess_custom_fee","check_admin_only","check_funds_are_empty"]};

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><title>asset_meta_service.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/service/asset_meta_service.rs`."><title>asset_meta_service.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="asset_classification_smart_contract" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1386,14 +1386,52 @@
 <a href="#1386" id="1386">1386</a>
 <a href="#1387" id="1387">1387</a>
 <a href="#1388" id="1388">1388</a>
+<a href="#1389" id="1389">1389</a>
+<a href="#1390" id="1390">1390</a>
+<a href="#1391" id="1391">1391</a>
+<a href="#1392" id="1392">1392</a>
+<a href="#1393" id="1393">1393</a>
+<a href="#1394" id="1394">1394</a>
+<a href="#1395" id="1395">1395</a>
+<a href="#1396" id="1396">1396</a>
+<a href="#1397" id="1397">1397</a>
+<a href="#1398" id="1398">1398</a>
+<a href="#1399" id="1399">1399</a>
+<a href="#1400" id="1400">1400</a>
+<a href="#1401" id="1401">1401</a>
+<a href="#1402" id="1402">1402</a>
+<a href="#1403" id="1403">1403</a>
+<a href="#1404" id="1404">1404</a>
+<a href="#1405" id="1405">1405</a>
+<a href="#1406" id="1406">1406</a>
+<a href="#1407" id="1407">1407</a>
+<a href="#1408" id="1408">1408</a>
+<a href="#1409" id="1409">1409</a>
+<a href="#1410" id="1410">1410</a>
+<a href="#1411" id="1411">1411</a>
+<a href="#1412" id="1412">1412</a>
+<a href="#1413" id="1413">1413</a>
+<a href="#1414" id="1414">1414</a>
+<a href="#1415" id="1415">1415</a>
+<a href="#1416" id="1416">1416</a>
+<a href="#1417" id="1417">1417</a>
+<a href="#1418" id="1418">1418</a>
+<a href="#1419" id="1419">1419</a>
+<a href="#1420" id="1420">1420</a>
+<a href="#1421" id="1421">1421</a>
+<a href="#1422" id="1422">1422</a>
+<a href="#1423" id="1423">1423</a>
+<a href="#1424" id="1424">1424</a>
+<a href="#1425" id="1425">1425</a>
+<a href="#1426" id="1426">1426</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::HashSet;
 
-<span class="kw">use </span>cosmwasm_std::{to_binary, Coin, CosmosMsg, Env, Uint128};
-<span class="kw">use </span>provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
+<span class="kw">use </span>cosmwasm_std::{to_json_binary, Coin, CosmosMsg, DepsMut, Env, Uint128};
+<span class="kw">use </span>provwasm_std::types::provenance::attribute::v1::AttributeType;
 <span class="kw">use </span>result_extensions::ResultExtensions;
 
 <span class="kw">use </span><span class="kw">crate</span>::core::state::{
-    delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail,
+    delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail, STATE_V2,
 };
 <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail;
 <span class="kw">use </span><span class="kw">crate</span>::core::types::verifier_detail::VerifierDetailV2;
@@ -1401,21 +1439,20 @@
     may_query_scope_attribute_by_scope_address_and_asset_type,
     query_scope_attribute_by_scope_address_and_asset_type,
 };
+<span class="kw">use </span><span class="kw">crate</span>::util::contract_helpers::assess_custom_fee;
+<span class="kw">use </span><span class="kw">crate</span>::util::functions::update_attribute;
 <span class="kw">use crate</span>::{
-    core::{
-        state::config_read_v2,
-        types::{
-            access_definition::{AccessDefinition, AccessDefinitionType},
-            access_route::AccessRoute,
-            asset_onboarding_status::AssetOnboardingStatus,
-            asset_scope_attribute::AssetScopeAttribute,
-            asset_verification_result::AssetVerificationResult,
-        },
+    core::types::{
+        access_definition::{AccessDefinition, AccessDefinitionType},
+        access_route::AccessRoute,
+        asset_onboarding_status::AssetOnboardingStatus,
+        asset_scope_attribute::AssetScopeAttribute,
+        asset_verification_result::AssetVerificationResult,
     },
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
     },
-    util::aliases::{AssetResult, DepsMutC},
+    util::aliases::AssetResult,
     util::deps_container::DepsContainer,
     util::functions::filter_valid_access_routes,
     util::functions::generate_asset_attribute_name,
@@ -1433,11 +1470,11 @@
 <span class="doccomment">/// Ties all service code together into a cohesive struct to use for complex operations during the
 /// onboarding and verification processes.
 </span><span class="kw">pub struct </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="doccomment">/// A wrapper for a [DepsMutC](core::util::aliases::DepsMutC] that allows access to it without
+    <span class="doccomment">/// A wrapper for a [DepsMut](core::util::aliases::DepsMut] that allows access to it without
     /// moving the value.
     </span>deps: DepsContainer&lt;<span class="lifetime">'a</span>&gt;,
     <span class="doccomment">/// All messages generated over the course of function invocations.
-    </span>messages: VecContainer&lt;CosmosMsg&lt;ProvenanceMsg&gt;&gt;,
+    </span>messages: VecContainer&lt;CosmosMsg&gt;,
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Constructs a new instance of this struct.
@@ -1446,7 +1483,7 @@
     ///
     /// * `deps` The cosmwasm deps that will be moved into a [DepsContainer](crate::util::deps_container::DepsContainer)
     /// for future access.
-    </span><span class="kw">pub fn </span>new(deps: DepsMutC&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(deps: DepsMut&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             deps: DepsContainer::new(deps),
             messages: VecContainer::new(),
@@ -1491,16 +1528,17 @@
         <span class="comment">// generate attribute -&gt; scope bind messages
         // On a retry, update the existing attribute with the given values
         </span><span class="kw">if </span>is_retry {
-            <span class="self">self</span>.update_attribute(attribute)<span class="question-mark">?</span>;
+            <span class="self">self</span>.update_attribute(env, attribute)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
             <span class="comment">// On a first time execution, simply add the attribute to the scope - it's already been
             // verified that the attribute does not yet exist
             </span><span class="kw">let </span>contract_base_name = <span class="self">self
-                </span>.use_deps(|d| config_read_v2(d.storage).load())<span class="question-mark">?
+                </span>.use_deps(|d| STATE_V2.load(d.storage))<span class="question-mark">?
                 </span>.base_contract_name;
             <span class="self">self</span>.add_message(get_add_attribute_to_scope_msg(
                 attribute,
                 contract_base_name,
+                env.contract.address.to_owned(),
             )<span class="question-mark">?</span>);
         }
 
@@ -1547,9 +1585,13 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>update_attribute(<span class="kw-2">&amp;</span><span class="self">self</span>, updated_attribute: <span class="kw-2">&amp;</span>AssetScopeAttribute) -&gt; AssetResult&lt;()&gt; {
+    <span class="kw">fn </span>update_attribute(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        env: <span class="kw-2">&amp;</span>Env,
+        updated_attribute: <span class="kw-2">&amp;</span>AssetScopeAttribute,
+    ) -&gt; AssetResult&lt;()&gt; {
         <span class="kw">let </span>contract_base_name = <span class="self">self
-            </span>.use_deps(|d| config_read_v2(d.storage).load())<span class="question-mark">?
+            </span>.use_deps(|d| STATE_V2.load(d.storage))<span class="question-mark">?
             </span>.base_contract_name;
         <span class="kw">let </span>original_attribute = <span class="self">self</span>.get_asset_by_asset_type(
             <span class="kw-2">&amp;</span>updated_attribute.scope_address,
@@ -1558,17 +1600,19 @@
         <span class="self">self</span>.add_message(update_attribute(
             <span class="comment">// address: Target address - the scope with the attribute on it
             </span>bech32_string_to_addr(<span class="kw-2">&amp;</span>original_attribute.scope_address)<span class="question-mark">?</span>,
+            <span class="comment">// contract address
+            </span>env.contract.address.to_owned(),
             <span class="comment">// name: Attribute name - use the same value as before
             </span>generate_asset_attribute_name(<span class="kw-2">&amp;</span>original_attribute.asset_type, <span class="kw-2">&amp;</span>contract_base_name),
             <span class="comment">// original_value: The unmodified original attribute
-            </span>to_binary(<span class="kw-2">&amp;</span>original_attribute)<span class="question-mark">?</span>,
+            </span>to_json_binary(<span class="kw-2">&amp;</span>original_attribute)<span class="question-mark">?</span>,
             <span class="comment">// original_value_type
-            </span>AttributeValueType::Json,
+            </span>AttributeType::Json,
             <span class="comment">// update_value: The attribute with changes
-            </span>to_binary(<span class="kw-2">&amp;</span>updated_attribute)<span class="question-mark">?</span>,
+            </span>to_json_binary(<span class="kw-2">&amp;</span>updated_attribute)<span class="question-mark">?</span>,
             <span class="comment">// update_value_type: Maintain Json typing. it's awesome that this can change between updates,
             // but this code doesn't want that
-            </span>AttributeValueType::Json,
+            </span>AttributeType::Json,
         )<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(())
     }
@@ -1629,6 +1673,7 @@
 
     <span class="kw">fn </span>verify_asset&lt;S: Into&lt;String&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
+        env: <span class="kw-2">&amp;</span>Env,
         <span class="kw-2">mut </span>scope_attribute: AssetScopeAttribute,
         success: bool,
         verification_message: <span class="prelude-ty">Option</span>&lt;S&gt;,
@@ -1695,7 +1740,7 @@
         }
         <span class="comment">// Remove the old scope attribute and append a new one that overwrites existing data
         // with the changes made to the attribute
-        </span><span class="self">self</span>.update_attribute(<span class="kw-2">&amp;</span>scope_attribute)<span class="question-mark">?</span>;
+        </span><span class="self">self</span>.update_attribute(env, <span class="kw-2">&amp;</span>scope_attribute)<span class="question-mark">?</span>;
 
         <span class="comment">// Retrieve fee breakdown and use it to emit message fees
         </span><span class="kw">let </span>payment_detail = <span class="self">self</span>.use_deps(|deps| {
@@ -1728,25 +1773,25 @@
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; DepsManager&lt;<span class="lifetime">'a</span>&gt; <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>use_deps&lt;T, F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, deps_fn: F) -&gt; T
     <span class="kw">where
-        </span>F: FnMut(<span class="kw-2">&amp;mut </span>DepsMutC) -&gt; T,
+        </span>F: FnMut(<span class="kw-2">&amp;mut </span>DepsMut) -&gt; T,
     {
         <span class="self">self</span>.deps.use_deps(deps_fn)
     }
 
-    <span class="kw">fn </span>into_deps(<span class="self">self</span>) -&gt; DepsMutC&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>into_deps(<span class="self">self</span>) -&gt; DepsMut&lt;<span class="lifetime">'a</span>&gt; {
         <span class="self">self</span>.deps.get()
     }
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; MessageGatheringService <span class="kw">for </span>AssetMetaService&lt;<span class="lifetime">'a</span>&gt; {
-    <span class="kw">fn </span>get_messages(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;CosmosMsg&lt;ProvenanceMsg&gt;&gt; {
+    <span class="kw">fn </span>get_messages(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;CosmosMsg&gt; {
         <span class="self">self</span>.messages.get_cloned()
     }
 
-    <span class="kw">fn </span>add_message(<span class="kw-2">&amp;</span><span class="self">self</span>, message: CosmosMsg&lt;ProvenanceMsg&gt;) {
+    <span class="kw">fn </span>add_message(<span class="kw-2">&amp;</span><span class="self">self</span>, message: CosmosMsg) {
         <span class="self">self</span>.messages.push(message);
     }
 
-    <span class="kw">fn </span>append_messages(<span class="kw-2">&amp;</span><span class="self">self</span>, messages: <span class="kw-2">&amp;</span>[CosmosMsg&lt;ProvenanceMsg&gt;]) {
+    <span class="kw">fn </span>append_messages(<span class="kw-2">&amp;</span><span class="self">self</span>, messages: <span class="kw-2">&amp;</span>[CosmosMsg]) {
         <span class="self">self</span>.messages.append(<span class="kw-2">&amp;mut </span>messages.to_vec());
     }
 
@@ -1757,7 +1802,7 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span><span class="kw">crate</span>::core::state::{insert_fee_payment_detail, load_fee_payment_detail};
+    <span class="kw">use </span><span class="kw">crate</span>::core::state::{insert_fee_payment_detail, load_fee_payment_detail, STATE_V2};
     <span class="kw">use </span><span class="kw">crate</span>::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
@@ -1766,11 +1811,15 @@
     };
     <span class="kw">use </span><span class="kw">crate</span>::testutil::test_utilities::{
         empty_mock_info, get_default_asset_definition, get_duped_fee_payment_detail,
+        setup_no_attribute_response,
+    };
+    <span class="kw">use </span><span class="kw">crate</span>::util::functions::{
+        try_into_add_attribute_request, try_into_custom_fee_request,
+        try_into_update_attribute_request,
     };
     <span class="kw">use crate</span>::{
         core::{
             error::ContractError,
-            state::config_read_v2,
             types::{
                 access_definition::{AccessDefinition, AccessDefinitionType},
                 access_route::AccessRoute,
@@ -1801,18 +1850,19 @@
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
     <span class="kw">use </span>cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    <span class="kw">use </span>cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, StdError};
-    <span class="kw">use </span>provwasm_mocks::mock_dependencies;
-    <span class="kw">use </span>provwasm_std::{
-        AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, ProvenanceMsg,
-        ProvenanceMsgParams,
+    <span class="kw">use </span>cosmwasm_std::{from_json, to_json_vec, Addr, BankMsg, Coin, CosmosMsg, StdError};
+    <span class="kw">use </span>provwasm_mocks::mock_provenance_dependencies;
+    <span class="kw">use </span>provwasm_std::types::provenance::attribute::v1::{
+        Attribute, AttributeType, MsgAddAttributeRequest, MsgUpdateAttributeRequest,
+        QueryAttributeRequest, QueryAttributeResponse,
     };
-    <span class="kw">use </span>serde_json_wasm::to_string;
+    <span class="kw">use </span>provwasm_std::types::provenance::msgfees::v1::MsgAssessCustomMsgFeeRequest;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>has_asset_returns_false_if_asset_does_not_have_the_attribute() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
         <span class="kw">let </span>result = repository
             .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
@@ -1825,8 +1875,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>has_asset_returns_true_if_asset_has_attribute() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
 
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
@@ -1843,15 +1894,16 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>has_asset_returns_false_if_asset_has_attribute_for_different_type() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         setup_test_suite(
             <span class="kw-2">&amp;mut </span>deps,
-            InstArgs::default_with_additional_asset_types(<span class="macro">vec!</span>[DEFAULT_SECONDARY_ASSET_TYPE]),
+            <span class="kw-2">&amp;</span>InstArgs::default_with_additional_asset_types(<span class="macro">vec!</span>[DEFAULT_SECONDARY_ASSET_TYPE]),
         );
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
 
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
-
         <span class="kw">let </span>result = repository
             .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE)
             .unwrap();
@@ -1864,8 +1916,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>add_asset_generates_proper_messages() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
 
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
 
@@ -1886,50 +1939,43 @@
             messages.len(),
             <span class="string">"add_asset should generate the correct number of messages"
         </span>);
-        messages.iter().for_each(|msg| <span class="kw">match </span><span class="kw-2">&amp;</span>msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                        name,
-                        value,
-                        value_type,
-                        ..
-                    }),
-                ..
-            }) =&gt; {
+        messages.iter().for_each(|msg| {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(add_attribute_request) = try_into_add_attribute_request(msg) {
+                <span class="kw">let </span>MsgAddAttributeRequest {
+                    <span class="kw-2">ref </span>name,
+                    <span class="kw-2">ref </span>value,
+                    ..
+                } = add_attribute_request;
                 <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-                    name,
+                    generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    name.to_owned(),
                     <span class="string">"attribute name should match what is expected"
                 </span>);
-                <span class="kw">let </span>deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                <span class="kw">let </span>deserialized: AssetScopeAttribute = from_json(value).unwrap();
                 <span class="kw">let </span>expected = get_default_asset_scope_attribute();
                 <span class="macro">assert_eq!</span>(
                     expected, deserialized,
                     <span class="string">"attribute should contain proper values"
                 </span>);
                 <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>AttributeValueType::Json,
-                    value_type,
+                    AttributeType::Json,
+                    add_attribute_request.attribute_type(),
                     <span class="string">"generated attribute value_type should be Json"
                 </span>);
-            }
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                        amount,
-                        name,
-                        from,
-                        recipient,
-                    }),
+            } <span class="kw">else if let </span><span class="prelude-val">Some</span>(MsgAssessCustomMsgFeeRequest {
+                name,
+                amount,
+                recipient,
+                from,
                 ..
-            }) =&gt; {
+            }) = try_into_custom_fee_request(msg)
+            {
                 <span class="macro">assert_eq!</span>(
-                    DEFAULT_ONBOARDING_COST,
-                    amount.amount.u128(),
+                    DEFAULT_ONBOARDING_COST.to_string(),
+                    amount.expect(<span class="string">"fee should have amount defined"</span>).amount,
                     <span class="string">"double the onboarding cost should be charged to account for provenance fees"</span>,
                 );
-                <span class="macro">assert!</span>(name.is_some(), <span class="string">"a fee name should be provided"</span>,);
+                <span class="macro">assert_ne!</span>(name, String::from(<span class="string">""</span>), <span class="string">"a fee name should be provided"</span>);
                 <span class="macro">assert_eq!</span>(
                     MOCK_CONTRACT_ADDR,
                     from.as_str(),
@@ -1937,24 +1983,23 @@
                 );
                 <span class="macro">assert_eq!</span>(
                     MOCK_CONTRACT_ADDR,
-                    recipient
-                        .to_owned()
-                        .expect(<span class="string">"a recipient should be defined"</span>)
-                        .as_str(),
+                    recipient.to_owned().as_str(),
                     <span class="string">"the verifier should receive the fees"</span>,
                 );
+            } <span class="kw">else </span>{
+                <span class="macro">panic!</span>(
+                    <span class="string">"Unexpected message type resulting from add_asset: {:?}"</span>,
+                    msg
+                )
             }
-            msg =&gt; <span class="macro">panic!</span>(
-                <span class="string">"Unexpected message type resulting from add_asset: {:?}"</span>,
-                msg
-            ),
         });
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>get_asset_returns_error_if_asset_does_not_exist() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
 
         <span class="kw">let </span>err = repository
@@ -1979,8 +2024,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>get_asset_returns_asset_if_exists() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
 
@@ -1997,8 +2043,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>try_get_asset_returns_none_if_asset_does_not_exist() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
 
         <span class="kw">let </span>result = repository
@@ -2013,8 +2060,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>try_get_asset_returns_asset_if_exists() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>InstArgs::default());
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
 
@@ -2055,52 +2103,60 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_into_deps() {
-        <span class="kw">let </span><span class="kw-2">mut </span>mock_deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>mock_deps = mock_provenance_dependencies();
+        test_instantiate_success(mock_deps.as_mut(), <span class="kw-2">&amp;</span>InstArgs::default());
         <span class="kw">let </span>service = AssetMetaService::new(mock_deps.as_mut());
         <span class="kw">let </span>deps = service.into_deps();
-        config_read_v2(deps.storage)
-            .load()
+        STATE_V2
+            .load(deps.storage)
             .expect(<span class="string">"expected storage to load from relinquished deps"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_existing_verifier_detail_access_routes_merged() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
         <span class="comment">// set up existing attribute with pre-existing access routes
-        </span>deps.querier.with_attributes(
-            DEFAULT_SCOPE_ADDRESS,
-            <span class="kw-2">&amp;</span>[(
-                generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME)
-                    .as_str(),
-                to_string(<span class="kw-2">&amp;</span>AssetScopeAttribute {
-                    asset_uuid: DEFAULT_ASSET_UUID.to_string(),
-                    scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
-                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                    requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
-                    verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
-                    onboarding_status: AssetOnboardingStatus::Pending,
-                    latest_verification_result: <span class="prelude-val">None</span>,
-                    access_definitions: <span class="macro">vec!</span>[
-                        AccessDefinition {
-                            owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
-                            definition_type: AccessDefinitionType::Requestor,
-                        },
-                        AccessDefinition {
-                            owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                            access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"existingroute"</span>)],
-                            definition_type: AccessDefinitionType::Verifier,
-                        },
-                    ],
-                })
-                .unwrap()
-                .as_str(),
-                <span class="string">"json"</span>,
-            )],
+        </span>QueryAttributeRequest::mock_response(
+            <span class="kw-2">&amp;mut </span>deps.querier,
+            QueryAttributeResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: <span class="macro">vec!</span>[Attribute {
+                    name: generate_asset_attribute_name(
+                        DEFAULT_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME,
+                    ),
+                    value: to_json_vec(<span class="kw-2">&amp;</span>AssetScopeAttribute {
+                        asset_uuid: DEFAULT_ASSET_UUID.to_string(),
+                        scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                        asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                        requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
+                        verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
+                        onboarding_status: AssetOnboardingStatus::Pending,
+                        latest_verification_result: <span class="prelude-val">None</span>,
+                        access_definitions: <span class="macro">vec!</span>[
+                            AccessDefinition {
+                                owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                                access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
+                                definition_type: AccessDefinitionType::Requestor,
+                            },
+                            AccessDefinition {
+                                owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                                access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"existingroute"</span>)],
+                                definition_type: AccessDefinitionType::Verifier,
+                            },
+                        ],
+                    })
+                    .unwrap(),
+                    attribute_type: AttributeType::Json.into(),
+                    address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                    expiration_date: <span class="prelude-val">None</span>,
+                }],
+                pagination: <span class="prelude-val">None</span>,
+            },
         );
 
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
         <span class="kw">let </span><span class="kw-2">mut </span>fee_payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         fee_payment_detail.payments = <span class="macro">vec!</span>[fee_payment_detail.payments[<span class="number">0</span>].clone()];
         fee_payment_detail.payments[<span class="number">0</span>].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
@@ -2114,6 +2170,7 @@
             .expect(<span class="string">"scope attribute should exist for asset"</span>);
         repository
             .verify_asset::&lt;<span class="kw-2">&amp;</span>str&gt;(
+                <span class="kw-2">&amp;</span>instantiate_args.env,
                 scope_attribute,
                 <span class="bool-val">true</span>,
                 <span class="string">"Great jaerb there Hamstar"</span>.to_some(),
@@ -2130,55 +2187,49 @@
         </span>);
 
         <span class="kw">let </span>first_message = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
-        <span class="kw">match </span>first_message {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        update_value,
-                        ..
-                    }),
-                ..
-            }) =&gt; {
-                <span class="kw">let </span>deserialized: AssetScopeAttribute = from_binary(update_value).unwrap();
-                <span class="macro">assert_eq!</span>(
-                    <span class="number">2</span>,
-                    deserialized.access_definitions.len(),
-                    <span class="string">"Modified scope attribute should only have 2 access route groups listed"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>AccessDefinition {
-                        owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
-                        definition_type: AccessDefinitionType::Requestor,
-                    },
-                    deserialized
-                        .access_definitions
-                        .iter()
-                        .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
-                        .unwrap(),
-                    <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>AccessDefinition {
-                        owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                        access_routes: <span class="macro">vec!</span>[
-                            AccessRoute::route_only(<span class="string">"existingroute"</span>),
-                            AccessRoute::route_only(<span class="string">"newroute"</span>)
-                        ],
-                        definition_type: AccessDefinitionType::Verifier,
-                    },
-                    deserialized
-                        .access_definitions
-                        .iter()
-                        .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
-                        .unwrap(),
-                    <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
-                );
-            }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(MsgUpdateAttributeRequest { update_value, .. }) =
+            try_into_update_attribute_request(first_message)
+        {
+            <span class="kw">let </span>deserialized: AssetScopeAttribute = from_json(update_value).unwrap();
+            <span class="macro">assert_eq!</span>(
+                <span class="number">2</span>,
+                deserialized.access_definitions.len(),
+                <span class="string">"Modified scope attribute should only have 2 access route groups listed"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                <span class="kw-2">&amp;</span>AccessDefinition {
+                    owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                    access_routes: <span class="macro">vec!</span>[AccessRoute::route_only(<span class="string">"ownerroute1"</span>)],
+                    definition_type: AccessDefinitionType::Requestor,
+                },
+                deserialized
+                    .access_definitions
+                    .iter()
+                    .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
+                    .unwrap(),
+                <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                <span class="kw-2">&amp;</span>AccessDefinition {
+                    owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                    access_routes: <span class="macro">vec!</span>[
+                        AccessRoute::route_only(<span class="string">"existingroute"</span>),
+                        AccessRoute::route_only(<span class="string">"newroute"</span>)
+                    ],
+                    definition_type: AccessDefinitionType::Verifier,
+                },
+                deserialized
+                    .access_definitions
+                    .iter()
+                    .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
+                    .unwrap(),
+                <span class="string">"sender access route should be unchanged after verifier routes updated"</span>,
+            );
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(
                 <span class="string">"Unexpected first message type for verify_asset: {:?}"</span>,
                 first_message,
-            ),
+            )
         }
         <span class="kw">let </span>second_message = <span class="kw-2">&amp;</span>messages[<span class="number">1</span>];
         <span class="kw">match </span>second_message {
@@ -2213,12 +2264,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_with_invalid_access_routes_filters_them_out() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Establish some access routes with blank strings to prove that they get filtered out in the verification process
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// All invalid (empty or whitespace-only strings) access routes should be filtered from output
@@ -2262,12 +2316,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_with_only_invalid_access_routes_adds_no_access_definition_for_the_verifier() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Establish some access routes with blank strings to prove that they get filtered out in the verification process
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
@@ -2296,12 +2353,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_new_access_routes_are_trimmed() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Establish some access routes with blank strings to prove that they get filtered out in the verification process
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
@@ -2341,12 +2401,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_with_duplicate_access_routes_and_different_names_keeps_all_routes() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Use two AccessRoutes with the same route but different names
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
@@ -2386,12 +2449,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_with_duplicate_routes_one_some_name_one_none_name() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Use two AccessRoutes with the same route but different names
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
@@ -2435,12 +2501,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_skips_duplicates_after_trimming() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Use two AccessRoutes with the same route but different names
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Only invalid access routes should yield no access definition for the verifier
@@ -2483,12 +2552,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_verify_with_no_access_routes_adds_no_access_definition_for_the_verifier() {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="comment">// Establish some access routes with blank strings to prove that they get filtered out in the verification process
         </span>test_verify_asset(
             <span class="kw-2">&amp;mut </span>deps,
+            <span class="kw-2">&amp;</span>instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     <span class="comment">// Completely empty access routes should yield no access definition for the verifier
@@ -2524,8 +2596,10 @@
     }
 
     <span class="kw">fn </span>test_verification_result(message: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, result: bool) {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         <span class="kw">let </span>repository = AssetMetaService::new(deps.as_mut());
         <span class="kw">let </span>original_attribute_value = repository
@@ -2534,7 +2608,13 @@
                 <span class="string">"original attribute value should load from Provenance Blockchain without issue"</span>,
             );
         repository
-            .verify_asset::&lt;<span class="kw-2">&amp;</span>str&gt;(original_attribute_value.clone(), result, message, <span class="macro">vec!</span>[])
+            .verify_asset::&lt;<span class="kw-2">&amp;</span>str&gt;(
+                <span class="kw-2">&amp;</span>instantiate_args.env,
+                original_attribute_value.clone(),
+                result,
+                message,
+                <span class="macro">vec!</span>[],
+            )
             .unwrap();
 
         <span class="kw">let </span>messages = repository.get_messages();
@@ -2545,50 +2625,47 @@
             <span class="string">"verify asset should produce two message (update attribute msg and one bank send message)"
         </span>);
         <span class="kw">let </span>first_message = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
-        <span class="kw">match </span>first_message {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params: ProvenanceMsgParams::Attribute(msg),
-                ..
-            }) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>value = original_attribute_value.clone();
-                value.latest_verification_result = AssetVerificationResult {
-                    message: message
-                        .unwrap_or(<span class="kw">if </span>result {
-                            <span class="string">"verification successful"
-                        </span>} <span class="kw">else </span>{
-                            <span class="string">"verification failure"
-                        </span>})
-                        .to_string(),
-                    success: result,
-                }
-                .to_some();
-                <span class="comment">// The onboarding status is based on whether or not the verifier approved the asset
-                // Dynamically swap between expected statuses based on the input
-                </span>value.onboarding_status = <span class="kw">if </span>result {
-                    AssetOnboardingStatus::Approved
-                } <span class="kw">else </span>{
-                    AssetOnboardingStatus::Denied
-                };
-                <span class="macro">assert_eq!</span>(
-                    AttributeMsgParams::UpdateAttribute {
-                        address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),
-                        name: generate_asset_attribute_name(
-                            DEFAULT_ASSET_TYPE,
-                            DEFAULT_CONTRACT_BASE_NAME
-                        ),
-                        original_value: to_binary(<span class="kw-2">&amp;</span>original_attribute_value).unwrap(),
-                        original_value_type: AttributeValueType::Json,
-                        update_value: to_binary(<span class="kw-2">&amp;</span>value).unwrap(),
-                        update_value_type: AttributeValueType::Json
-                    },
-                    msg.to_owned(),
-                    <span class="string">"add attribute message should match what is expected"
-                </span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(update_attribute_request) = try_into_update_attribute_request(first_message) {
+            <span class="kw">let </span><span class="kw-2">mut </span>value = original_attribute_value.clone();
+            value.latest_verification_result = AssetVerificationResult {
+                message: message
+                    .unwrap_or(<span class="kw">if </span>result {
+                        <span class="string">"verification successful"
+                    </span>} <span class="kw">else </span>{
+                        <span class="string">"verification failure"
+                    </span>})
+                    .to_string(),
+                success: result,
             }
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
+            .to_some();
+            <span class="comment">// The onboarding status is based on whether or not the verifier approved the asset
+            // Dynamically swap between expected statuses based on the input
+            </span>value.onboarding_status = <span class="kw">if </span>result {
+                AssetOnboardingStatus::Approved
+            } <span class="kw">else </span>{
+                AssetOnboardingStatus::Denied
+            };
+            <span class="macro">assert_eq!</span>(
+                MsgUpdateAttributeRequest {
+                    account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                    owner: MOCK_CONTRACT_ADDR.to_string(),
+                    name: generate_asset_attribute_name(
+                        DEFAULT_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME
+                    ),
+                    original_value: to_json_vec(<span class="kw-2">&amp;</span>original_attribute_value).unwrap(),
+                    original_attribute_type: AttributeType::Json.into(),
+                    update_value: to_json_vec(<span class="kw-2">&amp;</span>value).unwrap(),
+                    update_attribute_type: AttributeType::Json.into(),
+                },
+                update_attribute_request,
+                <span class="string">"add attribute message should match what is expected"
+            </span>);
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(
                 <span class="string">"Unexpected first message type for verify_asset: {:?}"</span>,
                 first_message
-            ),
+            )
         }
         <span class="kw">let </span>second_message = <span class="kw-2">&amp;</span>messages[<span class="number">1</span>];
         <span class="kw">match </span>second_message {
@@ -2624,8 +2701,10 @@
     }
 
     <span class="kw">fn </span>assert_verify_classification_success(simulate_deleted_verifier: bool) {
-        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_dependencies(<span class="kw-2">&amp;</span>[]);
-        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, InstArgs::default());
+        <span class="kw">let </span><span class="kw-2">mut </span>deps = mock_provenance_dependencies();
+        <span class="kw">let </span>instantiate_args = InstArgs::default();
+        setup_test_suite(<span class="kw-2">&amp;mut </span>deps, <span class="kw-2">&amp;</span>instantiate_args);
+        setup_no_attribute_response(<span class="kw-2">&amp;mut </span>deps, <span class="prelude-val">None</span>);
         test_onboard_asset(<span class="kw-2">&amp;mut </span>deps, TestOnboardAsset::default()).unwrap();
         load_fee_payment_detail(
             deps.as_ref().storage,
@@ -2663,6 +2742,7 @@
         );
         service
             .verify_asset(
+                <span class="kw-2">&amp;</span>instantiate_args.env,
                 asset.clone(),
                 <span class="bool-val">true</span>,
                 <span class="prelude-val">Some</span>(<span class="string">"great jaerb there hamstar"</span>),
@@ -2675,58 +2755,54 @@
             messages.len(),
             <span class="string">"the correct number of messages should be generated"</span>,
         );
-        <span class="kw">let </span>update_attribute_msg = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
-        <span class="kw">match </span>update_attribute_msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        address,
-                        name,
-                        original_value,
-                        original_value_type,
-                        update_value,
-                        update_value_type,
-                    }),
+        <span class="kw">let </span>first_message = <span class="kw-2">&amp;</span>messages[<span class="number">0</span>];
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(update_attribute_request) = try_into_update_attribute_request(first_message) {
+            <span class="kw">let </span>MsgUpdateAttributeRequest {
+                <span class="kw-2">ref </span>name,
+                <span class="kw-2">ref </span>original_value,
+                <span class="kw-2">ref </span>update_value,
+                <span class="kw-2">ref </span>account,
                 ..
-            }) =&gt; {
-                <span class="macro">assert_eq!</span>(
-                    DEFAULT_SCOPE_ADDRESS,
-                    address.as_str(),
-                    <span class="string">"the update attribute message should target the scope"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-                    name,
-                    <span class="string">"the correct attribute name should be included in the update"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    asset,
-                    from_binary(original_value).expect(<span class="string">"the original_value should deserialize without error"</span>),
-                    <span class="string">"the asset value before the update was made should be used as the original_value"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>AttributeValueType::Json,
-                    original_value_type,
-                    <span class="string">"the json value type should be used for the original_value_type"</span>,
-                );
-                <span class="kw">let </span>updated_asset = from_binary::&lt;AssetScopeAttribute&gt;(update_value)
-                    .expect(<span class="string">"the update_value should deserialize without error"</span>);
-                <span class="macro">assert_eq!</span>(
-                    AssetOnboardingStatus::Approved,
-                    updated_asset.onboarding_status,
-                    <span class="string">"the updated asset's onboarding status should be changed to approve"</span>,
-                );
-                <span class="macro">assert_eq!</span>(
-                    <span class="kw-2">&amp;</span>AttributeValueType::Json,
-                    update_value_type,
-                    <span class="string">"the json value type should be used for the update_value_type"</span>,
-                );
-            }
-            msg =&gt; <span class="macro">panic!</span>(
+            } = update_attribute_request;
+            <span class="macro">assert_eq!</span>(
+                DEFAULT_SCOPE_ADDRESS,
+                account.as_str(),
+                <span class="string">"the update attribute message should target the scope"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                name.to_owned(),
+                <span class="string">"the correct attribute name should be included in the update"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                asset,
+                from_json(original_value)
+                    .expect(<span class="string">"the original_value should deserialize without error"</span>),
+                <span class="string">"the asset value before the update was made should be used as the original_value"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                AttributeType::Json,
+                update_attribute_request.original_attribute_type(),
+                <span class="string">"the json value type should be used for the original_value_type"</span>,
+            );
+            <span class="kw">let </span>updated_asset = from_json::&lt;AssetScopeAttribute&gt;(update_value)
+                .expect(<span class="string">"the update_value should deserialize without error"</span>);
+            <span class="macro">assert_eq!</span>(
+                AssetOnboardingStatus::Approved,
+                updated_asset.onboarding_status,
+                <span class="string">"the updated asset's onboarding status should be changed to approve"</span>,
+            );
+            <span class="macro">assert_eq!</span>(
+                AttributeType::Json,
+                update_attribute_request.update_attribute_type(),
+                <span class="string">"the json value type should be used for the update_value_type"</span>,
+            );
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(
                 <span class="string">"the first message generated should be an update attribute msg, but got: {:?}"</span>,
-                msg
-            ),
-        };
+                first_message,
+            )
+        }
         <span class="kw">let </span>fee_payment_msg = <span class="kw-2">&amp;</span>messages[<span class="number">1</span>];
         <span class="kw">match </span>fee_payment_msg {
             CosmosMsg::Bank(BankMsg::Send { to_address, amount }) =&gt; {

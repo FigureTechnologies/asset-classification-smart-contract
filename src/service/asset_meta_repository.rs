@@ -45,9 +45,15 @@ pub trait AssetMetaRepository {
     ///
     /// # Parameters
     ///
+    /// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+    /// details, as well as blockchain information at the time of the transaction.
     /// * `updated_attribute` The new attribute to attach to the scope.  The original values will be
     /// entirely replaced with the values contained within this struct.
-    fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()>;
+    fn update_attribute(
+        &self,
+        env: &Env,
+        updated_attribute: &AssetScopeAttribute,
+    ) -> AssetResult<()>;
 
     /// Attempts to fetch all asset attributes currently attached to a scope.  Returns an error if no
     /// scope exists or no scope attribute is attached to the existing scope.
@@ -105,6 +111,8 @@ pub trait AssetMetaRepository {
     ///
     /// # Parameters
     ///
+    /// * `env` An environment object provided by the cosmwasm framework.  Describes the contract's
+    /// details, as well as blockchain information at the time of the transaction.
     /// * `scope_attribute` The [AssetScopeAttribute](crate::core::types::asset_scope_attribute::AssetScopeAttribute)
     /// to be verified.
     /// * `success` Whether or not the scope should be considered verified when the process completes.
@@ -116,6 +124,7 @@ pub trait AssetMetaRepository {
     /// store.
     fn verify_asset<S: Into<String>>(
         &self,
+        env: &Env,
         scope_attribute: AssetScopeAttribute,
         success: bool,
         verification_message: Option<S>,

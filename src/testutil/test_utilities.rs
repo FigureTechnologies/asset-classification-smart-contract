@@ -1,18 +1,21 @@
 use cosmwasm_std::{
-    coin, from_binary,
-    testing::{mock_env, mock_info, MockApi, MockStorage},
-    Addr, Binary, Coin, CosmosMsg, Env, MessageInfo, OwnedDeps, Response, Uint128,
+    coin,
+    testing::{message_info, mock_env},
+    to_json_vec, Addr, Coin, DepsMut, Env, MessageInfo, OwnedDeps, Response, Uint128,
 };
-use provwasm_mocks::ProvenanceMockQuerier;
-use provwasm_std::{
-    AttributeMsgParams, Party, PartyType, Process, ProcessId, ProvenanceMsg, ProvenanceMsgParams,
-    ProvenanceQuery, Record, RecordInput, RecordInputSource, RecordInputStatus, RecordOutput,
-    Records, ResultStatus, Scope,
+use provwasm_std::types::provenance::{
+    attribute::v1::{
+        Attribute, AttributeType, MsgAddAttributeRequest, MsgUpdateAttributeRequest,
+        QueryAttributeRequest, QueryAttributeResponse, QueryAttributesRequest,
+        QueryAttributesResponse,
+    },
+    metadata::v1::{
+        process::ProcessId, record_input::Source, Party, PartyType, Process, Record, RecordInput,
+        RecordInputStatus, RecordOutput, RecordWrapper, RecordsRequest, RecordsResponse,
+        ResultStatus, Scope, ScopeRequest, ScopeResponse, ScopeWrapper,
+    },
 };
-use serde_json_wasm::to_string;
 
-use crate::core::types::fee_payment_detail::{FeePayment, FeePaymentDetail};
-use crate::core::types::onboarding_cost::OnboardingCost;
 use crate::core::types::subsequent_classification_detail::SubsequentClassificationDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
 use crate::core::{
@@ -34,9 +37,14 @@ use crate::{
     },
     util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
 };
+use crate::{core::types::access_route::AccessRoute, util::aliases::EntryPointResponse};
 use crate::{
-    core::types::access_route::AccessRoute,
-    util::aliases::{DepsMutC, EntryPointResponse},
+    core::types::fee_payment_detail::{FeePayment, FeePaymentDetail},
+    util::functions::try_into_add_attribute_request,
+};
+use crate::{
+    core::types::onboarding_cost::OnboardingCost,
+    util::functions::try_into_update_attribute_request,
 };
 
 use super::test_constants::{
@@ -51,7 +59,12 @@ use super::test_constants::{
     DEFAULT_SESSION_ADDRESS, DEFAULT_VERIFIER_ADDRESS,
 };
 
-pub type MockOwnedDeps = OwnedDeps<MockStorage, MockApi, ProvenanceMockQuerier, ProvenanceQuery>;
+pub type MockOwnedDeps = OwnedDeps<
+    cosmwasm_std::testing::MockStorage,
+    cosmwasm_std::testing::MockApi,
+    provwasm_mocks::MockProvenanceQuerier,
+    cosmwasm_std::Empty,
+>;
 
 pub fn get_default_asset_definition_input() -> AssetDefinitionInputV3 {
     AssetDefinitionInputV3 {
@@ -152,7 +165,7 @@ impl Default for InstArgs {
     fn default() -> Self {
         InstArgs {
             env: mock_env(),
-            info: mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            info: message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             base_contract_name: DEFAULT_CONTRACT_BASE_NAME.into(),
             bind_base_name: true,
             // Although this is literally a test framework, we use this to test real interactions.
@@ -184,34 +197,71 @@ impl InstArgs {
     }
 }
 
-pub fn test_instantiate(deps: DepsMutC, args: InstArgs) -> EntryPointResponse {
+pub fn test_instantiate(deps: DepsMut, args: &InstArgs) -> EntryPointResponse {
     instantiate(
         deps,
-        args.env,
-        args.info,
+        args.env.to_owned(),
+        args.info.to_owned(),
         InitMsg {
-            base_contract_name: args.base_contract_name,
+            base_contract_name: args.base_contract_name.to_owned(),
             bind_base_name: args.bind_base_name,
-            asset_definitions: args.asset_definitions,
+            asset_definitions: args.asset_definitions.to_owned(),
             is_test: Some(args.is_test),
         },
     )
 }
 
-pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: InstArgs) {
+pub fn setup_test_suite(deps: &mut MockOwnedDeps, args: &InstArgs) {
     test_instantiate_success(deps.as_mut(), args);
     let default_scope = get_default_scope();
-    deps.querier.with_scope(default_scope.clone());
-    deps.querier
-        .with_records(default_scope, get_default_records());
+    ScopeRequest::mock_response(
+        &mut deps.querier,
+        ScopeResponse {
+            scope: Some(ScopeWrapper {
+                scope: Some(default_scope.clone()),
+                scope_id_info: None,
+                scope_spec_id_info: None,
+            }),
+            sessions: vec![],
+            records: vec![],
+            request: None,
+        },
+    );
+    RecordsRequest::mock_response(&mut deps.querier, get_default_records());
 }
 
-pub fn test_instantiate_success(deps: DepsMutC, args: InstArgs) -> Response<ProvenanceMsg> {
+/// Sets up mock queries for no attributes to be returned for a given scope address (defaults to the happy path address).
+/// This can be called before [test_onboard_asset](crate::testutil::onboard_asset_helpers::test_onboard_asset)
+/// if a successful asset onboarding outcome is desired to ensure that there is no existing conflicting attribute
+/// on an asset that would prevent its onboarding. [intercept_add_or_update_attribute] will then update the mock attribute
+/// query result after onboarding to mark the asset as onboarded.
+pub fn setup_no_attribute_response(deps: &mut MockOwnedDeps, address: Option<String>) {
+    QueryAttributeRequest::mock_response(
+        &mut deps.querier,
+        QueryAttributeResponse {
+            account: address
+                .to_owned()
+                .unwrap_or(DEFAULT_SCOPE_ADDRESS.to_string()),
+            attributes: vec![],
+            pagination: None,
+        },
+    );
+    QueryAttributesRequest::mock_response(
+        &mut deps.querier,
+        QueryAttributesResponse {
+            account: address.unwrap_or(DEFAULT_SCOPE_ADDRESS.to_string()),
+            attributes: vec![],
+            pagination: None,
+        },
+    );
+}
+
+pub fn test_instantiate_success(deps: DepsMut, args: &InstArgs) -> Response {
     test_instantiate(deps, args).expect("expected instantiation to succeed")
 }
 
 pub fn empty_mock_info<S: Into<String>>(sender: S) -> MessageInfo {
-    mock_info(&sender.into(), &[])
+    message_info(&Addr::unchecked(sender.into()), &[])
 }
 
 pub fn get_default_scope() -> Scope {
@@ -222,24 +272,17 @@ pub fn get_default_scope() -> Scope {
     )
 }
 
-pub fn get_default_records() -> Records {
+pub fn get_default_records() -> RecordsResponse {
     get_duped_records(
+        None,
         DEFAULT_RECORD_NAME,
         DEFAULT_SESSION_ADDRESS,
         DEFAULT_RECORD_SPEC_ADDRESS,
     )
 }
 
-pub fn mock_default_scope_attribute(
-    deps: &mut MockOwnedDeps,
-    scope_address: impl Into<String>,
-    attribute: &AssetScopeAttribute,
-) {
-    mock_scope_attribute(deps, attribute, scope_address);
-}
-
 pub fn mock_info_with_funds<S: Into<String>>(sender: S, funds: &[Coin]) -> MessageInfo {
-    mock_info(&sender.into(), funds)
+    message_info(&Addr::unchecked(sender.into()), funds)
 }
 
 pub fn mock_info_with_nhash<S: Into<String>>(sender: S, amount: u128) -> MessageInfo {
@@ -267,53 +310,61 @@ pub fn get_duped_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
     spec_id: S2,
     owner_address: S3,
 ) -> Scope {
-    let owner_address = owner_address.into();
+    let owner_address: String = owner_address.into();
     Scope {
-        scope_id: scope_id.into(),
-        specification_id: spec_id.into(),
+        scope_id: scope_id.into().into(),
+        specification_id: spec_id.into().into(),
         owners: vec![Party {
-            address: Addr::unchecked(&owner_address),
-            role: PartyType::Owner,
+            address: owner_address.to_owned(),
+            role: PartyType::Owner.into(),
+            optional: false,
         }],
         data_access: vec![],
-        value_owner_address: Addr::unchecked(owner_address),
+        value_owner_address: owner_address,
+        require_party_rollup: false,
     }
 }
 
 pub fn get_duped_records<S1, S2, S3>(
+    scope: Option<ScopeWrapper>,
     record_name: S1,
     session_address: S2,
     record_spec_address: S3,
-) -> Records
+) -> RecordsResponse
 where
     S1: Into<String>,
     S2: Into<String>,
     S3: Into<String>,
 {
-    Records {
-        records: vec![Record {
-            name: record_name.into(),
-            session_id: session_address.into(),
-            specification_id: record_spec_address.into(),
-            process: Process {
-                process_id: ProcessId::Address {
-                    address: DEFAULT_PROCESS_ADDRESS.to_string(),
-                },
-                method: DEFAULT_PROCESS_METHOD.to_string(),
-                name: DEFAULT_PROCESS_NAME.to_string(),
-            },
-            inputs: vec![RecordInput {
-                name: DEFAULT_RECORD_INPUT_NAME.to_string(),
-                type_name: "string".to_string(),
-                source: RecordInputSource::Record {
-                    record_id: DEFAULT_RECORD_INPUT_SOURCE_ADDRESS.to_string(),
-                },
-                status: RecordInputStatus::Record,
-            }],
-            outputs: vec![RecordOutput {
-                hash: DEFAULT_RECORD_OUTPUT_HASH.to_string(),
-                status: ResultStatus::Pass,
-            }],
+    RecordsResponse {
+        scope,
+        sessions: vec![],
+        request: None,
+        records: vec![RecordWrapper {
+            record: Some(Record {
+                name: record_name.into(),
+                session_id: session_address.into().into(),
+                specification_id: record_spec_address.into().into(),
+                process: Some(Process {
+                    process_id: Some(ProcessId::Address(DEFAULT_PROCESS_ADDRESS.to_string())),
+                    method: DEFAULT_PROCESS_METHOD.to_string(),
+                    name: DEFAULT_PROCESS_NAME.to_string(),
+                }),
+                inputs: vec![RecordInput {
+                    name: DEFAULT_RECORD_INPUT_NAME.to_string(),
+                    type_name: "string".to_string(),
+                    source: Some(Source::Hash(
+                        DEFAULT_RECORD_INPUT_SOURCE_ADDRESS.to_string(),
+                    )),
+                    status: RecordInputStatus::Record.into(),
+                }],
+                outputs: vec![RecordOutput {
+                    hash: DEFAULT_RECORD_OUTPUT_HASH.to_string(),
+                    status: ResultStatus::Pass.into(),
+                }],
+            }),
+            record_id_info: None,
+            record_spec_id_info: None,
         }],
     }
 }
@@ -342,8 +393,19 @@ pub fn mock_scope<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
     spec_id: S2,
     owner_address: S3,
 ) {
-    deps.querier
-        .with_scope(get_duped_scope(scope_id, spec_id, owner_address))
+    ScopeRequest::mock_response(
+        &mut deps.querier,
+        ScopeResponse {
+            scope: Some(ScopeWrapper {
+                scope: Some(get_duped_scope(scope_id, spec_id, owner_address)),
+                scope_id_info: None,
+                scope_spec_id_info: None,
+            }),
+            sessions: vec![],
+            records: vec![],
+            request: None,
+        },
+    );
 }
 
 pub fn mock_record<S1, S2, S3>(
@@ -357,25 +419,46 @@ pub fn mock_record<S1, S2, S3>(
     S2: Into<String>,
     S3: Into<String>,
 {
-    deps.querier.with_records(
-        scope,
-        get_duped_records(record_name, session_address, scope_spec_address),
-    )
+    RecordsRequest::mock_response(
+        &mut deps.querier,
+        get_duped_records(
+            Some(ScopeWrapper {
+                scope: Some(scope),
+                scope_id_info: None,
+                scope_spec_id_info: None,
+            }),
+            record_name,
+            session_address,
+            scope_spec_address,
+        ),
+    );
 }
 
-pub fn mock_scope_attribute<S: Into<String>>(
+pub fn build_attribute(address: impl Into<String>, attribute: &AssetScopeAttribute) -> Attribute {
+    Attribute {
+        name: generate_asset_attribute_name(&attribute.asset_type, DEFAULT_CONTRACT_BASE_NAME),
+        value: to_json_vec(attribute).expect("failed to convert AssetScopeAttribute to bytes"),
+        attribute_type: AttributeType::Json.into(),
+        address: address.into(),
+        expiration_date: None,
+    }
+}
+
+/// Sets up mock queries such that querying for all attributes on the given scope returns
+/// a single supplied attribute.
+pub fn mock_single_scope_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
     attribute: &AssetScopeAttribute,
     scope_address: S,
 ) {
     let address: String = scope_address.into();
-    deps.querier.with_attributes(
-        &address,
-        &[(
-            &generate_asset_attribute_name(&attribute.asset_type, DEFAULT_CONTRACT_BASE_NAME),
-            &to_string(attribute).expect("failed to convert AssetScopeAttribute to json string"),
-            "json",
-        )],
+    QueryAttributesRequest::mock_response(
+        &mut deps.querier,
+        QueryAttributesResponse {
+            account: address.to_owned(),
+            attributes: vec![build_attribute(address, attribute)],
+            pagination: None,
+        },
     );
 }
 
@@ -394,19 +477,10 @@ pub fn assert_single_item_by<T: Clone, S: Into<String>, F: FnMut(&&T) -> bool>(
     filtered_slice.first().unwrap().clone().to_owned()
 }
 
-struct AddOrUpdateAttributeParams<'a> {
-    address: &'a Addr,
-    name: &'a String,
-    binary: &'a Binary,
-}
-impl<'a> AddOrUpdateAttributeParams<'a> {
-    pub fn new(address: &'a Addr, name: &'a String, binary: &'a Binary) -> Self {
-        Self {
-            address,
-            name,
-            binary,
-        }
-    }
+struct AddOrUpdateAttributeParams {
+    address: Addr,
+    name: String,
+    value: Vec<u8>,
 }
 
 /// Crawls the vector of messages contained in the provided response, and, if an add attribute message
@@ -415,52 +489,60 @@ impl<'a> AddOrUpdateAttributeParams<'a> {
 /// value for the given address.
 pub fn intercept_add_or_update_attribute<S: Into<String>>(
     deps: &mut MockOwnedDeps,
-    response: Response<ProvenanceMsg>,
+    response: Response,
     failure_description: S,
 ) -> EntryPointResponse {
     let failure_msg: String = failure_description.into();
 
     for m in response.messages.iter() {
-        let params = match &m.msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                        address,
-                        name,
-                        value,
-                        ..
-                    }),
-                ..
-            }) => Some(AddOrUpdateAttributeParams::new(address, name, value)),
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        address,
-                        name,
-                        update_value,
-                        ..
-                    }),
-                ..
-            }) => Some(AddOrUpdateAttributeParams::new(address, name, update_value)),
-            _ => None,
+        let params: Option<AddOrUpdateAttributeParams> = if let Some(MsgAddAttributeRequest {
+            account,
+            name,
+            value,
+            ..
+        }) =
+            try_into_add_attribute_request(&m.msg)
+        {
+            Some(AddOrUpdateAttributeParams {
+                address: Addr::unchecked(account),
+                name,
+                value,
+            })
+        } else if let Some(MsgUpdateAttributeRequest {
+            account,
+            name,
+            update_value,
+            ..
+        }) = try_into_update_attribute_request(&m.msg)
+        {
+            Some(AddOrUpdateAttributeParams {
+                address: Addr::unchecked(account),
+                name,
+                value: update_value,
+            })
+        } else {
+            None
         };
         if let Some(AddOrUpdateAttributeParams {
             address,
             name,
-            binary,
+            value,
         }) = params
         {
             // inject bound name into provmock querier
-            let deserialized = from_binary::<AssetScopeAttribute>(binary).unwrap();
-            deps.querier.with_attributes(
-                address.as_str(),
-                &[(
-                    name.as_str(),
-                    to_string(&deserialized)
-                        .expect("expected the scope attribute to convert to json without error")
-                        .as_str(),
-                    "json",
-                )],
+            QueryAttributeRequest::mock_response(
+                &mut deps.querier,
+                QueryAttributeResponse {
+                    account: address.to_string(),
+                    attributes: vec![Attribute {
+                        name: name.to_string(),
+                        value,
+                        attribute_type: AttributeType::Json.into(),
+                        address: address.to_string(),
+                        expiration_date: None,
+                    }],
+                    pagination: None,
+                },
             );
             // After finding the an add or update attribute message, exit to avoid panics
             return Ok(response);

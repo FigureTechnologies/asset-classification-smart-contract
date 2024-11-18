@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{to_binary, Coin, CosmosMsg, Env, Uint128};
-use provwasm_std::{assess_custom_fee, update_attribute, AttributeValueType, ProvenanceMsg};
+use cosmwasm_std::{to_json_binary, Coin, CosmosMsg, DepsMut, Env, Uint128};
+use provwasm_std::types::provenance::attribute::v1::AttributeType;
 use result_extensions::ResultExtensions;
 
 use crate::core::state::{
-    delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail,
+    delete_fee_payment_detail, insert_fee_payment_detail, load_fee_payment_detail, STATE_V2,
 };
 use crate::core::types::fee_payment_detail::FeePaymentDetail;
 use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -13,21 +13,20 @@ use crate::query::query_asset_scope_attribute_by_asset_type::{
     may_query_scope_attribute_by_scope_address_and_asset_type,
     query_scope_attribute_by_scope_address_and_asset_type,
 };
+use crate::util::contract_helpers::assess_custom_fee;
+use crate::util::functions::update_attribute;
 use crate::{
-    core::{
-        state::config_read_v2,
-        types::{
-            access_definition::{AccessDefinition, AccessDefinitionType},
-            access_route::AccessRoute,
-            asset_onboarding_status::AssetOnboardingStatus,
-            asset_scope_attribute::AssetScopeAttribute,
-            asset_verification_result::AssetVerificationResult,
-        },
+    core::types::{
+        access_definition::{AccessDefinition, AccessDefinitionType},
+        access_route::AccessRoute,
+        asset_onboarding_status::AssetOnboardingStatus,
+        asset_scope_attribute::AssetScopeAttribute,
+        asset_verification_result::AssetVerificationResult,
     },
     query::query_asset_scope_attribute::{
         may_query_scope_attribute_by_scope_address, query_scope_attribute_by_scope_address,
     },
-    util::aliases::{AssetResult, DepsMutC},
+    util::aliases::AssetResult,
     util::deps_container::DepsContainer,
     util::functions::filter_valid_access_routes,
     util::functions::generate_asset_attribute_name,
@@ -45,11 +44,11 @@ use super::{
 /// Ties all service code together into a cohesive struct to use for complex operations during the
 /// onboarding and verification processes.
 pub struct AssetMetaService<'a> {
-    /// A wrapper for a [DepsMutC](core::util::aliases::DepsMutC] that allows access to it without
+    /// A wrapper for a [DepsMut](core::util::aliases::DepsMut] that allows access to it without
     /// moving the value.
     deps: DepsContainer<'a>,
     /// All messages generated over the course of function invocations.
-    messages: VecContainer<CosmosMsg<ProvenanceMsg>>,
+    messages: VecContainer<CosmosMsg>,
 }
 impl<'a> AssetMetaService<'a> {
     /// Constructs a new instance of this struct.
@@ -58,7 +57,7 @@ impl<'a> AssetMetaService<'a> {
     ///
     /// * `deps` The cosmwasm deps that will be moved into a [DepsContainer](crate::util::deps_container::DepsContainer)
     /// for future access.
-    pub fn new(deps: DepsMutC<'a>) -> Self {
+    pub fn new(deps: DepsMut<'a>) -> Self {
         Self {
             deps: DepsContainer::new(deps),
             messages: VecContainer::new(),
@@ -103,16 +102,17 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         // generate attribute -> scope bind messages
         // On a retry, update the existing attribute with the given values
         if is_retry {
-            self.update_attribute(attribute)?;
+            self.update_attribute(env, attribute)?;
         } else {
             // On a first time execution, simply add the attribute to the scope - it's already been
             // verified that the attribute does not yet exist
             let contract_base_name = self
-                .use_deps(|d| config_read_v2(d.storage).load())?
+                .use_deps(|d| STATE_V2.load(d.storage))?
                 .base_contract_name;
             self.add_message(get_add_attribute_to_scope_msg(
                 attribute,
                 contract_base_name,
+                env.contract.address.to_owned(),
             )?);
         }
 
@@ -159,9 +159,13 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         Ok(())
     }
 
-    fn update_attribute(&self, updated_attribute: &AssetScopeAttribute) -> AssetResult<()> {
+    fn update_attribute(
+        &self,
+        env: &Env,
+        updated_attribute: &AssetScopeAttribute,
+    ) -> AssetResult<()> {
         let contract_base_name = self
-            .use_deps(|d| config_read_v2(d.storage).load())?
+            .use_deps(|d| STATE_V2.load(d.storage))?
             .base_contract_name;
         let original_attribute = self.get_asset_by_asset_type(
             &updated_attribute.scope_address,
@@ -170,17 +174,19 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         self.add_message(update_attribute(
             // address: Target address - the scope with the attribute on it
             bech32_string_to_addr(&original_attribute.scope_address)?,
+            // contract address
+            env.contract.address.to_owned(),
             // name: Attribute name - use the same value as before
             generate_asset_attribute_name(&original_attribute.asset_type, &contract_base_name),
             // original_value: The unmodified original attribute
-            to_binary(&original_attribute)?,
+            to_json_binary(&original_attribute)?,
             // original_value_type
-            AttributeValueType::Json,
+            AttributeType::Json,
             // update_value: The attribute with changes
-            to_binary(&updated_attribute)?,
+            to_json_binary(&updated_attribute)?,
             // update_value_type: Maintain Json typing. it's awesome that this can change between updates,
             // but this code doesn't want that
-            AttributeValueType::Json,
+            AttributeType::Json,
         )?);
         Ok(())
     }
@@ -241,6 +247,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 
     fn verify_asset<S: Into<String>>(
         &self,
+        env: &Env,
         mut scope_attribute: AssetScopeAttribute,
         success: bool,
         verification_message: Option<S>,
@@ -307,7 +314,7 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
         }
         // Remove the old scope attribute and append a new one that overwrites existing data
         // with the changes made to the attribute
-        self.update_attribute(&scope_attribute)?;
+        self.update_attribute(env, &scope_attribute)?;
 
         // Retrieve fee breakdown and use it to emit message fees
         let payment_detail = self.use_deps(|deps| {
@@ -340,25 +347,25 @@ impl<'a> AssetMetaRepository for AssetMetaService<'a> {
 impl<'a> DepsManager<'a> for AssetMetaService<'a> {
     fn use_deps<T, F>(&self, deps_fn: F) -> T
     where
-        F: FnMut(&mut DepsMutC) -> T,
+        F: FnMut(&mut DepsMut) -> T,
     {
         self.deps.use_deps(deps_fn)
     }
 
-    fn into_deps(self) -> DepsMutC<'a> {
+    fn into_deps(self) -> DepsMut<'a> {
         self.deps.get()
     }
 }
 impl<'a> MessageGatheringService for AssetMetaService<'a> {
-    fn get_messages(&self) -> Vec<CosmosMsg<ProvenanceMsg>> {
+    fn get_messages(&self) -> Vec<CosmosMsg> {
         self.messages.get_cloned()
     }
 
-    fn add_message(&self, message: CosmosMsg<ProvenanceMsg>) {
+    fn add_message(&self, message: CosmosMsg) {
         self.messages.push(message);
     }
 
-    fn append_messages(&self, messages: &[CosmosMsg<ProvenanceMsg>]) {
+    fn append_messages(&self, messages: &[CosmosMsg]) {
         self.messages.append(&mut messages.to_vec());
     }
 
@@ -369,7 +376,7 @@ impl<'a> MessageGatheringService for AssetMetaService<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::state::{insert_fee_payment_detail, load_fee_payment_detail};
+    use crate::core::state::{insert_fee_payment_detail, load_fee_payment_detail, STATE_V2};
     use crate::execute::update_asset_definition::{
         update_asset_definition, UpdateAssetDefinitionV1,
     };
@@ -378,11 +385,15 @@ mod tests {
     };
     use crate::testutil::test_utilities::{
         empty_mock_info, get_default_asset_definition, get_duped_fee_payment_detail,
+        setup_no_attribute_response,
+    };
+    use crate::util::functions::{
+        try_into_add_attribute_request, try_into_custom_fee_request,
+        try_into_update_attribute_request,
     };
     use crate::{
         core::{
             error::ContractError,
-            state::config_read_v2,
             types::{
                 access_definition::{AccessDefinition, AccessDefinitionType},
                 access_route::AccessRoute,
@@ -413,18 +424,19 @@ mod tests {
         util::{functions::generate_asset_attribute_name, traits::OptionExtensions},
     };
     use cosmwasm_std::testing::{mock_env, MOCK_CONTRACT_ADDR};
-    use cosmwasm_std::{from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, StdError};
-    use provwasm_mocks::mock_dependencies;
-    use provwasm_std::{
-        AttributeMsgParams, AttributeValueType, MsgFeesMsgParams, ProvenanceMsg,
-        ProvenanceMsgParams,
+    use cosmwasm_std::{from_json, to_json_vec, Addr, BankMsg, Coin, CosmosMsg, StdError};
+    use provwasm_mocks::mock_provenance_dependencies;
+    use provwasm_std::types::provenance::attribute::v1::{
+        Attribute, AttributeType, MsgAddAttributeRequest, MsgUpdateAttributeRequest,
+        QueryAttributeRequest, QueryAttributeResponse,
     };
-    use serde_json_wasm::to_string;
+    use provwasm_std::types::provenance::msgfees::v1::MsgAssessCustomMsgFeeRequest;
 
     #[test]
     fn has_asset_returns_false_if_asset_does_not_have_the_attribute() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         let repository = AssetMetaService::new(deps.as_mut());
         let result = repository
             .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_ASSET_TYPE)
@@ -437,8 +449,9 @@ mod tests {
 
     #[test]
     fn has_asset_returns_true_if_asset_has_attribute() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
         let repository = AssetMetaService::new(deps.as_mut());
@@ -455,15 +468,16 @@ mod tests {
 
     #[test]
     fn has_asset_returns_false_if_asset_has_attribute_for_different_type() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         setup_test_suite(
             &mut deps,
-            InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
+            &InstArgs::default_with_additional_asset_types(vec![DEFAULT_SECONDARY_ASSET_TYPE]),
         );
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
 
+        setup_no_attribute_response(&mut deps, None);
         let repository = AssetMetaService::new(deps.as_mut());
-
         let result = repository
             .has_asset(DEFAULT_SCOPE_ADDRESS, DEFAULT_SECONDARY_ASSET_TYPE)
             .unwrap();
@@ -476,8 +490,9 @@ mod tests {
 
     #[test]
     fn add_asset_generates_proper_messages() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
 
         let repository = AssetMetaService::new(deps.as_mut());
 
@@ -498,50 +513,43 @@ mod tests {
             messages.len(),
             "add_asset should generate the correct number of messages"
         );
-        messages.iter().for_each(|msg| match &msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::AddAttribute {
-                        name,
-                        value,
-                        value_type,
-                        ..
-                    }),
-                ..
-            }) => {
+        messages.iter().for_each(|msg| {
+            if let Some(add_attribute_request) = try_into_add_attribute_request(msg) {
+                let MsgAddAttributeRequest {
+                    ref name,
+                    ref value,
+                    ..
+                } = add_attribute_request;
                 assert_eq!(
-                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-                    name,
+                    generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                    name.to_owned(),
                     "attribute name should match what is expected"
                 );
-                let deserialized: AssetScopeAttribute = from_binary(value).unwrap();
+                let deserialized: AssetScopeAttribute = from_json(value).unwrap();
                 let expected = get_default_asset_scope_attribute();
                 assert_eq!(
                     expected, deserialized,
                     "attribute should contain proper values"
                 );
                 assert_eq!(
-                    &AttributeValueType::Json,
-                    value_type,
+                    AttributeType::Json,
+                    add_attribute_request.attribute_type(),
                     "generated attribute value_type should be Json"
                 );
-            }
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::MsgFees(MsgFeesMsgParams::AssessCustomFee {
-                        amount,
-                        name,
-                        from,
-                        recipient,
-                    }),
+            } else if let Some(MsgAssessCustomMsgFeeRequest {
+                name,
+                amount,
+                recipient,
+                from,
                 ..
-            }) => {
+            }) = try_into_custom_fee_request(msg)
+            {
                 assert_eq!(
-                    DEFAULT_ONBOARDING_COST,
-                    amount.amount.u128(),
+                    DEFAULT_ONBOARDING_COST.to_string(),
+                    amount.expect("fee should have amount defined").amount,
                     "double the onboarding cost should be charged to account for provenance fees",
                 );
-                assert!(name.is_some(), "a fee name should be provided",);
+                assert_ne!(name, String::from(""), "a fee name should be provided");
                 assert_eq!(
                     MOCK_CONTRACT_ADDR,
                     from.as_str(),
@@ -549,24 +557,23 @@ mod tests {
                 );
                 assert_eq!(
                     MOCK_CONTRACT_ADDR,
-                    recipient
-                        .to_owned()
-                        .expect("a recipient should be defined")
-                        .as_str(),
+                    recipient.to_owned().as_str(),
                     "the verifier should receive the fees",
                 );
+            } else {
+                panic!(
+                    "Unexpected message type resulting from add_asset: {:?}",
+                    msg
+                )
             }
-            msg => panic!(
-                "Unexpected message type resulting from add_asset: {:?}",
-                msg
-            ),
         });
     }
 
     #[test]
     fn get_asset_returns_error_if_asset_does_not_exist() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         let repository = AssetMetaService::new(deps.as_mut());
 
         let err = repository
@@ -591,8 +598,9 @@ mod tests {
 
     #[test]
     fn get_asset_returns_asset_if_exists() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
@@ -609,8 +617,9 @@ mod tests {
 
     #[test]
     fn try_get_asset_returns_none_if_asset_does_not_exist() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         let repository = AssetMetaService::new(deps.as_mut());
 
         let result = repository
@@ -625,8 +634,9 @@ mod tests {
 
     #[test]
     fn try_get_asset_returns_asset_if_exists() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        setup_test_suite(&mut deps, &InstArgs::default());
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
 
@@ -667,52 +677,60 @@ mod tests {
 
     #[test]
     fn test_into_deps() {
-        let mut mock_deps = mock_dependencies(&[]);
-        test_instantiate_success(mock_deps.as_mut(), InstArgs::default());
+        let mut mock_deps = mock_provenance_dependencies();
+        test_instantiate_success(mock_deps.as_mut(), &InstArgs::default());
         let service = AssetMetaService::new(mock_deps.as_mut());
         let deps = service.into_deps();
-        config_read_v2(deps.storage)
-            .load()
+        STATE_V2
+            .load(deps.storage)
             .expect("expected storage to load from relinquished deps");
     }
 
     #[test]
     fn test_existing_verifier_detail_access_routes_merged() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         // set up existing attribute with pre-existing access routes
-        deps.querier.with_attributes(
-            DEFAULT_SCOPE_ADDRESS,
-            &[(
-                generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME)
-                    .as_str(),
-                to_string(&AssetScopeAttribute {
-                    asset_uuid: DEFAULT_ASSET_UUID.to_string(),
-                    scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
-                    asset_type: DEFAULT_ASSET_TYPE.to_string(),
-                    requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
-                    verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
-                    onboarding_status: AssetOnboardingStatus::Pending,
-                    latest_verification_result: None,
-                    access_definitions: vec![
-                        AccessDefinition {
-                            owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                            access_routes: vec![AccessRoute::route_only("ownerroute1")],
-                            definition_type: AccessDefinitionType::Requestor,
-                        },
-                        AccessDefinition {
-                            owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                            access_routes: vec![AccessRoute::route_only("existingroute")],
-                            definition_type: AccessDefinitionType::Verifier,
-                        },
-                    ],
-                })
-                .unwrap()
-                .as_str(),
-                "json",
-            )],
+        QueryAttributeRequest::mock_response(
+            &mut deps.querier,
+            QueryAttributeResponse {
+                account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                attributes: vec![Attribute {
+                    name: generate_asset_attribute_name(
+                        DEFAULT_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME,
+                    ),
+                    value: to_json_vec(&AssetScopeAttribute {
+                        asset_uuid: DEFAULT_ASSET_UUID.to_string(),
+                        scope_address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                        asset_type: DEFAULT_ASSET_TYPE.to_string(),
+                        requestor_address: Addr::unchecked(DEFAULT_SENDER_ADDRESS),
+                        verifier_address: Addr::unchecked(DEFAULT_VERIFIER_ADDRESS),
+                        onboarding_status: AssetOnboardingStatus::Pending,
+                        latest_verification_result: None,
+                        access_definitions: vec![
+                            AccessDefinition {
+                                owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                                access_routes: vec![AccessRoute::route_only("ownerroute1")],
+                                definition_type: AccessDefinitionType::Requestor,
+                            },
+                            AccessDefinition {
+                                owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                                access_routes: vec![AccessRoute::route_only("existingroute")],
+                                definition_type: AccessDefinitionType::Verifier,
+                            },
+                        ],
+                    })
+                    .unwrap(),
+                    attribute_type: AttributeType::Json.into(),
+                    address: DEFAULT_SCOPE_ADDRESS.to_string(),
+                    expiration_date: None,
+                }],
+                pagination: None,
+            },
         );
 
-        setup_test_suite(&mut deps, InstArgs::default());
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
         let mut fee_payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         fee_payment_detail.payments = vec![fee_payment_detail.payments[0].clone()];
         fee_payment_detail.payments[0].recipient = Addr::unchecked(DEFAULT_VERIFIER_ADDRESS);
@@ -726,6 +744,7 @@ mod tests {
             .expect("scope attribute should exist for asset");
         repository
             .verify_asset::<&str>(
+                &instantiate_args.env,
                 scope_attribute,
                 true,
                 "Great jaerb there Hamstar".to_some(),
@@ -742,55 +761,49 @@ mod tests {
         );
 
         let first_message = &messages[0];
-        match first_message {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        update_value,
-                        ..
-                    }),
-                ..
-            }) => {
-                let deserialized: AssetScopeAttribute = from_binary(update_value).unwrap();
-                assert_eq!(
-                    2,
-                    deserialized.access_definitions.len(),
-                    "Modified scope attribute should only have 2 access route groups listed",
-                );
-                assert_eq!(
-                    &AccessDefinition {
-                        owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
-                        access_routes: vec![AccessRoute::route_only("ownerroute1")],
-                        definition_type: AccessDefinitionType::Requestor,
-                    },
-                    deserialized
-                        .access_definitions
-                        .iter()
-                        .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
-                        .unwrap(),
-                    "sender access route should be unchanged after verifier routes updated",
-                );
-                assert_eq!(
-                    &AccessDefinition {
-                        owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
-                        access_routes: vec![
-                            AccessRoute::route_only("existingroute"),
-                            AccessRoute::route_only("newroute")
-                        ],
-                        definition_type: AccessDefinitionType::Verifier,
-                    },
-                    deserialized
-                        .access_definitions
-                        .iter()
-                        .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
-                        .unwrap(),
-                    "sender access route should be unchanged after verifier routes updated",
-                );
-            }
-            _ => panic!(
+        if let Some(MsgUpdateAttributeRequest { update_value, .. }) =
+            try_into_update_attribute_request(first_message)
+        {
+            let deserialized: AssetScopeAttribute = from_json(update_value).unwrap();
+            assert_eq!(
+                2,
+                deserialized.access_definitions.len(),
+                "Modified scope attribute should only have 2 access route groups listed",
+            );
+            assert_eq!(
+                &AccessDefinition {
+                    owner_address: DEFAULT_SENDER_ADDRESS.to_string(),
+                    access_routes: vec![AccessRoute::route_only("ownerroute1")],
+                    definition_type: AccessDefinitionType::Requestor,
+                },
+                deserialized
+                    .access_definitions
+                    .iter()
+                    .find(|r| r.owner_address == DEFAULT_SENDER_ADDRESS)
+                    .unwrap(),
+                "sender access route should be unchanged after verifier routes updated",
+            );
+            assert_eq!(
+                &AccessDefinition {
+                    owner_address: DEFAULT_VERIFIER_ADDRESS.to_string(),
+                    access_routes: vec![
+                        AccessRoute::route_only("existingroute"),
+                        AccessRoute::route_only("newroute")
+                    ],
+                    definition_type: AccessDefinitionType::Verifier,
+                },
+                deserialized
+                    .access_definitions
+                    .iter()
+                    .find(|r| r.owner_address == DEFAULT_VERIFIER_ADDRESS)
+                    .unwrap(),
+                "sender access route should be unchanged after verifier routes updated",
+            );
+        } else {
+            panic!(
                 "Unexpected first message type for verify_asset: {:?}",
                 first_message,
-            ),
+            )
         }
         let second_message = &messages[1];
         match second_message {
@@ -825,12 +838,15 @@ mod tests {
 
     #[test]
     fn test_verify_with_invalid_access_routes_filters_them_out() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Establish some access routes with blank strings to prove that they get filtered out in the verification process
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // All invalid (empty or whitespace-only strings) access routes should be filtered from output
@@ -874,12 +890,15 @@ mod tests {
 
     #[test]
     fn test_verify_with_only_invalid_access_routes_adds_no_access_definition_for_the_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Establish some access routes with blank strings to prove that they get filtered out in the verification process
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
@@ -908,12 +927,15 @@ mod tests {
 
     #[test]
     fn test_verify_new_access_routes_are_trimmed() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Establish some access routes with blank strings to prove that they get filtered out in the verification process
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
@@ -953,12 +975,15 @@ mod tests {
 
     #[test]
     fn test_verify_with_duplicate_access_routes_and_different_names_keeps_all_routes() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Use two AccessRoutes with the same route but different names
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
@@ -998,12 +1023,15 @@ mod tests {
 
     #[test]
     fn test_verify_with_duplicate_routes_one_some_name_one_none_name() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Use two AccessRoutes with the same route but different names
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
@@ -1047,12 +1075,15 @@ mod tests {
 
     #[test]
     fn test_verify_skips_duplicates_after_trimming() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Use two AccessRoutes with the same route but different names
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Only invalid access routes should yield no access definition for the verifier
@@ -1095,12 +1126,15 @@ mod tests {
 
     #[test]
     fn test_verify_with_no_access_routes_adds_no_access_definition_for_the_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         // Establish some access routes with blank strings to prove that they get filtered out in the verification process
         test_verify_asset(
             &mut deps,
+            &instantiate_args.env,
             TestVerifyAsset {
                 verify_asset: VerifyAssetV1 {
                     // Completely empty access routes should yield no access definition for the verifier
@@ -1136,8 +1170,10 @@ mod tests {
     }
 
     fn test_verification_result(message: Option<&str>, result: bool) {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         let repository = AssetMetaService::new(deps.as_mut());
         let original_attribute_value = repository
@@ -1146,7 +1182,13 @@ mod tests {
                 "original attribute value should load from Provenance Blockchain without issue",
             );
         repository
-            .verify_asset::<&str>(original_attribute_value.clone(), result, message, vec![])
+            .verify_asset::<&str>(
+                &instantiate_args.env,
+                original_attribute_value.clone(),
+                result,
+                message,
+                vec![],
+            )
             .unwrap();
 
         let messages = repository.get_messages();
@@ -1157,50 +1199,47 @@ mod tests {
             "verify asset should produce two message (update attribute msg and one bank send message)"
         );
         let first_message = &messages[0];
-        match first_message {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params: ProvenanceMsgParams::Attribute(msg),
-                ..
-            }) => {
-                let mut value = original_attribute_value.clone();
-                value.latest_verification_result = AssetVerificationResult {
-                    message: message
-                        .unwrap_or(if result {
-                            "verification successful"
-                        } else {
-                            "verification failure"
-                        })
-                        .to_string(),
-                    success: result,
-                }
-                .to_some();
-                // The onboarding status is based on whether or not the verifier approved the asset
-                // Dynamically swap between expected statuses based on the input
-                value.onboarding_status = if result {
-                    AssetOnboardingStatus::Approved
-                } else {
-                    AssetOnboardingStatus::Denied
-                };
-                assert_eq!(
-                    AttributeMsgParams::UpdateAttribute {
-                        address: Addr::unchecked(DEFAULT_SCOPE_ADDRESS),
-                        name: generate_asset_attribute_name(
-                            DEFAULT_ASSET_TYPE,
-                            DEFAULT_CONTRACT_BASE_NAME
-                        ),
-                        original_value: to_binary(&original_attribute_value).unwrap(),
-                        original_value_type: AttributeValueType::Json,
-                        update_value: to_binary(&value).unwrap(),
-                        update_value_type: AttributeValueType::Json
-                    },
-                    msg.to_owned(),
-                    "add attribute message should match what is expected"
-                );
+        if let Some(update_attribute_request) = try_into_update_attribute_request(first_message) {
+            let mut value = original_attribute_value.clone();
+            value.latest_verification_result = AssetVerificationResult {
+                message: message
+                    .unwrap_or(if result {
+                        "verification successful"
+                    } else {
+                        "verification failure"
+                    })
+                    .to_string(),
+                success: result,
             }
-            _ => panic!(
+            .to_some();
+            // The onboarding status is based on whether or not the verifier approved the asset
+            // Dynamically swap between expected statuses based on the input
+            value.onboarding_status = if result {
+                AssetOnboardingStatus::Approved
+            } else {
+                AssetOnboardingStatus::Denied
+            };
+            assert_eq!(
+                MsgUpdateAttributeRequest {
+                    account: DEFAULT_SCOPE_ADDRESS.to_string(),
+                    owner: MOCK_CONTRACT_ADDR.to_string(),
+                    name: generate_asset_attribute_name(
+                        DEFAULT_ASSET_TYPE,
+                        DEFAULT_CONTRACT_BASE_NAME
+                    ),
+                    original_value: to_json_vec(&original_attribute_value).unwrap(),
+                    original_attribute_type: AttributeType::Json.into(),
+                    update_value: to_json_vec(&value).unwrap(),
+                    update_attribute_type: AttributeType::Json.into(),
+                },
+                update_attribute_request,
+                "add attribute message should match what is expected"
+            );
+        } else {
+            panic!(
                 "Unexpected first message type for verify_asset: {:?}",
                 first_message
-            ),
+            )
         }
         let second_message = &messages[1];
         match second_message {
@@ -1236,8 +1275,10 @@ mod tests {
     }
 
     fn assert_verify_classification_success(simulate_deleted_verifier: bool) {
-        let mut deps = mock_dependencies(&[]);
-        setup_test_suite(&mut deps, InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        let instantiate_args = InstArgs::default();
+        setup_test_suite(&mut deps, &instantiate_args);
+        setup_no_attribute_response(&mut deps, None);
         test_onboard_asset(&mut deps, TestOnboardAsset::default()).unwrap();
         load_fee_payment_detail(
             deps.as_ref().storage,
@@ -1275,6 +1316,7 @@ mod tests {
         );
         service
             .verify_asset(
+                &instantiate_args.env,
                 asset.clone(),
                 true,
                 Some("great jaerb there hamstar"),
@@ -1287,58 +1329,54 @@ mod tests {
             messages.len(),
             "the correct number of messages should be generated",
         );
-        let update_attribute_msg = &messages[0];
-        match update_attribute_msg {
-            CosmosMsg::Custom(ProvenanceMsg {
-                params:
-                    ProvenanceMsgParams::Attribute(AttributeMsgParams::UpdateAttribute {
-                        address,
-                        name,
-                        original_value,
-                        original_value_type,
-                        update_value,
-                        update_value_type,
-                    }),
+        let first_message = &messages[0];
+        if let Some(update_attribute_request) = try_into_update_attribute_request(first_message) {
+            let MsgUpdateAttributeRequest {
+                ref name,
+                ref original_value,
+                ref update_value,
+                ref account,
                 ..
-            }) => {
-                assert_eq!(
-                    DEFAULT_SCOPE_ADDRESS,
-                    address.as_str(),
-                    "the update attribute message should target the scope",
-                );
-                assert_eq!(
-                    &generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
-                    name,
-                    "the correct attribute name should be included in the update",
-                );
-                assert_eq!(
-                    asset,
-                    from_binary(original_value).expect("the original_value should deserialize without error"),
-                    "the asset value before the update was made should be used as the original_value",
-                );
-                assert_eq!(
-                    &AttributeValueType::Json,
-                    original_value_type,
-                    "the json value type should be used for the original_value_type",
-                );
-                let updated_asset = from_binary::<AssetScopeAttribute>(update_value)
-                    .expect("the update_value should deserialize without error");
-                assert_eq!(
-                    AssetOnboardingStatus::Approved,
-                    updated_asset.onboarding_status,
-                    "the updated asset's onboarding status should be changed to approve",
-                );
-                assert_eq!(
-                    &AttributeValueType::Json,
-                    update_value_type,
-                    "the json value type should be used for the update_value_type",
-                );
-            }
-            msg => panic!(
+            } = update_attribute_request;
+            assert_eq!(
+                DEFAULT_SCOPE_ADDRESS,
+                account.as_str(),
+                "the update attribute message should target the scope",
+            );
+            assert_eq!(
+                generate_asset_attribute_name(DEFAULT_ASSET_TYPE, DEFAULT_CONTRACT_BASE_NAME),
+                name.to_owned(),
+                "the correct attribute name should be included in the update",
+            );
+            assert_eq!(
+                asset,
+                from_json(original_value)
+                    .expect("the original_value should deserialize without error"),
+                "the asset value before the update was made should be used as the original_value",
+            );
+            assert_eq!(
+                AttributeType::Json,
+                update_attribute_request.original_attribute_type(),
+                "the json value type should be used for the original_value_type",
+            );
+            let updated_asset = from_json::<AssetScopeAttribute>(update_value)
+                .expect("the update_value should deserialize without error");
+            assert_eq!(
+                AssetOnboardingStatus::Approved,
+                updated_asset.onboarding_status,
+                "the updated asset's onboarding status should be changed to approve",
+            );
+            assert_eq!(
+                AttributeType::Json,
+                update_attribute_request.update_attribute_type(),
+                "the json value type should be used for the update_value_type",
+            );
+        } else {
+            panic!(
                 "the first message generated should be an update attribute msg, but got: {:?}",
-                msg
-            ),
-        };
+                first_message,
+            )
+        }
         let fee_payment_msg = &messages[1];
         match fee_payment_msg {
             CosmosMsg::Bank(BankMsg::Send { to_address, amount }) => {

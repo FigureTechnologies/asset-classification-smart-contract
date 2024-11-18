@@ -1,11 +1,11 @@
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{DepsMut, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 use crate::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3};
 use crate::{
     core::{error::ContractError, msg::ExecuteMsg},
     util::{
-        aliases::{AssetResult, DepsMutC, EntryPointResponse},
+        aliases::{AssetResult, EntryPointResponse},
         contract_helpers::{check_admin_only, check_funds_are_empty},
         event_attributes::{EventAttributes, EventType},
     },
@@ -82,7 +82,7 @@ impl ToggleAssetDefinitionV1 {
 /// * `msg` An instance of the toggle asset definition v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn toggle_asset_definition(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: ToggleAssetDefinitionV1,
 ) -> EntryPointResponse {
@@ -114,8 +114,9 @@ pub fn toggle_asset_definition(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{Addr, Deps, DepsMut};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     use crate::core::state::load_asset_definition_by_type_v3;
     use crate::{
@@ -129,7 +130,6 @@ mod tests {
             },
         },
         util::{
-            aliases::{DepsC, DepsMutC},
             constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NEW_VALUE_KEY},
             event_attributes::EventType,
         },
@@ -139,8 +139,8 @@ mod tests {
 
     #[test]
     fn test_valid_toggle_asset_definition_via_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let response = execute(
             deps.as_mut(),
             mock_env(),
@@ -180,16 +180,16 @@ mod tests {
 
     #[test]
     fn test_valid_toggle_asset_definition_via_internal() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         toggle_default_asset_definition(deps.as_mut(), false);
         test_toggle_has_successfully_occurred(&deps.as_ref(), false);
     }
 
     #[test]
     fn test_toggle_off_and_back_on() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         // First toggle should disable the automagically enabled default asset type
         toggle_default_asset_definition(deps.as_mut(), false);
         test_toggle_has_successfully_occurred(&deps.as_ref(), false);
@@ -200,8 +200,8 @@ mod tests {
 
     #[test]
     fn test_invalid_toggle_asset_definition_for_invalid_msg() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
@@ -221,11 +221,11 @@ mod tests {
 
     #[test]
     fn test_invalid_toggle_asset_definition_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = toggle_asset_definition(
             deps.as_mut(),
-            mock_info("not-the-admin", &[]),
+            message_info(&Addr::unchecked("not-the-admin"), &[]),
             ToggleAssetDefinitionV1::new(DEFAULT_ASSET_TYPE, false),
         )
         .unwrap_err();
@@ -238,8 +238,8 @@ mod tests {
 
     #[test]
     fn test_invalid_toggle_asset_definition_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = toggle_asset_definition(
             deps.as_mut(),
             mock_info_with_nhash(DEFAULT_ADMIN_ADDRESS, 150),
@@ -255,8 +255,8 @@ mod tests {
 
     #[test]
     fn test_invalid_toggle_asset_definition_for_invalid_asset_target() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = toggle_asset_definition(
             deps.as_mut(),
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),
@@ -272,8 +272,8 @@ mod tests {
 
     #[test]
     fn test_toggle_to_incorrect_expected_state_fails() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         // The asset type should be enabled by default, so trying to toggle it to enabled again should fail
         let enable_error = toggle_asset_definition(
             deps.as_mut(),
@@ -317,7 +317,7 @@ mod tests {
         }
     }
 
-    fn test_toggle_has_successfully_occurred(deps: &DepsC, expected_enabled_value: bool) {
+    fn test_toggle_has_successfully_occurred(deps: &Deps, expected_enabled_value: bool) {
         let asset_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("the default asset definition should exist in storage");
         assert_eq!(
@@ -326,7 +326,7 @@ mod tests {
         );
     }
 
-    fn toggle_default_asset_definition(deps: DepsMutC, expected_result: bool) {
+    fn toggle_default_asset_definition(deps: DepsMut, expected_result: bool) {
         toggle_asset_definition(
             deps,
             empty_mock_info(DEFAULT_ADMIN_ADDRESS),

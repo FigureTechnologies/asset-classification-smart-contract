@@ -17,12 +17,31 @@ to verify the contents of the asset by granting permission to them.
 
 For more information on how the contract is composed, check out the code [documentation](https://figuretechnologies.github.io/asset-classification-smart-contract/).
 
-## Build
+## Development
+
+### Prerequisites
+
+Be sure you have the following installed:
+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Provenance](https://github.com/provenance-io/provenance/blob/main/docs/Building.md)
+
+and have enabled the WASM target for Rust with
+
+```shell
+rustup target add wasm32-unknown-unknown
+```
+
+### Building
 
 To build the smart contract, simply run the following:
 ```shell
 make optimize
 ```
+
+### Local Environment
+
+Check out the [example script](./dev-tools/) for ways to test the smart contract against your local Provenance chain.
 
 ## Kotlin Library
 

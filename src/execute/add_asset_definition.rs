@@ -1,14 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{config_read_v2, insert_asset_definition_v3};
+use crate::core::state::{insert_asset_definition_v3, STATE_V2};
 use crate::core::types::asset_definition::AssetDefinitionV3;
-use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::functions::generate_asset_attribute_name;
+use crate::util::functions::{generate_asset_attribute_name, msg_bind_name};
 
-use cosmwasm_std::{Env, MessageInfo, Response};
-use provwasm_std::{bind_name, NameBinding};
+use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::AddAssetDefinition](crate::core::msg::ExecuteMsg::AddAssetDefinition)
@@ -65,7 +64,7 @@ impl AddAssetDefinitionV1 {
 /// * `msg` An instance of the add asset definition v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn add_asset_definition(
-    deps: DepsMutC,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: AddAssetDefinitionV1,
@@ -80,13 +79,13 @@ pub fn add_asset_definition(
     // If requested, or the bind_name param is omitted, bind the new asset type's name the contract in order to be able
     // to write new attributes for onboarded scopes
     if msg.bind_name.unwrap_or(true) {
-        messages.push(bind_name(
+        messages.push(msg_bind_name(
             generate_asset_attribute_name(
                 &msg.asset_definition.asset_type,
-                config_read_v2(deps.storage).load()?.base_contract_name,
+                STATE_V2.load(deps.storage)?.base_contract_name,
             ),
             env.contract.address,
-            NameBinding::Restricted,
+            true,
         )?);
     }
 
@@ -117,22 +116,21 @@ mod tests {
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
         test_instantiate_success, InstArgs,
     };
-    use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{coin, Addr, Deps, Uint128};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     // These tests board a new asset type, so they need values other than the default to work with
     const TEST_ASSET_TYPE: &str = "add_asset_type";
 
     #[test]
     fn test_valid_add_asset_definition_via_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let asset_definition = get_valid_asset_definition();
         let response = execute(
             deps.as_mut(),
@@ -169,8 +167,8 @@ mod tests {
 
     #[test]
     fn test_valid_add_asset_definition_via_internal() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = get_valid_add_asset_definition(true);
         let messages = add_asset_definition(
             deps.as_mut(),
@@ -186,8 +184,8 @@ mod tests {
 
     #[test]
     fn test_valid_add_asset_definition_skip_name_binding_from_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let mut asset_definition = get_valid_asset_definition();
         asset_definition.bind_name = false.to_some();
         let response = execute(
@@ -208,8 +206,8 @@ mod tests {
 
     #[test]
     fn test_valid_add_asset_definition_skip_name_binding_from_direct() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = get_valid_add_asset_definition(false);
         let messages = add_asset_definition(
             deps.as_mut(),
@@ -228,8 +226,8 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_definition_for_invalid_msg() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = ExecuteMsg::AddAssetDefinition {
             asset_definition: AssetDefinitionInputV3::new(
                 "",
@@ -255,13 +253,13 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_definition_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
             // Mock info defines the sender with this string - simply use something other than DEFAULT_INFO_NAME to cause the error
-            mock_info("not-the-admin", &[]),
+            message_info(&Addr::unchecked("not-the-admin"), &[]),
             get_valid_add_asset_definition(true),
         )
         .unwrap_err();
@@ -274,12 +272,15 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_definition_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = add_asset_definition(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(150, "nhash")]),
+            message_info(
+                &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                &[coin(150, "nhash")],
+            ),
             get_valid_add_asset_definition(true),
         )
         .unwrap_err();
@@ -292,8 +293,8 @@ mod tests {
 
     #[test]
     fn test_invalid_add_asset_definition_for_duplicate_loan_type() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let mut add_asset = || {
             add_asset_definition(
                 deps.as_mut(),
@@ -311,11 +312,11 @@ mod tests {
         );
     }
 
-    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV3, deps: &DepsC) {
+    fn test_asset_definition_was_added_for_input(input: &AssetDefinitionInputV3, deps: &Deps) {
         test_asset_definition_was_added(&input.as_asset_definition(), deps)
     }
 
-    fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV3, deps: &DepsC) {
+    fn test_asset_definition_was_added(asset_definition: &AssetDefinitionV3, deps: &Deps) {
         let state_def =
             load_asset_definition_by_type_v3(deps.storage, &asset_definition.asset_type)
                 .expect("expected the added asset type to be stored in the state");

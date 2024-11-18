@@ -3,8 +3,8 @@ use crate::execute::onboard_asset::{onboard_asset, OnboardAssetV1};
 use crate::service::asset_meta_service::AssetMetaService;
 use crate::testutil::test_utilities::{empty_mock_info, MockOwnedDeps};
 use crate::util::aliases::EntryPointResponse;
-use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, MessageInfo};
+use cosmwasm_std::testing::{message_info, mock_env};
+use cosmwasm_std::{coin, Addr, MessageInfo};
 
 use super::test_constants::{
     DEFAULT_ASSET_TYPE, DEFAULT_ONBOARDING_COST, DEFAULT_ONBOARDING_DENOM, DEFAULT_SCOPE_ADDRESS,
@@ -12,6 +12,7 @@ use super::test_constants::{
 };
 use super::test_utilities::{get_default_access_routes, intercept_add_or_update_attribute};
 
+#[derive(Clone)]
 pub struct TestOnboardAsset {
     pub info: MessageInfo,
     pub onboard_asset: OnboardAssetV1,
@@ -29,7 +30,7 @@ impl TestOnboardAsset {
 
     pub fn default_full_sender(sender: &str, amount: u128, denom: &str) -> Self {
         TestOnboardAsset {
-            info: mock_info(sender, &[coin(amount, denom)]),
+            info: message_info(&Addr::unchecked(sender), &[coin(amount, denom)]),
             ..Default::default()
         }
     }

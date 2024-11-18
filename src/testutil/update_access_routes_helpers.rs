@@ -40,9 +40,11 @@ impl Default for TestUpdateAccessRoutes {
 
 pub fn test_update_access_routes(
     deps: &mut MockOwnedDeps,
+    env: &cosmwasm_std::Env,
     msg: TestUpdateAccessRoutes,
 ) -> EntryPointResponse {
     update_access_routes(
+        env,
         AssetMetaService::new(deps.as_mut()),
         msg.info,
         msg.update_access_routes,

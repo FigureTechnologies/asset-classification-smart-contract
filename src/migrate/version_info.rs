@@ -74,15 +74,16 @@ pub fn migrate_version_info(storage: &mut dyn Storage) -> AssetResult<VersionInf
 
 #[cfg(test)]
 mod tests {
+    use provwasm_mocks::mock_provenance_dependencies;
+
     use crate::migrate::version_info::{
         get_version_info, migrate_version_info, set_version_info, VersionInfoV1, CONTRACT_NAME,
         CONTRACT_VERSION,
     };
-    use cosmwasm_std::testing::mock_dependencies;
 
     #[test]
     fn test_set_and_get_version_info() {
-        let mut deps = mock_dependencies();
+        let mut deps = mock_provenance_dependencies();
         let result = set_version_info(
             &mut deps.storage,
             &VersionInfoV1 {
@@ -106,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_migrate_version_info() {
-        let mut deps = mock_dependencies();
+        let mut deps = mock_provenance_dependencies();
         let migrate_result = migrate_version_info(&mut deps.storage).unwrap();
         assert_eq!(
             CONTRACT_NAME,

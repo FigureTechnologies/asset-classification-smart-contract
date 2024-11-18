@@ -1,8 +1,8 @@
 use crate::core::state::may_load_fee_payment_detail;
 use crate::core::types::asset_identifier::AssetIdentifier;
-use crate::util::aliases::{AssetResult, DepsC};
+use crate::util::aliases::AssetResult;
 
-use cosmwasm_std::{to_binary, Binary};
+use cosmwasm_std::{to_json_binary, Binary, Deps};
 use result_extensions::ResultExtensions;
 
 /// A query that fetches a target [FeePaymentDetail](crate::core::types::fee_payment_detail::FeePaymentDetail)
@@ -19,11 +19,11 @@ use result_extensions::ResultExtensions;
 /// Provenance Blockchain Metadata Scope bech32 address.
 /// * `asset_type` The type of asset that the payment details represent
 pub fn query_fee_payments(
-    deps: &DepsC,
+    deps: &Deps,
     identifier: AssetIdentifier,
     asset_type: &str,
 ) -> AssetResult<Binary> {
-    to_binary(&may_load_fee_payment_detail(
+    to_json_binary(&may_load_fee_payment_detail(
         deps.storage,
         identifier.get_scope_address()?,
         asset_type,
@@ -41,13 +41,13 @@ mod tests {
         DEFAULT_ASSET_TYPE, DEFAULT_ASSET_UUID, DEFAULT_SCOPE_ADDRESS,
     };
     use crate::testutil::test_utilities::get_duped_fee_payment_detail;
-    use cosmwasm_std::from_binary;
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::from_json;
+    use provwasm_mocks::mock_provenance_dependencies;
     use uuid::Uuid;
 
     #[test]
     fn test_successful_query() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_provenance_dependencies();
         let payment_detail = get_duped_fee_payment_detail(DEFAULT_SCOPE_ADDRESS);
         insert_fee_payment_detail(deps.as_mut().storage, &payment_detail, DEFAULT_ASSET_TYPE)
             .expect("expected payment detail to be inserted successfully");
@@ -57,7 +57,7 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("expected binary result from asset uuid to be successful");
-        let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary)
+        let result_detail = from_json::<Option<FeePaymentDetail>>(&result_binary)
             .expect("expected binary deserialization for asset uuid target to be successful")
             .expect("expected the result to be a Some variant");
         assert_eq!(
@@ -70,7 +70,7 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("expected binary result from scope address to be successful");
-        let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary)
+        let result_detail = from_json::<Option<FeePaymentDetail>>(&result_binary)
             .expect("expected binary deserialization for scope address target to be successful")
             .expect("expected the result to be a Some variant");
         assert_eq!(
@@ -81,14 +81,14 @@ mod tests {
 
     #[test]
     fn test_missing_resource_query() {
-        let deps = mock_dependencies(&[]);
+        let deps = mock_provenance_dependencies();
         let result_binary = query_fee_payments(
             &deps.as_ref(),
             AssetIdentifier::asset_uuid(Uuid::new_v4().to_string()),
             DEFAULT_ASSET_TYPE,
         )
         .expect("result should successfully produce a binary even when the value is missing");
-        let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary).expect(
+        let result_detail = from_json::<Option<FeePaymentDetail>>(&result_binary).expect(
             "the result should successfully deserialize to an Option for asset uuid variant",
         );
         assert!(
@@ -101,7 +101,7 @@ mod tests {
             DEFAULT_ASSET_TYPE,
         )
         .expect("result should successfully produce a binary even when the value is missing");
-        let result_detail = from_binary::<Option<FeePaymentDetail>>(&result_binary).expect(
+        let result_detail = from_json::<Option<FeePaymentDetail>>(&result_binary).expect(
             "the result should successfully deserialize to an Option for scope address variant",
         );
         assert!(

@@ -1,15 +1,13 @@
 use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
-use crate::core::state::{
-    config_read_v2, load_asset_definition_by_type_v3, replace_asset_definition_v3,
-};
+use crate::core::state::{load_asset_definition_by_type_v3, replace_asset_definition_v3, STATE_V2};
 use crate::core::types::verifier_detail::VerifierDetailV2;
-use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
 use crate::util::functions::replace_single_matching_vec_element;
 
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{DepsMut, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::UpdateAssetVerifier](crate::core::msg::ExecuteMsg::UpdateAssetVerifier)
@@ -81,13 +79,13 @@ impl UpdateAssetVerifierV1 {
 /// * `msg` An instance of the update asset verifier v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_asset_verifier(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: UpdateAssetVerifierV1,
 ) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
     let mut asset_definition = load_asset_definition_by_type_v3(deps.storage, &msg.asset_type)?;
-    let state = config_read_v2(deps.storage).load()?;
+    let state = STATE_V2.load(deps.storage)?;
     if info.sender != state.admin && info.sender.as_str() != msg.verifier.address.as_str() {
         return ContractError::Unauthorized {
             explanation: "admin or verifier required".to_string(),
@@ -142,23 +140,22 @@ mod tests {
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
         test_instantiate_success, InstArgs,
     };
-    use crate::util::aliases::DepsC;
     use crate::util::constants::{
         ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH, VERIFIER_ADDRESS_KEY,
     };
     use crate::util::event_attributes::EventType;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_verifier;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{coin, Addr, Deps, Uint128};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     #[test]
     fn test_valid_update_asset_verifier_via_execute() {
         // Test that both the admin and the verifier can make the update without being rejected
         for sender_address in vec![DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
-            let mut deps = mock_dependencies(&[]);
-            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            let mut deps = mock_provenance_dependencies();
+            test_instantiate_success(deps.as_mut(), &InstArgs::default());
             let verifier = get_valid_update_verifier();
             let response = execute(
                 deps.as_mut(),
@@ -202,8 +199,8 @@ mod tests {
     fn test_valid_update_asset_verifier_via_internal() {
         // Test that both the admin and the verifier can make the update without being rejected
         for sender_address in vec![DEFAULT_ADMIN_ADDRESS, DEFAULT_VERIFIER_ADDRESS] {
-            let mut deps = mock_dependencies(&[]);
-            test_instantiate_success(deps.as_mut(), InstArgs::default());
+            let mut deps = mock_provenance_dependencies();
+            test_instantiate_success(deps.as_mut(), &InstArgs::default());
             let msg = get_valid_update_verifier_msg();
             update_asset_verifier(deps.as_mut(), empty_mock_info(sender_address), msg.clone())
                 .expect("expected the update verifier function to return properly");
@@ -213,12 +210,12 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_verifier_for_invalid_asset_type() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             ExecuteMsg::UpdateAssetVerifier {
                 // Invalid because the asset type is missing
                 asset_type: String::new(),
@@ -235,12 +232,12 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_verifier_for_invalid_msg() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             ExecuteMsg::UpdateAssetVerifier {
                 asset_type: DEFAULT_ASSET_TYPE.to_string(),
                 verifier: VerifierDetailV2::new(
@@ -265,11 +262,11 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_verifier_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = update_asset_verifier(
             deps.as_mut(),
-            mock_info("bad-guy", &[]),
+            message_info(&Addr::unchecked("bad-guy"), &[]),
             get_valid_update_verifier_msg(),
         )
         .unwrap_err();
@@ -282,11 +279,14 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_verifier_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = update_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(93849382, "dopehash")]),
+            message_info(
+                &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                &[coin(93849382, "dopehash")],
+            ),
             get_valid_update_verifier_msg(),
         )
         .unwrap_err();
@@ -299,11 +299,11 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_verifier_for_missing_verifier() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = update_asset_verifier(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             UpdateAssetVerifierV1::new(
                 DEFAULT_ASSET_TYPE,
                 VerifierDetailV2::new(
@@ -325,7 +325,7 @@ mod tests {
         );
     }
 
-    fn test_default_verifier_was_updated(verifier: &VerifierDetailV2, deps: &DepsC) {
+    fn test_default_verifier_was_updated(verifier: &VerifierDetailV2, deps: &Deps) {
         let state_def = load_asset_definition_by_type_v3(deps.storage, DEFAULT_ASSET_TYPE)
             .expect("expected the default asset type to be stored in the state");
         let target_verifier = state_def.verifiers.into_iter().find(|v| v.address == verifier.address)

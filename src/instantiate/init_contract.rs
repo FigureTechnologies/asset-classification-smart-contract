@@ -1,18 +1,17 @@
 use crate::core::msg::InitMsg;
-use crate::core::state::{config_v2, insert_asset_definition_v3, StateV2};
+use crate::core::state::{insert_asset_definition_v3, StateV2, STATE_V2};
 use crate::migrate::version_info::migrate_version_info;
-use crate::util::aliases::{DepsMutC, EntryPointResponse};
+use crate::util::aliases::EntryPointResponse;
 use crate::util::contract_helpers::check_funds_are_empty;
 use crate::util::event_attributes::{EventAttributes, EventType};
-use crate::util::functions::generate_asset_attribute_name;
+use crate::util::functions::{generate_asset_attribute_name, msg_bind_name};
 
-use cosmwasm_std::{CosmosMsg, Env, MessageInfo, Response};
-use provwasm_std::{bind_name, NameBinding, ProvenanceMsg};
+use cosmwasm_std::{CosmosMsg, DepsMut, Env, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// The main functionality executed when the smart contract is first instantiated.   This creates
 /// the internal contract [StateV2](crate::core::state::StateV2) value, as well as any provided
-/// [AssetDefinitionsV2](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init
+/// [AssetDefinitionsV3](crate::core::types::asset_definition::AssetDefinitionV3) provided in the init
 /// msg.
 ///
 /// # Parameters
@@ -26,22 +25,22 @@ use result_extensions::ResultExtensions;
 /// * `msg` A custom instantiation message defined by this contract for creating the initial
 /// configuration used by the contract.
 pub fn init_contract(
-    deps: DepsMutC,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: InitMsg,
 ) -> EntryPointResponse {
     check_funds_are_empty(&info)?;
-    let mut messages: Vec<CosmosMsg<ProvenanceMsg>> = vec![];
+    let mut messages: Vec<CosmosMsg> = vec![];
     // If specified true, the contract needs to own its root name to be effective at preventing
     // asset classification "neighbors" that were never intended to be created from being reserved
     // by external callers
     if msg.bind_base_name {
-        messages.push(bind_name(
+        messages.push(CosmosMsg::from(msg_bind_name(
             &msg.base_contract_name,
             env.contract.address.clone(),
-            NameBinding::Restricted,
-        )?);
+            true,
+        )?));
     }
     // Note: This vector can remain empty on instantiation, and future executions by the admin can
     // append new definitions. When no definitions are supplied, this contract will not be able to
@@ -52,20 +51,20 @@ pub fn init_contract(
         insert_asset_definition_v3(deps.storage, &asset_definition)?;
         // Default to true for name bind if no value is specified.
         if input.bind_name.unwrap_or(true) {
-            messages.push(bind_name(
+            messages.push(CosmosMsg::from(msg_bind_name(
                 generate_asset_attribute_name(
                     &asset_definition.asset_type,
                     &msg.base_contract_name,
                 ),
                 env.contract.address.clone(),
-                NameBinding::Restricted,
-            )?);
+                true,
+            )?));
         }
     }
     // Convert the init message into a state value that will drive the contract's future executions
     let state = StateV2::new(msg, info.sender);
     // Store the state by grabbing a mutable instance of the contract configuration
-    config_v2(deps.storage).save(&state)?;
+    STATE_V2.save(deps.storage, &state)?;
     // Set the version info to the default contract values on instantiation
     migrate_version_info(deps.storage)?;
     Response::new()
@@ -79,7 +78,7 @@ mod tests {
     use crate::contract::instantiate;
     use crate::core::error::ContractError;
     use crate::core::msg::InitMsg;
-    use crate::core::state::{config_read_v2, load_asset_definition_by_type_v3};
+    use crate::core::state::{load_asset_definition_by_type_v3, STATE_V2};
     use crate::core::types::asset_definition::AssetDefinitionInputV3;
     use crate::core::types::fee_destination::FeeDestinationV2;
     use crate::core::types::verifier_detail::VerifierDetailV2;
@@ -97,14 +96,13 @@ mod tests {
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::util::traits::OptionExtensions;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_dependencies, mock_env};
+    use cosmwasm_std::{coin, Addr, Uint128};
 
     #[test]
     fn test_valid_default_init() {
-        let mut deps = mock_dependencies(&[]);
-        let response = test_instantiate(deps.as_mut(), InstArgs::default())
+        let mut deps = mock_dependencies();
+        let response = test_instantiate(deps.as_mut(), &InstArgs::default())
             .expect("the default instantiate should produce a response without error");
         assert_eq!(
             1,
@@ -154,7 +152,7 @@ mod tests {
 
     #[test]
     fn test_valid_init_with_multiple_asset_definitions() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_dependencies();
         let first_asset_def = AssetDefinitionInputV3::new(
             "heloc",
             "Home Equity Line of Street Cred".to_some(),
@@ -193,7 +191,7 @@ mod tests {
         );
         let response = test_instantiate(
             deps.as_mut(),
-            InstArgs {
+            &InstArgs {
                 asset_definitions: vec![first_asset_def.clone(), second_asset_def.clone()],
                 ..Default::default()
             },
@@ -231,10 +229,10 @@ mod tests {
 
     #[test]
     fn test_valid_init_bind_base_name_false_skips_base_bind() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_dependencies();
         let response = test_instantiate(
             deps.as_mut(),
-            InstArgs {
+            &InstArgs {
                 bind_base_name: false,
                 ..Default::default()
             },
@@ -251,11 +249,11 @@ mod tests {
 
     #[test]
     fn test_valid_init_no_is_test_flag_supplied_defaults_to_false() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_dependencies();
         instantiate(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             InitMsg {
                 base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
                 bind_base_name: true,
@@ -264,8 +262,8 @@ mod tests {
             },
         )
         .expect("instantiation should complete successfully");
-        let state = config_read_v2(deps.as_ref().storage)
-            .load()
+        let state = STATE_V2
+            .load(deps.as_ref().storage)
             .expect("state v2 should be created by instantiation");
         assert!(
             !state.is_test,
@@ -275,11 +273,11 @@ mod tests {
 
     #[test]
     fn test_valid_init_with_false_name_bind_on_added_definition() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_dependencies();
         let response = instantiate(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             InitMsg {
                 base_contract_name: DEFAULT_CONTRACT_BASE_NAME.to_string(),
                 bind_base_name: false,
@@ -305,11 +303,14 @@ mod tests {
 
     #[test]
     fn test_invalid_init_contract_including_funds() {
-        let mut deps = mock_dependencies(&[]);
+        let mut deps = mock_dependencies();
         let error = test_instantiate(
             deps.as_mut(),
-            InstArgs {
-                info: mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(100, "nhash")]),
+            &InstArgs {
+                info: message_info(
+                    &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                    &[coin(100, "nhash")],
+                ),
                 ..Default::default()
             },
         )
@@ -334,7 +335,7 @@ mod tests {
             ..Default::default()
         };
         let error = instantiate(
-            mock_dependencies(&[]).as_mut(),
+            mock_dependencies().as_mut(),
             args.env,
             args.info,
             InitMsg {

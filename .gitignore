@@ -9,7 +9,8 @@
 artifacts
 
 # IDE stuff
-/.vscode/
+/.vscode/*
+!/.vscode/extensions.json
 /.idea/
 /.run/
 

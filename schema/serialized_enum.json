@@ -16,5 +16,6 @@
       "description": "Specifies the string value to be used for the type.",
       "type": "string"
     }
-  }
+  },
+  "additionalProperties": false
 }

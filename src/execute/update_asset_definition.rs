@@ -2,11 +2,11 @@ use crate::core::error::ContractError;
 use crate::core::msg::ExecuteMsg;
 use crate::core::state::replace_asset_definition_v3;
 use crate::core::types::asset_definition::AssetDefinitionV3;
-use crate::util::aliases::{AssetResult, DepsMutC, EntryPointResponse};
+use crate::util::aliases::{AssetResult, EntryPointResponse};
 use crate::util::contract_helpers::{check_admin_only, check_funds_are_empty};
 use crate::util::event_attributes::{EventAttributes, EventType};
 
-use cosmwasm_std::{MessageInfo, Response};
+use cosmwasm_std::{DepsMut, MessageInfo, Response};
 use result_extensions::ResultExtensions;
 
 /// A transformation of [ExecuteMsg::UpdateAssetDefinition](crate::core::msg::ExecuteMsg::UpdateAssetDefinition)
@@ -67,7 +67,7 @@ impl UpdateAssetDefinitionV1 {
 /// * `msg` An instance of the update asset definition v1 struct, provided by conversion from an
 /// [ExecuteMsg](crate::core::msg::ExecuteMsg).
 pub fn update_asset_definition(
-    deps: DepsMutC,
+    deps: DepsMut,
     info: MessageInfo,
     msg: UpdateAssetDefinitionV1,
 ) -> EntryPointResponse {
@@ -103,19 +103,18 @@ mod tests {
         empty_mock_info, get_default_entity_detail, single_attribute_for_key,
         test_instantiate_success, InstArgs,
     };
-    use crate::util::aliases::DepsC;
     use crate::util::constants::{ASSET_EVENT_TYPE_KEY, ASSET_TYPE_KEY, NHASH};
     use crate::util::event_attributes::EventType;
     use crate::util::traits::OptionExtensions;
     use crate::validation::validate_init_msg::validate_asset_definition_input;
-    use cosmwasm_std::testing::{mock_env, mock_info};
-    use cosmwasm_std::{coin, Uint128};
-    use provwasm_mocks::mock_dependencies;
+    use cosmwasm_std::testing::{message_info, mock_env};
+    use cosmwasm_std::{coin, Addr, Deps, Uint128};
+    use provwasm_mocks::mock_provenance_dependencies;
 
     #[test]
     fn test_valid_update_asset_definition_via_execute() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let asset_definition = get_update_asset_definition();
         let response = execute(
             deps.as_mut(),
@@ -150,12 +149,12 @@ mod tests {
 
     #[test]
     fn test_valid_update_asset_definition_via_internal() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = get_valid_update_asset_definition();
         update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             msg.clone(),
         )
         .expect("expected the update asset definition function to return properly");
@@ -164,8 +163,8 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_definition_for_invalid_msg() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let msg = ExecuteMsg::UpdateAssetDefinition {
             asset_definition: AssetDefinitionInputV3::new(
                 DEFAULT_ASSET_TYPE,
@@ -178,7 +177,7 @@ mod tests {
         let error = execute(
             deps.as_mut(),
             mock_env(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             msg,
         )
         .unwrap_err();
@@ -191,12 +190,12 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_definition_for_invalid_sender() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = update_asset_definition(
             deps.as_mut(),
             // Send from the "sender address" which is the address of the account that does onboarding in tests
-            mock_info(DEFAULT_SENDER_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_SENDER_ADDRESS), &[]),
             get_valid_update_asset_definition(),
         )
         .unwrap_err();
@@ -209,11 +208,14 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_definition_for_provided_funds() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[coin(420, "usdf")]),
+            message_info(
+                &Addr::unchecked(DEFAULT_ADMIN_ADDRESS),
+                &[coin(420, "usdf")],
+            ),
             get_valid_update_asset_definition(),
         )
         .unwrap_err();
@@ -226,8 +228,8 @@ mod tests {
 
     #[test]
     fn test_invalid_update_asset_definition_for_missing_loan_type() {
-        let mut deps = mock_dependencies(&[]);
-        test_instantiate_success(deps.as_mut(), InstArgs::default());
+        let mut deps = mock_provenance_dependencies();
+        test_instantiate_success(deps.as_mut(), &InstArgs::default());
         let missing_asset_definition = AssetDefinitionV3::new(
             "nonexistent-type",
             "WHOAMI".to_some(),
@@ -243,7 +245,7 @@ mod tests {
         );
         let error = update_asset_definition(
             deps.as_mut(),
-            mock_info(DEFAULT_ADMIN_ADDRESS, &[]),
+            message_info(&Addr::unchecked(DEFAULT_ADMIN_ADDRESS), &[]),
             UpdateAssetDefinitionV1::new(missing_asset_definition),
         )
         .unwrap_err();
@@ -254,11 +256,11 @@ mod tests {
         );
     }
 
-    fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInputV3, deps: &DepsC) {
+    fn test_asset_definition_was_updated_for_input(input: &AssetDefinitionInputV3, deps: &Deps) {
         test_asset_definition_was_updated(&input.as_asset_definition(), deps)
     }
 
-    fn test_asset_definition_was_updated(asset_definition: &AssetDefinitionV3, deps: &DepsC) {
+    fn test_asset_definition_was_updated(asset_definition: &AssetDefinitionV3, deps: &Deps) {
         let state_def =
             load_asset_definition_by_type_v3(deps.storage, &asset_definition.asset_type)
                 .expect("expected the updated asset definition to be stored in the state");

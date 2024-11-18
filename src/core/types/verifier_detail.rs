@@ -13,7 +13,7 @@ use super::entity_detail::EntityDetail;
 pub struct VerifierDetailV2 {
     /// The Provenance Blockchain bech32 address of the verifier account.
     pub address: String,
-    /// The total amount charged to use the onboarding process this this verifier.
+    /// The total amount charged to use the onboarding process of this verifier.
     pub onboarding_cost: Uint128,
     /// The coin denomination used for this onboarding process.
     pub onboarding_denom: String,

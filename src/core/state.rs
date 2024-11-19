@@ -566,7 +566,7 @@ mod tests {
     }
 
     #[test]
-    fn basic_state_key_is_expected_value() {
+    fn test_basic_state_key_is_expected_value() {
         assert_eq!(
             "000873746174655f7632",
             cosmwasm_std::to_hex(crate::core::state::STATE_V2_KEY.as_bytes())

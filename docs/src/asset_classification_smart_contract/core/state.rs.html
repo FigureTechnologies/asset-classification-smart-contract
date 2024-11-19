@@ -565,6 +565,16 @@
 <a href="#565" id="565">565</a>
 <a href="#566" id="566">566</a>
 <a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::types::asset_definition::AssetDefinitionV3;
 <span class="kw">use </span><span class="kw">crate</span>::core::types::fee_payment_detail::FeePaymentDetail;
 <span class="kw">use crate</span>::{core::msg::InitMsg, util::aliases::AssetResult};
@@ -576,8 +586,8 @@
 
 <span class="kw">use </span><span class="kw">super</span>::error::ContractError;
 
-<span class="kw">const </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>str = <span class="string">"state_v2"</span>;
-<span class="kw">pub const </span>STATE_V2: Item&lt;StateV2&gt; = Item::new(STATE_V2_KEY);
+<span class="kw">const </span>STATE_V2_KEY: <span class="kw-2">&amp;</span>str = <span class="string">"\x00\x08state_v2"</span>; <span class="comment">// Special characters added to allow seamless upgrade from cosmwasm-storage to cw-storage-plus
+</span><span class="kw">pub const </span>STATE_V2: Item&lt;StateV2&gt; = Item::new(STATE_V2_KEY);
 
 <span class="kw">const </span>FEE_PAYMENT_DETAIL_NAMESPACE: <span class="kw-2">&amp;</span>str = <span class="string">"fee_payment_detail"</span>;
 <span class="kw">const </span>FEE_PAYMENT_DETAILS: Map&lt;(Addr, String), FeePaymentDetail&gt; =
@@ -1129,6 +1139,16 @@
             <span class="macro">matches!</span>(err, ContractError::Std(StdError::NotFound { .. })),
             <span class="string">"a not found error should occur when the payment detail is loaded after deletion, but got: {:?}"</span>,
             err,
+        );
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_basic_state_key_is_expected_value() {
+        <span class="macro">assert_eq!</span>(
+            <span class="string">"000873746174655f7632"</span>,
+            cosmwasm_std::to_hex(<span class="kw">crate</span>::core::state::STATE_V2_KEY.as_bytes())
+                .as_str()
+                .to_lowercase()
         );
     }
 }

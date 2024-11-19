@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use super::error::ContractError;
 
-const STATE_V2_KEY: &str = "state_v2";
+const STATE_V2_KEY: &str = "\x00\x08state_v2"; // Special characters added to allow seamless upgrade from cosmwasm-storage to cw-storage-plus
 pub const STATE_V2: Item<StateV2> = Item::new(STATE_V2_KEY);
 
 const FEE_PAYMENT_DETAIL_NAMESPACE: &str = "fee_payment_detail";
@@ -562,6 +562,16 @@ mod tests {
             matches!(err, ContractError::Std(StdError::NotFound { .. })),
             "a not found error should occur when the payment detail is loaded after deletion, but got: {:?}",
             err,
+        );
+    }
+
+    #[test]
+    fn test_basic_state_key_is_expected_value() {
+        assert_eq!(
+            "000873746174655f7632",
+            cosmwasm_std::to_hex(crate::core::state::STATE_V2_KEY.as_bytes())
+                .as_str()
+                .to_lowercase()
         );
     }
 }

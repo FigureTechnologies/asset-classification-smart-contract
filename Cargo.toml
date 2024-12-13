@@ -42,7 +42,7 @@ cw-storage-plus = "=2.0.0"
 os-gateway-contract-attributes = "=1.0.1"
 result-extensions = "=1.0.2"
 schemars = "=0.8.21"
-semver = "=1.0.7"
+semver = "=1.0.24"
 serde = { version = "=1.0.215", default-features = false, features = ["derive"] }
 thiserror = { version = "=1.0.65" }
 uuid = "=1.11.0"

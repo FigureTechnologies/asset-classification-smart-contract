@@ -15,35 +15,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
           default: true
           components: clippy, rustfmt
 
       - name: Cargo Format
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: fmt
           args: --all -- --check
 
       - name: Cargo Clippy
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: clippy
 
       - name: Cargo Tarpaulin XML Report
-        uses: actions-rs/tarpaulin@v0.1
+        uses: actions-rs/tarpaulin@v0.1.3
         with:
           version: '0.19.1'
           out-type: Xml
           args: '--ignore-config --ignore-tests'
 
       - name: Archive Code Coverage Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: code-coverage-report
           path: cobertura.xml
@@ -53,30 +53,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Build & optimize WASM
         run: make optimize
 
       - name: Set up Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
           default: true
 
       # Necessary to ensure sufficient permissions for the cargo build output folder
       - name: Clean Cargo
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: clean
 
       - name: Build project
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: build
 
       - name: Run integration test
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: test
           args: >
@@ -93,7 +93,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.4.0
 
       - name: Get Release Version
         run: |
@@ -113,7 +113,7 @@ jobs:
 
       - name: Generate Rust Docs
         if: ${{ !env.TAG_EXISTS }}
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: doc
           args: --no-deps
